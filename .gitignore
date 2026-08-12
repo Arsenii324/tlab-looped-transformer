@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+data/*.bin
+data/*.parquet
+checkpoints/*.pt
+checkpoints/*.safetensors
+*.log
+.DS_Store
+wandb/
