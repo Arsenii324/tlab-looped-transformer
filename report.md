@@ -66,12 +66,18 @@ criterion pre-registered before the data existed. So the two halves of "low perp
 many loops**" come apart under measurement, and that dissociation — documented five separate ways — is
 this report's most-replicated finding.
 
-**Per-token depth demand is real and unreachable.** Oracle headroom is 0.2008–0.2032 nats with
-split-half reliability **0.866** against a null of 0.0007, and 27.9% of tokens want depths past 32.
-Four independent **readout-side** instrument classes fail to capture more than 0.1% of it; a fifth,
-a learned per-token gate, turned out unable to express the hypothesis it was built to test. The
-structural reason: rules condition on total path length, whose cross-token **cv is 0.068**, while
-oracle depth's **cv is 0.798**.
+**Per-token depth demand is real and unreachable — and we can now say why.** Oracle headroom is
+0.2008–0.2032 nats with split-half reliability **0.866** against a null of 0.0007, and 27.9% of tokens
+want depths past 32. Four independent **readout-side** instrument classes fail to capture more than
+0.1% of it; a fifth, a learned per-token gate, turned out unable to express the hypothesis it was
+built to test. Two structural reasons, and the second is the deeper one. Rules condition on total path
+length, whose cross-token **cv is 0.068**, while oracle depth's **cv is 0.798**. And **a token's
+thirty-two depth keys span an effective rank of ~1.6** (mean pairwise cosine 0.91–0.97): there is
+almost nothing for any mixing or selection mechanism to discriminate *between*. That collapse is
+present **at initialisation** and **training makes it worse** (rank 2.73 → 1.83) — and the one
+intervention that applies a genuinely different operator at every depth moves it by **0.01–0.08 out
+of 32**. **The depth-mixing family does not fail because five instruments were badly chosen; it fails
+because the representation carries no per-depth information for them to read** (§4.7e).
 
 **The result is a negative with a mechanism and one measured lever**, which the brief explicitly rates
 as a good outcome (*«отсутствие положительного результата при хорошем анализе всех негативных — хороший
