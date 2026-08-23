@@ -2288,3 +2288,132 @@
   actually lost (numbers+provenance, retractions+survivors, pre-registrations, job IDs, unverified/
   delegated claims, and what only LOOKS done).
   INDEX points at sec0-PRE first.
+
+## 2026-08-23 17:45 — post-compaction resume: live-state audit BEFORE any writing
+
+Read OPS sec0-PRE, 16_WHOLE_STATE, TASKS, INDEX, replies 14/15/17 first, per INDEX's own guide.
+Four things the docs did not say, all found by looking at the machine rather than the notes:
+
+1. **A runaway process had been burning a full core for 2h37m.** PID 22476, started 15:08:44, 146
+   min CPU at 100%: an agy-spawned python one-liner cleaning `OUT_B_logs.md` whose
+   `elif ...: pass` branch never increments the loop index. Infinite loop. Killed. It was competing
+   with the live MPS training arm for the whole afternoon.
+
+2. **OPS sec6 was WRONG: `tlab-operator-diversity` WAS relaunched** at 16:45:59
+   (`bt1sglqurmj6frrmsfrk`) and is **EXECUTING** on the T4. OPS said "Not relaunched". The earlier
+   errored job is `bt1l7dotao5hf25tvcuh` (16:40). The attach's `system.log` goes quiet at 16:49
+   because that is the SETUP log; the program stream is `stdout.txt` in the same dir and is live.
+   Corrected in OPS.
+
+3. **`ds_watchdog.sh` has been re-attaching `ds_deepfull` every ~8 min since 16:32** — a job that is
+   **SUCCESS** and was harvested at 17:23. Five wasted re-attaches logged. Not harmful, but it is
+   noise in the one log a human would check for a real stall.
+
+4. **The local and DataSphere evals are DIFFERENT INSTRUMENTS for the depth-gate arm.** This is the
+   sec7b meta-pattern again (ask what the instrument samples), and it would have produced a false
+   claim within the hour:
+   - `src/train.py::evaluate` runs **one** forward at `n_loops=max_r` and reads
+     `logits_per_loop[r-1]` for every r. `model.py:685` overwrites **only** `logits_per_loop[-1]`
+     with the gated mixture. So locally **only the r=32 point is gated**; r=1..24 are plain per-loop
+     readouts of a gate-trained model.
+   - DS `main.py::evaluate` runs a **separate** forward per r (`model(x, n_loops=r, ...)`), so
+     **every** point is a mixture over loops 1..r.
+   The tell was visible in the raw JSON and nowhere else: local `od_depth_gate` step 152 has
+   r32 = 6.5041207472 **bit-identical** to r1 = 6.5041207472, and step 304 has r32 ~ r2. The gate's
+   softmax is a linear function of states whose norm grows monotonically with t, so its logit scale
+   is coupled to ||h_t|| and the softmax saturates onto a single loop -- a **learned early exit**,
+   not a soft mixture. That is pre-registered read (a)/(b) in RUNS.md 17:40, answered: it
+   CONCENTRATES, and on a SHALLOW loop.
+   `readout_mode="norm"` here, and `is_final` only matters for `final_only` (model.py:579), so
+   **CE@r=1 is structurally identical in both instruments** and is the one directly comparable point.
+
+**And on that one comparable point the two replicates DISAGREE IN SIGN:**
+
+| replicate | tokens | control CE@1 | gate CE@1 | delta |
+|---|---|---|---|---|
+| DS T4, in-job pair | ~0.50M (step 244) | 6.3772 | 6.0541 | **-0.3231** |
+| local MPS, chunked | 0.31M (step 152) | 6.5892 | 6.5041 | -0.0851 |
+| local MPS, chunked | 0.62M (step 304) | 6.2102 | 6.2455 | **+0.0353** |
+
+DS is -0.32 (6x the 0.0527 floor); local is -0.09 then +0.04 (both inside ~1.6x the floor) and
+**non-monotone**. Configs are nominally identical (`_arm_configs/od_depth_gate.json` vs the DS arm);
+device (T4 vs MPS), precision, and chunked-restart handling differ. **No claim is made from this
+until both land.** Stating it now precisely because the DS number alone is the largest effect in the
+project and this repo's whole failure history is believing that number early.
+
+## 2026-08-23 18:30 — od_depth_gate: pre-registered read (a)/(b) ANSWERED. The gate cannot express a mixture.
+
+`RUNS.md` 17:40 asked, before the number existed: *do the learned gate weights concentrate or stay
+near uniform?* Run on the local checkpoint (step 760, 1.56M tokens, ||depth_gate_head|| = 1.0469, so
+the parameter did train -- it is not sitting at its zero init), using the model's OWN loop via
+`return_states=True` rather than a hand-rolled copy (sec6.0 row 31):
+
+| r | logit range per token | top weight (uniform) | effective loops mixed | argmax loop (mean / median) | frac top>0.99 |
+|---|---|---|---|---|---|
+| 8  | 1872.6 | 0.9975 (0.1250) | **1.01 / 8**  | 7.40 / 8  | 0.985 |
+| 16 | 3445.6 | 0.9940 (0.0625) | **1.02 / 16** | 14.56 / 16 | 0.970 |
+| 32 | 6312.7 | 0.9873 (0.0312) | **1.05 / 32** | 28.59 / 32 | 0.952 |
+
+**It saturates completely, and it selects the DEEPEST loop.** A softmax over logits spanning
+1,900-6,300 is a hard argmax; the effective number of loops mixed is **1.0**, not r. So the
+"mixture" is `readout(h_r)` -- **which is exactly the control's readout**. The arm reduces to its own
+control by construction, which is why locally it measures at +0.013 to +0.035 against it (inside the
+0.0527 floor).
+
+**Mechanism, and it is a design flaw worth naming.** `gate_logits = w . h_t` is an **unnormalised
+linear function of the raw state**, and ||h|| grows 1.8x-4.0x across loops within a forward pass and
+~10^3 over training. So the softmax temperature is effectively zero and *cannot* be a soft mixture at
+any ||w|| the model would learn. **The readout is deliberately scale-invariant (RMSNorm before the
+tied head, sec4.3); this gate is not.** A gate reading `norm1(h_t)`, or logits divided by ||h_t||,
+would be the clean test. This one is not.
+
+**Consequence for the claim the reviewers asked for twice.** sec4.7c's null ("no *static* mixture over
+depths beats the best single depth") was explicitly a **lower** bound on a learned per-token gate, and
+the depth gate was the instrument that would have tested the upper one. **It does not test it.** So
+the per-token depth headroom (0.2008-0.2032 nats, split-half 0.866) remains unreached by four
+instrument classes and **untested** by the fifth -- not refuted by it. That is a materially different
+statement and it is the one the report will make.
+
+**It also explains the r32 anomaly** logged at 17:45: at step 152 the gate's argmax was loop **1**, so
+the mixture was `h_1` exactly and `r32` came back **bit-identical to r1** (6.5041207472). The
+statistic was reporting a hard selection all along.
+
+**The DS arm is NOT explained by this and is still open.** `ds_od_depth_gate` runs 0.29 nats *better*
+than its in-job control at matched steps (step 976: control min 5.4985, gate min 5.2079) while the
+local arm runs 0.013-0.035 *worse* than its in-job control. Configs verified identical field-by-field
+(batch 8, supervise_k 5, U[4,32], seed 0, 2.5M tokens) and the DS `main.py` gate code is
+**byte-identical** to `src/model.py:685-690`. Differences remaining: device (T4 vs MPS) and the local
+chunked runner's ~21 optimizer resets (sec6.0b). **Two replicates of one config disagreeing by 0.3 nats
+is an instrument problem, not a result, and no claim is made from either until the DS weights land** --
+and unlike the ~20 lost DS jobs this config DOES declare `"*_last.pt"` under `outputs:`, so they will.
+
+## 2026-08-23 18:40 — sec6.0 row 23's fix DOES NOT WORK. The glob returns nothing.
+
+`tlab-operator-diversity` (`bt1sglqurmj6frrmsfrk`) finished all three arms ("ALL DONE in 3286.9s").
+Terminal status **ERROR is cosmetic again** -- stderr holds one HF Hub warning, nothing else. Third
+time today; OPS sec0-PRE already warns about it.
+
+Its config declares `outputs: [results.json, "*_last.pt"]` -- the **fix** recorded in sec6.0 row 23 and
+`OPS.md` sec7 as *"Fixed in 23 configs for future jobs."* `download-files` returned
+**"downloading 1 files (11.5KB)"** = `results.json` alone. The checkpoints did not come back.
+
+**They existed.** `main.py:886-888` runs `torch.save(...)` to `f"{run_name}_last.pt"` with `OUT_DIR="."`,
+unconditionally, at the end of every arm, and every arm logged `=== ARM ... finished ===`.
+
+**Most likely mechanism:** DataSphere resolves `outputs:` paths **against the local working directory
+at submit time**, where no `*_last.pt` exists yet, so the glob matches nothing and no output slot is
+registered. Not proven from their docs; the operational conclusion does not depend on which mechanism
+it is.
+
+**Operational rule, effective now: list every output file EXPLICITLY by name. Never by glob.**
+22 of 26 `ds_*/config.yaml` in this repo use the glob, so **the fix believed to be protecting every
+future DataSphere job protects none of them.** No weights were lost today that were not already going
+to be lost -- but the fix was recorded as done, in two documents, and was never tested end-to-end.
+
+**This is sec6.0 row 26's lesson repeated exactly one level over:** there, a fix landed in the README
+while the shipping path stayed broken; here, a fix landed in the *config* and was never run against a
+job that finished. **A fix that has not produced the artifact it was supposed to produce is a
+hypothesis.** Logged as sec6.0 row 34 and unknown-known #25.
+
+**Cost, concretely:** the DS depth-gate weights are the one measurement that would settle whether that
+arm's -0.2950 is real (see 18:30), and they are gone. The local replicate's weights survive.

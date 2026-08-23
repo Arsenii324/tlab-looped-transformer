@@ -197,14 +197,27 @@ argmins) · `gain_decomp.py` (Δgain = ΔCE@1 − ΔCE_best; 49 in-job pairs) ·
 | DS `tlab-anchor-tokenkey` | **DONE, harvested.** ERROR status was cosmetic; all 6 arms completed |
 | Kaggle `tlab-seed-extension` | **DONE, harvested** — produced the n=4 withdrawal |
 | local `run_operator_diversity` | arm 4/4 (`od_depth_gate`) running. **Read pre-registered in `RUNS.md` 17:40** with two caveats: it zero-inits to a *uniform mixture* not the control, and its eval curve mixes over loops 1..r so **its plateau is over mixture-window size, not depth** — do not put it in the band tables |
-| DS `tlab-operator-diversity` | ERRORED (`tokenizers` install never ran). Not relaunched; motivation retired by retraction #2 |
+| DS `tlab-operator-diversity` | **CORRECTED 17:45 — it WAS relaunched and is EXECUTING.** Live job `bt1sglqurmj6frrmsfrk` (16:45:59); the errored one is `bt1l7dotao5hf25tvcuh` (16:40). Arms 1–2 done (`ds_od_control`, `ds_od_lora_r4`), arm 3 `ds_od_depth_gate` mid-run. **Watch the program stream in `stdout.txt`, NOT `system.log`** — `system.log` is the setup log and goes quiet at 16:49 while the job runs on |
 | agy jobs A/B | returned, **unverified except 3 sampled findings**; job C (citation cross-check) never ran — substitute audit done by hand, in `VERIFICATION.md` |
 
 **Nothing else is queued. Local GPU frees up when arm 4/4 finishes.**
 
 ### 7. BLOCKED, with causes (see QUEUE.md B1–B3)
+
+> ### ⚠ 2026-08-23 18:40 — THE FIX BELOW DOES NOT WORK. Verified against a job that finished.
+> `tlab-operator-diversity` (`bt1sglqurmj6frrmsfrk`) declared `outputs: [results.json, "*_last.pt"]`,
+> completed all three arms, wrote all three `.pt` files (`main.py:886`, unconditional), and
+> `download-files` returned **1 file, 11.5KB — `results.json` alone.**
+> **A glob in `outputs:` returns nothing.** Likely because DataSphere resolves those paths against the
+> local working dir at *submit* time, when no `*_last.pt` exists yet.
+> **RULE: list every output file EXPLICITLY by name. Never by glob.**
+> **22 of 26 `ds_*/config.yaml` here use the glob**, so the fix recorded as protecting every future
+> job protects none of them. It was written into two documents and never tested end-to-end — the same
+> shape as §6.0 row 26, one level over. Recorded as §6.0 row 34 / unknown-known #25.
+
 - **Every DataSphere job discarded its weights** — configs listed only `results.json` under
-  `outputs:`. ~20 checkpoints unrecoverable. Fixed in 23 configs for future jobs. This blocks:
+  `outputs:`. ~20 checkpoints unrecoverable. "Fixed" in 23 configs for future jobs — **but see the box
+  above: the fix is a glob and the glob does not work.** This blocks:
   `B_L` across the five train-at-L arms, and **the exit-rule test on an annealed checkpoint (R45)**.
   *A LOCAL annealed run would unblock R45 — `src/train.py` would need `supervise_k_final` added.*
 - Four relayed papers unobtainable → SECOND-HAND in `VERIFICATION.md`, no claim rests on them.
@@ -231,7 +244,7 @@ from both diffs — they remain in the base commit, so a reviewer can still open
 `git tag pre-squash-history` (963fab4) holds the pre-squash linear history; all of its content also
 survives in `review`, verified file-by-file, but the commit-by-commit record lives only on that tag.
 
-### 7b. UNKNOWN KNOWNS — 24 things that were true, visible in my own artifacts, and unwritten
+### 7b. UNKNOWN KNOWNS — 26 things that were true, visible in my own artifacts, and unwritten
 *Kept here rather than in `reviewer_answers/` because by definition these are what a fresh context
 will not think to look for. Every one surfaced when an artifact collided with an action — none came
 from asking myself questions.*
@@ -263,6 +276,17 @@ from asking myself questions.*
 | 22 | **Neither the git push nor the HF upload has ever run, and no git remote is configured** | being asked point-blank about submission status at 18:00 | both are the literal submission targets. `upload_checkpoint.py` was fixed today (it previously shipped weights *without* the tokenizer) and dry-run verified, never executed |
 | 23 | **Nobody had ever generated text from the shipped checkpoint** | a reviewer asking whether anyone had looked | it passes — recognisably English, grammatical, prompt-anchored. The cheapest end-to-end defect check in the project, unrun for the entire session, and the exact failure the task statement warns about |
 | 24 | **§4.20's headline statistic measured layer *outputs*, which share a residual, rather than layer *contributions*** | trying to break the collapse with operator diversity and failing, then asking why | the finding was substantially an artifact. Two forward passes retired an architectural direction that would have cost a training slot and up to 3.8% of the parameter budget |
+
+| 25 | **The fix for #1 does not work.** ~20 DS jobs lost their weights because `outputs:` listed only `results.json`; the remedy was applied to 23 configs **as a glob**, `"*_last.pt"`. A job that then completed all three arms and wrote all three `.pt` files returned **`results.json` alone, 11.5 KB** | pulling a finished job's outputs and finding the weights gone *again* | 22 of 26 configs carry that glob, so the protection believed to cover every future job covers none. **Rule: name every output file explicitly, never by glob.** Cost: the DS depth-gate weights, the one measurement that would settle that arm |
+| 26 | **A retraction propagated by grepping its NUMBER leaves the CLAIM standing in prose.** Three withdrawals landed on 2026-08-23; each was propagated by finding every site quoting the withdrawn figure. §3.5 still said "better CE than its control" and "band from ~23 loops to 32–64" four lines under their own withdrawal blocks; §8 still carried a cross-job number §4.17 had replaced with one of the opposite sign | the first end-to-end read of `report.md`, 18:00–18:20 | **12 defects, 3 serious, none reachable by grep.** The targeted pass was run *three times* and was believed sufficient each time |
+
+**Third meta-pattern, added 2026-08-23 18:50 — the dangerous state is not "unfixed", it is "recorded
+as fixed".** #25 and #26 are both remedies that were applied, written into two documents each, and
+never checked against the artifact they were supposed to produce — the same shape as §6.0 row 26,
+where the tokenizer fix landed in the README while the shipping path stayed broken. A fix generates a
+*claim*, and this project's own rule for claims applies to it: **verify against raw output, not against
+the fact that you made the change.** The cheap discipline is to close a fix only on the artifact —
+the file that came back, the prose that now reads correctly — never on the edit.
 
 **Second meta-pattern, added 2026-08-23 17:30 and worth more than the first:** #17, #23 and #24 all
 surfaced because *someone outside the work asked a one-line question* — "what is n?", "has anyone

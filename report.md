@@ -1,6 +1,16 @@
 # Making many loops stay useful: a looped transformer pretrained on FineWeb
 
-*T-Lab test task. Code and this report: [repo]. Best checkpoint: [Hugging Face link].*
+*T-Lab test task. Code and this report: **[repo URL — to be filled on publication]**. Best
+checkpoint: **[Hugging Face URL — to be filled on publication]**.*
+
+> **These two are unfilled on purpose, and the reason belongs in the open rather than behind a
+> bracket.** Nothing in this project has been pushed to GitHub or uploaded to Hugging Face: no git
+> remote is configured, and `src/upload_checkpoint.py` — repaired on 2026-08-23 after it was found
+> shipping weights *without* `configs/tokenizer.json`, which would have made every downloaded
+> checkpoint evaluate at chance ≈ 8.32 (§6.0 rows 20, 26) — has been dry-run verified and **never
+> executed against the network.** Publishing is the author's call, not the agent's, so the links are
+> named as pending rather than invented. **The artifact they will point at is decided in §6.0b / D3
+> and is the 90M control**, whose numbers are the headline table below.
 
 ---
 
@@ -499,7 +509,7 @@ not the same model:
 
 | target | schedule | supervision | result |
 |---|---|---|---|
-| **lowest perplexity** | `U[4,32]` | dense | **ppl 38.86** at 90M tokens *(protocol-matched local re-score; the kernel's own in-run figure is 37.14 — see §.headline on the ~0.04-nat cross-protocol offset)*, useful band [8,16] |
+| **lowest perplexity** | `U[4,32]` | dense | **ppl 38.86** at 90M tokens *(protocol-matched local re-score; the kernel's own in-run figure is 37.14 — see §.headline on the ~0.04-nat cross-protocol offset)*, useful band **[6,17] on the dense every-integer 1..64 grid** (the same checkpoint reads [8,16] on the sparse `{1,2,4,8,12,16,24,32}` grid) |
 | **most useful loops** | `U[32,48]` | annealed *or* constant terminal-only — **this project cannot separate them** (§4.17 retraction) | useful band near **40 loops**; the annealed arm's midpoint is 1.79× its in-job dense control's at **−0.019 nats**, and it is still within 0.01 nats of best at **64 loops, 1.33× beyond anything it trained on** — but its advantage over *constant terminal-only* reverses between seeds |
 
 > ### ⚠ THE DEEP HALF IS WITHDRAWN — `tlab-deep-full` landed 17:23 and its falsifier fired
@@ -534,9 +544,33 @@ not the same model:
 > every step at ≥32 loops. It is 22.6, not 45.3.
 
 The brief asks for low perplexity **by exploiting many loops**, and this report's answer is that the
-architecture is the same for both — only the *loss schedule and the loop schedule* change. At
-μ_rec = 18 the annealed setting gives both at once (better CE than its control *and* a deeper band).
-At μ_rec = 40 it costs 0.030 nats to move the useful band from ~23 loops to 32–64.
+architecture is the same for both — only the *loss schedule and the loop schedule* change.
+
+> **Restated 2026-08-23 18:20, because the two sentences that stood here re-asserted claims withdrawn
+> earlier in this same section.** They read: *"At μ_rec = 18 the annealed setting gives both at once
+> (better CE than its control and a deeper band). At μ_rec = 40 it costs 0.030 nats to move the useful
+> band from ~23 loops to 32–64."* **Both halves are dead.** The first states the annealing CE
+> advantage, **withdrawn at n=4** (seeds 2/3 gave +0.0482 and −0.0902; §4.17). The second states the
+> deep band, **withdrawn when `tlab-deep-full` returned mid 22.6** against a pre-registered trigger of
+> "near 22" — the block four paragraphs above. Both numbers came from 2.5M-token screens and neither
+> survived its own scale-up.
+>
+> This is **the third time** in this report a retraction banner has been followed within a few lines
+> by the retracted claim restated as live (§4.16c names the other two and calls the pattern the
+> point). It was found by the first end-to-end read of this document, which is recorded in §6.0 row 33
+> as its own failure: *targeted* propagation after each withdrawal checked the sites that quoted the
+> withdrawn **number**, and missed the sites that restated the withdrawn **claim in words**.
+>
+> **What the section actually supports, at n=4 and at full budget:** annealing **relocates the useful
+> band** — +2.5/+2.5/+2.5/+7.2 grid points at seeds 0/1/2/3, never negative, including at the seed
+> that reverses the CE claim — and **does not move the ceiling**. At μ_rec = 40 the deepest
+> genuinely-useful band this project measured is **[16,32]**, from a 30.0M-token artifact trained with
+> every step at ≥32 loops, with CE still improving to loop 24 and degrading gracefully to 128.
+
+**So the honest one-line answer to the brief is a dissociation, not a win:** the loss schedule moves
+*where* depth is useful, robustly and at zero parameter cost, and nothing measured here moves the
+ceiling. Those are the two halves of "low perplexity **by exploiting many loops**" coming apart under
+measurement, which is this report's most-replicated finding (§4.5, §4.9, §4.6b, §4.17, §8).
 
 > **The μ_rec = 40 setting is a trade, and the decomposition says which way.** The sentence above
 > states the cost; it does not state what buys it, and the two are different claims. Decomposed
@@ -1140,8 +1174,16 @@ now measured on the exact set the metric is reported on (`src/eval.py`, `BYTES_P
 
 Three readings, in order of importance:
 
-1. **3.15x more tokens improved absolute CE by 0.457 nats but left loop gain flat** (0.2472 →
-   0.2509). More training bought a better model, not more useful loop depth.
+1. **3.15x more tokens improved absolute CE by 0.457 nats while widening loop gain ~35× less**
+   (unpaired: 0.2472 → 0.2509; **paired: +0.0130, CI [0.0098, 0.0162], which excludes zero**). More
+   training bought a much better model and only slightly more useful loop depth.
+
+   > *Corrected 2026-08-23 18:20.* This read **"left loop gain flat"** — the reading the paired
+   > re-measurement earlier in this same section explicitly overturns ("*Paired re-measurement, and it
+   > overturns the 'flat loop gain' reading*"). The unpaired estimate could not resolve +0.0130 and
+   > was read as zero; pairing on the frozen 2048-sequence set resolves it as small but real. §4.12
+   > and §8 already use the corrected form; this list did not, so the same section asserted both.
+   > Found by the first end-to-end read of this report (§6.0 row 33).
 2. **The useful depth did not move outward.** The argmin went 11 → 8, but the basin is flat to
    ~0.003 nats across loops 6–12 in both runs — inside eval noise at this batch count — so the
    defensible claim is that useful depth stayed in a 6–12 basin, not that it decreased. Either way
@@ -1420,7 +1462,12 @@ here.
 **Measured on the strict definition: the Jacobian's spectral norm, not a finite perturbation.**
 Everything above uses a finite `h0` perturbation (`noise_scale = 1.0` against ‖h₀‖ ≈ 1.7 — a ~60%
 perturbation, well outside the linear regime). Contraction is strictly a Jacobian property: the map
-contracts iff `σ_max(∂F/∂h) < 1`. The two can disagree — a map could contract in nearly every
+contracts locally iff its **spectral radius** `ρ(∂F/∂h) < 1`; `σ_max < 1` is the *sufficient* Banach
+condition only. *(This sentence read "contracts iff `σ_max(∂F/∂h) < 1`" until 2026-08-23 18:20 — which
+is false as stated, and is contradicted both by §2 and by the correction block 30 lines below, where
+the same distinction is the whole point. The report carried the right and the wrong statement of one
+mathematical fact in two places. Found by the first end-to-end read; §6.0 row 33.)* The two can
+disagree — a map could contract in nearly every
 direction while having one neutral direction (plausibly the radial one identified above), and a
 finite perturbation aligned with it would read "no contraction" from a map that contracts almost
 everywhere. So the definition was measured directly, by power iteration with finite-difference JVPs
@@ -1444,8 +1491,8 @@ at the actual trajectory points, ε scaled to the local state norm (`src/jacobia
 > that re-ran the instrument rather than reading its output.
 
 **The claim survives on the strict definition** — `ρ > 1` at every loop for the winning config,
-`< 1` uniformly for `center` (**ρ**, not σ_max; see the correction block below). But the precise form is worth correcting: σ_max **decays monotonically
-toward 1 from above** (1.70 → 1.0015), so the map is not "expanding" in any useful sense either — it
+`< 1` uniformly for `center` (**ρ**, not σ_max; see the correction block below). But the precise form is worth correcting: **ρ** **decays monotonically
+toward 1 from above** (**1.6227** → 1.0015), so the map is not "expanding" in any useful sense either — it
 is **asymptotically neutral**. That is more accurate than the superseded reading's "expanding map",
 and it fits the geometry exactly: a neutral map with a persistent drift is what produces linear ‖h‖
 growth with a roughly constant step.
@@ -2208,9 +2255,31 @@ been validated for the deliverable.
 *Instrument:* `src/exit_dump.py` (per-token, per-loop CE plus four label-free signals) and
 `src/exit_rules.py` (calibration/test, split **by sequence** so tokens sharing a context cannot leak
 between splits). Run on the 46.0M-token Kaggle checkpoint over the frozen 2048-sequence set
-(524,288 scored tokens). Numbers below are from the DataSphere job's own stdout; the `.npz` was lost
-to an output-collection failure and is being regenerated locally, so these are re-verified on
-arrival before any of them become load-bearing.
+(524,288 scored tokens).
+
+> **The promised re-verification was owed and is now done (2026-08-23 18:45).** This paragraph read:
+> *"Numbers below are from the DataSphere job's own stdout; the `.npz` was lost to an
+> output-collection failure and is being regenerated locally, so these are re-verified on arrival
+> before any of them become load-bearing."* **The regeneration completed** —
+> `checkpoints/full_no_state_renorm_kaggle/exitdump_full_no_state_renorm_kaggle.npz`, 591 MB,
+> `ce` of shape (2048, 256, 64) — **and the caveat was left standing while the numbers became
+> load-bearing anyway** (the headroom is quoted in §2, §5 and §8). Re-derived directly from the array,
+> over all 524,288 tokens with no split:
+>
+> | quantity | re-derived | as published |
+> |---|---|---|
+> | `min_k E[CE]` | **3.9378** @ loop 8 | 3.9378 (§4.7b) |
+> | oracle `E[min_k CE]` | **3.6295** | 3.6295 (§4.7b) |
+> | **headroom** | **0.3083** | 0.3083 (§4.7b) |
+> | argmin deciles | **[1, 2, 7, 43, 64]** | [1, 2, 7, 43, 64] |
+> | fraction wanting >8 / >32 | **0.464 / 0.279** | 0.464 / 0.279 |
+>
+> **Every one matches.** The three headroom figures that appear in this report are the same quantity
+> on three different token sets and are now labelled as such: **0.3084** is the calibration/test split
+> used in §4.7's own table (best fixed 3.9277, oracle 3.6193), **0.3086** is the null-calibration
+> subset in the paragraph below, and **0.3083** is the full 524,288-token set (§4.7b, and the row
+> above). They agree to 0.0003; nothing turns on which is quoted, but the report had never said they
+> were different sets.
 
 **The question, and why the saturation result does not answer it.** §4.2 reports
 `min_k E_token[CE(token,k)] = 3.9277` at k=8 — a statement about the *average*. The per-token argmin
@@ -3382,8 +3451,21 @@ with a matched dense control. Restricted to the grid shared with the arms above,
 | §4.14 seed 1 | MPS | [8,16] / 11.3 | [16,24] / 19.6 | **+0.0456** |
 | `dt_mu18_*` | CUDA | [8,16] / 11.3 | [16,24] / 19.6 | **+0.1913** |
 
+> **Read the grid line above before comparing this table to the correction block 50 lines up — they
+> print the same two MPS arms with different numbers, and both are right.** The correction block reads
+> the terminal arms on their own 8-point grid `{1,2,4,8,12,16,24,32}` and gets **[12,24], mid 17.0**.
+> This table restricts *every* row to the 7-point grid shared with the CUDA job,
+> `{1,2,4,8,16,24,32}`, **which does not contain 12** — so the same curve's band starts at 16 instead
+> and reads **[16,24], mid 19.6**. That is `plateau.py`'s documented grid-conditionality (§4.15, 17%
+> swing) doing exactly what it is documented to do. **All three rows share one grid, so the comparison
+> is valid**; only the cross-reference to §4.14's own numbers looks like a contradiction.
+> **This is also why the shift is quoted as 1.50× in one place and ~1.7× in another** — 11.3 → 17.0 on
+> the 8-point grid, 11.3 → 19.6 on the 7-point grid. Same arms, same weights, two grids.
+> *(Flagged 2026-08-23 18:20 by the first end-to-end read; the grid restriction was stated once, above
+> the table, and nothing warned a reader that the numbers would disagree with §4.14's own.)*
+
 **Six arms, three independent runs per condition, two devices — and every plateau is identical to the
-digit.** Loop gain also reproduces as a ratio: 0.1052 → 0.2602 on CUDA, a 2.5× rise, matching the 2.5×
+digit** *(within each grid — see the box above)*. Loop gain also reproduces as a ratio: 0.1052 → 0.2602 on CUDA, a 2.5× rise, matching the 2.5×
 measured on MPS. The structural claim of this section is therefore about as well replicated as
 anything in this report.
 
@@ -3568,13 +3650,17 @@ by only a few steps; that is enough once trajectories diverge.
    for that section's configuration** and its own internal ~0.06 estimate remains the best available
    for it. Working rule where no matched replicate exists: **a single-arm difference below ~0.05 nats
    is not a result.**
-2. **It justifies retiring argmin.** `argmin_audit.py` finds **63 of 82** stored loop curves have an
+2. **It justifies retiring argmin.** `argmin_audit.py` finds **134 of 165** stored loop curves have an
    argmin decided by under 0.005 nats, and 13 more under 0.010 — against a floor of 0.015 at its
-   tightest (CUDA dense) and 0.068 at its widest. Only 6 curves have a resolvable argmin, and **4 of
-   those 6 are the `train_at_L` arms** whose half-of-L rule (§4.9) is the claim that survived
+   tightest (CUDA dense) and 0.068 at its widest. Only **10** curves have a resolvable argmin, and
+   **5 of those 10 are `train_at_L` arms** whose half-of-L rule (§4.9) is the claim that survived
    independent re-testing. That is a strong consistency check: the one depth claim with real margins
-   is the one that reproduced. (Counts are as of 2026-08-23 07:30 and grow as arms land; the fraction has stayed near
-   three-quarters throughout. The denominator rose from 71 because the audit initially skipped
+   is the one that reproduced. (**Re-run 2026-08-23 18:45: 134 of 165 unresolvable, 21 more weak.**
+   Earlier printings of this report quoted *63 of 82* and *57 of 76* from two earlier runs, in five
+   places, with no date attached to either — so the same audit appeared under two different totals.
+   All five now carry this figure. The fraction has **risen** from ~three-quarters to **81%** as more
+   arms landed, which strengthens rather than weakens the case for retiring the statistic. The
+   denominator first rose from 71 because the audit initially skipped
    `sandwich_eval.json`, whose curves are stored in a different shape — the file §4.5's own table is
    computed from. A coverage gap in an audit reads exactly like a clean audit, so the loader now
    enumerates shapes explicitly.)
@@ -4575,7 +4661,7 @@ that shared direction keeps rotating. Their result is on 12-layer models; ours h
 > | **Scale clock** (feed `log‖h‖` back to the block) | reviewer proposal, §4.19 | Predicted failure fired **exactly as predicted**: multiplicative positive feedback, **+1.36 nats (≈20× the floor)**, ‖w‖=1.34 proving the model *took* the parameter, and the state diverging to non-finite by **loop 39**. Its motivating premise (a fixed point in `u`) was separately shown false |
 > | **Five label-free exit-rule families** | §4.7, §4.7b | Not "the rules were bad" but a **structural reason they must fail**: total path length has **cv 0.068** while per-token oracle depth has **cv 0.798** — the rules condition on a quantity with almost no cross-token variance. Confirmed to survive on an *annealed* checkpoint (§4.7a), which kills the literature's own explanation |
 > | **Convex gate / damped sub-stepping** | arXiv 2605.23872 | Ran the retrofit literature's central intervention in the one regime where **its stated objective does not exist** — there is no frozen `t=1` endpoint to return to in pretraining. The null is the mechanism's prediction (§4.10) |
-| **Gated (diagonal state-space) injection** | Parcae; *Looped Transformers Done Right* | The field's own choice for the normalisation axis — a learned per-channel carry decay — **does exactly what it claims** (‖h‖ growth 6.2× → 1.17×, injection ratio stops collapsing) and costs **+0.2470 nats, ~4.7× the replicate floor** (§4.1b). Confirmed to be doing its job and still the wrong choice here |
+> | **Gated (diagonal state-space) injection** | Parcae; *Looped Transformers Done Right* | The field's own choice for the normalisation axis — a learned per-channel carry decay — **does exactly what it claims** (‖h‖ growth 6.2× → 1.17×, injection ratio stops collapsing) and costs **+0.2470 nats, ~4.7× the replicate floor** (§4.1b). Confirmed to be doing its job and still the wrong choice here |
 >
 > Each row names a hypothesis or a published method, states the regime, and gives the reason. That is
 > the shape this section is in; the heading now says so.
@@ -4614,7 +4700,7 @@ rule alongside §4.14. Opening the curve instead of the summary line killed it:
 All three arms are flat to within ~1e-3 across 8–12, i.e. they have the **same** plateau [8,16], and
 the argmin flip is decided ~50× below the noise floor. Writing that up from the summary line would
 have put a fabricated mechanism into the report's central argument. It is the case that motivated
-`src/plateau.py` and the audit in §4.15, which then found that **57 of 76** stored curves have argmins
+`src/plateau.py` and the audit in §4.15, which then found that **134 of 165** stored curves have argmins
 this fragile — so the near-miss paid for itself several times over.
 
 *Seed-1 note:* the control's own plateau moves [8,16] → [4,16] between seeds while its CE moves 0.153
@@ -4772,13 +4858,16 @@ the absolute number — it is which interventions move depth utility and which o
 is the direct answer to that: the complete list of errors that reached a number, how each was found,
 and what it cost. It is placed in the body rather than an appendix because it is evidence, not
 apology. Fifteen of these were caught by an instrument or a check; four were caught only because
-someone re-read raw output that a summary line had already reported as fine.*
+someone re-read raw output that a summary line had already reported as fine. **Rows 33 and 34 are of a
+third kind and are the most uncomfortable: both are failures of a fix that had already been recorded
+as done** — a retraction propagated by grepping its number rather than reading its prose, and a
+config change that was never run against a job that finished.*
 
 | # | what went wrong | how it was caught | cost |
 |---|---|---|---|
 | 1 | **§4.4's headline was an artifact of flaky hardware.** The untied baseline "failed to train" — NaNs at every LR. It trains fine on CUDA at all three LRs, including the one that died at step 13 on MPS. | re-running the same arms on a second device | a published claim + its mechanism, **retracted in full**; the report's most expensive error |
 | 2 | **Every evaluation built a full autograd graph.** `torch.enable_grad()` overrides an *outer* `no_grad()`, so the default path silently retained activations across all loops. | an OOM that was assumed to be intrinsic until the code was read | months of experiments sized smaller than necessary; **no number changed** (verified 0.000e+00) |
-| 3 | **`argmin` was the wrong statistic for every depth claim.** 63 of 82 stored curves have argmin margins under 0.005 nats against floors of 0.015–0.068. | `plateau.py` + `argmin_audit.py`, built after a summary line reported an optimum shift decided at **0.0001 nats** | **killed one finding before publication**, revised §4.14 from 2× to 1.50×, confirmed five others |
+| 3 | **`argmin` was the wrong statistic for every depth claim.** 134 of 165 stored curves have argmin margins under 0.005 nats against floors of 0.015–0.068 (re-run 2026-08-23 18:45; it was 63 of 82 when the statistic was built). | `plateau.py` + `argmin_audit.py`, built after a summary line reported an optimum shift decided at **0.0001 nats** | **killed one finding before publication**, revised §4.14 from 2× to 1.50×, confirmed five others |
 | 4 | **The noise floor was assumed, never measured.** | two *accidental* same-config replicates found while auditing something else | every A/B under ~0.05 nats had been over-read; now measured per device *and per config* (§4.15) |
 | 5 | **A claim asserted four times was never tested.** "Loop gain trades against CE" was stated from four hand-picked pairs. | `gain_vs_ce.py` over all 43 arms, stratified | ρ = **−0.081** pooled, strata disagreeing in sign; **demoted from "the report's most robust finding"** |
 | 6 | **A run name stood in for a config, three times.** `full_fixed_loops16` was not a fixed-16 run at all. | reading `train_cfg` from the artifact instead of trusting the filename | one relabelled section, one rerun |
@@ -4808,6 +4897,8 @@ someone re-read raw output that a summary line had already reported as fine.*
 | 32 | **Two new probes paired oracle-depth labels with the wrong tokens.** Both read per-token oracle depths from the exit dump — which was computed on `data/frozen_eval_set.npz` — and then indexed tokens as *sequential slices of `val.bin`*. The frozen set's own `starts` are 219, 494, 2630, …, not 0, 256, 512, so `oracle_d[b,j]` described a different token than `X[b,j]`. | checked the frozen set's `starts` array against the sequential-slice assumption before trusting either probe's output | **fixed in both, and both re-run.** The conflict probe was insensitive to it (0.9419 → 0.9424) because it is a *within-token* comparison that survives shuffling; the cache probe's conclusion also held. **The lesson is that both survived by luck of statistic, not by design** — a by-group statistic on scrambled labels would have been silently wrong, and neither probe's output looked suspicious |
 | 21 | **My own first version of that gate cried wolf.** It used a fixed 0.02 tolerance on 4 batches — ~1k tokens, whose sampling noise is 0.07–0.11 nats — and FAILED two checkpoints whose vocabulary is provably fine. | the failure was implausible, so the instrument was checked before the checkpoints were | re-specified with two tolerances (vocab-vs-chance, protocol-vs-SEM); a gate that fires on noise is worse than no gate, because it trains you to ignore it |
 | 19 | **A sweep died on its first arm and took the paired control with it** (CUDA OOM at 72 loops). | the job's terminal state | lost the μ_rec=56 pair; a per-arm OOM guard now records the failure in 94s instead |
+| 33 | **Nobody had read this report end to end — including me — across three same-day retractions.** Propagation after each withdrawal was *targeted*: grep the withdrawn **number**, fix every site that quotes it. That catches numbers and misses **claims restated in words**. | the first end-to-end read, 2026-08-23 18:00–18:20 | **Twelve defects, three of them serious, none findable by grep.** §3.5 restated *both* withdrawn claims ("better CE than its control", "band from ~23 loops to 32–64") four lines below their own withdrawal blocks; §8 still carried `+0.022 nats` — the **cross-job** control §4.17 had explicitly replaced with an in-job one that *reverses the sign* to −0.0264; §4.2's "three readings" still said loop gain was **flat** 120 lines after its own paired re-measurement overturned exactly that. Also: a false `iff` on `σ_max` contradicting §2 and its own correction block; the retracted unseeded **1.70** quoted as live ten lines after being retracted; a plateau quoted with no grid in the §3.5 table, violating this report's own rule; a stale "the `.npz` was lost" caveat on numbers that had since become load-bearing (re-verified from the artifact — all match); one argmin count printed as two different totals in five places; a broken table row and a duplicated clause. **The lesson is specific: a retraction needs a *prose* pass, not a *number* pass** |
+| 34 | **The fix for row 23 does not work, and was recorded as done in two documents.** Row 23's remedy was to add the checkpoint to `outputs:` in 23 DataSphere configs. It was added **as a glob**, `"*_last.pt"`. `tlab-operator-diversity` (`bt1sglqurmj6frrmsfrk`) then completed all three arms, wrote all three `.pt` files (`main.py:886`, unconditional), and `download-files` returned **1 file, 11.5 KB — `results.json` alone.** | pulling a finished job's outputs and finding the weights absent *again* | **22 of 26 `ds_*/config.yaml` use that glob**, so the protection believed to cover every future job covered none. The likely mechanism is that DataSphere resolves `outputs:` against the local working directory at *submit* time, when no `*_last.pt` exists yet — unconfirmed, and the rule does not depend on it: **list every output file explicitly by name, never by glob.** Cost here is concrete: the DS depth-gate weights were the measurement that would have settled whether that arm's −0.2950 is real, and they are gone. **Same shape as row 26 one level over** — there a fix landed in the README while the path stayed broken; here it landed in the config and was never run against a job that finished. *A fix that has not produced the artifact it was meant to produce is a hypothesis* |
 
 **The pattern, stated once.** Four of the five most expensive errors (#1, #3, #4, #5) share a shape:
 *a number that looked fine in a summary and was wrong in the raw.* None was a coding bug in the
@@ -4944,7 +5035,7 @@ recalled.*
   contributes a second path by cutting training at 240-second **wall-clock** boundaries and rebuilding
   the optimiser at each one, so momentum resets land at load-dependent steps. **Consequences that
   reach into the results:** every A/B in this report smaller than ~0.05 nats is unresolved, not
-  negative; and **argmin over a loop curve is unusable** — `src/argmin_audit.py` finds 57 of 76 stored
+  negative; and **argmin over a loop curve is unusable** — `src/argmin_audit.py` finds 134 of 165 stored
   curves have argmin margins under 0.005 nats. Depth claims are therefore stated as plateaus
   (`src/plateau.py`) throughout, and one claim (`residual_scale`, §5.0) died when re-derived that way.
   The honest summary is that this project measured its own resolution late, and the measurement
@@ -5058,7 +5149,7 @@ src/run_scale_control.py raw / final-only / norm-penalty readouts   src/run_resi
 **Statistics and audit (added 2026-08-23; §4.15–§4.17 rest on these)**
 ```
 src/plateau.py           the useful-depth band within `tol` of a curve's minimum, plus midpoint and
-                         onset. REPLACES argmin, which 63 of 82 stored curves cannot support (margins
+                         onset. REPLACES argmin, which 134 of 165 stored curves cannot support (margins
                          under 0.005 nats against floors of 0.015–0.068). Documents its own failure
                          mode: midpoints are grid-dependent (17% swing), so compare only on a shared grid.
 src/test_plateau.py      8 checks incl. flat / non-contiguous / degenerate-raises, the geometric
@@ -5178,10 +5269,28 @@ this report that attacks the loop-gain-vs-depth curve rather than moving along i
 **The same experiment shows what does *not* survive, which is why the claim above is narrow.** The
 25% variant reproduces the depth shift exactly (17.0 at both seeds) but its CE advantage flips sign
 between them. Time at k = 1 buys depth deterministically and costs loss stochastically, so only the
-shortest exposure is safe to recommend. And at a deep schedule (μ_rec = 40, §4.16b) the annealed arm
-reaches a useful band of **loops 24–48** at +0.022 nats over a dense control — the closest this
-report comes to the brief's literal objective — though that one is still single-seed with a
-cross-job reference at the time of writing.
+shortest exposure is safe to recommend.
+
+> **Corrected 2026-08-23 18:20 — this paragraph ended with a number §4.17 had already retracted.** It
+> read: *"at a deep schedule (μ_rec = 40, §4.16b) the annealed arm reaches a useful band of loops
+> 24–48 at **+0.022 nats over a dense control** — the closest this report comes to the brief's literal
+> objective — though that one is still single-seed with a cross-job reference at the time of writing."*
+>
+> **The +0.022 *is* the cross-job number, and §4.17 replaced it.** That arm (`da_mu40_sw90`) was
+> scored against a dense control from a **different job** (5.4170); its own **in-job** control is
+> 5.4658, and against that the sign **reverses** to **ΔCE_best = −0.0264**. §4.17 states this
+> explicitly — *"the in-job control reverses the sign… the exact error the in-job design exists to
+> prevent, made anyway by reaching for the nearest available reference"* — and then this section kept
+> the superseded figure, with its own caveat ("cross-job reference") left in as if it were still a
+> pending qualification rather than a resolved error.
+>
+> **The corrected statement:** at μ_rec = 40, `sw90` reaches plateau **[24,48]** (mid 33.9) at
+> **−0.0264** against its in-job dense control — but that margin is **inside** the 0.0541 CUDA
+> terminal-only replicate floor while its **ΔCE@1 = +0.0749 clears it**, so the deeper band is
+> *bought*, not free (§3.5). And the full-budget test of this schedule — `tlab-deep-full`, 30.0M
+> tokens — returned mid **22.6**, withdrawing the deep claim entirely. So this is **not** "the closest
+> this report comes to the brief's literal objective"; that description belonged to a number that no
+> longer stands.
 
 ### 8.0 Where the field actually is, and what that means for this result
 
@@ -5336,7 +5445,7 @@ Transport Rank**, a measure of whether a loop application contributes non-redund
 influence that remains observable at the readout. That is an instrument, and it targets exactly the
 question §4.3 and §4.7 circle around.
 
-*Correcting an earlier self-assessment:**Correcting an earlier self-assessment:* an internal draft called the MLP **ratio** (3.0 rather than
+*Correcting an earlier self-assessment:* an internal draft called the MLP **ratio** (3.0 rather than
 the SwiGLU-conventional 8/3) this design's biggest misallocation. That was overstated — 8/3 frees
 ~600k params, which buys H = 448 → 468, a 4.5% width increase, and the FFN-ratio literature is
 broadly flat over 2–4. The **split** between position-local and position-mixing compute is the real
