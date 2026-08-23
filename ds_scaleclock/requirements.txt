@@ -1,0 +1,4 @@
+numpy
+datasets
+tokenizers
+wandb

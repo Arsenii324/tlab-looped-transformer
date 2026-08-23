@@ -1,0 +1,25 @@
+name: tlab-anchor-tokenkey
+desc: "(A) anchor-account falsifier: sw90 at k=5/3/2 + dense control, 2.5M each -- the account predicts equal bands. (B) token-keyed vs fraction-keyed annealing at 10M. Neither has ever been run."
+cmd: >
+  date +%s;
+  python -c "import torch,sys; sys.exit(0 if torch.cuda.is_available() else 1)" 2>/dev/null
+  && echo "TORCH_PREINSTALLED_OK skipping pip"
+  || pip install -q --root-user-action=ignore torch --index-url https://download.pytorch.org/whl/cu121;
+  pip install -q --root-user-action=ignore wandb;
+  date +%s;
+  python main.py
+env:
+  docker:
+    image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
+  python:
+    type: manual
+    version: "3.11"
+    requirements-file: requirements.txt
+    local-paths:
+      - main.py
+  vars:
+    WANDB_API_KEY: REDACTED_SET_VIA_ENV
+outputs:
+  - results.json
+  - "*_last.pt"
+cloud-instance-type: gt4.1

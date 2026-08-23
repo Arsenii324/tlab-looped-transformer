@@ -376,3 +376,28 @@ not even take the parameter."
 **Not pre-registering a CE threshold**, deliberately: 448 params against a measured MPS replicate
 floor of 0.031–0.068 nats means any CE difference at 2.5M is unresolvable by construction. This run
 is a geometry experiment.
+
+---
+
+## 2026-08-23 ~14:10 — `tlab-anchor-tokenkey` · **`bt1hp97su48dc6096sqn`** · DataSphere
+Kernel: **`ds_scaleclock/`** (in-repo, scrubbed; the launched copy lives in the session scratchpad
+because its `config.yaml` carries the live wandb key — `DATASPHERE_NOTES.md` rule).
+Arms, cheapest first so an early cancel still answers the falsifier:
+`ak_sw90_k5` / `ak_sw90_k3` / `ak_sw90_k2` / `ak_dense_k5` (2.5M each) → `tk_frac90_10M` /
+`tk_tok225_10M` (10M each). Read against the pre-registration in this file at 14:00 and §4.18.
+Harvest: `datasphere project job download-files --id bt1hp97su48dc6096sqn --with-logs --output-dir …`
+(prefix every DS call with `GRPC_DNS_RESOLVER=native`). Also on wandb, project `tlab-loop-transformer`.
+
+## 2026-08-23 ~14:40 — `tlab-seed-extension` · Kaggle `arsen4ikvar/tlab-seed-extension`
+Kernel: **`kg_seeds/`** (in-repo). Extends the in-job (sw90 − dense) paired difference to **seeds 2
+and 3**, giving n=4 estimates of the quantity §3.5 rests on rather than a replicate "floor".
+**Pre-registered:** if the four paired differences straddle 0, or their mean falls inside the 0.0541
+CUDA terminal floor, §3.5's annealing recommendation is withdrawn to "not resolved at this budget".
+Harvest: `kaggle kernels output arsen4ikvar/tlab-seed-extension -p <dir>`.
+
+**Provenance note, because this is the first time it has applied.** All 26 earlier `ds_*/` kernels
+were tracked before launch. These two were launched from the scratchpad (live key) and their scrubbed
+copies committed after the fact — so the tracked file is byte-identical to what ran **except** for
+`WANDB_API_KEY`. §4.7a's inputs (`exitdump_*.npz`, 2 × 278 MB) remain scratchpad-only and are NOT
+recoverable after the session; the derived exit-rule outputs are persisted in
+`checkpoints/exit_rules_annealed_pair.json` so the published numbers stay traceable to an artifact.
