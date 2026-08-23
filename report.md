@@ -6247,6 +6247,64 @@ not enough to attribute it.*
 > (verified: the guard fires; all 13 correctness checks still pass). *No number changes — this is a
 > trap disarmed, not a retraction.*
 
+### 4.28 What partial untying would buy, priced — the mechanism as a dose–response
+
+§4.7e's corrected mechanism is a *claim about projections*: a tied loop has one `W_K` and cannot
+decorrelate a collinear depth-state stream, while an untied stack gets that decorrelation free from
+distinct per-layer projections. **That is an explanation, and until now it made no quantitative
+prediction.** This section turns it into one, at the cost of a single forward pass — and it is
+deliberately run **before** any training run on partial untying, because it is the cheapest thing that
+could refute the idea.
+
+*Instrument:* `src/bucket_untie_rank.py`. Take the **trained** tied model's real depth states, then
+project them with `nb` distinct random `W_K` assigned by loop index (`t % nb`), and measure the
+effective rank of the resulting depth-key stream.
+
+| configuration | effective rank / 32 | parameter cost |
+|---|---|---|
+| depth **states**, no projection at all | **1.690** | — |
+| **tied `W_K`** — what this model has | **1.603** | 0 |
+| `W_K` in **2** loop-index buckets | **3.097** | +100,352 (+1.1%) |
+| `W_K` in **4** buckets | **5.742** | +301,056 (+3.3%) |
+| `W_K` in **8** buckets | **10.646** | +702,464 (+7.7%) |
+| `W_K` fully untied (32) | **30.863** | +3,110,912 (+34.3%) |
+
+**Depth-key rank is very nearly `1.6 × (number of distinct projections)`** — 3.1, 5.7, 10.6, 30.9 for
+2, 4, 8, 32. **The mechanism is now a dose–response with a price attached**, which is a stronger form
+of the same claim: *rank in the key stream is the product of the state stream's own rank (~1.7) and
+the number of distinct projections applied to it.*
+
+**Three things follow, and the third is the one that matters for the report's honesty.**
+
+1. **It confirms the 20:01 correction rather than the claim it replaced.** The state stream is rank
+   **1.690** *before any projection*; fully untying reaches 30.9 **not because the representations
+   diversify but because 32 random projections of a rank-1.7 stream are near-orthogonal by
+   construction.** That is exactly what the projection-confound correction said, now measured as a
+   curve instead of a single contrast.
+2. **It prices the intervention the evidence points at.** `EARLY_EXIT.md` §6 recommends partial
+   untying as the cheapest lever; this says **4 buckets buys 3.6× the depth-key rank for +3.3% of the
+   parameter budget** — which would still fit under the 10M cap (9.37M).
+3. **It does NOT show that more rank buys lower loss, and that is the open question.** Everything here
+   is a property of *representations*, measured with random projections on a frozen checkpoint. **The
+   causal claim — that the rank collapse is *why* depth-mixing fails — is still supported only by
+   `dg_norm`'s null (§4.23), which is a correlation between low rank and no gain.** The experiment
+   that would settle it is a trained arm with bucketed `W_K` plus the scale-invariant gate: *if
+   raising key rank 3.6× makes the gate gain, the rank explanation is causal; if the gate still gains
+   nothing, something else binds and §4.7e is at best incomplete.*
+
+> **Registered before the data exists, at 2026-08-23 21:40.** That arm was **not run** — the remaining
+> wall-clock went to verification rather than to a new mechanism, a choice recorded in
+> `directions.md`/`TASKS.md` rather than left implicit. **The prediction is written here anyway so
+> that it is falsifiable by whoever runs it:** on this report's own regularity (every loss-lowering
+> intervention delivering 78–101% of its gain at `r = 1`, §4.24), **I expect the bucketed-`W_K` gate to
+> lower CE and to do so mostly at `r = 1`, i.e. to buy capacity rather than depth-mixing** — the same
+> shape as LoRA, XSA and duo-causal. *If instead its gain concentrates past `r = 8` and the useful
+> band widens, that is the first genuine depth mechanism in this project and the report's central
+> negative is wrong.*
+
+*Scope: one checkpoint, one layer, random projections rather than trained ones — a trained `W_K` could
+in principle be less decorrelating than a random one, which would make these numbers an upper bound.*
+
 ## 5. Methods tested to destruction — what was claimed, what was measured, why it broke
 
 > **This section was titled "What didn't work", and that title was costing it.** A *null* says "we
