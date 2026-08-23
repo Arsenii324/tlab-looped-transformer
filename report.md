@@ -3738,6 +3738,13 @@ recalled.*
   weights. It is correct today — `test_model.py` check [7] pins kernel-vs-`src` at `max|diff| = 0.0`
   — but nothing asserted the correspondence, so `load_checkpoint` now prints which behavioural fields
   it is defaulting and to what.
+- **`evaluate()` draws from the *training* RNG, so eval cadence perturbs training data order.** Two
+  runs that differ only in `eval_every_tokens` see different batches and different sampled loop
+  counts thereafter — they are **not paired even at the same seed**. This does not touch the headline
+  claim (§D1: control and norm-penalty share `seed=0`, `eval_every_tokens=4,000,000`, and land on the
+  identical step 43,944 and token count 89,999,360, so that comparison is genuinely paired), and it
+  is stated because it is easy to violate accidentally — a local annealing run was mis-specified from
+  the other direction on exactly this field, which cost 727s and produced nothing (§6.0 row 32).
 - **No gradient checkpointing anywhere.** Activations are retained across every loop, which is why
   memory — not compute — is what bounds the deep schedules (§4.16b: μ_rec = 56 and 44 both OOM'd on a
   14.75 GiB card; 40 fits). Checkpointing every recurrent step is what Huginn does, and it would have

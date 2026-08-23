@@ -89,6 +89,12 @@ The deliverable is `report.md` (~3,900 lines, 0 placeholders, §1 reserved for t
 - **`./rebuild_review.sh` regenerates `review` as one commit. RUN IT BEFORE ANY REVIEW.**
 - `submission` = full working history. `main` = the repo's first commit. Tag `main-backup-20260823`
   = the original main. **Commit day-to-day work, then rebuild `review` before reviewing.**
+- **PUSH HAZARD: `git push --tags` / `--mirror` WILL BE REJECTED.** `refs/tags/main-backup-20260823`
+  carries 4 blobs over GitHub's hard 100MB limit (563.9 / 563.8 / 560.7 / 181.9 MB — the
+  `exitdump_*.npz` files and `ds_exit/ckpt.pt`), 1.83 GB total. **Every branch is clean** — verified
+  per-ref — so `git push <remote> <branch>` succeeds. `.gitignore` cannot help; it does not untrack
+  history. The tag is left intact (nothing is deleted here); just never push it. Write new dumps to
+  the scratchpad, never into the repo.
 - **The wandb key was leaked** into 18 configs + 18 commits. Scrubbed; `review` is verified clean
   (0 commits, 0 diff occurrences). **`submission` still contains it — do not push `submission`.**
   **The key still needs ROTATING** → `needs_user/ROTATE_WANDB_KEY.md`.

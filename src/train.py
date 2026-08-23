@@ -134,18 +134,47 @@ def build_optimizer(model, cfg: TrainConfig):
 
 
 @torch.no_grad()
-def evaluate(model, val_shard, cfg: TrainConfig, rng):
+def evaluate(model, val_shard, cfg: TrainConfig, rng, extras: dict | None = None):
+    """`extras`, if a dict is passed, is FILLED with the two diagnostics CLAUDE.md asks for on every
+    run and this file was not producing: per-loop predictive entropy, and an online contraction-rate
+    estimate. Both were previously available only in `eval.py`, post-hoc, and therefore only for runs
+    whose weights survived -- which is exactly the wrong availability, because `results.json` came
+    back from every DataSphere job while ~20 of those jobs' checkpoints did not (§6.0 row 23).
+
+    Passed as an out-parameter rather than a changed return value on purpose: `evaluate()` has three
+    callers (`train.py`, `baseline_nonlooped.py`, `kaggle/main.py`) that all do `curve = evaluate(...)`,
+    and widening the tuple would break each of them for no benefit.
+
+    Entropy catches collapse-to-a-fixed-distribution, which is a different degenerate case from
+    genuine saturation and looks identical in a CE curve. The contraction estimate reads the STATE,
+    not the readout, so it cannot be fooled by whatever the head happens to be doing -- the failure
+    that cost the sibling project a per-loop capability curve."""
     model.eval()
     curves = {r: [] for r in cfg.eval_loop_sweep}
-    for _ in range(cfg.eval_batches):
+    ents = {r: [] for r in cfg.eval_loop_sweep}
+    max_r = max(cfg.eval_loop_sweep)
+    for bi in range(cfg.eval_batches):
         x, y = get_batch(val_shard, cfg.batch_size, cfg.seq_len, cfg.device, rng)
-        max_r = max(cfg.eval_loop_sweep)
         logits_per_loop, state_norms = model(x, n_loops=max_r, return_all_loops=True)
         for r in cfg.eval_loop_sweep:
-            loss = F.cross_entropy(logits_per_loop[r - 1].reshape(-1, logits_per_loop[r - 1].size(-1)),
-                                    y.reshape(-1))
+            lg = logits_per_loop[r - 1]
+            loss = F.cross_entropy(lg.reshape(-1, lg.size(-1)), y.reshape(-1))
             curves[r].append(loss.item())
+            if extras is not None:
+                logp = F.log_softmax(lg.float(), dim=-1)
+                ents[r].append(-(logp.exp() * logp).sum(-1).mean().item())
+        if extras is not None and bi == 0:
+            # Online contraction rate: same batch, h0 perturbed, distance between the two
+            # trajectories per loop. One extra pair of forwards on ONE batch per eval.
+            _, _, clean = model(x, n_loops=max_r, return_all_loops=False, supervise_idx=set(),
+                                return_states=True)
+            _, _, noisy = model(x, n_loops=max_r, return_all_loops=False, supervise_idx=set(),
+                                return_states=True, h0_noise=1.0)
+            extras["contraction_dist"] = [
+                (c - n).float().norm(dim=-1).mean().item() for c, n in zip(clean, noisy)]
     model.train()
+    if extras is not None:
+        extras["entropy"] = {r: float(np.mean(v)) for r, v in ents.items()}
     return {r: float(np.mean(v)) for r, v in curves.items()}
 
 
@@ -281,7 +310,8 @@ def run(model_cfg: ModelConfig, train_cfg: TrainConfig, log_path: pathlib.Path |
                   f"n_loops={n_loops} t={time.time()-t0:.0f}s", flush=True)
 
         if step % eval_every_steps == 0 and step > 0 or step == total_steps - 1:
-            curve = evaluate(model, val_shard, train_cfg, rng)
+            _extras = {}
+            curve = evaluate(model, val_shard, train_cfg, rng, extras=_extras)
             print(f"  EVAL step {step} tok {tokens_seen/1e6:.1f}M per-loop val CE: " +
                   " ".join(f"r{r}={v:.4f}" for r, v in curve.items()), flush=True)
             history.append(dict(step=step, tokens=tokens_seen, val_curve=curve,
@@ -297,7 +327,9 @@ def run(model_cfg: ModelConfig, train_cfg: TrainConfig, log_path: pathlib.Path |
                                  state_norms=list(state_norms),
                                  n_loops=n_loops,
                                  supervise_k_eff=_k_eff,
-                                 per_loop_train_ce=[[i, v] for i, v in per_loop_losses]))
+                                 per_loop_train_ce=[[i, v] for i, v in per_loop_losses],
+                                 val_entropy=_extras.get("entropy"),
+                                 contraction_dist=_extras.get("contraction_dist")))
             if log_path:
                 log_path.write_text(json.dumps(history, indent=2))
             save_ckpt(step, tokens_seen)
