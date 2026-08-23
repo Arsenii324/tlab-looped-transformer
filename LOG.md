@@ -2183,3 +2183,18 @@
   because it is within-token; cache probe held too. Logged as 6.0 row 32. Results written as 4.8b
   (oracle cache null, -0.0096, 5.5x below floor) and a 4.8a extension (shallow-oracle tokens at
   cos 0.9424 / 3.40x norm vs their own oracle state -- radial displacement, no demonstrated cost).
+2026-08-23 17:05 — Gemini (Antigravity) work reviewed.
+  CODE: src/model.py gains cond_mode="lora_cycle" (loop-cycled LoRA, 4 branches) and
+    depth_gate_mode="state". test_model.py extended to 15 checks -- ALL PASS locally, including
+    step-0 bit-identity (max|diff|=0.00e+00) and param budgets (lora_cycle 9,473,184; gate 9,065,056).
+    Code quality is sound.
+  BUDGET NOTE: lora_cycle costs +408,576 params (4.51%), under the 10M cap but it is a FIXED
+    per-branch table -- exactly the shape the task's own counter-example warns about. If it wins,
+    the scale argument that 3.5 rests on (annealing adds ZERO params) does not transfer to it.
+  RUNS: ds tlab-operator-diversity (bt1l7dotao5hf25tvcuh) ERRORED after 4 min --
+    ModuleNotFoundError: tokenizers. Its config.yaml DOES pip-install tokenizers in `cmd`, but
+    system.log shows 0 occurrences of that install, i.e. the line never ran. Local run got only
+    od_control (5.3391@12); the lora arms never completed.
+  PROBES: 2 alignment bugs found and fixed (see 16:55 entry) -- results held.
+  WITHDRAWAL RE-TESTED against the reviewer's proposed paired t-interval: [-0.1478,+0.0558],
+    covers zero, SAME verdict. Their premise used the n=2 spread; actual n=4 sd is 4.5x larger.
