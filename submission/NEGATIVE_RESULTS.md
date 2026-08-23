@@ -84,7 +84,7 @@ loop 39, with the model *taking* the parameter (‖w‖ = 1.34) rather than decl
 > document and not the one being read.*
 >
 > **loop-cycled LoRA (−0.094, n=5 at rank ≥ 4):**
-> 0. **It does not survive 5× the budget.** −0.0733…−0.1251 at 2.5M against **+0.0077 at 12M**,
+> 0. **It does not survive 5× the budget.** −0.0514 … −0.1251 at 2.5M (mean −0.0936 over five arms) against **+0.0077 at 12M**,
 >    in-job, sign reversed and inside the floor (§4.29). This was the only CE claim in the report that
 >    replicated across three platforms. **The like-for-like pair is exact** — `ds_od_lora_r4` at 2.5M
 >    is config-identical to the 12M arm — so this is a budget effect, not a configuration difference.
