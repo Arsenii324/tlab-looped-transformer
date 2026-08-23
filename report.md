@@ -4823,14 +4823,18 @@ successor can do with this architecture is still to spend more tokens on it*, an
 above will be restated on those runs once they are re-scored under the matched local protocol
 (`run_eval90.sh`; see §4.6 for why the raw cross-protocol comparison is not used).
 
-**And one result now qualifies the framing this section opens with.** The paragraph above says
-absolute CE and loop gain moved independently, so a lower CE is not evidence the loop improved.
-That remains true as stated — but §4.17 found the first configuration where the two move *together*:
-annealing supervision density — dense throughout, then terminal-only for the final **10%** of steps —
-produced a model that beat its **in-job** dense control on CE at **both seeds tested** (−0.0811 and
-−0.0609, mean −0.0710 — **4–5× the CUDA *dense* replicate floor of 0.0150, but only 1.1–1.5× the
-CUDA *terminal* floor of 0.0541**) while simultaneously widening the useful-depth
-band (plateau midpoint 11.3 → 13.9, identical at both seeds) and raising loop gain ~35%. The
+**And one result was thought to qualify the framing this section opens with — at n=2, before it was
+extended.** The paragraph above says absolute CE and loop gain moved independently, so a lower CE is
+not evidence the loop improved. §4.17's annealing result initially looked like the first
+configuration where the two move *together*: dense throughout, then terminal-only for the final
+**10%** of steps, beat its in-job dense control on CE at both seeds tested (−0.0811, −0.0609). **A
+same-budget n=4 extension (seeds 2/3, harvested 2026-08-23) reverses this**: seed 2 gives **+0.0482**
+(sw90 worse than dense), and the four-seed mean −0.0460 sits inside the 0.0541 CUDA terminal
+replicate floor. **The CE-improvement half of this claim is withdrawn to "not resolved at this
+budget"** (§3.5). What survives unaffected by seed count: the useful-depth band still widens
+(plateau midpoint 11.3 → 13.9, both of the original seeds) and loop gain still rises at those two
+seeds — so this section's opening dissociation is not, after all, broken by a case where both moved
+together; the CE half of that case did not hold up. The
 `an_rev50` control makes the mechanism specific rather than mysterious: the same exposure to k = 1
 placed at the *start* of training produces no depth effect at all and the worst loss in the series,
 so it is the **final phase of supervision that sets where depth is useful**. That is a
