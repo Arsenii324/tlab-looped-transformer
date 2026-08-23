@@ -33,7 +33,7 @@ statistic; use `src/plateau.py`, and compare midpoints only across a shared eval
 |---|---|
 | `OPS.md` | Live status: what is running on which of the four compute streams, deadline arithmetic, ranked shortlist with done/running/not-started. **STATUS block overwritten every iteration.** |
 | `RUNS.md` | Every job with its ID and **what to do when it lands**. Fetch commands at the top. Written because job IDs would otherwise be lost to a compaction. |
-| `needs_user/` | One file per thing blocked on the user. **Empty folder = nothing blocked.** |
+| `needs_user/` | **NOT IN THE REPOSITORY** — untracked 2026-08-23, kept on the author's disk only. |
 
 ## ADDED 2026-08-23 — read these too
 | file | what | why it exists |
