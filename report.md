@@ -151,11 +151,20 @@ it was proposed here (§4.17) rather than taken from the literature — which is
 was the one held to a pre-registered falsifier and withdrawn when four seeds disagreed.
 
 **What the project actually answers.** The brief asks for low perplexity *by exploiting many loops*.
-The honest finding is that **those two clauses come apart under measurement**: ten interventions, two
-of which lower the loss — and both improve the *block*, not the *looping*, with ~84–90% of their gain
-already present at a single loop. One lever moves the useful band robustly at zero parameter cost,
-and does not lower the loss. Per-token depth demand is real, reliable and large, and unreachable by
-five instrument classes — with a measured reason underneath rather than five shrugs (§4.7e).
+The honest finding is that **those two clauses come apart under measurement**: twelve interventions,
+**five** of which lower the loss — and **four of the five deliver 78–101% of that gain at a single
+loop, where their own mechanism is provably inert**, so they improve the *block*, not the *looping*.
+The fifth wins perplexity by *damaging* loop 1. **Not one widens the useful band; three of the five
+narrow it.** One lever moves the band robustly at zero parameter cost — at 5 of 5 seeds, with the same
+edge decomposition at 2.5M and at 10M tokens — **and does not lower the loss.** Per-token depth demand
+is real, reliable and large, and unreachable by five instrument classes — with a measured reason
+underneath rather than five shrugs (§4.7e), which was then **exposed to refutation and survived**
+(§4.23).
+
+*That last clause is the part of this account I would most want checked, because it is the one where I
+had a stake in the answer: §4.7e is the explanation this report leans on hardest, and `dg_norm` was
+built specifically to be able to overturn it. The falsifier was written at 19:22, before the arm
+existed, and names both outcomes. It has not been touched since.*
 
 **The brief rates this outcome explicitly** — *«отсутствие положительного результата при хорошем
 анализе всех негативных — хороший результат»* — and §0 states the answer in that form.
