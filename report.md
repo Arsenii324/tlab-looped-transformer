@@ -4654,6 +4654,25 @@ Bits/byte, which is the only one of the three metrics that survives a change of 
 | 90M control | 90.0M | 3.6146 | **1.5633** | 37.14 |
 | 90M + norm penalty | 90.0M | 3.5845 | **1.5503** | 36.04 |
 
+**Sanity check nobody had run until 2026-08-23 17:50: what does the shipped model actually write?**
+Every number in this report is a cross-entropy. The task statement warns specifically that agents
+*«запросто возьмут неправильный токенизатор»* — and a vocabulary defect would not show up in any CE
+figure computed with that same vocabulary. Generated from `full_control90_kaggle` at 8 loops through
+the shipped `configs/tokenizer.json`:
+
+> *greedy:* "The history of the United States is a very small and very small and very small. The first
+> thing that I've seen is that I'm not afraid of the fact that I'm afraid of the fact that…"
+>
+> *T=0.8:* "The history of the United States Medical Center contains intimidation for our collective
+> tasks. The objectives for the federal government and their own population can help to provide those
+> who need to make the best possible choice for safe use through…"
+
+**Recognisably English, grammatical, topically anchored to the prompt, with the degenerate repetition
+under greedy decoding that a 9M-parameter model at 90M tokens should show.** This is not a quality
+result and is not offered as one — it is the end-to-end check that weights, vocabulary and decoder
+agree, and it passes. It is also the cheapest defect-detector in the project and it went unrun for
+the entire session.
+
 **A reviewer will compare this to Parameter Golf's best verified entry at ~1.058 bpb, so it is stated
 here with the reason rather than left to be discovered.** That comparison is real and this model
 loses it — but the two are in different regimes, and the gap is mostly not architectural:
