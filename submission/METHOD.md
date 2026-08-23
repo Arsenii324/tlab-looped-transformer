@@ -111,7 +111,7 @@ moved was the band, not the ceiling.
 > advancing the shared random stream at its switch point and sees **different batches** from its dense
 > control for the final ~10% of training (§4.26). Not a bias — both draw i.i.d. from the same shard —
 > **but it is added variance on precisely the comparison whose CE claim was withdrawn for variance.**
-> It does not touch the band result, which reproduces the same two edges at five seeds and two
+> It does not touch the band result, which reproduces the same two edges at six arms and two
 > budgets. *Every other paired comparison in this submission is batch-identical throughout.*
 
 **A second recipe-level lead, and it is n = 1.** Keying the switch to an absolute token count rather

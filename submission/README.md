@@ -69,7 +69,7 @@ measured on unshared stacks, rather than contradicting them.
    and at 10M. On an every-integer sweep of depths 12–32 the annealed arms hold within tolerance over
    **2.1× and 2.0×** as many depths as their controls. It is the only band claim here that is robust to
    the plateau tolerance, resolved to ±1 loop, and replicated across seeds. **It does not lower the
-   loss**; that half of the claim is withdrawn. (`METHOD.md` §2 for the withdrawal and its five seeds;
+   loss**; that half of the claim is withdrawn. (`METHOD.md` §2 for the withdrawal and its six points;
    §4.25c for the sweep.)
 
 Per-token depth demand is real and unreachable, which is the subject of `EARLY_EXIT.md`. The evidence
@@ -162,8 +162,8 @@ against published numbers, which train on roughly 70× the tokens.
 >        --tok /tmp/tlab/tokenizer.json
 > ```
 >
-> **Verify against the *downloaded* copy, not this repo's**, which is the only version of the check
-> that can catch a broken upload.
+> **Verify against the *downloaded* copy, not this repo's.** A broken upload is invisible to a
+> check run against the local files.
 
 The released checkpoint ships with **the vocabulary that produced it** — a mismatch would not raise,
 it would silently report CE ≈ ln(4096) = 8.32 and look like a broken model. So the gate judges against
