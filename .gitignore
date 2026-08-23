@@ -27,3 +27,7 @@ ds_timing/
 !papers/
 !papers/**
 ds_probe/config.yaml
+
+# Author-facing correspondence: rotation reminders, push checklists, and the sec1 stimulus
+# drafts. Never part of the submission -- kept locally, not shipped.
+needs_user/
