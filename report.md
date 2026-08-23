@@ -6653,8 +6653,17 @@ initialisation**. §4.30 measured what *training* does — it collapsed a four-p
 width-independent over 12× in parameters; whether training's further collapse is width-independent is
 untested.** The trained figure at width 448 is 1.52–1.83 (§4.7e).
 
-*Scope: untrained, one seed, one loop count, one layer. The trained comparison would need a second
-width trained to convergence, which is costed in `submission/LIMITATIONS.md` §7 as ~1 h at 2.5M.*
+*Scope: untrained, one seed, one loop count, one layer.*
+
+> **The trained comparison was launched at 23:12 as an explicit follow-up** — `tlab-width-s0`
+> (`bt1osf7htipu0t57puuc`), three in-job arms at hidden **224 / 448 / 896**, 2.5M tokens each, with its
+> falsifier registered in `RUNS.md` before submission: *trained rank staying in ~1.5–1.9 at all three
+> widths* confirms width-independence for the trained collapse too; *rank rising materially with
+> width* means §4.7e's reach shrinks toward this model's size and `submission/SCALE.md` §5 must be
+> weakened. **It cannot land before the 23:59 deadline, so nothing it returns is part of the submitted
+> result**, and it is recorded here as post-deadline work rather than left as a dangling promise.
+> *(The 896 arm is 32.6M parameters — far over the task's 10M cap. It is a diagnostic, not a
+> submission candidate, and no number from it may be reported as a result of this project's model.)*
 
 ## 5. Methods tested to destruction — what was claimed, what was measured, why it broke
 

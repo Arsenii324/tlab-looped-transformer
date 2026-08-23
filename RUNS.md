@@ -813,3 +813,44 @@ deterministic vocabulary locally, verified by `rec_dense_s2` scoring **CE 4.4252
 still passes only if the trained bucketed arm's depth-key effective rank exceeds **~4**, and still
 decides nothing if it does not. *Recorded here rather than applied silently, because improving an
 instrument between registration and harvest is exactly when a threshold tends to drift.*
+
+---
+
+## `tlab-width-s0` (**bt1osf7htipu0t57puuc**, EXECUTING) — registered 2026-08-23 23:12 MSK, BEFORE submission. **A FOLLOW-UP: it lands after the deadline.**
+
+**The question.** §4.31 measured the depth-key rank collapse as **width-independent at
+initialisation** — 2.749 / 2.687 / 2.747 / 2.731 / 2.718 across hidden 224→896, a 12× parameter range.
+§4.30 measured what **training** does to that rank (four projections: 8.818 → 1.74) **at one width**.
+**So the initial collapse is known to be width-independent and the trained collapse is not.**
+`submission/SCALE.md` §5's generalisation claim depends on the trained one.
+
+**Arms — three, one job, in-job paired**, same tied control config, head_dim held at 112 so width is
+what varies. 2.5M tokens each, seed 0, μ_rec 18, `supervise_k=5`, T4.
+
+| arm | hidden | heads / kv | params |
+|---|---|---|---|
+| `wd_224_s0` | 224 | 2 / 1 | 2,726,304 |
+| `wd_448_s0` | 448 | 4 / 2 | 9,064,608 |
+| `wd_896_s0` | 896 | 8 / 4 | **32,579,232** |
+
+> **The 896 arm is 32.6M parameters and therefore far over the task's 10M cap. It is a DIAGNOSTIC
+> arm, not a submission candidate, and no number from it may be reported as a result of this
+> project's model.** Its only job is to say whether the trained rank collapse depends on width.
+
+**Pre-launch gates, verified before submitting:** all three widths instantiate, parameter counts match
+§4.31's table exactly, logits finite at 6 loops; `outputs:` names every file explicitly (§6.0 row 34).
+
+**FALSIFIER, written before any data exists.** Measure each trained arm's depth-key effective rank
+with `src/depth_key_rank.py --val val_datasphere.bin` (DataSphere vocabulary, §4.27).
+
+| outcome | what it decides |
+|---|---|
+| trained rank stays in **~1.5–1.9** at all three widths | **the collapse is width-independent trained as well as at init.** §4.7e and `SCALE.md` §5 generalise as claimed |
+| trained rank **rises materially with width** (say > 2.5 at 896) | **the collapse is partly a small-model effect after all.** §4.7e's reach shrinks to models near this size and `SCALE.md` §5 must be weakened |
+| ranks non-monotonic or an arm fails to train | nothing decided |
+
+**Prediction, on §4.31 plus §4.7e:** *width-independent — I expect 1.5–1.9 at all three.* Recorded so
+it can be wrong.
+
+**Status: this is explicitly a FOLLOW-UP.** It cannot land before 23:59. Whatever it returns is
+**not** part of the submitted result and will be reported as post-deadline work.
