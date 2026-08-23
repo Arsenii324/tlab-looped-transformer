@@ -47,7 +47,7 @@ states the convention). Two mechanisms were run at two settings each, so this ta
 | 10 | **exclusive self attention (XSA)** | **−0.2162 / −0.2633** *(2 seeds, agreeing)* ⚠ | unmoved (s0); **narrows** [8,20]→[8,16] (s1) | **0** |
 | 11a | per-token depth gate, unnormalised | **−0.2950** ⚠ | *(gate saturates — see below)* | +449 |
 | 11b | per-token depth gate, **scale-invariant** | **−0.0012 / +0.0023** *(sign reverses, 2 seeds)* | *n/a — see §5* | +450 |
-| 12 | **supervision annealing** *(loss-side)* | CE **withdrawn at n=4** `[WITHDRAWN-ANNEAL-CE]` | **band widens 4/4 seeds** | **0** |
+| 12 | **supervision annealing** *(loss-side)* | CE **withdrawn at n=4**; a 5th point at 4× budget is **+0.1119** `[WITHDRAWN-ANNEAL-CE]` | **band widens 5/5 seeds**, same decomposition at 2.5M and 10M | **0** |
 
 ### The pattern, which is the report's central finding
 

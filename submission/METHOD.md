@@ -63,14 +63,15 @@ moved was the band, not the ceiling.
 
 > ### ⚠ What annealing does and does not do — the CE half is WITHDRAWN `[WITHDRAWN-ANNEAL-CE]`
 >
-> **Withdrawn at n = 4** by a criterion registered before the data existed. Seeds 0–3 give ΔCE_best
-> −0.0811 / −0.0609 / **+0.0482** / −0.0902; mean −0.0460 sits inside the 0.0541 floor; the paired
-> t-interval **[−0.1478, +0.0558] covers zero.**
+> **Withdrawn at n = 4** by a criterion registered before the data existed, and **a fifth point at 4×
+> the budget has since made it worse**: ΔCE_best is −0.0811 / −0.0609 / **+0.0482** / −0.0902 /
+> **+0.1119**, the last at **10M tokens** in-job (§4.23e). Mean **−0.0144**, inside the 0.0541 floor,
+> spread −0.09 to +0.11.
 >
-> **What survives, at 4 of 4 seeds:** the useful band widens — **+2.5 / +2.5 / +2.5 / +7.2** grid
-> points — **including at seed 2, the seed that reverses the CE claim.** Decomposed into band edges
-> (§4.15), at μ_rec = 18 the **onset does not move at all** (8 → 8) while the **end** goes 16 → 24: the
-> model does not improve further, it **degrades later**.
+> **What survives, at 5 of 5 seeds:** the useful band widens — and **the decomposition is identical at
+> 2.5M and at 10M**: **onset 8 → 8 (unchanged), end 16 → 24, midpoint 11.3 → 13.9** (§4.15, §4.23e).
+> The model does not improve further, it **degrades later**. That the same two edges move the same way
+> across a 4× budget range is the strongest form this claim has.
 >
 > **So the recommendation is: anneal if you want the useful band deeper; do not expect it to lower the
 > loss.**
@@ -93,11 +94,14 @@ rule is stated as a *fraction of steps* while the mechanism is keyed to an *abso
 
 **Shipped:** the 90M **control** — `U[4,32]`, `supervise_k=5`, **no annealing**.
 
-**Stated rather than left to be discovered:** the released checkpoint shares the architecture and
-demonstrates both budgets, but the annealing schedule was established *after* the full-budget runs
-launched, so **no full-budget checkpoint of the annealed recipe exists**. The annealing result rests
-on in-job paired comparisons at 2.5M–30M. A run producing the recommended configuration's own weights
-was launched at 18:33 (`tlab-recmethod-s2`, 2 arms × 10M).
+**Stated rather than left to be discovered:** the annealing schedule was established *after* the
+full-budget runs launched, so **no 90M checkpoint of the annealed recipe exists**. The recommended
+configuration now has weights of its own at **10M** (`rec_sw90_s2_last.pt`, §4.23e), and that run is
+also the recipe's first direct test at its own budget. **It confirms both halves of the
+recommendation, including the unflattering one:** the band widens exactly as at 2.5M (onset 8 → 8,
+end 16 → 24), and CE is **0.1119 nats worse** than its in-job dense control. **So the choice to ship
+the dense control is now evidenced, not merely inherited from launch order** — and there is no case
+for spending remaining quota on a 90M annealed run.
 
 **Why the control and not the norm-penalty arm** (which wins perplexity 37.52 vs 38.86): 88% of the
 penalty arm's loop-gain advantage is **loop-1 damage**, its band narrows [6,17] → [6,14], it is the

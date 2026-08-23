@@ -19,7 +19,9 @@ not of the model.
 > at n = 4** by a criterion registered before the data existed: seeds 2 and 3 gave **+0.0482** and
 > −0.0902, the four-seed mean (−0.0460) sits inside the 0.0541 floor, and the paired t-interval
 > **[−0.1478, +0.0558] covers zero.** **What survives is the depth half** — the useful band widens at
-> **4 of 4 seeds** (+2.5/+2.5/+2.5/+7.2), including at the seed that reverses the CE claim. So the
+> **5 of 5 seeds**, with the *same* edge decomposition (onset 8 → 8, end 16 → 24) at **2.5M and at
+> 10M tokens**, including at the seeds that reverse the CE claim. A fifth CE point at 4× the budget
+> is **+0.1119**, the worst yet. So the
 > mechanism defended below is one that **relocates the useful band at zero parameter cost and does not
 > lower the loss**, and the scale argument should be read as being about that.
 

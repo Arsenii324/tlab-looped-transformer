@@ -45,8 +45,10 @@ two goals and this architecture does not deliver them together.
    block, not the looping.** The fifth is the mirror image: the norm penalty wins perplexity (37.52 vs
    38.86) by *damaging* loop 1 — 88% of its loop-gain advantage is `ΔCE@1 = +0.2263`.
 4. **One lever does move the useful band** — *where the loss is applied* (supervision annealing),
-   at **4/4 seeds** and **zero added parameters** — but its effect on the *ceiling* was withdrawn at
-   n=4 by a criterion registered before the data existed `[WITHDRAWN-ANNEAL-CE]`.
+   at **5/5 seeds**, **zero added parameters**, and with the *same* edge decomposition at 2.5M and at
+   10M tokens (onset 8 → 8, end 16 → 24) — but its effect on the *ceiling* was withdrawn at n=4 by a
+   criterion registered before the data existed, and a fifth point at 4× the budget is the worst yet
+   (**+0.1119**) `[WITHDRAWN-ANNEAL-CE]`.
 5. **Per-token depth demand is real** (oracle headroom 0.20 nats, split-half reliability 0.866
    against a null of 0.0007) **and unreachable** — and we can now say why: **a token's 32 depth keys
    span an effective rank of ~1.6.** There is almost nothing for a mixing or selection mechanism to

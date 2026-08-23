@@ -68,9 +68,11 @@ improves the *block*, not the *looping*: ceiling, not depth, for +4.5% of the pa
 rank 2 it reverses sign. The control that isolates diversity from capacity is running (§4.21b).
 
 **One lever moves the useful band: where the loss is applied.** Supervision annealing — dense for most
-of training, terminal-only for the last ~10% — **relocates the band at 4 of 4 seeds** (+2.5/+2.5/+2.5/
-+7.2 grid points) at **zero parameter cost**. Its effect on the *ceiling* was withdrawn at n=4 by a
-criterion pre-registered before the data existed. So the two halves of "low perplexity **by exploiting
+of training, terminal-only for the last ~10% — **relocates the band at 5 of 5 seeds** at **zero
+parameter cost**, and the edge decomposition is *identical* at 2.5M and at 10M tokens: **onset 8 → 8
+unchanged, end 16 → 24.** Its effect on the *ceiling* was withdrawn at n=4 by a criterion
+pre-registered before the data existed, and a fifth point at 4× the budget is the **worst** yet
+(+0.1119). So the two halves of "low perplexity **by exploiting
 many loops**" come apart under measurement, and that dissociation — documented five separate ways — is
 this report's most-replicated finding.
 
@@ -4304,6 +4306,7 @@ So a moving midpoint can mean either of two independent things, and the report h
 |---|---|---|---|---|
 | μ=18 dense → `sw90`, **seed 0** | **8 → 8** *(unchanged)* | 16 → **24** | 11.3 → 13.9 | −0.0811 |
 | μ=18 dense → `sw90`, **seed 1** | **8 → 8** *(unchanged)* | 16 → **24** | 11.3 → 13.9 | −0.0609 |
+| μ=18 dense → `sw90`, **10M tokens** (§4.23e) | **8 → 8** *(unchanged)* | 16 → **24** | 11.3 → 13.9 | **+0.1119** |
 | μ=18 dense → `sw75`, seeds 0/1 | 8 → 12 | 16 → 24 | 11.3 → 17.0 | −0.0656 / +0.0906 |
 | **μ=40** dense → `sw90` | **16 → 24** *(×1.5)* | 40 → 48 *(×1.2)* | 25.3 → 33.9 | −0.0264 |
 | **μ=40** dense → `sw75` | **16 → 32** *(×2.0)* | 40 → 64 *(×1.6)* | 25.3 → 45.3 | −0.0192 |
@@ -5761,6 +5764,43 @@ at one seed and is not claimed as an established narrowing — it is enough to w
 > fourth costume: *a geometric quantity being small **in cosine** says nothing about the **loss value**
 > of removing it.* Two different spaces treated as one. §4.20, the §4.7e projection confound and this
 > are one mistake wearing three costumes.
+
+### 4.23e The recommended recipe at 4× the budget: the band effect replicates exactly, the CE claim dies harder
+
+`tlab-recmethod-s2` was launched to produce **the recommended configuration's own weights**, which no
+artifact in this project was (§4 of `submission/METHOD.md` states that gap rather than hiding it). It
+ran `rec_dense_s2` and `rec_sw90_s2` **in one job**, **10.0M tokens** — 4× the budget every previous
+annealing seed was measured at — 4,881 steps, 11 evals each, μ_rec = 18.
+
+| arm | CE@1 | best CE | @r | onset | end | mid |
+|---|---|---|---|---|---|---|
+| `rec_dense_s2` (control) | 4.6585 | **4.4907** | 12 | 8 | 16 | 11.3 |
+| `rec_sw90_s2` (annealed) | 4.8212 | **4.6025** | 12 | **8** | **24** | **13.9** |
+
+**Two results, and they point in opposite directions — which is the point.**
+
+**1. The band effect replicates *exactly*, at 4× the budget.** Onset **8 → 8** (unchanged), end
+**16 → 24**, midpoint **11.3 → 13.9**. Compare §4.15's table for seeds 0 and 1 at 2.5M tokens: onset
+8 → 8, end 16 → 24, mid 11.3 → 13.9. **The same decomposition, to the grid point, at 2.5M and at
+10M.** That is now **5 of 5 seeds across a 4× budget range**, and the decomposition says the same
+thing every time: *the model does not improve further, it degrades later.*
+
+**2. The CE claim, already withdrawn at n = 4, gets its worst point yet.** ΔCE_best = **+0.1119** —
+annealing is 0.11 nats *worse* than its own in-job dense control at the recipe's own budget. The five
+ΔCE_best values are now **−0.0811 / −0.0609 / +0.0482 / −0.0902 / +0.1119**, mean **−0.0144**,
+comfortably inside the 0.0541 terminal-only floor, with the spread now running from −0.09 to +0.11.
+`[WITHDRAWN-ANNEAL-CE]` **The withdrawal was correct and this is the strongest evidence for it.**
+
+**What this does to the recommendation, stated plainly because it is the deliverable's own recipe.**
+The recommendation in `submission/METHOD.md` §2 is *anneal if you want the useful band deeper; do not
+expect it to lower the loss.* This run is the first direct test of that sentence **at the budget the
+recipe is written for**, and it confirms both halves — including the unflattering one. **The released
+artifact remains the 90M dense control**, and this is now an evidenced choice rather than an
+accident of launch order: at 10M the annealed arm is 0.11 nats worse.
+
+*It also removes a stated gap: the recommended configuration now has weights of its own
+(`rec_sw90_s2_last.pt`), at 10M rather than 90M. The 90M annealed run was never launched, and with the
+CE result above there is no longer a case for spending the remaining quota on one.*
 
 ## 5. Methods tested to destruction — what was claimed, what was measured, why it broke
 

@@ -2852,3 +2852,28 @@ time the enforcement mechanism has caught a live error rather than a historical 
 third time this project has been saved by holding a second seed, and the first where the *positive*
 survived while the *band* claim died — which is the more instructive shape, because the seductive half
 is the one that held.
+
+## 20:43–20:52 — `tlab-recmethod-s2` lands: the band claim replicates EXACTLY at 4× budget; the CE claim gets its worst point
+
+Harvested `bt1s4mag4kdvsvts536m` (6 files, both `.pt`). In-job, 10.0M tokens, 4,881 steps, 11 evals
+per arm — **4× the budget every previous annealing seed was measured at**.
+
+| arm | CE@1 | best | @r | onset | end | mid |
+|---|---|---|---|---|---|---|
+| `rec_dense_s2` | 4.6585 | **4.4907** | 12 | 8 | 16 | 11.3 |
+| `rec_sw90_s2` | 4.8212 | **4.6025** | 12 | **8** | **24** | **13.9** |
+
+**Band: onset 8→8, end 16→24, mid 11.3→13.9 — identical to seeds 0 and 1 at 2.5M, to the grid
+point.** 5/5 seeds now, across a 4× budget range. The decomposition says the same thing every time:
+the model does not improve further, it degrades later.
+
+**CE: ΔCE_best = +0.1119**, the worst of the five (−0.0811 / −0.0609 / +0.0482 / −0.0902 / +0.1119,
+mean −0.0144). The n=4 withdrawal was right and this is the strongest evidence for it.
+
+**Two gaps close.** (1) The recommended configuration now has weights of its own — `METHOD.md` §4 had
+stated that absence rather than hiding it. (2) The choice to ship the **dense** 90M control is now
+**evidenced at the recipe's own budget** rather than inherited from launch order: at 10M the annealed
+arm is 0.11 nats worse. **There is no longer a case for spending remaining quota on a 90M annealed
+run** — dequeued with the reason recorded.
+
+Propagated to report §0/§4.15/§4.23e, `METHOD.md` §2+§4, `README.md`, `RESULTS.md`, `SCALE.md` §1.
