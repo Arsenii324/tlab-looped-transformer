@@ -76,6 +76,41 @@ result arriving at 04:30.
 
 ## STATUS — full state as of 2026-08-23 13:45 (written against context compaction)
 
+### 0-PRE. POST-COMPACTION GUIDE — written 2026-08-23 17:30, read this FIRST
+
+**You are mid-session on the T-Lab looped-transformer submission. Deadline ~23:30 MSK today.**
+Context was just compacted; the sections below are the durable state. Read in this order:
+
+1. **`reviewer_answers/16_WHOLE_STATE.md`** — the single best summary of where the project stands.
+   Self-contained, supersedes replies 00–15 where they disagree, ends with a 9-item self-check.
+2. **This file, §0–§7b** — operational state, retractions, unknown knowns.
+3. **`TASKS.md`** — the short list of open commitments (only ever shrinks).
+4. **`QUEUE.md`** R1–R60 + S1–S11 — the cumulative reviewer ledger. Nothing is dropped from it.
+
+**Three things that will save you from a mistake in the first ten minutes:**
+- **Three claims were withdrawn today.** Annealing's CE advantage (n=2 → withdrawn at n=4),
+  §4.20's degenerate collapse (a shared-residual artifact), and §3.5's deep half (`tlab-deep-full`'s
+  falsifier fired at mid 22.6). **Do not re-assert any of them** — see §4 below. Earlier
+  `reviewer_answers/` files still contain them and are kept as the visible retraction record.
+- **Nobody has read `report.md` end to end**, including me, across three retractions. That is the
+  largest outstanding risk on the graded artifact (`TASKS.md` T17). A *mechanical* pass was done
+  (duplicate values, summaries overclaiming, cross-grid comparisons, unflagged citations) and found
+  four real defects, all now fixed — but that is not the same as reading it.
+- **Neither the git push nor the HF upload has ever run, and no remote is configured.** Both are the
+  user's call, not yours. `upload_checkpoint.py` was fixed today and dry-run verified but never
+  executed. The fresh-clone dry run passed at 11:00 and the tree has changed a lot since — **re-run
+  it before shipping.**
+
+**Behavioural notes that were earned the hard way today:**
+- Prefix every DataSphere call with `GRPC_DNS_RESOLVER=native`, or it fails with a DNS error that
+  looks like a network outage and is not.
+- A DataSphere job reporting **ERROR** may have completed fine — stderr from pip/wandb marks the job
+  ERROR. **Read the raw stdout before believing the status.** This happened twice today.
+- Local Python is **anaconda base**, not `barannikov-work/.venv` (§7).
+- Before writing any fork's or agent's number into the report, **re-measure it**. Two probes handed
+  to me today paired oracle depths with the wrong tokens; both conclusions happened to survive, by
+  luck of statistic rather than design.
+
 ### 0. If you read one thing
 The deliverable is `report.md` (~3,900 lines, 0 placeholders, §1 reserved for the user). The method is
 **§3.5**. Today's arc was a methodology audit that changed many claims; **every retraction is in
