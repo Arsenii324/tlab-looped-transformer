@@ -21,6 +21,23 @@ prediction. T-Lab test task submission. Run `full_control90_kaggle`, 90.0M token
 Perplexity is **tokenizer-dependent** and this model uses its own 4096-token BPE, so it
 is not comparable across submissions; bits/byte is the figure that survives a change of tokenizer.
 
+## Why this checkpoint, when the report contains a better perplexity
+
+**A reader who finds 37.52 in the report and 38.86 here should know this was a decision, not an
+error.** A norm-penalty arm at the same 90M budget reaches **37.52** perplexity. It is not what ships,
+for four reasons measured rather than asserted:
+
+1. **88% of its apparent loop-gain advantage is loop-1 damage** (`ΔCE@1 = +0.2263`). It wins the
+   loop-gain statistic by making one loop *worse*, not by making depth worth more.
+2. **Its useful band narrows**, [6,17] → [6,14]. On the axis this task actually asks about — value
+   *from many loops* — it is the worse model.
+3. **It is the only arm whose map converges** (ρ = 0.9953 / 0.9915 at loops 32/64), which is the
+   regime the report's §2 argues against on independent evidence.
+4. **It carries a clipping confound the stored artifacts cannot resolve.**
+
+The control has no confound on either axis. See `report.md` §4.6b and §6.0b/D3, and
+`submission/METHOD.md` §4.
+
 ## Files, and why the tokenizer is one of them
 
 - `model.pt` — weights (`torch.load`, `weights_only=False`; contains `model`, `model_cfg`, `train_cfg`)
@@ -56,7 +73,7 @@ Stated because the released models differ in state scale by up to 380x. Any abso
 
 ## Config
 
-`{"vocab_size": 4096, "hidden_size": 448, "n_heads": 4, "n_kv_heads": 2, "head_dim": 112, "intermediate_size": 1344, "layers_per_loop": 3, "n_prelude": 0, "n_coda": 0, "rms_norm_eps": 1e-06, "rope_theta": 10000.0, "max_position_embeddings": 512, "readout_mode": "norm", "convex_gate": false, "explore_noise": 0.0, "explore_anneal": true, "fixed_gate": null, "truncate_bptt": null, "state_renorm": false, "inject_mode": "additive", "depth_init": true, "residual_scale": null, "scale_clock": false, "gate_alpha_init": 0.874, "n_loop_eff": 24, "cond_mode": "none", "cond_lora_rank": 4, "cond_lora_branches": 4, "depth_gate_mode": "none", "kv_window": 1}`
+`{"vocab_size": 4096, "hidden_size": 448, "n_heads": 4, "n_kv_heads": 2, "head_dim": 112, "intermediate_size": 1344, "layers_per_loop": 3, "n_prelude": 0, "n_coda": 0, "rms_norm_eps": 1e-06, "rope_theta": 10000.0, "max_position_embeddings": 512, "readout_mode": "norm", "convex_gate": false, "explore_noise": 0.0, "explore_anneal": true, "fixed_gate": null, "truncate_bptt": null, "state_renorm": false, "inject_mode": "additive", "depth_init": true, "residual_scale": null, "scale_clock": false, "gate_alpha_init": 0.874, "n_loop_eff": 24, "cond_mode": "none", "cond_lora_rank": 4, "cond_lora_branches": 4, "cond_fixed_branch": null, "depth_gate_mode": "none", "xsa": false, "kv_window": 1}`
 
 See the GitHub repo's `report.md` for the full ablation set, the negative results, and the
 failure log (§6.0).

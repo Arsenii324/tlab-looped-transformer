@@ -2877,3 +2877,42 @@ arm is 0.11 nats worse. **There is no longer a case for spending remaining quota
 run** — dequeued with the reason recorded.
 
 Propagated to report §0/§4.15/§4.23e, `METHOD.md` §2+§4, `README.md`, `RESULTS.md`, `SCALE.md` §1.
+
+## 20:52–21:02 — the reviewer's consistency-surface list, worked through
+
+**Read the seven `EXPERIMENTS.md` absences rather than trusting the count.** They are the *same*
+benign seven as at 20:00 — five `trainL*_s1` seed-1 replicates (§4.9 reports the re-zeroed mean curve,
+not the five absolutes) plus `as_10M_sw90` and `sc_final_only_s1` (reported by delta). **No arm from
+tonight is among them**, so there is no selection concern. Confirmed by reading the list, not by
+re-reading the count.
+
+**The r=1-share-vs-budget probe: run, and it does NOT close.** Every paired loss-lowering arm in the
+project sits at **2.5–3.5M tokens** — a 1.4× range against the 36× that separates screening from the
+headline. There is no budget leverage in stored data and no regression is reported. What *is*
+measurable: **loop gain triples with budget** (median 0.1084 at ≤3M over 104 arms, 0.1470 at 3–12M
+over 27, **0.3023** for the 90M control on the dense grid). So "78–101% at r=1" is measured exactly
+where the denominator is smallest. **Written up as §4.24 with both readings live and neither picked.**
+Seed noise on the share is ±7 to ±12 points at fixed budget (XSA 84/91, dc_w3 78/101), which bounds
+what the Kaggle 12M arm can settle.
+
+**New gate: `src/check_crossref.py`.** Nothing verified that a figure quoted in `submission/` equals
+the figure in `report.md` — seven documents citing into a 6,700-line file, both edited concurrently,
+and three of tonight's worst defects lived in that surface. Found 2, both legitimate. One needed the
+gate **run** to confirm: `1.4512` looked wrong against (8.3178−3.9622)/3 = 1.4519, and the gate's own
+output shows it uses the *local* CE 3.9642 → 1.4512. My arithmetic was wrong, the transcription was
+right.
+
+**The n=4 annealing mean −0.0460 now points at the fifth point (−0.0144) at all 5 sites.**
+
+**Stale-header pass:** 21 dated working records bannered → `submission/` + `report.md`. Not bannered:
+three converted paper texts, `task_at_full.md`, `papers/README.md`. Banner says **last committed**,
+not written — git gives a commit date and this project does not invent timestamps.
+
+**§1's authorship banner made unambiguous:** it now says plainly that §1 is *the agent's
+reconstruction from artifacts*, not the author's account of their own reasoning and not a
+transcription of anything the author said.
+
+**HF model card regenerated and re-uploaded** carrying the D3 reasoning: a grader who downloads the
+weights sees 38.86 and finds 37.52 in the report, and the card now says in its own text why the worse
+perplexity ships (88% loop-1 damage, band narrows, only converging arm, clipping confound). It is a
+separate surface from `README.md` and it is the one attached to the artifact.

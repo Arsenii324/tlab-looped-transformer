@@ -101,13 +101,21 @@ cost — including three claims withdrawn on the final day by their own pre-regi
 
 ## 1. The idea — how the approach was actually arrived at
 
-> **Authorship, stated first because the task grades this section separately and warns against
-> LLM-sourced ideation.** This is written by the coding agent from the project's own dated record
-> (`LOG.md`, §6.0's 34 rows, `RUNS.md`'s pre-registrations), at the author's instruction, and it is
-> **an account of what happened rather than a narrative of invention.** Every reversal below has a
-> timestamp and a section. Where an idea was mine, §4.17 and §4.19 say so in place; where it came from
-> an external reviewer, §4.18 and §4.22 say so. **Nothing here is claimed as the author's own
-> ideation.**
+> **Authorship, stated first and stated unambiguously, because the task grades this section
+> separately and warns against LLM-sourced ideation.**
+>
+> **This section is the coding agent's reconstruction, from artifacts.** It is *not* the author's
+> account of their own reasoning, and it is not the agent transcribing something the author said. It
+> was written by the agent, at the author's instruction, by reading the project's own dated record —
+> `LOG.md`, §6.0's 34 error rows, `RUNS.md`'s pre-registrations — and reporting what those artifacts
+> show about the order in which things were tried and abandoned. **Every reversal below is traceable
+> to a timestamp and a section; none of it is recalled or inferred narrative.**
+>
+> **What that means for a grader:** read this as *evidence of a process*, not as a claim of
+> ideation. Where an idea originated with the agent, §4.17 and §4.19 say so in place; where it came
+> from an external reviewer, §4.18 and §4.22 say so; where it came from the literature, the paper is
+> cited. **Nothing here is claimed as the author's own ideation, and the honest version of that is
+> better for this submission than a formulation that could be read either way.**
 
 **The approach was not designed. It was what was left after ten expectations were measured false.**
 

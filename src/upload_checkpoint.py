@@ -153,6 +153,23 @@ prediction. T-Lab test task submission. Run `{name}`, {ckpt.get('tokens', 0)/1e6
 Perplexity is **tokenizer-dependent** and this model uses its own {cfg.vocab_size}-token BPE, so it
 is not comparable across submissions; bits/byte is the figure that survives a change of tokenizer.
 
+## Why this checkpoint, when the report contains a better perplexity
+
+**A reader who finds 37.52 in the report and 38.86 here should know this was a decision, not an
+error.** A norm-penalty arm at the same 90M budget reaches **37.52** perplexity. It is not what ships,
+for four reasons measured rather than asserted:
+
+1. **88% of its apparent loop-gain advantage is loop-1 damage** (`ΔCE@1 = +0.2263`). It wins the
+   loop-gain statistic by making one loop *worse*, not by making depth worth more.
+2. **Its useful band narrows**, [6,17] → [6,14]. On the axis this task actually asks about — value
+   *from many loops* — it is the worse model.
+3. **It is the only arm whose map converges** (ρ = 0.9953 / 0.9915 at loops 32/64), which is the
+   regime the report's §2 argues against on independent evidence.
+4. **It carries a clipping confound the stored artifacts cannot resolve.**
+
+The control has no confound on either axis. See `report.md` §4.6b and §6.0b/D3, and
+`submission/METHOD.md` §4.
+
 ## Files, and why the tokenizer is one of them
 
 - `model.pt` — weights (`torch.load`, `weights_only=False`; contains `model`, `model_cfg`, `train_cfg`)
