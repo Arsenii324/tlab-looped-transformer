@@ -13,6 +13,16 @@ and then against the objection the literature raises instead — which is differ
 of steps — is a schedule on *which loop indices receive gradient*. It is a property of the **loss**,
 not of the model.
 
+> **⚠ Read this section knowing the CE half of the claim was WITHDRAWN.** *Added 20:03; it was
+> missing, and a reader of this document alone would have got a scale argument for a claim whose main
+> half no longer stands.* Supervision annealing's **CE advantage over dense supervision was withdrawn
+> at n = 4** by a criterion registered before the data existed: seeds 2 and 3 gave **+0.0482** and
+> −0.0902, the four-seed mean (−0.0460) sits inside the 0.0541 floor, and the paired t-interval
+> **[−0.1478, +0.0558] covers zero.** **What survives is the depth half** — the useful band widens at
+> **4 of 4 seeds** (+2.5/+2.5/+2.5/+7.2), including at the seed that reverses the CE claim. So the
+> mechanism defended below is one that **relocates the useful band at zero parameter cost and does not
+> lower the loss**, and the scale argument should be read as being about that.
+
 - **No table to outgrow.** There is no fixed-size lookup whose share shrinks as the model widens, and
   nothing whose contribution is diluted by width.
 - **No extra FLOPs.** It supervises *fewer* loops, not more.

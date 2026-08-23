@@ -21,7 +21,8 @@ that failed.**
 | scale clock (feed `log‖h‖` back into conditioning) | reviewer proposal | **+1.36** | state non-finite by loop 39 |
 | gated (diagonal state-space) injection, α = 0.874 | Parcae; *Done Right* | **+0.247** | unmoved |
 | loop-cycled LoRA, rank 2 | MoDr lineage | **+0.094** | unmoved |
-| **loop-cycled LoRA, rank ≥ 4** | MoDr lineage | **−0.086** | **unmoved (5 of 5 pairs)** |
+| **loop-cycled LoRA, rank ≥ 4** | MoDr lineage | **−0.094** ⚠ | **unmoved (5 of 5 pairs)** |
+| **exclusive self attention (XSA)** | arXiv 2603.09078 | **−0.216** ⚠ | **unmoved** ([8,16] both) |
 | radial clamp (inference-time) | Sharma & Vu | ~0 | *relocates* the optimum; ceiling invariant to 0.006 |
 | convex gate / damped sub-stepping | arXiv 2605.23872 | null | unmoved |
 | ε = λ/(N√L) residual scaling | arXiv 2606.18524 | null | unmoved |
@@ -56,6 +57,34 @@ growth. Past the optimum the model's direction of travel is actively harmful, an
 the angular step is what keeps the damage slow. The scale clock is the same lesson from the other
 side: it *forced* the trajectory to keep turning and cost **+1.36 nats**, diverging to non-finite by
 loop 39, with the model *taking* the parameter (‖w‖ = 1.34) rather than declining it.
+
+> ### ⚠ The two rows that LOWER the loss carry caveats, and they belong here, not only in `report.md`
+>
+> *Added 20:03. An earlier version of this table gave both numbers bare. `report.md` §4.21 and the
+> abstract both carry these; this document did not, and a grader may read this **instead of** the
+> report. That is the third instance of the pattern `FAILURES.md` names — a deflation living in one
+> document and not the one being read.*
+>
+> **loop-cycled LoRA (−0.094, n=5 at rank ≥ 4):**
+> 1. **The `rank ≥ 4` restriction is post hoc.** Over all six arms the 95% interval **covers zero**
+>    ([−0.148, +0.023]); rank 2 is **+0.094**, i.e. worse. There is **no dose–response** above the
+>    threshold — rank 8 sits inside rank 4's spread.
+> 2. **It is a capacity result, not a diversity result.** A branch pinned to a single index — identical
+>    parameter count, **zero** diversity — recovers **82%** of the gain in-job (−0.1031 vs −0.1251).
+>    Diversity's own contribution is 18–35% across two independent pins, none of it comfortably
+>    resolvable against the floor.
+> 3. **~90% of the gain is present at `r = 1`**, where the cycling is *logically inert* (verified:
+>    max|diff| = 0.000e+00 at r=1). **It improves the block, not the looping.**
+> 4. It costs **+4.51%** of the parameter budget, so §1's zero-parameter scale argument does not cover
+>    it.
+>
+> **XSA (−0.216, zero parameters):** **one seed, 2.5M tokens**; a second seed is running. **84% of the
+> effect is at `r = 1`** — the same shape. Its outcome was *predicted in advance* from this project's
+> own regularity (CE down, band unmoved), which is why it is reported rather than held back — but this
+> project has withdrawn two claims for exactly the n=1 failure.
+>
+> **Both rows are the dissociation, not exceptions to it:** they lower the loss and move **no band
+> edge**, which is what "improves the block, not the looping" means.
 
 **Exploration during loops — one of the three levers the brief names by name — hurts monotonically.**
 σ = 0.05 / 0.15 / 0.40 → ΔCE **−0.006 / +0.183 / +0.790**, and the optimum never moves off loop 8.
