@@ -160,10 +160,21 @@ deflated claim's number and flags any file carrying the number without its cavea
 **9,064,608 params**, 90.0M tokens. Norm penalty 37.52 but 88% loop-1 damage → **the control ships**.
 
 **THE CENTRAL FINDING, now with four independent instances:**
-> **Every intervention here that lowers the loss delivers 78–101% of its gain at a SINGLE loop, where
-> its own mechanism is inert or irrelevant.** LoRA ~90% · XSA 84% · duo-causal W=3 78–101%.
-> **Not one widens the useful band; duo-causal W=3 narrows it.** The one lever that moves the band
-> (supervision annealing, 4/4 seeds, zero params) **does not lower the loss.**
+> **Every intervention here that lowers the loss delivers 67–101% of its gain at a SINGLE loop, where
+> its own mechanism is inert or irrelevant.** depth gate 96% · XSA 84–91% · LoRA 67–95% ·
+> duo-causal W=3 78–101%. **Not one widens the useful band.**
+>
+> **TWO REVERSALS LANDED LATE — do not restate the older forms:**
+> 1. **The narrowing claims are WITHDRAWN** (§4.25). duo-causal W=3, pin-2 and XSA-seed-0 narrow only
+>    at plateau tolerance 0.01 and vanish at 0.005/0.02. `tol=0.01` is **tighter than the 0.0150
+>    replicate floor**. What survives 3/3: **annealing widens, LoRA unmoved.**
+> 2. **The LoRA positive DIED AT SCALE** (§4.29). 12M in-job: **+0.0077**, worse and inside the floor,
+>    against −0.0936 at 2.5M. **This project has NO replicated CE improvement at scale**, and every
+>    "lowers the loss" is a 2.5–3.5M statement. The band results are unaffected.
+>
+> The one lever that moves the band (supervision annealing) **does not lower the loss** — now at
+> **5/5 seeds**, identical edge decomposition at 2.5M and 10M, robust to halving the tolerance, and on
+> a **dense integer grid** `end 20 → 30` where the sparse grid read `16 → 24` (§4.25c).
 
 **Tonight's arms (all in-job paired, all with the pre-registration in `RUNS.md`):**
 
@@ -189,23 +200,30 @@ diversity raises it by **0.01–0.08**. Untied *keys* 31.83/33 **but untied stat
 
 ---
 
-#### D. STILL RUNNING — ONE JOB (as of 21:03)
+#### D. STILL RUNNING (as of 22:20) — ONE JOB
 
-**Kaggle `arsen4ikvar/tlab-lora-scaleup`** — 2 in-job arms × 12M tok, ETA **~21:52**. Kaggle returns
-output ONLY on completion. **This is the entire budget probe of §4.24** (every paired loss-lowering
-arm in the project is at 2.5–3.5M). Seed noise on the r=1 share is already ±7–12 points at fixed
-budget, so it can show "shifted a lot" or "did not", not how the share scales.
+**DataSphere `tlab-untie-s0` — `bt1anqsjuulfo4061jrd`, EXECUTING.** §4.28's causal test of §4.7e:
+three in-job arms (tied control · `W_K` in 4 loop-index buckets · 4 buckets + the scale-invariant
+gate). **GATES A/B/C are registered in `RUNS.md` before the data existed** — read them before looking
+at any number. GATE A is a *relative* rank comparison (the job returns no tokenizer, and that is
+recorded as a process failure in `RUNS.md`, not hidden).
 
-**All four DataSphere jobs LANDED and are written up** — `duocausal-s0/-s1` (§4.23, §4.23b),
-`xsa-s1` (§4.23d), `recmethod-s2` (§4.23e), `divx-s1` (§4.23c).
+**Everything else has LANDED and is written up.** `duocausal-s0/-s1` (§4.23, §4.23b) · `xsa-s1`
+(§4.23d) · `recmethod-s2` (§4.23e) · `divx-s1` (§4.23c) · **Kaggle `lora-scaleup` (§4.29)** ·
+**A1 dense-grid on the Kaggle annealing pair (§4.25c)** — the 4th arm may still be finishing locally
+(`/tmp/a1_dense.log`, writes `checkpoints/a1_dense_grid_kaggle_seedext.json`).
 
-**Two harvest traps hit tonight, both caught:**
-1. **A grep for a job id returned the WRONG job** (`bt1ps6o5…` is the seed-**0** divx job; the seed-1
-   job is **`bt1attom37m9m5ahnhj5`**). The download looked fine and was numerically identical to an
-   already-harvested job. **Check `train_cfg.seed` on every download.**
-2. **A DS `ERROR` status was cosmetic** — discriminate with
-   `grep "Error while processing file" <dir>/log.txt` and check stdout's last lines for the kernel's
-   own completion banner.
+**THREE HARVEST TRAPS HIT TONIGHT, ALL CAUGHT — check every one:**
+1. **A grep returned the WRONG job id.** `bt1ps6o5…` is the seed-**0** divx job; seed 1 is
+   `bt1attom37m9m5ahnhj5`. The download looked fine and matched an already-harvested job.
+   **Check `train_cfg.seed` on every download.**
+2. **A DS `ERROR` status was cosmetic.** Discriminate with
+   `grep "Error while processing file" <dir>/log.txt` and check stdout's completion banner.
+3. **A local re-eval of a DS checkpoint gave CE 9.27 — above chance.** DS kernels train their own BPE
+   (NFKC + `unk_token` + 5,000 docs) and **return no `tokenizer.json`**. Local eval of a DS checkpoint
+   is impossible. **Kaggle's tokenizer IS byte-identical to the shipped one**, so Kaggle checkpoints
+   *can* be evaluated locally — that is what made §4.25c possible. `src/chance_guard.py` now enforces
+   this for any script.
 
 ---
 
