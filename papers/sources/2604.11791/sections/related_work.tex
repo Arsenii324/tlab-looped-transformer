@@ -1,0 +1,24 @@
+% \textcolor{red}{Here, we ....}
+\paragraph{Looped and Recurrent Transformers}
+
+Reusing the same Transformer block for multiple iterations is an idea that has been explored in the literature. This began with the introduction of Universal Transformers  \cite{dehghani2018universal}, which have also resulted in sparsified and conditional-computation extensions \cite{tan2023sparse,csordas2024moeut}. Other more recent recurrent style architectures with a higher focus on reasoning-style tasks have been HRM \cite{wang2025hierarchical} and TRM \cite{jolicoeur2025less}. Within language modeling, we highlight \raven{} \cite{geiping2025scaling}, \ouro{} \cite{zhu2025scaling}, and Mixture-of-Recursions \citep{bae2025mixture} as models that have been pretrained from random initialization, as well as recent work by \citep{mcleish2025teaching, koishekenov2025encode} that retrofit recurrence into pretrained LLMs.  
+
+In terms of mechanistic studies, we highlight \citet{pappone2025two}, who analyze “two-scale” latent dynamics in recurrent Transformers. However, the setting of their analysis is different from ours: they analyse a model in which each recurrent block comprises either 1 or 2 layers, and the model comprises multiple \emph{separate} recurrent blocks. In this way, the two scales they refer to correspond to the outputs of each iteration of a given recurrent block, and outputs of recurrent blocks when transitioning between different recurrent blocks. We instead study a single looped block with deeper cycles (4+ layers), closer to common looped architectures, and we analyze the internals of these cyclic blocks by examining the latent states of each separate layer. We also highlight work related to looped model expressivity \citep{xu2024expressive, saunshi2025reasoning}, as well as work on neural network stability and fixed-point dynamics \citep{bai2019deep, anil2022path, ke2024advancing, yudin2025pay}. The only work -- of which we are aware -- that analyses the internal states of the cyclic recurrent blocks is \citet{lu2025latent}, who demonstrate cyclic behavior in logit lens prediction throughout recurrent blocks.
+
+
+
+\paragraph{Stages of Inference and Attention Dynamics}
+
+The idea that LLMs organize their feedforward computation into several distinct \textit{stages of inference} was first proposed by \citet{lad2024remarkable}. Building on this, \citet{queipo2025attention} explain the emergence of these stages through the behavior of attention heads, driven by massive activations \citep{sun2024massive}. We also highlight a complementary line of work that analyzes LLM learning dynamics via attention patterns through the lens of \textit{mixing} \citep{barbero2024transformers, arroyo2026a, velivckovic2024softmax, barbero2025llms}, motivated by information propagation challenges originally studied in Graph Neural Networks (GNNs) \citep{cai2020note,alon2020bottleneck,arroyo2025vanishing,hariri2025return,blayney2025glstm}.
+
+\paragraph{Test-time Computation}
+
+Test-time computation broadly refers to giving a model the ability to expend additional computational cycles at inference in proportion to the difficulty of the input, rather than committing to a fixed compute budget for all examples. In this paper, we focus specifically on \emph{recurrence} as a mechanism for scaling computation at test time, as opposed to alternative strategies such as early-exit architectures \cite{schuster2022confident} or continuous thought machines \cite{darlow2025continuous}. Classic approaches to adaptive test-time compute include Adaptive Computation Time \cite{graves2016adaptive} and subsequent probabilistic halting frameworks such as PonderNet \cite{banino2021pondernet}. Building on these foundations, recent work has begun to characterize when additional inference compute actually generalizes beyond training-time budgets \cite{schwarzschild2021can}, how to mitigate failures due to excessive computation (``overthinking'') \citep{bansal2022end}, how to ensure stable dynamics with repeated iteration \citep{bear2024rethinking}, and how looped Transformers can better generalize to out of distribution tasks at test time \citep{mcleish2024transformers}.
+
+
+
+
+
+
+
+

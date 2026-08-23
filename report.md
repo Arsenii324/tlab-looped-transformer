@@ -597,6 +597,35 @@ direction. Only the two arms whose effects exceed their corrections by a wide ma
 
 So the honest reading of this sweep is that **only `state_renorm` is resolved by it.**
 
+> **A published causal ablation supplies a mechanism for this result, and it is the best external
+> support anything in this report has.** *A Mechanistic Analysis of Looped Language Models*
+> (arXiv **2604.11791**) — verified from the tarball
+> (`papers/sources/2604.11791/sections/appendices/additional_soi_results.tex`), macros resolved
+> (`\raven`→Huginn-0125, `\ouro`→Ouro, `\rllama`→Retrofitted Llama):
+>
+> > *"we suggested that the lack of stages of inference in [Huginn-0125] is likely due to the
+> > normalization of the residual stream resulting in massive activations being unable to form. Here
+> > we further support this suggestion by ablating the massive activations from the [Retrofitted
+> > Llama] model (which* **does** *display stages of inference) via zeroing the output of the MLP in
+> > the second layer, which is responsible for its massive activations… the model no longer exhibits
+> > stages of inference comparable to the feedforward model, suggesting that the presence of massive
+> > activations is required for stages of inference to emerge in looped models."*
+>
+> **Read as a mechanism for −0.744 nats:** the inter-loop RMSNorm this project removes is the same
+> construct they identify as suppressing massive activations, and they show *causally* — by ablating
+> the MLP output that produces them — that without massive activations a looped model loses stages of
+> inference. That is a reason for the effect, not merely a correlate, and it is measured on different
+> models at a different scale by different people.
+>
+> **What is cited and what is not.** The **ablation** is cited. The **model attribution** was checked
+> rather than assumed: a reviewer flagged a possible contradiction between this passage and §49 of
+> the same appendix, which attributes post-block residual normalisation to Ouro. **There is no
+> contradiction.** §49's own contrast is with the *retrofitted* models — *"This is not the case for
+> the retrofitted series of models, which lack this norm"* — not with Huginn. Huginn and Ouro both
+> normalise; the retrofitted series does not, which is precisely why it is the arm that shows stages
+> of inference and the one they ablate. Recorded because the caution was right in principle even
+> though the specific tension did not survive reading both lines against the macro definitions.
+
 **The seed spread itself needed the same correction, and it is smaller than this report has been
 claiming.** The raw seed-to-seed figures on the `state_renorm` comparison are −0.744 (seed 0) and
 −0.496 (seed 1), a 0.25-nat range that is quoted throughout this report as the effective noise

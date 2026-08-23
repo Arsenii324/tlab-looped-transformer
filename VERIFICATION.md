@@ -121,3 +121,25 @@ Information-Theoretic Analysis"*. Numbers read from `Tables/1_table_sec4.tex`, q
   states... preserving semantic information without enforcing strict geometric conformity"* (§4)
 Used in §4.18. **No number is quoted that was not read in the source** — the standing rule after the
 73%/85% retraction (§6.0 row 22).
+
+## 2604.11791 — VERIFIED FROM SOURCE 2026-08-23 (arrived mid-session)
+*A Mechanistic Analysis of Looped Language Models.* Extracted to `papers/sources/2604.11791/`.
+Quote from `sections/appendices/additional_soi_results.tex` line 104; macros resolved from
+`looped_llms.tex` lines 553-555 (`\ouro`→Ouro, `\raven`→Huginn-0125, `\rllama`→Retrofitted Llama).
+- **Causal ablation**: zeroing the layer-2 MLP output responsible for massive activations in the
+  Retrofitted Llama removes its stages of inference. Used in §4.1 as a mechanism for −0.744 nats.
+- **Claimed contradiction CHECKED AND REJECTED.** A reviewer flagged line 49 (post-block residual
+  normalisation attributed to Ouro) as contradicting line 104 (Huginn's lack of stages attributed to
+  normalisation). It does not: line 49's contrast is with the *retrofitted* models — "This is not the
+  case for the retrofitted series of models, which lack this norm" — not with Huginn. Both Huginn and
+  Ouro normalise. Verified by reading both lines with macros resolved rather than by relay.
+
+## 2607.27656 (SCSE) — anchor-response construction verified 2026-08-23
+`lvr.tex` §131-137: anchor `h*(e)`, deviation `Δ_t = h_t − h*`, zero-deviation forcing bias
+`b_t(e) := 𝒯_t(0;e)`; "harmful, neutral, or beneficial depending on the readout and loss" — so they
+do NOT claim the bias causes saturation. Implemented as `src/anchor_response.py`, §4.3.
+
+## 2607.10681 — obtained, NOT yet used
+*LayerNorm as Implicit Gain Control in Looped Transformers.* Extracted; relayed as claiming LayerNorm
+scales the Jacobian inversely with activation norm. **The specific claim has NOT been located in the
+source yet**, so nothing in the report cites it. Logged as obtained-but-unverified.
