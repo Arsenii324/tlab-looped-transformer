@@ -48,13 +48,16 @@ norm penalty. The gated-injection row is decisive: its **pre-registered mechanis
 norm penalty — the single arm whose map actually *converges* (ρ < 1), the regime this report argues
 against — and 88% of its apparent loop-gain advantage is loop-1 damage.
 
-**One intervention does lower the loss, reliably, and it is not a dynamics intervention.** Loop-cycled
-LoRA branches — a genuinely different operator at each loop — improve best CE at rank ≥ 4 across four
-in-job pairs spanning three platforms, two seeds and two supervision schedules (mean **−0.086**, 95%
-t-interval [−0.132, −0.039], excluding zero). It is the only CE claim here that survives multi-platform
-replication. **And the useful band does not move in any of the five pairs, not by one grid point** —
-so it buys ceiling, not depth, and it costs +4.5% of the parameter budget as a fixed set of four
-branches, which is the shape the task's own scale warning excludes. At rank 2 it reverses sign.
+**One intervention does lower the loss, reliably — and ~90% of it is present at loop 1, where its
+mechanism is inert.** Loop-cycled LoRA branches improve best CE at rank ≥ 4 across four in-job pairs
+spanning three platforms, two seeds and two supervision schedules (mean **−0.086**, 95% t-interval
+[−0.132, −0.039]) — **though the rank ≥ 4 restriction is post hoc and over all five arms the interval
+covers zero**, and there is no dose–response above the threshold. It is the only CE claim here that
+survives multi-platform replication. **The useful band does not move in any of the five pairs, not by
+one grid point**, Δgain sits inside every measured floor, and **88–95% of each arm's gain is already
+there at `r = 1`, where the branch index is `0 mod 4` and the cycling is logically inert.** So it
+improves the *block*, not the *looping*: ceiling, not depth, for +4.5% of the parameter budget. At
+rank 2 it reverses sign. The control that isolates diversity from capacity is running (§4.21b).
 
 **One lever moves the useful band: where the loss is applied.** Supervision annealing — dense for most
 of training, terminal-only for the last ~10% — **relocates the band at 4 of 4 seeds** (+2.5/+2.5/+2.5/
@@ -4962,7 +4965,27 @@ base weights stay tied.
 **(1) At rank ≥ 4 the CE improvement replicates across everything varied.** Four arms — two ranks (4,
 8), three platforms (MPS, T4, Kaggle), two seeds, and one of them under a different supervision
 schedule (`sw90`) — all negative. Mean **−0.0857**, sd 0.0292, **95% t-interval [−0.1322, −0.0393],
-which excludes zero.** That is the same paired t-test this report used to *withdraw* the annealing CE
+which excludes zero.**
+
+> ### ⚠ THE `rank ≥ 4` RESTRICTION IS POST HOC, AND THE CLAIM DEPENDS ON IT
+>
+> Stated in the same breath as the interval, because it decides it. **Over all five arms the interval
+> covers zero:** mean −0.0498, sd 0.0843, SE 0.0377, **95% t-interval [−0.1545, +0.0549]**. The
+> restriction to rank ≥ 4 is what makes the result significant, and **that threshold was identified
+> after seeing the data, not registered before it.**
+>
+> **This is structurally the same shape as the annealing withdrawal six hours earlier** — n arms, one
+> reverses, the interval straddles zero — with the difference that there the reversing seed was kept
+> and here the reversing arm is excluded. The exclusion is defensible, because **rank is a dose
+> variable and a threshold is a real kind of phenomenon**, not a rescue device: rank 2 is a
+> *different treatment*, not a bad draw of the same one. But it is a judgement made after the fact and
+> it is labelled as one.
+>
+> **And there is no dose–response above the threshold, which is the strongest defence the data could
+> have offered and does not.** Rank 8 (**−0.0733**) sits *inside* rank 4's spread (−0.0514, −0.1011,
+> −0.1172). More rank does not buy more. A monotone rank→effect curve would have made the threshold
+> nearly unarguable; its absence means the honest reading is *"something changes between rank 2 and
+> rank 4, and nothing further changes by rank 8"*, on n = 1 arm at rank 8. That is the same paired t-test this report used to *withdraw* the annealing CE
 claim (§4.17), applied here and passing. Three of the four clear their platform's measured floor
 outright (−0.1011 and −0.0733 against CUDA-dense 0.0150; −0.1172 against the 0.0541 terminal floor);
 the local −0.0514 sits **inside** the MPS floor (0.031–0.068) and is not individually resolvable.
@@ -5041,10 +5064,42 @@ built to do contributes at most 0.012 nats of it, which is inside the floor. The
 training-time effect: routing the final loss through a softmax over all `r` states gives every loop a
 direct gradient path, which is dense supervision by another name (§4.14, §4.16), not depth selection.
 
-The same reading applies to the LoRA arms at 88–95%, with a caveat that keeps it honest: a loop-cycled
-adapter **does** act at `r = 1` (it applies branch 0), so unlike the gate there is no inertness
-argument, and "the effect is not about depth" rests there on the flat Δgain and the unmoved band
-rather than on a proof.
+> ### And the same argument applies to the LoRA arms — which means the positive is NOT about diversity
+>
+> An earlier version of this paragraph said a loop-cycled adapter *"does act at r = 1 (it applies
+> branch 0), so unlike the gate there is no inertness argument."* **That is exactly backwards on the
+> point that matters, and following it through changes what §4.21 is a result about.**
+>
+> At `r = 1` the branch index is `0 mod 4 = 0`: **one branch, applied once.** The adapter is active —
+> the block genuinely has more capacity — but the **cycling is logically inert**, because cycling is a
+> statement about *different operators at different depths* and there is only one depth. Verified
+> directly rather than argued: with LoRA `B` randomised identically in both models, `cond_fixed_branch`
+> and ordinary cycling give **max|diff| = 0.000e+00 at r = 1** and diverge by 1.05 at r = 4.
+>
+> **So when 88–95% of every LoRA arm's ΔCE_best is already present at `r = 1`, ~90% of the effect is
+> attributable to the added capacity and not to operator diversity.** It composes with the other two
+> facts: Δgain is inside every measured floor, and the band is identical to its control in **5 of 5**
+> pairs. Three independent statements, one conclusion — **it improves the block, not the looping.**
+>
+> **The control that settles it is running** (`tlab-diversity-control-s0`, launched 18:53): three
+> in-job arms — control, cycled LoRA r=4, and **LoRA r=4 with the branch index pinned to 0**, which
+> has an *identical parameter count* (9,473,184 both, verified) and **zero diversity**. If the pinned
+> arm recovers the full −0.10, diversity contributes nothing and §4.21 is a capacity result. On the
+> r=1 decomposition above, that is what I expect. *Registered here before the number exists.*
+>
+> **The honest headline sentence is therefore stronger than the one it replaces, not weaker:**
+> *eight interventions; one lowers the loss, replicated across three platforms — and ~90% of that gain
+> is present at loop 1, where the cycling is inert. It improves the block, not the looping. None
+> widens the useful band.* An explained positive is worth more than an unexplained one, and this one
+> lands on the dissociation §8 has been arguing all day.
+>
+> **The objection a reader raises first, and what this project can and cannot say to it.** "+408,576
+> parameters (+4.51%) buying −0.086 nats is just parameter scaling." A published iso-depth loop
+> scaling fit would settle whether −0.086 is more than 4.5% more parameters should buy — and
+> **the relevant paper is not in `papers/sources/`**, so this report does not quote its exponent
+> (§6.0 row 22's rule: no number from a source not read here). What can be said without it: the
+> *pinned-branch control above is the same test done internally*, needs no external constant, and is
+> running.
 
 ### 4.22 The learned depth gate cannot express the hypothesis it was built to test
 
