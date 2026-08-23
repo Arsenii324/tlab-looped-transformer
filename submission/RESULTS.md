@@ -160,14 +160,14 @@ report, and it is not about looping at all.*
 > arms change a band edge**. The paired claims mostly survive that; individual band edges, including
 > the headline `[6,17]`, do not, and are not compared across jobs.*
 
-> **The band claim's edge is now resolved, and the sparse grid had been understating it (§4.25c).**
-> Re-evaluating **both** annealing pairs on **every integer depth 12–32** — possible because Kaggle's
-> saved tokenizer is byte-identical to the shipped one — the controls hold within 0.01 nats over
-> **9 and 8** consecutive depths (ending at **20** and **19**) and the annealed arms over **19 and 16**
-> (ending at **30** and **27**). The sparse grid read the seed-2 pair as `16 → 24`. **The effect is
-> 2.1× and 2.0× the control's width at two seeds — not a two-grid-point artifact, and the sparse grid
-> was understating it.** *Best CE in the same pairs: +0.0350 at one seed, −0.0052 at the other — the
-> withdrawn CE claim's own pattern, at higher resolution.*
+> **The band claim's edge is now resolved at two seeds, and the sparse grid had been understating it
+> (§4.25c).** Re-evaluated on **every integer depth 12–32** — possible because Kaggle's saved
+> tokenizer is byte-identical to the shipped one — the annealed arm holds within 0.01 nats of its own
+> optimum over **19 depths (seed 2, ending at 30)** and **16 (seed 3, ending at 27)**, against its
+> control's **9** and **8**. **~2× the width at both seeds, robust at tolerances 0.005/0.01/0.02, every
+> plateau contiguous.** The sparse grid read the same seed-2 pair as `16 → 24`. *And the dissociation
+> reappears inside these very pairs: ΔCE_best is **+0.0350** and **−0.0052** — twice the useful depth,
+> no better at the ceiling.*
 
 > **The scope condition, stated because it is the strongest objection to the above (§4.24).** **Every
 > one of these paired interventions was measured at 2.5–3.5M tokens** — there is no budget leverage in

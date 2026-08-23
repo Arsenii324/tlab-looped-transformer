@@ -6131,53 +6131,50 @@ would have to run inside a job, and was not.*
 
 ### 4.25c A dense integer grid on the annealing pair — the sparse grid was UNDERSTATING the effect
 
-§4.25b showed a sparse grid loses ~27% of a band's width, and left the residue that the check had only
-been possible on the 90M control, because DataSphere checkpoints return no tokenizer. **That residue is
-now closed by a route that needed no job at all.** `kaggle/main.py` saves its tokenizer beside the
+§4.25b showed a sparse grid loses ~27% of a band's width, and left a residue: the check had only been
+possible on the 90M control, because DataSphere checkpoints return no tokenizer. **That residue is now
+closed by a route that needed no job at all.** `kaggle/main.py` saves its tokenizer beside the
 checkpoint, and the file returned by `tlab-seed-extension` — the job that produced annealing seeds 2
 and 3 — is **byte-identical to `configs/tokenizer.json`** (same md5, 4,096 of 4,096 token-id pairs).
-**So those checkpoints can be evaluated locally**, on an integer grid, with the shipped vocabulary.
+**So those checkpoints evaluate locally**, on an integer grid, with the shipped vocabulary.
 
 *Instrument: every integer depth 12–32, both arms of a pair scored on the identical local validation
-shard with the identical vocabulary, chance guard passed on every curve.*
+shard with the identical vocabulary, chance guard passed on all four curves, every plateau contiguous.*
 
-| arm | best CE | @r | depths within 0.01 of the minimum | end edge |
-|---|---|---|---|---|
-| `kg_dense_s2` (control) | 5.4212 | 12 | 12 … **20** (9 depths) | **20** |
-| `kg_sw90_s2` (annealed) | 5.4562 | 14 | 12 … **30** (19 depths) | **30** |
-| `kg_dense_s3` (control) | 5.2747 | 12 | 12 … **19** (8 depths) | **19** |
-| `kg_sw90_s3` (annealed) | 5.2695 | 15 | 12 … **27** (16 depths) | **27** |
+| seed | arm | best CE | @r | depths within 0.01 of its own minimum | end edge |
+|---|---|---|---|---|---|
+| 2 | `kg_dense_s2` (control) | 5.4212 | 12 | 12 … **20** — 9 depths | **20** |
+| 2 | **`kg_sw90_s2`** (annealed) | 5.4562 | 14 | 12 … **30** — **19 depths** | **30** |
+| 3 | `kg_dense_s3` (control) | 5.2747 | 12 | 12 … **19** — 8 depths | **19** |
+| 3 | **`kg_sw90_s3`** (annealed) | 5.2695 | 15 | 12 … **27** — **16 depths** | **27** |
 
-**On the sparse grid the seed-2 pair reads `end 16 → 24`. On the integer grid it reads `end 20 → 30`,
-and seed 3 reads `19 → 27`.** The annealed arm holds within 0.01 nats of its optimum over **19 and 16
-consecutive integer depths** against its controls' **9 and 8** — **2.1× and 2.0× the control's width,
-at both seeds.** It is not a two-grid-point artifact, and the sparse grid was **understating** the
-effect rather than manufacturing it.
+**Both seeds: the annealed arm is useful over ~2× as many integer depths as its own control** — 9 → 19
+and 8 → 16. **On the sparse grid the same seed-2 pair reads `end 16 → 24`.** The sparse grid was
+**understating** the effect, not manufacturing it.
 
-**And the CE dissociation survives at higher resolution, in the same pairs.** At seed 2 the annealed
-arm's best CE is **worse** (5.4562 vs 5.4212, +0.0350); at seed 3 it is **better by 0.0052** — inside
-the replicate floor, signs disagreeing across seeds. *That is exactly the withdrawn CE claim's own
-pattern, reproduced on a finer grid: the ceiling does not move reliably and the band does.*
+**And it survives the tolerance sweep that killed three other band claims (§4.25):**
 
-**This is the strongest form the annealing depth result has taken**, and it is worth being precise
-about what it does and does not add:
+| tolerance | control width (s2 / s3) | annealed width (s2 / s3) |
+|---|---|---|
+| 0.005 | 5 / 5 | **13 / 12** |
+| **0.01** | 9 / 8 | **19 / 16** |
+| 0.02 | 15 / 13 | **21 / 21** *(both saturate the sweep at 32)* |
 
-- **It resolves the edge.** The objection §4.25b was written against — that any band edge past 16 is
-  resolved to one grid interval — no longer applies to this pair. The edge is now located to **±1
-  loop**, and the two arms differ by **ten integer depths**.
-- **It is consistent with the withdrawn CE claim, which is a check rather than a coincidence.** The
-  annealed arm's best CE is *worse* here (5.4562 vs 5.4212, Δ = +0.0350) — and seed 2 is precisely
-  the seed that reversed the CE claim (+0.0482 in-job). **The dissociation appears again in the same
-  pair: the annealed arm is worse at the ceiling and useful over 2.1× as many depths.**
-- **It does not extend the seed count.** This is seeds 2 and 3 re-evaluated at higher resolution, not
-  new seeds. The band claim remains 5/5 seeds; what changes is that one pair's edge is no longer
-  grid-limited.
+**At every tolerance and both seeds the annealed arm holds its optimum over 1.4–2.6× more depths.**
+*This is the only band claim in the report that is robust to the tolerance **and** resolved to ±1
+loop **and** replicated across seeds.*
+
+**The dissociation reappears inside the same pairs, which is a check rather than a coincidence.**
+ΔCE_best here is **+0.0350** (seed 2) and **−0.0052** (seed 3) — the annealed arm is *not* better at
+the ceiling, and seed 2 is precisely the seed whose in-job CE reversed the claim (+0.0482). **The same
+two arms that are useful over twice as many depths are no better at the bottom of the curve.**
 
 *Scope, stated because it differs from every in-job number in this report: this evaluation uses the
-**local** validation shard, while the in-job curves used the shard the Kaggle job packed. Absolute CE
-is therefore not comparable to the in-job values — but **both arms of each pair are scored on the same
-shard with the same vocabulary**, so the paired comparison is valid, which is the only thing claimed.
-Onset is censored at 12 by the sweep range and is not reported.*
+**local** validation shard while the in-job curves used the shard the Kaggle job packed, so absolute
+CE is not comparable to the in-job values — but **both arms of each pair share shard and vocabulary**,
+which is all the paired comparison needs. Onset is censored at 12 by the sweep range and is not
+reported. At tolerance 0.02 both annealed arms reach depth 32, the top of the sweep, so their width
+there is a **lower bound**.*
 
 ### 4.26 "In-job paired" is batch-identical for every comparison here EXCEPT the annealing ones
 
