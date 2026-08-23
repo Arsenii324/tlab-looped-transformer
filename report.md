@@ -2883,6 +2883,39 @@ as catastrophic in this regime.
 *Registered as a prediction, not reported as a result — this project has not run that arm, and
 §4.7e's rank measurement is what would have to be wrong for it to fail.*
 
+> ### Can anything MAKE the depths distinguishable? The one intervention that provably differs per depth does not.
+>
+> If the family fails because depths are interchangeable, the live question is not "which mixing
+> mechanism next" but **"can the representation be made to support mixing at all?"** There is exactly
+> one arm in this project that changes *the operator itself* at each depth — loop-cycled LoRA
+> branches (§4.21), where consecutive loops apply genuinely different maps. If anything raises the
+> depth-key rank, that should. Measured on the two checkpoints from the **same job and seed**:
+>
+> | | layer 0 | layer 1 | layer 2 |
+> |---|---|---|---|
+> | `od_control` | 1.60 | 1.34 | 1.25 |
+> | `od_lora_r4` | 1.61 | **1.38** | **1.33** |
+>
+> **It raises the effective rank by 0.01 / 0.04 / 0.08 out of 32.** A genuinely different operator at
+> every loop leaves a token's depth keys as interchangeable as before.
+>
+> **That closes the family for a stronger reason than five nulls did.** The failure is not that five
+> instruments were badly chosen; it is that **the representation a looped model builds does not carry
+> per-depth information for any of them to read**, and the obvious fix — make the operators differ —
+> does not create it. It also explains §4.21's shape exactly: LoRA improves CE (−0.10) while moving
+> **neither band edge** and delivering **~90% of its gain at `r = 1`** (§4.21b). *It improves the
+> block, and leaves the depth structure untouched — which is now measured, not inferred.*
+>
+> **What would still be worth running, stated precisely so it is not mistaken for "we could try
+> more":** the open move is not another mixing mechanism but something that **forces** depth-key
+> diversity — a per-loop key transform that is a *function of t* (§3.4-compliant), trained against an
+> explicit diversity objective rather than hoping it emerges. **Nothing in this report tests that**,
+> it is not free (it costs parameters and a training run), and §4.7e's null-at-initialisation says it
+> would be fighting the architecture rather than tuning it. That is the honest boundary: the
+> *readout* side is closed by five instruments, the *cross-position recurrence* side is being tested
+> tonight, the *same-position* side is predicted null from this rank measurement — and the
+> *representation* side is untouched.
+
 > **It also explains the duo-causal interim — and the ORDER matters, so it is stated against
 > myself.** The interim signal (18:52) came **before** this measurement (19:11), so this account is
 > **post hoc with respect to it** and is not evidence for itself. What *is* pre-registered is the read
