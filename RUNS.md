@@ -530,3 +530,23 @@ W=3 ≈ W=2 ≈ W=1, it is not, and that is a more useful negative than one wind
 finish — MAX_SWEEP_SECONDS 4.2h is the internal guard).
 Harvest with `datasphere project job download-files --id <id> --output-dir <dir>`; the checkpoints
 are declared **by explicit filename**, so unlike this morning's job they will actually come back.
+
+## 2026-08-23 18:33 — `tlab-recmethod-s2` (**bt1s4mag4kdvsvts536m**), pre-registered before data
+
+**Purpose: the method §3.5 recommends has no checkpoint. This makes one.** Two in-job arms,
+10M tokens each, seed 2, gt4.1: `rec_dense_s2` (control) and `rec_sw90_s2`
+(`supervise_k_final=1`, `supervise_switch_frac=0.90`). Outputs declare **both `.pt` files by explicit
+name** (§6.0 row 34).
+
+**Verified before launch that the intervention is not inert** — this project has already had one
+annealed run that silently did nothing (§6.0, the 727-second no-op). `effective_k` traced through the
+*generated* driver: total 4,882 steps, switch at 4,393; dense returns k=5 at every step; sw90 returns
+k=5 through step 4,344 and **k=1 from step 4,394**. It engages.
+
+**Pre-registered read.** Primary purpose is the **artifact**, not a CE verdict: `tlab-anneal-scale`
+already ran this comparison in-job at 10M (outcome A, ΔCE_best −0.0764) and returned no weights. So
+(a) the deliverable is `rec_sw90_s2_last.pt` — the first weights of the recommended configuration at a
+non-screening budget; (b) the paired ΔCE_best is a **third budget point** for a claim whose CE half is
+withdrawn at n=4 and is read as such, not as a resolution; (c) the band is read grid-matched against
+its own in-job control. **It is not a perplexity headline** — 10M tokens against the shipped 90M
+checkpoint, ~0.5-0.8 nats behind by this report's own scaling interval, by construction.
