@@ -1496,9 +1496,10 @@ norm range, so it is a property of the shared map rather than of the regime it r
 > Training multiplies the forcing bias by **288×** and **reverses the direction of R_t**: untrained,
 > the realized update outgrows the anchor response; trained, the anchor response outgrows the update.
 > The reader's natural objection — *"is this just what a random pre-norm block does?"* — is answered:
-> **no.** That matters because the other two geometry results this report added today go the other
-> way: the degenerate cross-layer collapse (§4.20) and the logarithmic drift (above) are both present
-> at initialisation and are properties of the architecture. **The anchor response is the one that is
+> **no.** That matters because the logarithmic drift (above) goes the other way — it is present at
+> initialisation and is a property of the architecture, not of training. (§4.20's cross-layer statistic
+> was a third candidate here and has since been **substantially retracted** — it is largely a
+> shared-residual artifact; see that section.) **The anchor response is the one geometry result that is
 > a property of what was learned**, which is why it is the one that can carry an explanatory claim.
 
 *Not promoted to §3.5.* This is explanation, pre-committed to §4.3 in the instrument's own docstring
@@ -1585,8 +1586,9 @@ It still moves 0.18 rad between loops 129 and 384, long after CE has stopped imp
 > it does **not** distinguish a trained model from a random one. What training does is *slow* the
 > drift (0.308 → 0.155), not create or remove it.
 >
-> This is the same lesson as §4.20's degenerate collapse, and it was found the same way — by running
-> the null the instrument needed. §2's rebuttal to the DEQ premise still stands (this model does not
+> This is the same lesson §4.20 taught, and it was found the same way — by running the null the
+> instrument needed. (In §4.20's case the null went further and retracted the finding outright: the
+> cross-layer collapse is largely a shared-residual artifact.) §2's rebuttal to the DEQ premise still stands (this model does not
 > converge, so "computation becomes pointless after convergence" does not bite), but the rebuttal is
 > **architectural, not a property of what was learned**, and the report should not imply otherwise.
 > *(Separately: an ad-hoc ρ measured at the anchor `h₀+e` gives 533 trained / 5.8 untrained — that is
@@ -4790,6 +4792,17 @@ recalled.*
   identical step 43,944 and token count 89,999,360, so that comparison is genuinely paired), and it
   is stated because it is easy to violate accidentally — a local annealing run was mis-specified from
   the other direction on exactly this field, which cost 727s and produced nothing (§6.0 row 32).
+- **`depth_init` is scaled for a loop count nothing was trained at.** The initialisation scales
+  output projections by `1/√(2·n_loop_eff)`, and `n_loop_eff` is a **config constant fixed at 24** in
+  every checkpoint in this project — verified across all of them. The schedules actually run are
+  `U[4,32]` (mean **18**) and `U[32,48]` (mean **40**), so the init constant is off by 1.15× and
+  0.77× respectively from what its own docstring says it should track ("~ mean of train-time loop
+  sampler"). It is applied once at step 0, so the optimizer compensates over training, but early
+  dynamics start from the wrong scaling. **Every in-job comparison in this report is unaffected** —
+  paired arms share the same wrong constant, so it cancels exactly. What it touches is
+  **cross-schedule** comparisons (§4.16b's μ_rec tracking, §4.17's μ=18 vs μ=40 rows), where the two
+  schedules carry different init mismatches. Stated as a limitation rather than corrected, because
+  correcting it would invalidate every checkpoint already measured.
 - **No gradient checkpointing anywhere.** Activations are retained across every loop, which is why
   memory — not compute — is what bounds the deep schedules (§4.16b: μ_rec = 56 and 44 both OOM'd on a
   14.75 GiB card; 40 fits). Checkpointing every recurrent step is what Huginn does, and it would have
