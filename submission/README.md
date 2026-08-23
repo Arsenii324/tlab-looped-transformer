@@ -13,22 +13,32 @@ looks like a cap violation — see "Counting the parameters" below.*
 
 ## The result
 
-The trajectory never converges and saturates anyway. The depths a weight-tied loop visits are
-near-indistinguishable: the 32 key vectors a token produces, one per loop, span an effective rank of
-**~1.6 out of 32**, so attention over them is close to an average with extra steps. We
-built the experiment that would have refuted that and it held at two seeds. And low perplexity and
-useful depth come apart: twelve interventions, five lower the loss, **not one widens the useful
-band**.
+A weight-tied loop visits depths it cannot tell apart. The 32 key vectors a token produces, one per
+loop, span an effective rank of **~1.6 out of 32** — so attention or selection over them is close to
+an average with extra steps, and every mechanism that needs to distinguish depths has nothing to work
+with. We built the experiment that could have refuted that explanation, registered its criterion
+first, and it held at two seeds.
 
-The task asks for low perplexity *by exploiting many loops*. Those two come apart here, and what this
-submission adds is the measured reason. A weight-tied loop has one key projection where an unshared
-stack has one per layer and gets decorrelation for free, so there is almost nothing for a depth-mixing
-or early-exit mechanism to discriminate between. The collapse is present at initialisation, worse
-after training, and **flat across a 12× range in parameters** (§4.31) — so it is not an artifact of
-this model's size. It accounts for the published positives in the depth-mixture family, which are
-measured on unshared stacks, rather than contradicting them.
+That is the measured reason behind the dissociation the brief's question runs into: **twelve
+interventions, five lower the loss, and not one widens the range of loops that stay useful.**
 
-## The answer to the brief, in five sentences
+## What worked
+
+Stated before the failures, because the page after this is mostly failures.
+
+- **Removing inter-loop normalisation: ≈ −0.68 nats**, the largest single effect in the project. The
+  field's default is wrong for this architecture — normalised, the map contracts to a fixed point by
+  loop ~16 and never accrues loop gain at all.
+- **Supervision annealing widens the useful band at 6 of 6 arms, for zero added parameters.** The
+  best-supported result here, and the only one tested across two budgets *and* a tolerance sweep. **It
+  does not lower the loss.**
+- **Finishing the token budget: 0.39–0.42 nats** from 46M → 90M, against 0.002–0.26 for every
+  architectural intervention here. **The data is worth more than any of them.**
+- **Exclusive self attention: −0.2162 / −0.2633** at two seeds, zero parameters. It replicates — but
+  84–91% of it lands at a single loop, so it improves the block rather than the looping, and it is
+  untested at scale.
+
+## The answer to the brief, in six parts
 
 1. **The brief's own diagnosis does not hold here.** It attributes saturation to DEQ-style
    convergence. This model's state never converges: the unit drifts *logarithmically* (R² **0.986** on
@@ -36,27 +46,28 @@ measured on unshared stacks, rather than contradicting them.
    still accumulating between loops 129 and 384). It saturates at loop ~8 regardless. The drift is
    architectural, since an untrained model of the same shape drifts *faster*.
 
-2. **What binds is that the depths are not distinguishable.** A token's **depth keys** — the key
-   vectors it produces at each of the 32 loop depths, which is what any depth-attention or exit rule
-   would have to tell apart — span an effective rank of **~1.6**, present at initialisation and worse
-   after training. The cause is
-   projection asymmetry: an unshared stack manufactures a near-orthogonal key set from a state stream
-   that is *just as collinear* as the tied one (**4.36** vs **1.40** of 33), because each layer owns a
-   `W_K` `[RANK-PROJECTION]`. Measured **flat across hidden 224–896** — 2.73M to 32.58M parameters,
-   spread 0.062, no trend (§4.31). *One arm tried to buy the rank back architecturally: four distinct
-   projections give **8.818/32** at initialisation and **1.74** trained, against a tied control's
-   1.66, so training reproduced the collapse the architecture was changed to avoid. That arm is
-   **n = 1 at 3.5M tokens and it failed its own registered gate** — which required trained rank above
-   ~4 — so the causal question it was built to decide is **undecided**, and this is supporting detail
-   rather than a load-bearing claim (§4.30).*
+2. **Why the depths are indistinguishable, and why it is not a small-model artifact.** The cause is
+   projection asymmetry. An unshared stack builds a near-orthogonal key set out of a state stream that
+   is *just as collinear* as the tied one (**4.36** vs **1.40** of 33) purely because each layer owns
+   its own `W_K`; one shared projection cannot buy that at any width `[RANK-PROJECTION]`. The collapse
+   is present at initialisation, worse after training, and **flat across hidden 224–896** — 2.73M to
+   32.58M parameters, spread 0.062, no trend (§4.31). It accounts for the published positives in this
+   family, which are measured on unshared stacks, rather than contradicting them. *One arm tried to buy
+   the rank back: four distinct projections give **8.818/32** at initialisation and **1.74** trained,
+   so training reproduced the collapse. That arm is n = 1 and it **failed its own registered gate**, so
+   the causal question is undecided and this is supporting detail, not a load-bearing claim (§4.30).*
 
-3. **We built the experiment that would have refuted it, and registered the criterion before the arm
-   existed.** A scale-invariant depth gate that mixes for real, **7.58/8, 14.96/16, 29.84/32**
-   effective loops with zero tokens above 0.99 top-weight, where the project's earlier gate saturated
-   to a hard argmax. The falsifier was written first: *mixes and gains ⇒ the explanation is wrong.* It
-   mixes, and it returns **−0.0012 / +0.0023** at two seeds. A working mixture over a collapsed
-   representation buys nothing. Mixture-over-depths was tested seven ways; every one is null, an
-   instrument failure, or a gain whose own mechanism check failed (`RESULTS.md` §1b).
+3. **The strongest idea we tested was per-token depth mixing, and we built the experiment that could
+   have refuted our own explanation of why it fails.** The idea: different tokens need different
+   amounts of computation, so a model should learn to weight or select among the states its loops
+   produce. Our earlier gate could not test it — it collapsed onto a single loop and mixed nothing.
+   The replacement is scale-invariant, and it genuinely spreads its weight: **given 8 loops it
+   effectively uses 7.58 of them; given 16, 14.96; given 32, 29.84**, and no token puts more than 0.99
+   of its weight on any one loop. **The criterion was registered before the arm existed:** *if it
+   mixes and still gains, our explanation is wrong.* It mixed. It gained **−0.0012 / +0.0023** across
+   two seeds — nothing. A mixture that works, over depths that are not distinguishable, buys nothing.
+   Depth mixing was attacked seven ways in all; every one is null, an instrument failure, or a gain
+   whose own mechanism check failed (`RESULTS.md` §1b).
 
 4. **Twelve interventions. Five lower the loss. Not one widens the useful band**, at any tolerance
    tested. Four of the five put **67–101%** of their gain at a single loop where their own mechanism is
@@ -75,16 +86,15 @@ measured on unshared stacks, rather than contradicting them.
    loss**; that half of the claim is withdrawn. (`METHOD.md` §2 for the withdrawal and its six points;
    §4.25c for the sweep.)
 
-Per-token depth demand is real and unreachable, which is the subject of `EARLY_EXIT.md`. The evidence
-for "real" is the split-half reliability, **0.866** against a null of **0.0007**, and not the
-0.3084-nat oracle headroom, whose two nulls are mis-specified: they destroy the per-token curves'
-smoothness (4.6× rougher) and produce *more* headroom than the real data (**0.3877**, **0.4110**).
-Eight rules across five instrument classes capture at most **0.1%** of it, for the reason in
-sentence 2.
+6. **Per-token depth demand is real and unreachable — the subject of `EARLY_EXIT.md`.** The evidence
+   for "real" is the split-half reliability, **0.866** against a null of **0.0007** — not the
+   0.3084-nat oracle headroom, whose two nulls are mis-specified: they destroy the per-token curves'
+   smoothness (4.6× rougher) and produce *more* headroom than the real data (**0.3877**, **0.4110**).
+   Eight rules across five instrument classes capture at most **0.1%** of it, for the reason in
+   part 2.
 
-The brief states that *«отсутствие положительного результата при хорошем анализе всех негативных —
-хороший результат»*. This submission is largely that: a negative with a measured mechanism, one lever
-that works on the axis it works on, and an account of what was tried and failed.
+A negative result with a measured mechanism, one lever that works on the axis it works on, and an
+account of what was tried and failed.
 
 ## The eight documents
 
