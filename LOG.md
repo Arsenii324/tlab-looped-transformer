@@ -2557,3 +2557,32 @@ asserting.
 untracked on every branch, and I was one edit away from writing a third "recorded as fixed but not
 fixed" row into sec6.0. `git ls-tree` says it is present on `review`. **The instrument was wrong, not
 the repo** -- which is the sec7b first meta-pattern landing on me while I was busy documenting it.
+
+## 2026-08-23 19:23 — duo-causal W=2 COMPLETE at both seeds: a clean null, and my 18:52 interim was WRONG
+
+Both `dc_w2` arms finished (7 evals, step 1707, in-job paired against controls that also finished at
+step 1707 -- checked explicitly, because the `dc_w3` arms sitting in the same log have **1 and 0
+evals** and comparing those to a completed control would have manufactured a +1.1174 "catastrophe").
+
+| seed | ΔCE_best | ΔCE@1 | onset | end | midpoint |
+|---|---|---|---|---|---|
+| 0 | **+0.0093** | +0.0226 | 8 → 8 | 20 → 20 | 12.6 → 12.6 |
+| 1 | **−0.0115** | −0.0221 | 8 → 8 | 20 → 20 | 12.6 → 12.6 |
+
+**The registered falsifier fires: "any effect that appears at one seed and reverses at the other =>
+not reported as a result."** Both magnitudes are inside the 0.0150 CUDA-dense floor, and the band is
+**identical to the digit at both seeds**.
+
+**And I must correct myself.** At 18:52 I read the first eval (step 244, 500k tokens) as *"duo-causal
+is tracking NEGATIVE at both seeds"* -- +0.1632 and +0.0360 -- and used it to argue against spending
+V100 on a deeper version. **At completion the arms converge to a null.** The early signal was
+eval noise on an under-trained arm, exactly the thing sec4.12 warns about (loop gain barely exists at
+500k tokens). I flagged it as interim and said the registered read was at arm end, which is why it
+did not reach the report -- but the *conclusion I drew from it in conversation* (don't spend V100) was
+drawn on noise, and it happens to survive for a different reason: the arm is a null, not a
+regression.
+
+**What this does NOT yet settle:** read (b), `cos(du_t, du_{t-1})`, needs the returned checkpoints
+(~20:30). Until then this is "no CE effect, no band effect" -- and the 19:02 gate says a CE null
+without the cosine is **a null on a mechanism that may not have engaged**, not a null on the
+hypothesis. W=3 is still running and is the dose-response half.
