@@ -102,6 +102,46 @@ show "shifted a lot" or "did not".**
   The floors (0.0150 / 0.0541) come from 2.5M-token replicates. Whether they transfer to 90M is
   assumed, not measured — and every "×the floor" statement inherits that.
 
+## 4b. What two automated adversarial passes actually produced, measured
+
+Worth its own section because it changes how the remaining hours should be spent, and because the
+numbers are unflattering to a workflow this project has now leaned on twice.
+
+**A ten-item adversarial re-derivation ran against `report.md`. I verified every item against the
+artifacts rather than adopting or dismissing it.**
+
+| verdict | items |
+|---|---|
+| **Real defect** | **2** — the `0.798` mislabel (a *distance* called a *depth*), and `LoopedTransformer(Config())` printing 9,065,056 |
+| **Correct confirmation** | 3 — perplexity/bits-per-byte, the −0.744 removal gain, the LoRA per-arm deltas |
+| **Scope error by the auditor** | **5** — comparing a 90M-control number to a 2.5M donor JSON (ρ, the power-law R²), a point value to a five-arm mean (LoRA), a 32-loop dump to a 64-loop bin (the tail fraction), and "verifying" the depth-gate band the report **deliberately excludes** |
+
+**Then a second reviewer triaged that audit, and was wrong on two of the three items it ruled on.**
+It promoted the tail-fraction item to *"serious — the sampling failure you've hit twice tonight"*: the
+27.9% and all four bin means reproduce **to the digit** on the full 524,288-token array, and the
+challenger's 30.93% is a different model at a different cap. It also flagged the effective-rank SVD as
+an unrerun subsample; re-run on all tokens it moves **1.833 → 1.798**, inside its own SEM. Its one
+correct call — that the `0.798` line was worth ten minutes — was correct for the wrong reason: it
+predicted a stale subsample, and the actual defect is a **mislabel** that no rerun would have found.
+
+**The pattern across both passes is the same one `FAILURES.md` names third: a number compared against
+a claim from a different scope.** The auditor did it five times; its reviewer did it twice more. **Two
+of my own forks then independently reached the same two real defects — and one of them got the
+parameter-count *mechanism* wrong in exactly the same way** (it blamed an unconditional allocation;
+`loop_norm` is conditional, and the 448 exists because `Config()`'s **default is the architecture this
+report rejects**).
+
+**What I take from it, and it is not "ignore automated review".** Both real defects were found by an
+automated pass and neither had survived three human end-to-end reads — that is a real return. But the
+flagged-item hit rate is **~20%**, the failure mode is **always** cross-scope comparison, and a
+second-order reviewer did not filter it — it added two more instances. **So the rule is: an automated
+pass is a *generator of checks*, never a source of corrections. Every item costs a re-derivation
+against the artifact, and budgeting one requires assuming four of five will not survive it.**
+
+*This is also the strongest argument in the project for `src/check_crossref.py` and the caveat tokens:
+the errors these passes make are precisely the ones a mechanical scope check can catch, and the errors
+they find are precisely the ones it cannot.*
+
 ## 5. Ablations I would run, in the order I would run them
 
 None of these are launched. Costs are T4-hours.

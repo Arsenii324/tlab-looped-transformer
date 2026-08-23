@@ -5883,10 +5883,14 @@ nats.
 > that removes the confound I blamed. **Pin-0 holds the band; pin-2 narrows it.**
 >
 > *What I got wrong was not the measurement but the scope of the correction: I retracted a claim about
-> pin-2 using evidence about pin-0.* The corrected statement is narrower than the original and
-> narrower than the retraction: **a branch pinned to an index that never trains at `r = 1` buys the
-> largest CE gain in this family and costs a band edge.** Still 2 measurements, 1 in-job — an
-> observation, not a result — but it is no longer explicable as cross-job drift.
+> pin-2 using evidence about pin-0.*
+>
+> **And then §4.25 withdrew the un-retraction too, which makes this three reversals on one
+> observation.** Pin-2's in-job narrowing exists **only at plateau tolerance 0.01** and disappears at
+> 0.005 and 0.02. **The 20:12 retraction was right after all — for a reason neither I nor the
+> objection to it had identified.** The defensible state is: *pin-2's effect on the band is not
+> resolvable by this instrument.* **What is not in doubt is its CE effect**, which is the claim this
+> section is actually about.
 
 ### 4.23d Exclusive self attention: the project's largest positive, replicated — and it narrows the band
 
@@ -6027,7 +6031,10 @@ noise floor — a statistic decided within noise. Its replacement, `plateau(curv
 **tolerance**, and **that tolerance was set to 0.01 once and never varied in this project.** Every band
 claim in this report and in `submission/` is a `tol = 0.01` statement. This section varies it.
 
-*No new compute: `src/plateau.py` over the stored curves at tol ∈ {0.005, 0.01, 0.02, 0.05}.*
+*No new compute: `src/plateau.py` over the stored curves at tol ∈ {0.005, 0.01, 0.02, 0.05}. Reproduce
+the paired half with `python src/plateau_tol_sweep.py`, which writes
+`checkpoints/plateau_tol_sweep.json`; an independent re-run of it at 0.005/0.01/0.02 reproduces every
+row of the table below.*
 
 **Two facts that frame the sweep.** First, **`tol = 0.01` is *tighter* than the measured CUDA-dense
 replicate floor of 0.0150** — the tolerance is smaller than the noise it exists to absorb, which is

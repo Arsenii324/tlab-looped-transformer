@@ -116,6 +116,25 @@ count had been reported as current. **Results were never at risk** — harvestin
 lesson is not "keep noisy safeguards"; it is that removing one is a change with a claim attached, and
 this project's rule for claims applies to it.
 
+## What automated adversarial review produced here, with its hit rate
+
+Two automated passes were run over this project's own artifacts on the final day, and every item was
+re-derived against the raw files rather than adopted. **Ten items flagged; two real defects; five were
+the auditor comparing a number to a claim from a different scope** — a 90M-control figure against a
+2.5M checkpoint's JSON, a point value against a five-arm mean, a 32-loop dump against a 64-loop bin,
+and one "verification" of a band this report **deliberately excludes**. A second reviewer that triaged
+the first added two further scope errors of its own while correctly flagging the one line worth
+checking — for the wrong reason.
+
+**Both real defects were genuine and neither had survived three human end-to-end reads**, so the
+method pays. But the hit rate on flagged items is **~20%**, and the failure mode is monotonous: *the
+same space-mismatch family named above, applied to artifacts instead of geometry.*
+
+**The operating rule that follows: an automated pass is a generator of checks, never a source of
+corrections.** Every item costs one re-derivation, and budgeting for one means assuming four in five
+will not survive it. *That is still cheap relative to shipping a mislabelled statistic in the
+abstract, which is what it caught.*
+
 ## What the process caught, and what caught the process
 
 - **Three claims were withdrawn on the final day by pre-registered falsifiers** — criteria written
