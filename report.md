@@ -391,19 +391,29 @@ sparse subset of loops for most of training and to the final loop only for the l
 > **The range this used to state (~10–25%) was an overclaim, and the wider end fails.** Decomposed
 > against the in-job dense control at both seeds (`anneal_rep2_results.json`, CUDA, 2.5M tokens):
 >
-> | pair | ΔCE_best | ΔCE@1 | verdict |
-> |---|---|---|---|
-> | `sw90` seed 0 | **−0.0811** | **−0.0416** | depth-driven |
-> | `sw90` seed 1 | **−0.0609** | **−0.0277** | depth-driven |
-> | `sw75` seed 0 | −0.0656 | **+0.0185** | damage-driven |
-> | `sw75` seed 1 | **+0.0906** | +0.2629 | **worse on CE_best outright** |
+> Classified by `src/gain_decomp.py`, which is this report's single implementation of the
+> decomposition — *loop-1 share* = what fraction of the gain increase is loop-1 damage rather than
+> the sign of ΔCE@1 alone:
 >
-> Only `sw90` improves the ceiling *and* leaves loop 1 undamaged, and only `sw90` does it at both
-> seeds. `sw75` — the other end of the range the text used to recommend — is damage-driven at one
-> seed and simply worse at the other. **The switch fraction is not a soft dial with a tolerant
-> window; between 0.90 and 0.75 the intervention changes character.** The headline pair (−0.081,
-> −0.061) always was `sw90`; the text generalised it into a range that the measurements do not
-> support.
+> | pair | ΔCE_best | ΔCE@1 | loop-1 share | class |
+> |---|---|---|---|---|
+> | `sw90` seed 0 | **−0.0811** | **−0.0416** | 34% | **BOTH-IMPROVE** |
+> | `sw90` seed 1 | **−0.0609** | **−0.0277** | 31% | **BOTH-IMPROVE** |
+> | `sw75` seed 0 | −0.0656 | +0.0185 | 22% | depth-driven, with a small loop-1 cost |
+> | `sw75` seed 1 | **+0.0906** | +0.2629 | 74% | **BOTH-WORSEN** |
+>
+> **Only `sw90` improves both endpoints, and it does so at both seeds.** `sw75` improves the ceiling
+> at seed 0 while costing loop 1, and is worse on *both* endpoints at seed 1 — so the favourable
+> reading does not survive a seed change there. **The switch fraction is not a soft dial with a
+> tolerant window; between 0.90 and 0.75 the intervention loses its seed-stability.** The headline
+> pair (−0.081, −0.061) always was `sw90`; the text generalised it into a range the measurements do
+> not support.
+>
+> *(Self-correction, recorded because it is the error this instrument exists to prevent: an earlier
+> version of this block labelled `sw75` seed 0 "damage-driven" from the sign of ΔCE@1 alone. The
+> canonical decomposition puts its loop-1 share at 22% — it is mostly a real ceiling improvement with
+> a small loop-1 cost. Classifying by sign rather than by share overstates the case, in the direction
+> that happened to favour the argument being made.)*
 >
 > *Cross-device replication, new 2026-08-23.* A local MPS `sw75` seed-0 run against its own in-job
 > dense control gives **ΔCE_best −0.0514, ΔCE@1 +0.0156** against CUDA's **−0.0656 / +0.0185** —
