@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **validation perplexity** | **38.86** (CE 3.6599) · **bits/byte 1.5829** |
-| **useful-depth band** | **loops 6–17**, on a dense every-integer 1..64 sweep |
+| **useful band** | **loops 6–17**, on a dense every-integer 1..64 sweep |
 | parameters | **9,064,608** (cap 10M) † |
 | training tokens | **89,999,360** (cap 100M) |
 | architecture | Qwen3-style 3-layer block, weight-tied, applied `r` times. No prelude, no coda, no inter-loop norm, additive re-injection, learned `h₀` |
@@ -116,6 +116,19 @@ W = 3; the per-token depth gate unnormalised and scale-invariant — so `RESULTS
 than there are mechanisms. **The unnormalised depth gate is reported as an instrument failure rather
 than a result** (it saturates to a hard argmax and cannot express a mixture at all), which is why it
 is a row but not a claim. Where a count appears in this folder it is this one.
+
+### Three terms, defined once
+
+- **useful band** — the contiguous run of loop counts whose validation CE is within **0.01 nats** of
+  that model's best. Computed by `src/plateau.py`; the report also calls the measured object a
+  *plateau*. **Every band figure is a `tol = 0.01` statement** unless marked otherwise, and §4.25
+  sweeps that tolerance.
+- **replicate floor** — run-to-run variation between *same-config* arms, measured per device and per
+  configuration: **0.0150** (CUDA, dense supervision) and **0.0541** (CUDA, terminal-only). Where this
+  folder says "inside the floor", it means smaller than that. *Both were measured at 2.5M tokens and
+  are applied to 90M claims; `LIMITATIONS.md` §3 says so.*
+- **loop gain** — `CE@1 − CE_best` for one model: how much the looping is worth to it. Distinct from
+  **ΔCE_best**, which compares *two* models at their own optima.
 
 ### Comparability
 

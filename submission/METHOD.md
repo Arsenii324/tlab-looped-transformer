@@ -65,7 +65,7 @@ asks for.
 - **Zero added parameters.** It is a schedule on which loop indices receive gradient.
 
 > **The recommendation in one qualified sentence, placed here rather than after the argument for it.**
-> **Anneal if you want the useful depth band deeper. Do not expect it to lower the loss.** The band
+> **Anneal if you want the useful band deeper. Do not expect it to lower the loss.** The band
 > half holds at **5 of 5 seeds** with the same edge decomposition at 2.5M and at 10M tokens; **the
 > ceiling half was withdrawn at n = 4 and a fifth point at 4× the budget made it worse** (+0.1119,
 > §4.23e). **And the released weights are the *dense* control, not this recipe** — §4 below says why,
