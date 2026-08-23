@@ -86,12 +86,17 @@ class Config:
     cond_mode: str = "none"                # "none" | "lora_cycle" -- loop-cycled LoRA adapters
     cond_lora_rank: int = 4                # rank r for LoRA branches (default: 4)
     cond_lora_branches: int = 4            # number of cycled branches N (default: 4)
-    cond_fixed_branch: bool = False        # THE CONTROL for cond_mode="lora_cycle": allocate all N
-    #   branches (identical parameter count) but always apply branch 0, so the arm has the same added
+    cond_fixed_branch: int | None = None    # THE CONTROL for cond_mode="lora_cycle": allocate all N
+    #   branches (identical parameter count) but always apply branch `cond_fixed_branch`, so the arm
+    #   has the same added
     #   capacity and ZERO operator diversity. Isolates "different operators at different depths" from
     #   "the block got more parameters". Raised by an external reviewer 18:38; §4.21's positive cannot
     #   be attributed to diversity without it, because §4.21b already shows 88-95% of every LoRA arm's
     #   gain is present at r=1 -- where branch = 0 mod N = 0 and the cycling is logically inert.
+    #   PIN INDEX MATTERS: branch 0 is the ONLY branch that receives gradient at loop 1 in the cycled
+    #   arm, and loop 1 is where 88-95% of the effect lives -- so pinning to 0 confounds "capacity,
+    #   not diversity" with "branch 0 is special because it owns loop 1". A NON-ZERO pin (2 here) is
+    #   the clean control: same parameters, zero diversity, and a branch that never trained at r=1.
     depth_gate_mode: str = "none"          # "none" | "state" | "state_norm" -- learned depth gate
     kv_window: int = 1                     # DUO-CAUSAL attention window. 1 = ordinary self-attention.
     #   W > 1: at loop t every layer attends over the K/V of its own inputs from loops t-W+1..t,
@@ -711,7 +716,8 @@ class LoopedTransformer(nn.Module):
                         log_rms0 = torch.log(
                             h.float().pow(2).mean(-1, keepdim=True).sqrt().clamp_min(1e-8)).detach()
                     h_in = self._clock(h_in, h, log_rms0)
-                branch_idx = ((0 if self.cfg.cond_fixed_branch else t)
+                branch_idx = ((self.cfg.cond_fixed_branch
+                               if self.cfg.cond_fixed_branch is not None else t)
                               if self.cfg.cond_mode == "lora_cycle" else None)
                 cur_inputs = [] if W > 1 else None
                 extras = ([[past[i] for past in kv_hist] for i in range(len(self.block.layers))]

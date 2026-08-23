@@ -574,3 +574,30 @@ are different findings and only the second is worth anything.
 **Why this is registered rather than applied afterwards:** both gates can only *disqualify* an arm's
 CE, never rescue it, so writing them down now removes the option of reading a favourable CE from an
 arm whose mechanism is inert. That option is exactly what §6.0 rows 3, 5 and 16 are about.
+
+### 2026-08-23 19:02 — GATE 2 AMENDED: three cases, not two. Still before the duo-causal arms finish.
+
+The 18:51 gate named two outcomes for `cos(du_t, du_{t−1})` — unchanged, or falls. **That is
+incomplete, and the missing case is the most interesting one.** Registered now:
+
+| outcome | reading |
+|---|---|
+| **cos ≈ 0.9999, unchanged** | the block did not use the history it was given. A CE null here is a null on a **mechanism that did not engage**, not on the hypothesis |
+| **cos FALLS** | engaged as intended — the update stopped being a near-constant vector. CE and band are then readable as a test of the hypothesis |
+| **cos RISES above 0.9999** | **engaged and pushed the wrong way** — feeding the block its own recent history made the update *more* self-similar, not less. This is a stronger negative than "no movement" and is the same shape as the scale clock (§4.19): the model takes the mechanism and the trajectory gets worse. It would also *explain* a CE regression rather than just accompanying one |
+
+**Why this matters for the interim already in hand.** At step 244 seed 0's `dc_w2` best sits at
+**r = 4** against the control's **r = 8** — the band moved *inward*, not merely down. Combined with
++0.1632, that is the signature of an intervention making the trajectory settle **sooner**, which is
+what the third case predicts. Registered before the arms end so the third case cannot be adopted
+after seeing which way the cosine went.
+
+**A confound to state whichever way it comes out — this arm may be handicapped rather than refuted.**
+(1) RoPE here is **depth-invariant by construction** (positions are token-indexed, as Think-at-Hard
+specifies), so the extra keys carry **no marker of which depth they came from**; the block must infer
+depth from content alone. A learned per-depth key offset would fix that and costs parameters, which
+this arm deliberately does not spend. (2) Think-at-Hard applies duo-causal as a **fine-tune on a
+pretrained 1.7B backbone with LoRA adapters**, not from scratch at 9M parameters on 3.5M tokens — and
+the pathway has **zero dedicated capacity** here, so the model must repurpose existing weights to use
+it. **A null at this budget therefore bounds "windowed duo-causal, from scratch, at 3.5M tokens, with
+no depth marker and no added parameters" — not the mechanism.**
