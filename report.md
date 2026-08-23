@@ -1900,6 +1900,51 @@ no mixed-depth KV cache is ever built (§4.8 measures that separately). LoopForm
 — a claim about training *with* early exit; this is post-hoc on a frozen model, so the pathology is
 not induced here, but it is what a jointly-trained version would have to handle.
 
+### 4.7a The negative survives releasing the anchor — a matched dense/annealed pair
+
+*The strongest objection to §4.7 was that it was measured on a **dense-supervised** checkpoint.* The
+published account of why exit signals fail in looped models is a property of the *trajectory*: dense
+per-loop supervision pins every intermediate state to the output manifold, so confidence signals are
+near-saturated at every depth and have nothing left to discriminate with. Under that reading an
+**annealed** model — whose intermediate loops are released from the readout for the last quarter of
+training — should have a readable signal. That was the single highest-ranked missing cell in this
+report, and it was blocked because no annealed checkpoint existed (§6.0 row 23: every DataSphere job
+discarded its weights).
+
+`src/run_anneal_local.py` made one. Config **derived from** `sd_dense_k5_s0`'s own checkpoint rather
+than re-typed, so the pair differs in the intervention and nothing else. Both dumped at 32 loops over
+the same 2,048 × 256 frozen sequences = 524,288 scored tokens, split **by sequence** 1024/1024:
+
+| | dense control | annealed (`sw75`) | |
+|---|---|---|---|
+| best fixed depth (chosen on calib) | 10 | **17** | **1.70× deeper** |
+| TEST CE at that depth | 5.5011 | **5.4404** | −0.0607 |
+| TEST CE at loop 1 | 5.6044 | 5.6196 | +0.0152 *(loop-1 damage)* |
+| oracle CE (uses the label) | 5.3003 | 5.2373 | |
+| **oracle headroom** | **0.2008** | **0.2032** | **+1.2% — unchanged** |
+| best label-free rule | bucket(kl) −0.0001 | bucket(dnorm) −0.0003 | |
+| **% of headroom captured** | **0.0%** | **0.1%** | |
+
+**The result is the invariance, not the failure.** Annealing moves useful depth 1.70× deeper and
+improves the achievable CE by 0.061 nats — it demonstrably changes the trajectory. And it leaves the
+**exploitable per-token headroom essentially identical** (0.2008 → 0.2032), still unreadable by all
+four signal families in both threshold and bucket form. Releasing the decodability anchor relocates
+where depth is spent and lifts the ceiling; it does **not** create, enlarge, or expose the per-token
+variation an exiter would need.
+
+**This converts §4.7 from an open question into a closed one.** Before, the negative was compatible
+with "you measured the wrong model" — the literature's own explanation was untested here. Now it has
+been tested against its own prediction and did not hold. The defensible claim strengthens from *depth
+demand is unpredictable in this checkpoint* to **depth demand is unpredictable in both supervision
+regimes, including the one whose intermediate states are explicitly unpinned** — so an exiter needs a
+signal none of these four carry, not a differently-trained model.
+
+*Scope, stated because it bounds the claim.* One seed, 2.5M tokens, `sw75` (not the `sw90` §3.5
+recommends — `sw75` releases the anchor for **longer**, so it is the more favourable setting for the
+trajectory account and its failure there is the stronger direction). The four signal families are the
+same ones §4.7 swept; a fifth signal is not ruled out, and §4.7b's `cv 0.068 vs 0.798` diagnostic says
+what a fifth would have to look like.
+
 ### 4.7b Why no label-free rule works: the trajectories are nearly identical, the optima are not
 
 *Instrument:* `src/cumulative_exit.py` on the 524,288-token exit dump. **Zero compute** — a `cumsum`
