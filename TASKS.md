@@ -13,8 +13,6 @@ Last updated 2026-08-23 ~15:05.
 
 | # | task | from | state |
 |---|---|---|---|
-| T15 | **§4.20's retraction needs propagating** — it was cited as spine material in `reviewer_answers/13` and possibly elsewhere; the 'all layers collapse architecturally' line is retracted (shared-residual artifact) | self, 17:15 | §4.20 itself fixed; check §2/§8/summary boxes |
-| T13 | **§6.0b sentence owed**: `n_loop_eff` fixed at 24 while schedules ran at mean 18/40 (depth_init ratios 1.15x/0.77x). In-job pairs unaffected; cross-schedule comparisons carry it | verified 17:05 | one sentence, not written |
 | T14 | **Learned depth gate** (`gate_scalar` +32 / `gate_state` +14,336) — restored as the best remaining candidate for a positive after correcting the 'E1 is E2's upper bound' error (E1 is a LOWER bound; a global weighting cannot reach a per-token signal) | reviewers x2 | **not launched**, local GPU busy with od arms |
 | ~~T11~~ | **Gemini's `tlab-operator-diversity` DS job errored on `ModuleNotFoundError: tokenizers`** — its `cmd` installs it but `system.log` shows the install never ran. Local run produced only `od_control`. **Decide: relaunch or drop.** Note `lora_cycle` costs +408,576 params (4.51%) and is a fixed per-branch table — if it wins, §3.5's zero-param scale argument does not cover it | Gemini session, 16:23 | **not relaunched** |
 | ~~T12~~ | **`od_lora_r2`/`od_lora_r4`/`od_depth_gate` arms never completed** — the learned depth gate (+448 params) is the one the reviewers twice called the only remaining chance at a positive | Gemini + reviewers | local GPU is free |
@@ -34,6 +32,10 @@ Last updated 2026-08-23 ~15:05.
 | U4 | Any GitHub / HF push. **Note: `git push --tags` or `--mirror` WILL be rejected** — a tag carries 1.83 GB of >100 MB blobs; branches are clean (`OPS.md`) |
 
 ## Closed today (kept one cycle, then deleted)
+
+- **T13** §6.0b now states the `n_loop_eff=24` limitation (in-job pairs unaffected; cross-schedule carry it).
+- **T15** §4.20's retraction propagated to the two sections that cited it as a live architectural finding.
+- **T14** is effectively running as `od_depth_gate` (arm 4/4) — read pre-registered in `RUNS.md` 17:40 with two caveats (uniform-mixture start ≠ control; its plateau is over mixture-window size, not depth).
 
 - **T3 harvested (16:51).** `tlab-anchor-tokenkey` reported ERROR but all 6 arms completed (§6.0's known wandb/pip-stderr-marks-ERROR pattern); results.json recovered. **§4.18 falsifier: partial fail** — onset invariant at 12 across k=5/3/2 as predicted, but band mid 17.0/17.0/19.6, so §4.18 downgraded to shallow-edge-only. **Token-keyed vs fraction-keyed RESOLVED**: token rule wins by −0.2208, ~4× floor, largest supervision effect measured; §3.5 now token-keyed on evidence.
 - **Gemini's two probes reviewed, bug-fixed, re-run, and written up** as §4.8b (oracle cache null) and a §4.8a extension (within-token displacement). Alignment bug logged as §6.0 row 32.
