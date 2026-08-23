@@ -3494,6 +3494,74 @@ control** (table above), which is the strongest evidence in this report for any 
 seeds is still two seeds, and `sw75` shows exactly how a one-seed version of this result would have
 misled. (iii) One model size, one token budget, one μ_rec.
 
+### 4.18 The decodability anchor — one account that unifies five separate results
+
+> **Provenance, stated plainly because the task grades idea-generation separately.** This framing is
+> **not the author's** and is **not offered as the graded idea**. It was proposed by an external
+> reviewer as a post-hoc explanation of results already in this report, and written up here by the
+> coding agent. It is an *interpretation*, not a new measurement: every number below already appears
+> in §4.5, §4.14, §4.16, §4.17 and §4.7a. It earns its place only if it (a) unifies results that were
+> otherwise five unrelated facts, and (b) makes at least one claim that could have come out otherwise.
+> Both are checked below, including the part where it fails.
+
+**The account, in one sentence.** Dense per-loop supervision requires every *supervised* intermediate
+state to be decodable by the tied readout, which acts as an **anchor** holding intermediate states
+near the output manifold; the loop schedule then decides where useful depth sits by deciding how long
+the trajectory is allowed to run *unanchored*.
+
+**What it unifies.** Five results that were separately measured and separately reported:
+
+1. **Density is a threshold at k=1, not a dial** (§4.16). Under the anchor reading this is forced:
+   any `k > 1` anchors at least one interior loop, and the constraint is qualitative rather than
+   graded. There is no "half an anchor". A dial would have refuted this.
+2. **A prelude makes the model depth-inert over [1,96]** while buying 0.355 nats (§4.5). An unshared
+   prelude lets the model reach decodability *without* iterating — it satisfies the anchor at t=0.
+   The section's own phrasing, "it wins the metric by removing the reason to iterate", is this
+   account stated in different words.
+3. **The band tracks trained depth under terminal-only but not under dense** (§4.14, §4.16b): dense
+   0.50–0.71·μ_rec, terminal-only 0.98–1.09·μ_rec. Anchored, the trajectory must stay decodable
+   throughout and settles around half the trained depth; unanchored, it can run to the end.
+4. **Order matters — `rev50` does nothing** (§4.17). Same 50% of training at k=1, placed *first*: the
+   dense phase that follows re-imposes the anchor, and the band returns to baseline.
+5. **Releasing the anchor moves the band and lifts the ceiling, but leaves per-token headroom
+   untouched** (§4.7a, new): 1.70× deeper, −0.061 nats, and oracle headroom 0.2008 → 0.2032.
+
+**The quantitative shape, which is what makes this more than a story.** Reading the four annealing
+arms as *how long the trajectory runs unanchored at the end of training* (`anneal_results.json`,
+2.5M tokens, seed 0, one eval grid):
+
+| terminal-only for | plateau | **mid** | onset | **CE_best** |
+|---|---|---|---|---|
+| 0% *(dense)* | [8,16] | 11.3 | 8 | 5.3418 |
+| **10%** (`sw90`) | [8,24] | 13.9 | 8 | **5.2659** |
+| 25% (`sw75`) | [12,24] | 17.0 | 12 | 5.3061 |
+| 50% (`sw50`) | [12,24] | 17.0 | 12 | 5.3711 |
+| 50% **placed first** (`rev50`) | [8,16] | **11.3** | 8 | 5.5957 |
+
+Three things in one table. **Band depth is monotone non-decreasing in unanchored duration**
+(11.3 → 13.9 → 17.0 → 17.0). **CE is not monotone — it is U-shaped with an interior optimum at 10%**,
+which is what an account with two opposing terms should produce: releasing the anchor buys depth, and
+removing supervision costs training signal. And **the order control lands exactly on dense's band**
+(11.3, onset 8), not somewhere in between — the anchor is re-imposed, not partially retained.
+
+**Where the account FAILS, which is the part worth keeping.** It does not explain §4.7's negative,
+and §4.7a rules out the version of it that tried to. The trajectory reading predicted that unpinning
+intermediate states would make per-token depth demand *readable* — and the matched pair shows oracle
+headroom unchanged (0.2008 → 0.2032) and still 0.0–0.1% capturable. **So the anchor governs where the
+band sits; it says nothing about why per-token depth demand is unpredictable.** Those are two
+different phenomena and this report should not let one framing appear to cover both.
+
+**What would falsify it, and what has not been run.** (a) A *fixed* `g` convex-gate arm that bounds
+‖h‖ without touching supervision should leave the band where dense puts it — §4.10 finds the gate
+null, which is consistent but was not run as an anchor test. (b) The account predicts the band should
+depend on unanchored duration and **not** on which loops are anchored during the dense phase;
+`supervise_k ∈ {2,3,4}` at fixed schedule would test that and **was never run**. (c) It predicts a
+prelude should *reduce* the sensitivity of the band to the switch fraction, since decodability is
+already available at t=0 — untested. **None of these is expensive; none was run, because the account
+was proposed after the compute window closed.** That is the honest status: a framing that post-dicts
+five results and one control, has one clean failure, and has not yet been tested against a prediction
+made before the data.
+
 ## 5. What didn't work
 
 ### 5.0 ε = λ/(N√L) residual scaling — no measurable benefit, and the "optimum shift" was an artifact
