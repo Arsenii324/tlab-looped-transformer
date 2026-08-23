@@ -50,8 +50,8 @@ lever that works on the axis it works on, and an explicit account of what was tr
 
 | file | answers |
 |---|---|
-| **`METHOD.md`** | *«описание финальной архитектуры…»* — **PENDING**: six arms land between 20:00 and 21:45 that bear directly on it (capacity-vs-diversity, the scale-invariant gate, the recommended config's own weights). Writing it now would mean rewriting it. Until it exists, `../report.md` §3.5 is the method of record |
-| **`RESULTS.md`** | **PENDING**, same reason. Headline numbers are in the table above and in `../report.md` §.headline |
+| **`METHOD.md`** | *«описание финальной архитектуры…»* — the architecture, the training recipe, the measurement behind each choice, and how the released artifact differs from the recommendation |
+| **`RESULTS.md`** | headline figures, all twelve interventions with their effects, depth behaviour, and the arms still landing tonight |
 | **`EXPERIMENTS.md`** | *«подробное описание всех экспериментов»* — **all 113 trained arms**, generated from artifacts, with a mechanical coverage check |
 | **`SCALE.md`** | *«почему ваш метод будет работать хорошо и на большем скейле»* — the scale argument and its one weak joint |
 | **`NEGATIVE_RESULTS.md`** | every method tested to destruction, with the mechanism for each failure |
