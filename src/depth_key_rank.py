@@ -32,12 +32,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("ckpt"); ap.add_argument("--loops", type=int, default=32)
     ap.add_argument("--batch", type=int, default=2); ap.add_argument("--seq", type=int, default=128)
+    ap.add_argument("--val", default="val.bin",
+                    help="shard under data/ to probe with. DataSphere checkpoints need\n                         val_datasphere.bin -- their vocabulary is not the shipped one (sec4.27).")
     a = ap.parse_args()
     p = pathlib.Path(a.ckpt); p = p / "last.pt" if p.is_dir() else p
     ck = torch.load(p, map_location="cpu", weights_only=False)
     m = LoopedTransformer(Config(**ck["model_cfg"])); m.load_state_dict(ck["model"]); m.eval()
 
-    val = np.memmap(ROOT / "data" / "val.bin", dtype=np.uint16, mode="r")
+    val = np.memmap(ROOT / "data" / a.val, dtype=np.uint16, mode="r")
     x = torch.from_numpy(val[: a.batch * a.seq].astype(np.int64)).view(a.batch, a.seq)
 
     # capture each DecoderLayer's INPUT at every loop -- that is what k_proj consumes
@@ -88,7 +90,7 @@ def tied_vs_untied(D: int = 33, batch: int = 2, seq: int = 128):
     import numpy as np, torch, torch.nn.functional as F
     from model import LoopedTransformer, Config, DecoderLayer, RotaryEmbedding
     cfg = Config(state_renorm=False)
-    val = np.memmap(ROOT / "data" / "val.bin", dtype=np.uint16, mode="r")
+    val = np.memmap(ROOT / "data" / a.val, dtype=np.uint16, mode="r")
     x = torch.from_numpy(val[: batch * seq].astype(np.int64)).view(batch, seq)
     torch.manual_seed(0); m = LoopedTransformer(cfg); m.eval()
     caps = []
