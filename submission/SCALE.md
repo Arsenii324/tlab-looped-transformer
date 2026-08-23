@@ -20,8 +20,8 @@ not of the model.
 > −0.0902, the four-seed mean (−0.0460) sits inside the 0.0541 floor — **two further points at 4× the budget, −0.0764 and +0.1119, take the six-point mean to −0.0247, still inside it** — and the paired t-interval
 > **[−0.1478, +0.0558] covers zero.** **What survives is the depth half** — the useful band widens at
 > **6 of 6 seeds**, with the *same* edge decomposition (onset 8 → 8, end 16 → 24) at **2.5M and at
-> 10M tokens**, including at the seeds that reverse the CE claim. A fifth CE point at 4× the budget
-> is **+0.1119**, the worst yet. So the
+> 10M tokens**, including at the seeds that reverse the CE claim. Two further CE points at 4× the budget,
+> **−0.0764** and **+0.1119**, leave the six-point mean at **−0.0247**, inside the floor. So the
 > mechanism defended below is one that **relocates the useful band at zero parameter cost and does not
 > lower the loss**, and the scale argument should be read as being about that.
 

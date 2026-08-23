@@ -157,7 +157,7 @@ below rather than quietly deleted.
 | 3 | **LoRA × annealing at 12M** | ~3.1 h | §4.29 withdrew LoRA at scale **for rank 4 under dense supervision**. The largest 2.5M positive combined it with annealing (−0.1172) and **that cell is unmeasured**. §4.17 found these were the only two interventions here that improved *both* endpoints |
 | 4 | **A budget ladder** — one control at 2.5M / 5M / 10M in one job | ~2.2 h | Turns this project's "12× shrinkage" regularity from an **inference across jobs** into a **measurement within one**, which is exactly the assumption §4.24's scope condition rests on |
 | 5 | **One same-config replicate at 90M** | ~9 h | The floor every "×the floor" claim in this report uses is measured at 2.5M and applied at 90M |
-| 6 | **A second width** (e.g. 320 or 640) | ~1 h at 2.5M | §4.7e's mechanism is claimed width-independent and measured at **one width**. §4.28 makes it a dose–response prediction, so a second width is a real test rather than a replication |
+| ~~6~~ | ~~**A second width**~~ | ~~~1 h~~ | **PARTLY DONE.** At *initialisation* the collapse is measured flat across 224–896, a 12× parameter range (§4.31). A three-width **trained** run was launched as a post-deadline follow-up; its 32.6M arm OOM'd, and the two that trained give rank **1.57** and **1.59** — width-independent across 3.3×. **The trained claim at 12× remains open** |
 
 **`tlab-untie-s0` landed at 23:00 and its registered GATE A FAILED**, so **the causal test of §4.7e is
 undecided and is reported that way** — the rank explanation still rests on `dg_norm`'s null, which is
@@ -181,4 +181,4 @@ cannot land is not.*
    whole report.
 3. **An independent re-implementation of `src/eval.py`** — the single point of failure behind every
    number here.
-4. **A second width** — see #6.
+4. **A trained second width at the top of the range** — see #6; initialisation is settled, training is not.

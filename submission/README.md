@@ -115,6 +115,11 @@ account of what was tried and failed.
 
 `../report.md` remains the full evidence base; every document here cites into it by section.
 
+**Русская версия:** [`ru/`](ru/) — **машинный перевод** восьми из девяти документов
+(`EXPERIMENTS.md` не переведён: его таблица генерируется из артефактов). **Авторитетной версией
+являются английские документы в этой папке**; при расхождении верна английская. Все числовые
+значения сверены: 1 255 чисел, множества совпадают.
+
 ## Reading notes
 
 *Housekeeping, placed here rather than above it.*

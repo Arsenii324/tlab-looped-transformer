@@ -297,7 +297,7 @@ report sections named; nothing here is still a placeholder.
 |---|---|---|
 | `tlab-divx-s1` | capacity-vs-diversity, all three arms **in one job**, seed 1 | **LANDED.** Pinned arm **beats** cycled, −0.1470 vs −0.0261. §4.23c |
 | `tlab-xsa-s1` | second seed for the −0.216 | **LANDED.** −0.2633; CE replicates, **band claim withdrawn** |
-| `tlab-recmethod-s2` | the recommended configuration's own weights | **LANDED.** Band 5/5 at 4× budget; CE +0.1119. §4.23e |
+| `tlab-recmethod-s2` | the recommended configuration's own weights | **LANDED.** Band widens at 4× budget (the series is 6/6); CE +0.1119. §4.23e |
 | `tlab-duocausal-s0/-s1` | duo-causal W=2/3 and the scale-invariant depth gate | **LANDED.** §4.23, §4.23b |
 | Kaggle `tlab-lora-scaleup` | does the LoRA positive survive ~5× budget (12M/arm) — the only budget probe of the r=1 pattern (§4.24) | **LANDED. +0.0077 at 12M — it does not (§4.29).** |
 

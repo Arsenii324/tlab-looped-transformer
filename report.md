@@ -11,8 +11,7 @@ Released checkpoint: **https://huggingface.co/Arsen4ikVar/tlab-looped-transforme
 > `configs/tokenizer.json`, which would have made every downloaded checkpoint evaluate at chance
 > ≈ 8.32 (§6.0 rows 20, 26) — **and the identity gate then passed against the DOWNLOADED artifact**,
 > not against the local copy: `|diff| = 0.0020` at loop 1 against a chance level of 8.3178.
-> **Visibility is the author's call**; both repositories are private at the time of writing and go
-> public at submission.
+> **Both repositories are public.**
 >
 > **What the submitted state is, since commits continue after the deadline.** The submission is
 > **`main` as of 23:59 MSK on 2026-08-23**. Anything committed after that timestamp is post-deadline
