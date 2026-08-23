@@ -3890,6 +3890,11 @@ was found in my own data, not predicted.** Sweeping all 49 in-job arm-vs-control
 | μ_rec = 40, `sw90` | −0.0264 | **+0.0749** | **damage-driven** |
 | μ_rec = 40, `sw75` | −0.0192 | **+0.1749** | **damage-driven** |
 
+*Seeds 0/1 above are individually correct — both really did improve at those two seeds. A same-budget
+extension to seeds 2/3 (§3.5) gave +0.0482 and −0.0902: the row-level classification does not
+generalise across seeds, and the CE-advantage claim built on "both-improve at both seeds" is
+withdrawn at n=4. The rows are left as measured.*
+
 **At μ_rec = 18 annealing improves both endpoints; at μ_rec = 40 it buys a small deep-end gain by
 degrading loop 1.** That is the same regime change the norm penalty undergoes between 2.5M and 90M
 tokens (§4.6b) — appearing here along the *schedule* axis instead of the *token* axis. The reading
@@ -3959,10 +3964,12 @@ cross-job and is flagged as such.)*
 > endpoints" reading was one draw, and the interior maximum with it.
 >
 > **What this does and does not touch.** It **retracts** the claim that annealing beats *constant
-> terminal-only* at a deep schedule. It does **not** touch §4.17's main result, which is a different
-> comparison — annealed versus **dense**, at μ_rec = 18, replicated at both seeds (−0.0811, −0.0609)
-> with the plateau identical at 13.9 both times. Nor does it touch §4.16b's finding that terminal-only's
-> useful depth tracks μ_rec, which rests on three schedules with in-job dense controls.
+> terminal-only* at a deep schedule. It is a different comparison from §4.17's annealed-vs-**dense**
+> result at μ_rec = 18 — and that comparison has since had its own retraction (n=4, §3.5: the CE
+> advantage is withdrawn, though the plateau widening at 13.9 both original seeds stands). The two
+> retractions are independent findings, not one propagating into the other; neither rescues nor
+> worsens the other. Nor does either touch §4.16b's finding that terminal-only's useful depth tracks
+> μ_rec, which rests on three schedules with in-job dense controls.
 > **The honest summary at μ_rec = 40 is: annealing and constant terminal-only both put the useful band
 > near 40 loops, and this project cannot separate them.** The reason to still prefer annealing there is
 > the CE cost against *dense*, not against terminal-only.
