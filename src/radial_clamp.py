@@ -114,8 +114,22 @@ def main():
         sn = json.load(dyn_path.open())["state_norm"]
         levels = {f"h{k}": sn[k - 1] / math.sqrt(H) for k in (1, 8, 16)}
     else:
-        print("no dynamics json; falling back to measured-on-the-fly norms", flush=True)
-        levels = {}
+        # This branch used to print "falling back to measured-on-the-fly norms" and then set
+        # levels = {}, which is not a fallback: the clamp loop below iterates over levels, so the
+        # script produced ONLY the unclamped curve, wrote a results file, and exited 0. Neither 90M
+        # checkpoint ships a dynamics json, so running this section's experiment on the released
+        # model was a silent no-op that looked like success. The fallback is now real -- one forward
+        # pass on this checkpoint, which is all the dynamics json was supplying anyway.
+        print("no dynamics json; measuring state norms on the fly from this checkpoint", flush=True)
+        rng0 = np.random.default_rng(0)
+        ix0 = rng0.integers(0, len(val) - seq_len - 1, size=4)
+        x0 = torch.from_numpy(np.stack([val[i:i + seq_len] for i in ix0]).astype(np.int64)).to(device)
+        with torch.no_grad():
+            _, sn_live = model(x0, n_loops=16, return_all_loops=False)
+        levels = {f"h{k}": sn_live[k - 1] / math.sqrt(H) for k in (1, 8, 16)}
+    if not levels:
+        raise RuntimeError("no clamp levels resolved -- refusing to write a results file containing "
+                           "only the unclamped control, which reads as a completed experiment")
     print(f"checkpoint {ckpt_path}  tokens={ckpt.get('tokens')}  H={H}")
     print("clamp levels (RMS): " + ", ".join(f"{k}={v:.2f}" for k, v in levels.items()), flush=True)
 

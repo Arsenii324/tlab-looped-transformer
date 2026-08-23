@@ -1101,7 +1101,60 @@ entirely separate from contraction. It is not operating here, because `‖e‖ =
 out with injection switched off entirely moves the unit state by **0.0063 out of a possible 2** at
 loop 64 (0.0026 at loop 8). Injection is inert at inference in the winning config. The contrast arm
 confirms the mechanism is scale: in `center`, `‖e‖/‖h‖` is 0.031 (23× larger) and switching injection
-off moves the unit state by 0.138 — 22× more. This sat in real tension with §4.1's screening result that `inject_none` is the *worst* arm on the
+off moves the unit state by 0.138 — 22× more.
+
+> **The norm penalty breaks the dilution regime outright, and that is a candidate mechanism for its
+> loop-1 damage** (`src/injection_ratio.py`, prediction and falsifier written into the docstring
+> before running; fixed 4×256 validation batch, identical tokens for all three checkpoints):
+>
+> | checkpoint | ‖e‖ | ‖h₁‖ | **e/h @1** | @8 | @64 |
+> |---|---|---|---|---|---|
+> | 46M no-state-renorm | 2.212 | 1659.5 | 1.33e-03 | 3.44e-04 | 7.86e-05 |
+> | 90M control | 1.504 | 466.6 | 3.22e-03 | 6.66e-04 | 1.31e-04 |
+> | **90M norm-penalty** | 1.573 | **4.379** | **3.59e-01** | **9.49e-02** | **2.09e-02** |
+>
+> The 46M row reproduces this section's own 1.3e-3 → 7e-5 exactly, which is the instrument's null.
+> **In the penalised arm the re-injected input is 36% of the state norm at loop 1** — it is a
+> first-order term, not a rounding error, and it is still 2% of the state at loop 64.
+>
+> The controlled comparison matters and it is clean: **‖e‖ barely moves** (1.504 → 1.573; the
+> penalised model's embedding is if anything slightly *larger*), while ‖h₁‖ collapses 107×
+> (466.6 → 4.379). The penalty acts on the state and does not reach the embedding through the tied
+> head. So the regime change is entirely the state's, and the pre-registered falsifier — "the ratio
+> is ~1e-3 in all three arms, so the penalty scales `e` and `h` together and dilution is scale-free"
+> — did not fire.
+>
+> **The obvious mechanism this suggests is wrong, and it was tested rather than asserted.** The
+> tempting reading is that the penalised model's loop-1 readout decodes a substantially
+> un-processed input — and because the head is *tied to the embedding*, that predicts something
+> specific and cheap to check: loop-1 predictions should collapse toward **copying the current
+> token**. Measured on 8×256 validation positions:
+>
+> | checkpoint | loop | copy-rate | next-token acc | **cos(h₁, e)** | CE |
+> |---|---|---|---|---|---|
+> | 90M control | 1 | 0.0024 | 0.3198 | **−0.0246** | 3.8134 |
+> | 90M norm-penalty | 1 | 0.0005 | 0.2583 | **−0.0712** | 4.1527 |
+> | 46M no-state-renorm | 1 | 0.0005 | 0.2676 | **−0.0308** | 4.0887 |
+>
+> **Refuted.** Copy-rate is ~0.002 in every arm — indistinguishable from nothing — and `cos(h₁, e)`
+> is slightly *negative* everywhere. The state after one block application is nearly **orthogonal**
+> to the embedding, in the penalised arm as much as in the others. So `e` being 36% of ‖h₁‖ by
+> *magnitude* does not make h₁ *point along* `e`; the block's output occupies a different direction
+> at comparable scale, and the readout is not seeing raw input.
+>
+> **What stands, then.** The regime difference is real and measured: injection is a first-order term
+> by norm in the penalised arm and a 10⁻³ rounding error in the other two. Two claims that do **not**
+> follow and are not made: that this explains the **ΔCE@1 = +0.2263** loop-1 damage (88% of that
+> arm's loop-gain advantage, §4.6b), and that dilution has any directional consequence. The loop-1
+> damage remains **unexplained**, and the most natural explanation for it has now been eliminated —
+> which is worth more than the mechanism would have been, because §4.6b's decomposition is what §3.5
+> rests on and it now rests on one fewer untested story. *(The test that suggested itself first — an
+> `inject_none` rollout at loop 1 — is void: `model.py:413` sets `h = h0 + e` unconditionally and
+> `model.py:429` injects only at `t > 0`, so loop 1 is `block(h0+e)` in every arm and `inject_mode`
+> cannot alter it. Recorded because it is the same class of error as §4.1's original "no injection"
+> mislabelling.)*
+
+This sat in real tension with §4.1's screening result that `inject_none` is the *worst* arm on the
 axis: injection appeared to matter a great deal during **training** while being numerically
 irrelevant at **inference**.
 
@@ -1388,6 +1441,17 @@ Clamp levels are taken from this checkpoint's own measured trajectory (‖h₁�
 78.18 / 313.22 / 502.36), not round numbers. **The unclamped control reproduces the published
 `eval.py` curve to `max|diff| = 1.9e-07`**, so the re-implemented loop is not itself the thing being
 measured. 46.0M-token Kaggle checkpoint, 15 batches × 4:
+
+> ⚠ **These absolute levels belong to the 46M checkpoint and must NOT be applied to the shipped
+> model.** Measured norms: the 46M model runs at ‖h₁‖/‖h₈‖/‖h₁₆‖ = 1659/6640/10674, while the
+> shipped 90M control runs at **467/2334/3977** and the norm-penalty arm at **4.4/17.5/28.8**
+> (§4.3). Applying this section's `‖h₈‖` level to the 90M control would *inflate* its state to 2.8×
+> its own natural scale rather than constrain it, and applying it to the penalty arm would inflate by
+> ~380×. **A clamp level is a property of the checkpoint it was read from.** `src/radial_clamp.py`
+> derives levels from the checkpoint it is given, so re-running it is the fix; copying the numbers
+> out of this table is the error. Flagged explicitly because it is the same failure class as the
+> README tokenizer trap in §6.0 — a documented procedure that runs without complaint and silently
+> does the wrong thing to the released artifact.
 
 | loop | unclamped | clamp ‖h₁‖ | clamp ‖h₈‖ | clamp ‖h₁₆‖ |
 |---|---|---|---|---|
@@ -3469,6 +3533,7 @@ someone re-read raw output that a summary line had already reported as fine.*
 | 20 | **The remotely-trained checkpoints shipped without the vocabulary that produced them.** The Kaggle kernel trains its BPE fresh from a stream and wrote only `results.json` + the checkpoint. A vocab mismatch does not raise — it reports CE ≈ ln(4096) = **8.32** — and identity with the local vocab had only ever been *inferred from the eval looking coherent*. | `src/check_tokenizer_identity.py`, written specifically to stop inferring it. Judges vocabulary against **chance** (a mismatch lands at 8.32, not 0.02 away) and protocol drift against the sample's own SEM | **verified PASS on both Kaggle checkpoints** (|diff| 0.045 / 0.043 against |CE−chance|/3 ≈ 1.4), so no number changes — but the kernel now saves `tokenizer.json` alongside the checkpoint, and `configs/tokenizer.json` ships with any released weights. This is the exact failure the task statement names |
 | 23 | **Every DataSphere job silently discarded its trained weights.** The kernels write `OUT_DIR/{run_name}_last.pt`, but a file not listed under `outputs:` in the job config is never returned — and every DS config listed only `results.json`. | noticed only when §4.16c needed the five `train-at-L` checkpoints and none existed locally | **~20 jobs' weights unrecoverable**, including the five train-at-L arms, so §4.16c's angular-budget test could not be extended to them. The Kaggle runs are unaffected (they did declare the `.pt`), which is why every local checkpoint comes from Kaggle or MPS. Fixed in 23 configs going forward; the currently-running artifact job keeps its own config and will also return curves only |
 | 22 | **I "corrected" an external reviewer using a summarised web fetch instead of the primary source, and the correction was wrong.** They relayed that Think-at-Hard reports *"over 73% of next-tokens correctly predicted at the first iteration"*; I checked the arXiv **HTML** through a summarising fetch, got 85%, and told them their figure was wrong — in three separate documents. | the paper's **LaTeX tarball**, obtained later: `3_method.tex` line 206 reads *"over 73\% of next-tokens are correctly predicted at the first iteration"*. 85% appears in the source only as unrelated table cells in the experiments section | **their number was right and mine was not.** Retracted in `VERIFICATION.md` and all three reply files. The lesson is not "web fetches are unreliable" but the sharper one: **a summariser sits between you and the text, and I treated its output as a primary source while telling someone else to be more careful.** Citation claims now require the tarball, which is why `papers/sources/` ships |
+| 24 | **`radial_clamp.py`'s "fallback" was not one: on any checkpoint without a `dynamics_*.json` it set `levels = {}`, printed *"falling back to measured-on-the-fly norms"*, produced only the unclamped control, wrote a results file and exited 0.** Neither 90M checkpoint has that json, so running §4.6's experiment on the **shipped** model was a silent no-op that reads as a completed run. | found while verifying a claim in §4.6 that the script derives levels per-checkpoint — it does, but only down one of the two branches | fallback implemented for real (one forward pass; reproduces the json path to 0.3% — 78.41/313.70/504.30 vs the stored 78.18/313.22/502.36 — which is the instrument's own null), plus a `RuntimeError` refusing to write a results file that contains only the control. **No published number changes**: every clamp number in §4.6 came from the 46M checkpoint, which does have the json |
 | 21 | **My own first version of that gate cried wolf.** It used a fixed 0.02 tolerance on 4 batches — ~1k tokens, whose sampling noise is 0.07–0.11 nats — and FAILED two checkpoints whose vocabulary is provably fine. | the failure was implausible, so the instrument was checked before the checkpoints were | re-specified with two tolerances (vocab-vs-chance, protocol-vs-SEM); a gate that fires on noise is worse than no gate, because it trains you to ignore it |
 | 19 | **A sweep died on its first arm and took the paired control with it** (CUDA OOM at 72 loops). | the job's terminal state | lost the μ_rec=56 pair; a per-arm OOM guard now records the failure in 94s instead |
 
