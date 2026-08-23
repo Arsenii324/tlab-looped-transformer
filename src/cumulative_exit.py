@@ -6,8 +6,10 @@ successive-output KL, and the update-norm ratio ||dh||/||h||. The last of those 
 
 But §4.6 says the object that governs where useful computation ends is the **angular budget** -- the
 CUMULATIVE distance travelled on the unit sphere -- not the size of any one step. Two clamp levels
-agreed on that budget to 0.2% (0.3325 vs 0.3317), and §4.16c since measured it rising 1.4x under
-terminal-only. So the four rules were tested in the wrong coordinates: they read the derivative when
+agreed on that budget to 0.2% (0.3325 vs 0.3317). (§4.16c ALSO reported it rising 1.4x under
+terminal-only; that number is RETRACTED twice over -- correction (a) put it at ~1.2x and correction
+(c) reversed its sign entirely, arc 0.80 against chord 1.20. Nothing in this file's RESULT depends
+on it; only this motivating paragraph did, and it is corrected rather than deleted.) So the four rules were tested in the wrong coordinates: they read the derivative when
 the account says the integral is what matters.
 
     halt(i) = min { k : sum_{t<=k} dnorm[i, t] >= tau }

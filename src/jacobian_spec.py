@@ -59,7 +59,13 @@ def spectral_radius(model, h, e, cos, sin, iters=12, eps_rel=1e-3):
         y = model.block(model._inject(x, e), cos, sin)
         return model.loop_norm(y) if model.loop_norm is not None else y
     base = F(h)
-    v = torch.randn_like(h); v /= v.norm()
+    # SEEDED. The start vector was `torch.randn_like(h)` with no seed, which made every reported rho
+    # irreproducible at the precision the report quoted: three fresh runs of the loop-2 value gave
+    # 1.6578 / 1.6741 / 1.6979 against a published 1.7019 -- a 2.4% spread, with the published value
+    # OUTSIDE the range of all three. Deep values are stable (loop-64: 1.0014-1.0015). The claim
+    # survives (1.70 at loop 2 is far outside the ~9% estimator bias) but the four decimals did not.
+    g = torch.Generator(device="cpu").manual_seed(0)
+    v = torch.randn(h.shape, generator=g).to(h.device, h.dtype); v /= v.norm()
     eps = eps_rel * h.norm() / v.norm()
     s = 0.0
     for _ in range(iters):

@@ -97,10 +97,10 @@ premise implies.** A map converges locally to a fixed point iff its Jacobian's *
 `ρ(∂F/∂h) < 1`. (Not `σ_max < 1` — that is the *sufficient* Banach condition, and a non-normal map
 can have `σ_max > 1` while still converging. The distinction matters here and the instrument was
 mislabelled for it; see §4.3's correction block.) Measured directly by power iteration on the winning
-configuration (§4.3): **1.7019 / 1.0471 / 1.0047 /
-1.0015 at loops 2 / 8 / 32 / 64** — above 1 at every depth, approaching neutrality from
+configuration (§4.3): **1.6227 / 1.0460 / 1.0049 /
+1.0013 at loops 2 / 8 / 32 / 64** — above 1 at every depth, approaching neutrality from
 above and never crossing it. **Read with the estimator's known upward bias (~9% on a defective
-operator), only the low-loop readings are decisive: ρ = 1.70 at loop 2 is far outside any bias, while
+operator), only the low-loop readings are decisive: ρ = 1.62 at loop 2 is far outside any bias, while
 1.0015 at loop 64 is inside it and cannot be distinguished from exactly 1.** So the defensible form
 is *no convergence in the regime where the loops are doing work*, not an asymptotic claim. The model
 is *not* contracting anywhere in that regime, on the metric
@@ -395,12 +395,18 @@ sparse subset of loops for most of training and to the final loop only for the l
 > decomposition — *loop-1 share* = what fraction of the gain increase is loop-1 damage rather than
 > the sign of ΔCE@1 alone:
 >
-> | pair | ΔCE_best | ΔCE@1 | loop-1 share | class |
+> | pair | ΔCE_best | ΔCE@1 | \|ΔCE@1\| / (\|ΔCE@1\|+\|ΔCE_best\|) | class |
 > |---|---|---|---|---|
 > | `sw90` seed 0 | **−0.0811** | **−0.0416** | 34% | **BOTH-IMPROVE** |
 > | `sw90` seed 1 | **−0.0609** | **−0.0277** | 31% | **BOTH-IMPROVE** |
-> | `sw75` seed 0 | −0.0656 | +0.0185 | 22% | depth-driven, with a small loop-1 cost |
+> | `sw75` seed 0 | −0.0656 | +0.0185 | 22% | depth-driven, small loop-1 cost |
 > | `sw75` seed 1 | **+0.0906** | +0.2629 | 74% | **BOTH-WORSEN** |
+>
+> *Column 4 is a magnitude ratio, not a decomposition of Δgain, and an earlier version of this block
+> called it "loop-1 share" — which is the same mislabel class as `sigma_max`/ρ. `gain_decomp.py`
+> computes `|d1|/(|d1|+|db|)`; that equals loop-1's fraction of Δgain **only when the two have
+> opposite signs**. On the two `sw90` rows loop 1 **improved**, so "34%" is the relative size of two
+> favourable movements, NOT a share of damage. The class column is what carries the meaning here.*
 >
 > **Only `sw90` improves both endpoints, and it does so at both seeds.** `sw75` improves the ceiling
 > at seed 0 while costing loop 1, and is worse on *both* endpoints at seed 1 — so the favourable
@@ -531,7 +537,7 @@ argument rather than a list:**
 > §4.16, §4.16b, §4.17). Three independent interventions on how the state *traverses* — inference-time
 > radial clamping (§4.6), convex gating (§4.10), and `ε=λ/(N√L)` residual scaling (§5.0) — relocate the
 > optimum **without raising the ceiling**, and the map does not contract in the regime where the loops do work
-> (**ρ**, not σ_max — §6.0 row 25: **1.7019 at loop 2**, far outside the estimator's ~9% upward
+> (**ρ**, not σ_max — §6.0 row 25: **1.6227 at loop 2**, far outside the estimator's ~9% upward
 > bias; the loop-64 reading of 1.0015 is *inside* it and is not distinguishable from 1, §4.3), so
 > **saturation here is not convergence.**
 
@@ -1232,10 +1238,20 @@ at the actual trajectory points, ε scaled to the local state norm (`src/jacobia
 
 | loop | `no_state_renorm` **ρ** | `center` **ρ** |
 |---|---|---|
-| 2 | **1.7019** | 0.8230 |
-| 8 | **1.0471** | 0.8163 |
-| 32 | **1.0047** | 0.8223 |
-| 64 | **1.0015** | 0.8040 |
+| 2 | **1.6227** | 0.8228 |
+| 8 | **1.0460** | 0.8237 |
+| 32 | **1.0049** | 0.8193 |
+| 64 | **1.0013** | 0.8197 |
+
+> **These values are re-measured with a SEEDED power-iteration start vector, and the previously
+> published ones were not reproducible at the precision they were quoted to.** The start vector was
+> `torch.randn_like(h)` with no seed. Three fresh unseeded runs of the loop-2 value gave **1.6578 /
+> 1.6741 / 1.6979** against a published **1.7019** — a 2.4% spread with the published figure *outside
+> the range of all three*. Seeded, the loop-2 value is **1.6227**, identical across three runs. Deep
+> values were always stable (loop-64: 1.0013–1.0015). **The claim is unaffected** — 1.62 at loop 2 is
+> far outside the estimator's ~9% bias — but four decimals on an unseeded stochastic estimator was
+> false precision, and the direction of the error flattered the result. Found by a traceability audit
+> that re-ran the instrument rather than reading its output.
 
 **The claim survives on the strict definition** — `ρ > 1` at every loop for the winning config,
 `< 1` uniformly for `center` (**ρ**, not σ_max; see the correction block below). But the precise form is worth correcting: σ_max **decays monotonically
@@ -1287,7 +1303,7 @@ growth with a roughly constant step.
 >
 > **What must NOT be read from this.** The 1.0015 / 1.0020 readings at loop 64 are *inside* the
 > estimator's upward bias and cannot be distinguished from exactly 1. **"Does not converge" is
-> established at low loop counts (ρ = 1.70–2.29 at loop 2, far outside any bias) and is NOT
+> established at low loop counts (ρ = 1.62–2.29 at loop 2, far outside any bias) and is NOT
 > established at loop 64.** §2's "saturation without convergence" should be read as a statement about
 > the regime where the loops are doing work, not as an asymptotic claim. Power iteration also
 > oscillates rather than converging for a complex-dominant eigenvalue, which 12 iterations cannot
