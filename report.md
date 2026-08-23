@@ -2859,8 +2859,13 @@ by construction: the same block applied twice produces near-identical keys, and 
 of the training run but the definition of weight tying. *Registered here as a prediction, not
 reported as a result — this project has not run that arm.*
 
-> **It also predicts the duo-causal interim, which is worth stating because the prediction preceded
-> the explanation.** Feeding the block keys from loops `t−2…t−1` hands it keys that are ~0.97
+> **It also explains the duo-causal interim — and the ORDER matters, so it is stated against
+> myself.** The interim signal (18:52) came **before** this measurement (19:11), so this account is
+> **post hoc with respect to it** and is not evidence for itself. What *is* pre-registered is the read
+> that decides the arm: `cos(du_t, du_{t−1})`, with all three outcomes fixed in `RUNS.md` at 19:02,
+> before either arm finished. **This paragraph is a mechanism offered for a result, not a prediction
+> that was tested** — the distinction this report has had to relearn twice (§6.0 rows 5, 16).
+> Feeding the block keys from loops `t−2…t−1` hands it keys that are ~0.97
 > cosine-identical to the ones it already has, while **doubling or tripling the number of keys
 > competing in the same softmax**. That dilutes attention mass across near-duplicates rather than
 > adding information — which is a mechanism for a regression, not merely for a null, and it matches
