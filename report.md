@@ -5645,7 +5645,20 @@ python src/baseline_nonlooped.py --max-seconds 240 --total-tokens 30000000
 nats and saturates at 8–12 loops, and 3.15× more training widened it by only 0.0130 nats — a
 significant but ~35× smaller effect than the 0.46-nat improvement in absolute loss over the same
 span (§4.2, paired). This report
-therefore reproduces and measures the saturation problem the task poses; it does not solve it. The
+therefore reproduces and measures the saturation problem the task poses; it does not solve it.
+
+> **One intervention does lower the loss, and it is worth naming here because it sharpens the sentence
+> above rather than softening it (§4.21, added 2026-08-23 18:05).** Loop-cycled LoRA branches at rank
+> ≥ 4 improve best CE in **four in-job pairs across three platforms and two seeds** — mean **−0.0857**,
+> 95% t-interval **[−0.1322, −0.0393]**, excluding zero. It is the only CE claim in this report that
+> survives multi-platform replication. **And the useful band is identical to its own control in all
+> five pairs, including the two where CE improves by over 0.10 nats.** So the corrected form of this
+> report's synthesis is: **eight interventions, one lowers the loss, none widens the useful band** —
+> which is a *stronger* statement of the dissociation than "zero raise the ceiling" was, because it
+> now holds even on the intervention that works. It costs +4.51% of the parameter budget at rank 4,
+> reverses sign at rank 2, and has no full-budget replication.
+
+The
 `state_renorm=False` result moves saturation later than `state_renorm=True` (loop ~8–11 vs ~4) and
 is worth a large absolute-loss gain, but "many loops keep helping" is not demonstrated. Any next step
 that does not attack the loop-gain-vs-depth curve is optimising the wrong quantity — note in
