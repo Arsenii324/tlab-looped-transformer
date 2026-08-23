@@ -12,7 +12,21 @@ Released checkpoint: **https://huggingface.co/Arsen4ikVar/tlab-looped-transforme
 > ≈ 8.32 (§6.0 rows 20, 26) — **and the identity gate then passed against the DOWNLOADED artifact**,
 > not against the local copy: `|diff| = 0.0020` at loop 1 against a chance level of 8.3178.
 > **Visibility is the author's call**; both repositories are private at the time of writing and go
-> public at submission. **The released artifact is the 90M control** (§6.0b / D3), whose numbers are
+> public at submission.
+>
+> **What the submitted state is, since commits continue after the deadline.** The submission is
+> **`main` as of 23:59 MSK on 2026-08-23**. Anything committed after that timestamp is post-deadline
+> follow-up work and is marked as such where it appears — currently one item: `tlab-width-s0`
+> (`bt1osf7htipu0t57puuc`), a three-width training run launched at 23:12 with its falsifier registered
+> in `RUNS.md` **before** submission, which cannot land before the deadline. *Its result is not part of
+> the submitted claim set.*
+>
+> **The released artifact is self-contained and was verified from the download side, not the local
+> copy:** HF's `model.pt` is byte-identical to `checkpoints/full_control90_kaggle/last.pt`
+> (md5 `c1c112c0…`), its `tokenizer.json` is byte-identical to the shipped `configs/tokenizer.json`
+> (md5 `c8f1c928…`), its `model.py` is byte-identical to `src/model.py` (md5 `05deeca6…`), and the
+> downloaded copy loads and passes the identity gate at **|diff| = 0.0020** against a chance level of
+> 8.3178. **The released artifact is the 90M control** (§6.0b / D3), whose numbers are
 > the headline table below.
 
 ---
