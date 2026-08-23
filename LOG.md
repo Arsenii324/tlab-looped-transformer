@@ -2518,3 +2518,42 @@ submission-artifact files at 18:45 with no way to test them is the failure mode 
 already paid for twice. The rule is documented in `DATASPHERE_NOTES.md`, `OPS.md` sec7 and sec6.0 row 34
 instead. **This correction is itself the third meta-pattern in action: I closed a fix on the edit
 rather than on the artifact, and then closed a diagnosis on two of the three log files.**
+
+## 2026-08-23 18:15 — submission gates re-run from a FRESH CLONE of the ship branch. All pass.
+
+The fresh-clone dry run was stale (11:00, and the tree has changed enormously since). Re-run properly,
+and it forced a branch question that had to be settled before any push:
+
+| branch | report.md | requirements.txt | last commit |
+|---|---|---|---|
+| **`review`** (HEAD, the ship branch) | **463,908 B, current, carries sec0 abstract** | **yes** | 18:10 |
+| `submission` | 303,289 B — **5.5h stale** | **no** | 12:37 |
+| `main` | absent | absent | 00:17 |
+
+**`submission` is not shippable and must not be pushed** -- it is stale *and* carries the scrubbed-but-
+historical wandb key in its history (`OPS.md` sec1). `rebuild_review.sh:22` force-updates `submission`
+from `review`, which is why it lags: the script has not run since 12:37.
+
+**Cloned `review` cold into a scratch dir (670 files) and ran the repo's own gates:**
+
+- `src/test_model.py` -- **ALL CHECKS PASSED**, including the four checks added today for the new
+  arms: [10] depth_gate param count 9,065,056 = budget, [11] step-0 bit-identity lora_cycle vs base
+  (max|diff| = 0.00e+00), [12] perturbation divergence with LoRA B != 0, [13] LoRA gradient flow.
+- `src/test_plateau.py` -- **ALL PASS**, including the deliberate falsification probe.
+- `src/headline.py check` -- **0 numbers missing, consistent**, after repointing `HEADLINE.json` at
+  the 90M control (it had still named the superseded 46M/54.99 run while the report and the new
+  abstract quote 90M/38.86).
+- **`src/check_tokenizer_identity.py` on the SHIPPED checkpoint, the exact command the README gives a
+  grader:** `--expect-ce1 3.9622` -> **PASS**, |diff| = **0.0020** against a chance level of 8.3178.
+  So released weights + shipped vocabulary + documented command agree end to end. *This is the failure
+  the task statement names by name, and it is now verified rather than inferred.*
+
+One honest wart the gate itself prints: the Kaggle checkpoint's `model_cfg` omits 12 fields, 5 of them
+behavioural (`readout_mode`, `convex_gate`, `explore_noise`, `fixed_gate`, `residual_scale`). They
+default correctly today and the loader now says so out loud (sec6.0b, S6) -- but it is defaulting, not
+asserting.
+
+**A near-miss worth recording against myself:** a broken shell loop reported `requirements.txt` as
+untracked on every branch, and I was one edit away from writing a third "recorded as fixed but not
+fixed" row into sec6.0. `git ls-tree` says it is present on `review`. **The instrument was wrong, not
+the repo** -- which is the sec7b first meta-pattern landing on me while I was busy documenting it.
