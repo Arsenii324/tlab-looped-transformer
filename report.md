@@ -480,7 +480,7 @@ sparse subset of loops for most of training and to the final loop only for the l
 
 | choice | rejected alternative | why, measured |
 |---|---|---|
-| **no inter-loop norm** (`state_renorm=False`) | RMSNorm between loops | −0.744 nats, the largest single effect in the project (§4.1); the normalised variant contracts and goes inert (§4.3) |
+| **no inter-loop norm** (`state_renorm=False`) | RMSNorm between loops | **≈ −0.68 nats token-corrected** (−0.744 nominal, before §4.1's token-ratio correction), the largest single effect in the project; the normalised variant contracts and goes inert (§4.3) |
 | **no prelude/coda** | the sandwich every reference implementation uses | at a fixed 10M budget a prelude buys 0.355 nats *and makes the model depth-inert over the entire swept range* [1,96] (§4.5). It wins the metric by removing the reason to iterate |
 | **deep loop schedule** | `U[4,32]`, or a fixed small `r` | useful depth is ≈ a fixed fraction of trained depth (§4.11, §4.16b): dense 0.50–0.71·μ_rec, terminal-only 0.98–1.09·μ_rec, across three schedules and two devices |
 | **supervision annealing** | dense supervision throughout; or constant terminal-only | ⚠ **CE advantage over dense WITHDRAWN at n=4** (2 of 4 seeds negative, mean −0.0460 inside the 0.0541 floor — see the block below); still widens the useful band at every seed checked, and still beats constant terminal-only on the *depth-vs-CE* comparison (§4.17) — that half does not depend on the withdrawn number. *Measured at μ_rec = 18; at the μ_rec = 40 schedule this method actually specifies, the comparison against dense is a trade — see the block below* |
