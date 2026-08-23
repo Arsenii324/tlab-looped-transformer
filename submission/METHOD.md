@@ -25,6 +25,8 @@ One **Qwen3-style decoder block of 3 layers**, weight-tied, applied `r` times.
 Verified against the real `transformers` Qwen3 reference at **max\|diff\| = 2.4e-07** before any
 training compute was spent (`src/test_model.py`, 13 checks).
 
+*A fresh `LoopedTransformer(Config())` prints **9,065,056**, 448 more. The difference is `loop_norm.weight` (448 = hidden size), which is allocated unconditionally in `__init__` and is **unused** in the shipped configuration because `state_renorm=False`. **9,064,608 is the count of parameters the released model actually uses**; both are under the 10M cap. Stated because someone who clones and instantiates will see the other number.*
+
 > **One trap for anyone who clones and instantiates.** `LoopedTransformer(Config())` — the *bare
 > default* — reports **9,065,056** parameters, not 9,064,608. The 448 is `loop_norm.weight`, because
 > **`Config()`'s default is `state_renorm=True`**: the inter-loop RMSNorm this report measures at

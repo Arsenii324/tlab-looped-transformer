@@ -3041,6 +3041,16 @@ UNTESTED by the fifth**, which is weaker than "five classes failed" and is the t
 
 ### 4.7e Why the whole depth-mixing family fails here: a token's depth keys span ~1.6 of 32 dimensions
 
+> **The subsample question, asked and answered (21:18).** `src/depth_key_rank.py` computes the
+> effective rank as a mean over a **stride-subsample of ~64 tokens** from a 2×128 batch, while the
+> pairwise cosine uses all 256. That is a real attack surface on the newest claim in this report, so
+> it was re-run: at **16× the tokens (16×256 = 4,096)** and with **no subsample at all**, layer 0's
+> effective rank is **1.586** against the reported **1.614**, and the stride-subsample differs from
+> the full set by **≤0.011 at every layer**. **The collapse is not a sampling artifact.** Mean cosine
+> is likewise stable (0.9328 → 0.9332). *The instrument is still small-batch — 4,096 tokens, one
+> checkpoint — and that limit stands; what is excluded is the specific worry that ~64 tokens produced
+> the number.*
+
 *Instrument:* `src/depth_key_rank.py`. **Zero training compute** — one forward pass with pre-hooks on
 each `DecoderLayer`, plus an SVD. Prediction and falsifier written into the docstring before running.
 

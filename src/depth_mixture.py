@@ -3,7 +3,9 @@
 WHY. §4.7 measures per-token oracle depth headroom that is real and reliable (0.2008/0.2032 nats;
 split-half +0.866 against a null of +0.0007) and UNREACHABLE by five label-free rule families. §4.7b
 gives the structural reason: the rules condition on total path length, whose cross-token cv is 0.068,
-while oracle depth has cv 0.798 -- they read a quantity that barely varies.
+while the ANGULAR BUDGET AT each token's own oracle depth has cv 0.798 -- they read a quantity that
+barely varies in order to fire at one that varies 12x more. (Said precisely: 0.798 is
+`cum[i, k_oracle(i)]` from cumulative_exit.py, NOT the cv of the oracle depth, which is larger.)
 
 A rule has to COMMIT to one depth. A mixture does not: it can weight {h_t} and let the readout see a
 combination. So the natural question after §4.7's negative is whether the information is recoverable
