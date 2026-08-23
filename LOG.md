@@ -2144,3 +2144,23 @@
     and exited 0. NEITHER 90M checkpoint has that json. Fixed (real fallback, reproduces the json
     path to 0.3%) + RuntimeError guard. sec6.0 rows 24 and 25.
   local anneal after the morning fix: 6 evals, step 912/1220, 1.87M tokens, healthy.
+
+2026-08-23 14:40 — R45 ANSWERED on the annealed checkpoint: rules STILL FAIL.
+  local_anneal_sw75_s0 trained to completion (step 1219/1220, 2.50M tok). Plateau [12,24] mid 17.0
+  vs its dense control's [8,16] mid 11.3 -- a 1.50x band shift, matching the report's terminal-only
+  figure. Exit rules on its own exit dump (2048 seqs x 256 tok x 32 loops = 524,288 scored tokens,
+  split by SEQUENCE 1024/1024):
+     best fixed depth k=17, TEST CE 5.4404
+     ORACLE 5.2373, headroom 0.2032 nats
+     best label-free rule bucket(dnorm): 5.4401, i.e. -0.0003 vs best fixed -> 0.1% of headroom
+     all four signal families (entropy, margin, dnorm, kl) fail, threshold AND bucket forms
+  This is the pre-registered outcome B from run_anneal_local.py's docstring, and it is the stronger
+  one: the trajectory/anchor explanation the literature offers for sec4.7's negative (dense
+  supervision pins every loop to the output manifold, so confidence signals saturate; an ANNEALED
+  model's intermediate states are unpinned and a trajectory signal would have something to read) is
+  RULED OUT rather than left open. Matched dense control dump running for the paired write-up.
+  Also this session: sec3.5's "~10-25%" switch-fraction range narrowed to sw90 (sw75 is
+  damage-driven at s0 and WORSE on CE_best at s1); local-vs-kernel 0.04-nat offset re-attributed
+  (val shards ~89% overlapping, not identical -- data.py skips 20,000 docs, the kernel continues its
+  own iterator from ~19,319); eval.py gained three guards; load_checkpoint now names silently
+  defaulted behavioural fields.
