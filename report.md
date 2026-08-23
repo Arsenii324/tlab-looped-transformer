@@ -587,10 +587,26 @@ model, and a 10M-token replication is running for exactly this reason.
 > **This resolves the section above in the direction it predicted.** The fraction rule was validated
 > at a budget where it switches *before* loop gain emerges, and extrapolating it to 10M put the
 > switch deep post-saturation — and that extrapolation costs 0.22 nats against keying the switch to
-> the absolute token count instead. **§3.5's recommendation should be read as token-keyed: switch when
-> loop gain flattens (~10–15M tokens, §4.12), not at a fixed fraction of steps.** At a 90M budget the
-> two rules differ enormously (81M vs ~10–15M), and this is now measured evidence about which side of
-> that gap to be on rather than an argument.
+> the absolute token count instead.
+>
+> > ### ⚠ THIS IS n = 1, AND IT IS A LEAD, NOT A RECOMMENDATION
+> >
+> > **One seed, one budget, one schedule.** An earlier version of this block wrote *"§3.5's
+> > recommendation should be read as token-keyed"* — which is precisely the error this report spent
+> > today correcting elsewhere. The annealing CE claim was withdrawn **six hours before this
+> > measurement** for being n=2 and reversing at seed 2, and the same document then promoted a larger
+> > effect at **n=1** to a recommendation within two hours. Recorded rather than quietly fixed,
+> > because the failure is instructive: *knowing* the lesson did not prevent repeating it, and the
+> > thing that caught it was an external reviewer asking "what is n?"
+> >
+> > **The measured seed spread in this project is sd = 0.0640 on exactly this class of paired
+> > difference** (§3.5's n=4 extension). A single −0.2208 is 3.4× that spread, which is why it is
+> > worth flagging as a strong lead — and n=1 against a known spread of 0.0640 is still one draw.
+> > **§3.5 therefore does not recommend token-keying.** What it says is: the fraction rule was
+> > validated in a regime where it switches *before* loop gain emerges and extrapolated to one where
+> > it switches deep post-saturation, that gap is real and mechanically motivated (§4.12), and a
+> > single 10M in-job comparison favours token-keying by 0.22 nats. **Replication at ≥3 seeds is the
+> > thing that would turn this into a recommendation, and it was not run.**
 >
 > *Scope.* One seed, one budget, one schedule (μ_rec = 18). The switch points differ in *both*
 > absolute tokens and step fraction, so this compares two rules rather than isolating a single
