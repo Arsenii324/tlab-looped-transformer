@@ -3845,6 +3845,77 @@ was proposed after the compute window closed.** That is the honest status: a fra
 five results and one control, has one clean failure, and has not yet been tested against a prediction
 made before the data.
 
+### 4.19 The scale clock — a proposed mechanism, its premise refuted, built anyway, and it diverges
+
+*Provenance: proposed by an external reviewer, not the author's idea and not the graded one.
+Implemented and run because the task grades idea-**testing**; reported in full because the negative
+is complete and mechanistic.*
+
+**The proposal.** RMSNorm is scale-invariant and `‖e‖/‖h‖ ≈ 1e-3`, so the block's input is a function
+of *direction alone* — the block cannot see how deep it is. If `u_t → u*`, the loop then computes a
+constant forever. Fix: feed `log‖h‖` back, breaking the fixed point of `G(u) = F(u)/‖F(u)‖`.
+
+**The premise was checked first, and it is false** (§4.3). `u` does not converge — it drifts
+logarithmically (log-drift R² 0.986 with one parameter against a power law's 0.748). **There is no
+fixed point to break.** Run anyway on the surviving weaker motivation: *the block cannot behave
+differently late than early.*
+
+**Implementation.** `h_in ×= 1 + w·(log rms(h_t) − log rms(h_1))`, per token; **+448 params
+(0.0049%)**, zero extra FLOPs, `w` zero-initialised so the model is **bit-identical** to the current
+one at step 0 (verified, max|diff| = 0.0). A *function* of state, not a table over `t`, so
+§3.4-compliant. Three in-job arms, 2.5M tokens, seed 0, config derived from the reference checkpoint.
+
+| arm | CE@1 | CE_best | plateau | onset | **‖w‖** | ΔCE_best vs ctrl |
+|---|---|---|---|---|---|---|
+| `sc_ctrl` | 5.5129 | **5.4202** @8 | [8,16] | 8 | — | — |
+| `sc_clock` | 6.8802 | 6.7845 @8 | [4,16] | 4 | **1.3412** | **+1.3643** |
+| `sc_clock_sw90` | 7.0758 | 7.0170 @12 | [4,24] | 4 | 1.0171 | **+1.5968** |
+
+**≈20× the MPS replicate floor, and annealing makes it worse rather than rescuing it.** `‖w‖ = 1.34`
+means the model did **not** decline the parameter — a strictly-larger hypothesis class was available
+and it walked into the bad region.
+
+**The mechanism, which is the part worth keeping.** The coupling is *multiplicative and positively
+fed back*: larger ‖h‖ → larger `s` → larger multiplier → larger ‖h‖. Rolled past the trained range it
+blows up outright — ‖h‖ = 14,109 → 5.0e5 @8 → **7.49e14 @32 → non-finite at loop 39**, against the
+control's benign 6,650 → 2.23e5 over 192 loops. The model trained at `U[4,32]`, just under the
+blow-up point, which is why it trained at all and why every loop past ~32 is worthless.
+
+**The pre-registered read is honoured and it is moot.** I registered *"read geometry first (drift
+constant C), not CE, because 448 params against a 0.031–0.068 floor cannot be resolved on loss."*
+The geometry read returns **NaN** — the trajectory is non-finite before the fit window closes. A
++1.36-nat regression with a divergent state is not a subtle geometry question.
+
+**The reviewer named this failure in advance** — *"a large `w` is a feedback loop from the block's
+output into its own conditioning, which could destabilize. Zero-init mitigates but doesn't eliminate
+it."* It does not eliminate it. **A scale coupling that is multiplicative on the block input is
+unusable at extrapolated depth**; an additive or bounded (e.g. `tanh`) coupling is untested and is
+the version that would deserve a rerun.
+
+### 4.20 The degenerate fixed point is architectural, not learned
+
+Blayney et al. (arXiv **2604.11791**, `looped_llms.tex:279`, verified) report that pre-norm *without*
+input injection reaches a **degenerate** fixed point in which "each layer converges to the **same**
+fixed point", diagnosed by the lowest cross-layer cosine → 1. This architecture is pre-norm and, at
+`‖e‖/‖h‖ ≈ 1e-3`, effectively un-injected at inference (§4.3).
+
+| model | min cross-layer cos @8 | @32 | @64 | @128 |
+|---|---|---|---|---|
+| 90M control (trained) | 0.9994 | **1.0000** | 1.0000 | 1.0000 |
+| 90M norm-penalty (trained) | 0.9958 | 0.9995 | 0.9998 | 0.9999 |
+| **same config, UNTRAINED** | **0.9952** | **0.9998** | **1.0000** | — |
+
+**We are in the degenerate branch — and the untrained control shows it is a property of the
+architecture, not of training.** All three of this block's layers collapse onto one direction by
+loop 32 *at initialisation*, before any gradient. That matters in three ways: it cannot be blamed on
+(or credited to) the supervision schedule; it is consistent with Blayney's own scope, since their
+fixed-point experiments are on **randomly initialised** models (`looped_llms.tex:277`); and it is a
+candidate mechanism for §4.5's inert prelude and §4.1's `inject_none` being the worst arm.
+
+**What it is not.** cos → 1 in *direction* is not a fixed point in the *state* — §4.3 shows the state
+has none, drifting logarithmically without bound. Both hold: the three layers point the same way, and
+that shared direction keeps rotating. Their result is on 12-layer models; ours has 3.
+
 ## 5. What didn't work
 
 ### 5.0 ε = λ/(N√L) residual scaling — no measurable benefit, and the "optimum shift" was an artifact
