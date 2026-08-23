@@ -103,11 +103,45 @@ deflated claims carry their caveats. A number that is wrong *everywhere* passes 
 
 ---
 
-## 7. What would change our mind fastest
+## 7. What we would run next, costed from measured wall-clock
 
-1. **One same-config replicate at 90M** — settles the floor every "×the floor" claim uses.
-2. **Any downstream task, however small** — the capability claim is currently "CE went down".
-3. **A second width** — tests §4.7e's width-independence, which is asserted from a mechanism and
-   measured at one width.
-4. **An independent re-implementation of `src/eval.py`** — the single point of failure behind every
+*Costed rather than listed, because "future work" is cheap to write and the numbers are available:
+this project's arms run at **≈ 460 s per million tokens per arm on a T4** (measured — `divx` did 3
+arms × 2.5M in 3,429 s; the Kaggle 12M arms took 5,648 s and 6,563 s).*
+
+**The two short runs that would relate arms we already present** — both are the same shape: they
+*connect* existing measurements rather than adding a new mechanism, which is where this project's
+uncertainty actually sits.
+
+| # | run | cost | what it converts |
+|---|---|---|---|
+| **1** | **Three config-identical controls in ONE job**, 2.5M each | **~58 min** | §4.27's **0.0914 cross-job spread is unexplained**, and it currently bounds every cross-job statement here. The *in-job* floor rests on **two accidental replicates found while auditing something else**. Three deliberate in-job replicates would separate "between-job drift" from "run-to-run noise" — and if the in-job spread is ~0.015 against 0.0914 between jobs, the report's in-job pairing discipline is **quantitatively vindicated** instead of merely asserted |
+| **2** | **One DataSphere control that saves its `tokenizer.json`** | **~20 min** | Every DataSphere arm is currently in its own tokenizer family and its absolute CE is comparable to nothing outside that family (§4.27). **One anchored arm converts all of them**, retroactively, and it is a one-line change to `outputs:` — the same line whose absence cost an artifact tonight |
+
+**The measurements that would move a conclusion, and why they were not run tonight:**
+
+| # | run | cost | what it decides |
+|---|---|---|---|
+| 3 | **LoRA × annealing at 12M** | ~3.1 h | §4.29 withdrew LoRA at scale **for rank 4 under dense supervision**. The largest 2.5M positive combined it with annealing (−0.1172) and **that cell is unmeasured**. §4.17 found these were the only two interventions here that improved *both* endpoints |
+| 4 | **A budget ladder** — one control at 2.5M / 5M / 10M in one job | ~2.2 h | Turns this project's "12× shrinkage" regularity from an **inference across jobs** into a **measurement within one**, which is exactly the assumption §4.24's scope condition rests on |
+| 5 | **One same-config replicate at 90M** | ~9 h | The floor every "×the floor" claim in this report uses is measured at 2.5M and applied at 90M |
+| 6 | **A second width** (e.g. 320 or 640) | ~1 h at 2.5M | §4.7e's mechanism is claimed width-independent and measured at **one width**. §4.28 makes it a dose–response prediction, so a second width is a real test rather than a replication |
+
+**Running as this was written:** `tlab-untie-s0` — the causal test of §4.7e (tied control · `W_K` in 4
+loop-index buckets · buckets + the scale-invariant gate), with GATES A/B/C registered in `RUNS.md`
+before submission and `harvest_untie.sh` written before the data landed.
+
+**Nothing else was started.** At the time of writing, a 12M scale test costs ~3.1 h against ~1.5 h
+remaining, and this project's own §6.0 has two rows about launching under time pressure — including
+one from tonight, where a job went out 24 minutes after we learned what its missing `outputs:` line
+would cost. *Naming the runs and their prices is the honest deliverable here; starting one that
+cannot land is not.*
+
+## 8. What would change our mind fastest, if a reviewer has budget
+
+1. **Any downstream task, however small** — the entire capability claim is currently "CE went down".
+2. **Run #1 above (~58 min)** — it is the cheapest thing that would tighten a number bounding the
+   whole report.
+3. **An independent re-implementation of `src/eval.py`** — the single point of failure behind every
    number here.
+4. **A second width** — see #6.
