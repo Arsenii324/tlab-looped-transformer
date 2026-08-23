@@ -266,6 +266,28 @@ design was audited for the same failure mode.
 > objection above is stated on its own logic so that nothing rests on an unverified relay. (This
 > report has retracted one claim already for treating a summariser as a primary source — §6.0 row 22.)
 >
+> **And the evidence does not show it would help with the axis this task is about — which is the
+> stronger half of the exclusion.** Every paper in this family demonstrates its result at **2–4
+> loops**: LoopMoE at K=4 (effective depth 12), Loop the Loopies at R=2, Sparse Layers at 8×2, MoDr
+> as SFT on a frozen backbone at that backbone's own recurrence. Their claim is that sparsity fixes
+> the **parameter/compute scaling curve** of looped models — not that loops keep paying at r=32.
+> **None of them demonstrates the thing this task asks for.** MoDr's own branch sweep even saturates
+> in the same shape as this project's loop sweep: 1→67.0, 2→67.8, 3→68.4, 4→69.22, 8→69.4, 12→69.5,
+> so 4→12 branches buys 0.28 points. And its router ablation is weaker than its headline — random
+> branch selection scores 67.41 against the router's 69.22 and a best-single-branch 67.94, so most of
+> the reported gain is the LoRA fine-tuning rather than the routing. *(These figures are relayed from
+> a reviewer's reading and are **not verified against source here** — the papers are not in
+> `papers/sources/`. The exclusion above rests on the parameter arithmetic, which is checkable; this
+> paragraph is corroboration, not load-bearing.)*
+>
+> **What subdivision would genuinely buy, stated so the exclusion is not attackable for omitting it:**
+> top-k of E experts cuts per-loop **FFN FLOPs** by roughly k/E, and the FFN is ~68% of this block's
+> per-loop cost — so top-1-of-4 is ≈0.49× per loop, i.e. **~2× more loops at the same wall clock**.
+> Wall clock is this project's actual binding constraint on loop count. That is a real benefit on the
+> axis the task cares about, and it does not change the conclusion — the parameter budget still caps
+> *stored* parameters, which is what MoE trades against — but an exclusion that ignored it would be
+> incomplete.
+
 > **Why the sparse route is closed under this budget — a reasoned exclusion, not an omission.**
 > It covers LoopMoE, Loop the Loopies, Tying the Loop and MoDr in one argument, so it is worth stating
 > rather than leaving as "we didn't try MoE".
@@ -4621,7 +4643,10 @@ loses it — but the two are in different regimes, and the gap is mostly not arc
 - **Token ratio.** At 90M tokens against 9.06M parameters this model sits at **D/N ≈ 9.9** (12.5 on
   non-embedding params) against a Chinchilla-optimal ratio near **20**. It is trained at roughly
   *half* the tokens its size wants, because the task caps the budget at 100M. Parameter Golf entries
-  are data-unconstrained.
+  are data-unconstrained — the leaderboard's setting is a fixed *artifact size* with unlimited
+  training, and its entries train on the order of **~7B tokens**, roughly **70×** this budget. Quoting
+  1.5503 against 1.058 without that ratio attached would misrepresent both numbers: the comparison is
+  a 100M-token model against ~7B-token models, not two architectures at the same budget.
 - **What the token budget is worth here, measured rather than assumed.** 46M → 90M bought
   **0.39–0.42 nats** (§8), which is 0.17 bpb of the 0.49 bpb gap on its own. Extrapolating this
   project's own 0.398 nats/e-fold, closing to D/N ≈ 20 would be worth roughly another 0.28 nats
