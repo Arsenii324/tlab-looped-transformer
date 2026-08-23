@@ -80,16 +80,17 @@ self attention — −0.2162 / −0.2633 at two seeds for zero added parameters 
 loop 1.** **Not one of the twelve widens the useful band. At `tol = 0.01` three of the five
 that lower the loss narrow it, but that direction is not stable to halving the tolerance (§4.25) —
 the durable claim is that **no loss-lowering intervention moves the band consistently in either
-direction**. Loop-cycled LoRA branches improve best CE at rank ≥ 4 across four in-job pairs
-spanning three platforms, two seeds and two supervision schedules (mean **−0.086**, 95% t-interval
-[−0.132, −0.039]) — **though the rank ≥ 4 restriction is post hoc and over all five arms the interval
-covers zero**, and there is no dose–response above the threshold. It is the only CE claim here that
-survives multi-platform replication. **The useful band does not move in any of the five pairs, not by
-one grid point**, Δgain sits inside every measured floor, and **67–95% of each arm's gain (median 88%,
-five arms) is already there at `r = 1`, where the branch index is `0 mod 4` and the cycling is
-logically inert.** So it
-improves the *block*, not the *looping*: ceiling, not depth, for +4.5% of the parameter budget. At
-rank 2 it reverses sign. The control that isolates diversity from capacity is running (§4.21b).
+direction**. Loop-cycled LoRA branches improve best CE at rank ≥ 4 across five in-job pairs
+spanning three platforms, two seeds and two supervision schedules (mean **−0.0936**) — **and none of
+that survives scale.** At **12M tokens**, in a **config-identical** pair, the same intervention gives
+**+0.0077**: sign reversed and inside the replicate floor (§4.29). **This project therefore has no
+replicated CE improvement at scale**, and every "lowers the loss" above is a 2.5–3.5M-token statement.
+*The claim was already carrying four deflations before that — the `rank ≥ 4` restriction is post hoc,
+the all-arms interval covers zero, there is no dose–response above the threshold, and **67–95% of each
+arm's gain (median 88%) is already present at `r = 1`**, where the branch index is `0 mod 4` and the
+cycling is logically inert.* It improves the *block*, not the *looping*, and a branch **pinned to one
+index — identical parameters, zero diversity — beats the cycled arm at seed 1** (§4.23c), so it is a
+capacity result rather than a diversity one. At rank 2 it reverses sign.
 
 **One lever moves the useful band: where the loss is applied.** Supervision annealing — dense for most
 of training, terminal-only for the last ~10% — **relocates the band at 5 of 5 seeds** at **zero
@@ -117,9 +118,21 @@ intervention that applies a genuinely different operator at every depth moves it
 of 32**. **The depth-mixing family does not fail because five instruments were badly chosen; it fails
 because the representation carries no per-depth information for them to read** (§4.7e).
 
+**Two results decide how far that reaches, and they were the last two measured.** The collapse is
+**width-independent at initialisation**: hidden 224 → 896, a **12× range in parameters**, gives rank
+**2.749 / 2.687 / 2.747 / 2.731 / 2.718** — flat, no trend, so the 448 figure this report rests on is
+not a small-model artifact (§4.31). And it is **not fixable by architecture at this budget**: given
+four distinct key projections — +10.0% of the parameter budget — rank starts at **8.818 / 32** and
+**trains back down to 1.74**, against a tied control's 1.66. *Removing the structural cause did not
+remove the collapse.* **So depth-key collapse is not only what a tied architecture is stuck with; it
+is what this objective drives the representation toward even when the architecture can avoid it**
+(§4.30). *That arm was built to decide whether the collapse **causes** the mixing failure; its
+registered gate required trained rank above ~4 and it returned 1.74, so **the causal question is
+undecided** and the rank explanation still rests on `dg_norm`'s null, which is a correlation.*
+
 **The result is a negative with a mechanism and one measured lever**, which the brief explicitly rates
 as a good outcome (*«отсутствие положительного результата при хорошем анализе всех негативных — хороший
-результат»*). §6.0 lists all **34** errors that reached a number, how each was caught, and what it
+результат»*). §6.0 lists all **35** errors that reached a number, how each was caught, and what it
 cost — including three claims withdrawn on the final day by their own pre-registered falsifiers.
 
 ---
