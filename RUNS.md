@@ -522,3 +522,11 @@ storing every depth's K/V is the O(r) memory that already OOM'd §4.22's gate at
 precisely so the dose-response says whether more window is buying anything before anyone pays for the
 full version. If W=3 > W=2 > W=1 monotonically, the full triangle is worth someone's compute; if
 W=3 ≈ W=2 ≈ W=1, it is not, and that is a more useful negative than one window would give.
+
+**Job IDs (recorded immediately — a compaction loses these):**
+`tlab-duocausal-s0` = **bt1qvi35v7gsejmvn1it** · `tlab-duocausal-s1` = **bt1lkbri6cqj6q9fssoa`**
+(launched 18:19, gt4.1 T4, ~2h). Kaggle LoRA scale-up = slug **arsen4ikvar/tlab-lora-scaleup**
+(pushed 18:23, 2 in-job arms × 12M tokens; **Kaggle returns output only on completion**, so it must
+finish — MAX_SWEEP_SECONDS 4.2h is the internal guard).
+Harvest with `datasphere project job download-files --id <id> --output-dir <dir>`; the checkpoints
+are declared **by explicit filename**, so unlike this morning's job they will actually come back.
