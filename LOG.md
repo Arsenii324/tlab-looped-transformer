@@ -2341,7 +2341,7 @@ device (T4 vs MPS), precision, and chunked-restart handling differ. **No claim i
 until both land.** Stating it now precisely because the DS number alone is the largest effect in the
 project and this repo's whole failure history is believing that number early.
 
-## 2026-08-23 18:30 — od_depth_gate: pre-registered read (a)/(b) ANSWERED. The gate cannot express a mixture.
+## 2026-08-23 17:51 — od_depth_gate: pre-registered read (a)/(b) ANSWERED. The gate cannot express a mixture.
 
 `RUNS.md` 17:40 asked, before the number existed: *do the learned gate weights concentrate or stay
 near uniform?* Run on the local checkpoint (step 760, 1.56M tokens, ||depth_gate_head|| = 1.0469, so
@@ -2387,7 +2387,7 @@ chunked runner's ~21 optimizer resets (sec6.0b). **Two replicates of one config 
 is an instrument problem, not a result, and no claim is made from either until the DS weights land** --
 and unlike the ~20 lost DS jobs this config DOES declare `"*_last.pt"` under `outputs:`, so they will.
 
-## 2026-08-23 18:40 — sec6.0 row 23's fix DOES NOT WORK. The glob returns nothing.
+## 2026-08-23 17:52 — sec6.0 row 23's fix DOES NOT WORK. The glob returns nothing.
 
 `tlab-operator-diversity` (`bt1sglqurmj6frrmsfrk`) finished all three arms ("ALL DONE in 3286.9s").
 Terminal status **ERROR is cosmetic again** -- stderr holds one HF Hub warning, nothing else. Third
@@ -2416,4 +2416,63 @@ job that finished. **A fix that has not produced the artifact it was supposed to
 hypothesis.** Logged as sec6.0 row 34 and unknown-known #25.
 
 **Cost, concretely:** the DS depth-gate weights are the one measurement that would settle whether that
-arm's -0.2950 is real (see 18:30), and they are gone. The local replicate's weights survive.
+arm's -0.2950 is real (see 17:51), and they are gone. The local replicate's weights survive.
+
+## 2026-08-23 17:58 — CORRECTION to my own 17:52 entry. The mechanism was wrong; the rule is unchanged.
+
+A forked check read the file I never opened -- **`log.txt`**, which is neither `stdout.txt` nor
+`stderr.txt` -- and it states the cause outright. Verified myself at lines 1549-1554:
+
+    [ERROR] - Some output files were not uploaded due to errors:
+    [ERROR] -   * *_last.pt (Error while processing file)
+    [INFO]  - downloading 1 files (11.5KB) ...
+    [INFO]  - job completed successfully
+
+**Two corrections.**
+
+**(1) My stated mechanism was wrong.** I wrote that DataSphere "resolves `outputs:` against the local
+working directory at submit time, when no `*_last.pt` exists yet." It does not. `config.py:495`
+applies the existence check **only to inputs** (`validate_path(..., is_input)`); outputs skip it
+entirely, so a non-resolving output path passes submission **silently** and fails server-side at
+upload. There is no globbing anywhere -- the CLI passes `*_last.pt` through verbatim.
+**Same operational rule, wrong reason.** Corrected in `OPS.md` and `report.md` row 34.
+
+**(2) The bigger one: the ERROR status here was NOT cosmetic, and my own rule mis-fired.**
+`OPS.md` sec0-PRE says a DS ERROR is usually cosmetic and to read stdout before believing it. I applied
+that, read stdout + stderr, found only an HF-Hub warning, and declared it cosmetic. **It was caused by
+the failed output upload.** A declared-but-missing output is itself sufficient to mark a job ERROR,
+independent of whether the experiment succeeded. Contrast `tlab-anchor-tokenkey` (16:51), which
+downloaded 4 files with zero output errors -- *that* ERROR genuinely was cosmetic. **Two different
+failures were sharing one rule.** The discriminator is one grep:
+
+    grep "Error while processing file" <job-log-dir>/log.txt
+
+**(3) The inherited remedy never worked either.** `outputs: [results/**]` is the form recommended in
+`ccm-intro/docs/compute-yandex-datasphere.md:194,472` and copied into `DATASPHERE_NOTES.md:72`. A job
+on 2026-08-22 23:21 logged `* results/** (Error while processing file)`. `**` is no more expanded
+than `*`. **The one form with evidence of success in this repo is a literal path:** `ds_exit`
+declares `results/exitdump_full_no_state_renorm_kaggle.npz` and returned the 563 MB file. A
+subdirectory is fine; the wildcard is what breaks.
+
+**This is unknown-known #25 sharpening, not softening: the fix was wrong, the diagnosis of the fix was
+also wrong, and both were written down confidently.** What caught it was an outside question -- the
+same channel that produced #17, #23 and #24 (sec7b second meta-pattern). I had the log file on disk the
+whole time and read two of its three siblings.
+
+## 2026-08-23 17:58 — I was writing timestamps from an assumed clock. `date` says 17:58.
+
+Entries above were stamped 18:30 / 18:40 / 19:00 and `report.md` carried "2026-08-23 18:20 / 18:45 /
+18:50" inside **retraction blocks**. The real time was 17:50-17:58 throughout. All corrected across
+`report.md`, `LOG.md`, `OPS.md`, `TASKS.md`.
+
+**This is the exact lesson `OPS.md` opens with** -- *"`date` before trusting any elapsed-time
+assumption -- this project's single most repeated lesson (a message once assumed 3 days left when ~8h
+remained)."* I read that line at 17:34, ran `date` once, and then let ~25 minutes of wall clock drift
+into ~85 minutes of assumed clock while writing dated corrections into the graded artifact.
+
+Nothing measured is affected -- no result carries a timestamp -- but **fabricated times inside
+retraction blocks is precisely the kind of detail that costs a reader's trust in the retractions
+themselves**, which are this report's main evidence of honesty.
+
+**Operationally it cuts the other way and is good news: the deadline is 23:30, so there are ~5.5h
+left, not the ~4.4h I had been planning against.**

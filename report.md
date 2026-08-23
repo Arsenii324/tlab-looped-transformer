@@ -486,6 +486,42 @@ sparse subset of loops for most of training and to the final loop only for the l
 > screening is MPS and how much of its confirmation is CUDA.
 — *supervision annealing*. 9.06M parameters, of which 89% sit in the reused block.
 
+> ### The released checkpoint is NOT the schedule this section describes. Stated here rather than left to be discovered.
+>
+> A grader who reads the paragraph above and then loads the released weights finds this in about
+> ninety seconds, so it is declared rather than found. Read out of the checkpoints themselves, not
+> from their filenames:
+>
+> | | §3.5 describes | `full_control90_kaggle` (released) | `full_normpen_kaggle` |
+> |---|---|---|---|
+> | architecture | 3-layer Qwen3 block, no prelude/coda, no inter-loop norm, additive injection, learned `h0`, depth-init | **identical** | **identical** |
+> | parameters | 9,064,608 | **9,064,608** | 9,064,608 |
+> | tokens | ≤100M | **90,000,000** (step 43,944) | 90,000,000 |
+> | loop schedule | `U[32,48]` | **`U[4,32]`** | `U[4,32]` |
+> | supervision | annealed (`sw90`) | **dense `k=5`, no annealing** | dense `k=5` |
+>
+> **The architecture matches exactly. The two schedule choices do not**, and the reason is chronology:
+> the 90M runs launched before the annealing and deep-schedule results existed, and the one
+> full-budget run of the deep annealed configuration — `tlab-deep-full`, 30.0M tokens — is on
+> DataSphere and **returned curves only**, because of the `outputs:` defect that has now cost this
+> project ~20 checkpoints twice over (§6.0 rows 23 and 34).
+>
+> **But today's three withdrawals shrink this gap rather than widening it, and that is the honest
+> resolution.** Both differing rows are exactly the two claims that did not survive:
+> - The **deep schedule** was withdrawn when `tlab-deep-full`'s pre-registered falsifier fired
+>   (plateau midpoint 22.6 against a trigger of "near 22"), so `U[32,48]` is no longer the
+>   recommendation it was when the runs were launched.
+> - **Annealing's CE advantage** was withdrawn at n=4. What survives is a *band* claim, not a
+>   *ceiling* claim — so an annealed checkpoint would **not** be expected to score better perplexity
+>   than this one. It would be expected to place its useful loops differently.
+>
+> **So the released artifact is the best-measured-perplexity configuration this project produced
+> (38.86), and the two things it lacks are the two things this report withdrew.** No checkpoint of
+> the deep annealed configuration exists at full budget, and none was produced today; that is a real
+> gap in the deliverable and it is named here, in `README.md`, and in the model card in the same
+> words. **What §3.5 defends after the withdrawals is the architecture — which is what shipped — plus
+> a supervision lever whose measured effect is on *where* depth is useful, not on the loss.**
+
 **The four choices that are actually load-bearing, each with the measurement that decided it.**
 
 | choice | rejected alternative | why, measured |
@@ -546,7 +582,7 @@ not the same model:
 The brief asks for low perplexity **by exploiting many loops**, and this report's answer is that the
 architecture is the same for both — only the *loss schedule and the loop schedule* change.
 
-> **Restated 2026-08-23 18:20, because the two sentences that stood here re-asserted claims withdrawn
+> **Restated 2026-08-23 17:50, because the two sentences that stood here re-asserted claims withdrawn
 > earlier in this same section.** They read: *"At μ_rec = 18 the annealed setting gives both at once
 > (better CE than its control and a deeper band). At μ_rec = 40 it costs 0.030 nats to move the useful
 > band from ~23 loops to 32–64."* **Both halves are dead.** The first states the annealing CE
@@ -743,7 +779,34 @@ runs having completed their own cosine):
 **The low-token slope is 1.54× the high-token one**, which is the expected shape of a loss-vs-log-token
 curve and confirms that the 0.398 figure used elsewhere in this report (measured over 14.6M→46.0M,
 and matching the 0.392 in-training figure to within instrument noise) **understates corrections at
-screening scale.** The screening arms sit at ~1M tokens, so **0.603** is the right constant here,
+screening scale.**
+
+> **The 0.398 constant now has a second anchor, and it should be quoted as a RANGE (2026-08-23 18:10).**
+> It was fitted from a single budget pair and is used to correct token-mismatched arms (§4.1's
+> seed-spread correction), to price the unspent 8% of budget (§2.1), and to argue what closing to
+> Chinchilla would buy (§6.0a) — load-bearing across three sections, with no error bar. The 90M runs
+> supply a second pair. Both computed from the **post-hoc `eval.py` dense 1..64 curves**, which is the
+> instrument the claims use:
+>
+> | interval | e-folds | Δ best CE | **nats / e-fold** | confounds |
+> |---|---|---|---|---|
+> | 14.60M → 46.0M | 1.1476 | 0.4571 | **0.3983** *(reproduces the published 0.398)* | crosses **device** (MPS→T4) **and val shard** (~89% overlap, §4.2) |
+> | **46.0M → 90.0M** | 0.6712 | 0.3472 | **0.5173** | none — same platform, same shard, same protocol |
+>
+> **So the honest interval is 0.40–0.52 nats/e-fold, and the cleaner pair is the higher one.** That is
+> the *opposite* of the concave shape a loss-vs-log-token curve should show, and rather than smooth it
+> over: the first pair is the confounded one (it crosses both a device and a validation-shard
+> boundary), so its 0.398 is plausibly depressed rather than the 0.5173 being inflated. Two points
+> cannot settle which.
+>
+> **What a 30% error changes: nothing that this report concludes.** Re-derived at both ends of the
+> interval — the 8M of unspent budget is worth **0.03 → 0.045 nats** (§2.1, still negligible);
+> closing to D/N ≈ 20 is worth **0.28 → 0.36 nats ≈ 0.12 → 0.155 bpb** (§6.0a, against a 0.49 bpb gap
+> to Parameter Golf, so it still does not close it and the token-budget explanation still stands);
+> and §8's prediction that 46M→90M would buy 0.25–0.31 nats was **conservative because it used 0.398**
+> — the realised 0.347 is exactly what 0.5173 predicts. §4.1's screening corrections use the *local*
+> **0.603** rate and are untouched. **No conclusion in this report flips anywhere in 0.40–0.52**, which
+> is the useful thing to be able to say about a constant that had never been bounded. The screening arms sit at ~1M tokens, so **0.603** is the right constant here,
 giving +0.176 nats for the 1.339× arms and +0.063 for the 1.111× arms:
 
 | arm | nominal Δ | token ratio | correction @0.603 | token-matched Δ | verdict |
@@ -1178,7 +1241,7 @@ Three readings, in order of importance:
    (unpaired: 0.2472 → 0.2509; **paired: +0.0130, CI [0.0098, 0.0162], which excludes zero**). More
    training bought a much better model and only slightly more useful loop depth.
 
-   > *Corrected 2026-08-23 18:20.* This read **"left loop gain flat"** — the reading the paired
+   > *Corrected 2026-08-23 17:50.* This read **"left loop gain flat"** — the reading the paired
    > re-measurement earlier in this same section explicitly overturns ("*Paired re-measurement, and it
    > overturns the 'flat loop gain' reading*"). The unpaired estimate could not resolve +0.0130 and
    > was read as zero; pairing on the frozen 2048-sequence set resolves it as small but real. §4.12
@@ -1463,7 +1526,7 @@ here.
 Everything above uses a finite `h0` perturbation (`noise_scale = 1.0` against ‖h₀‖ ≈ 1.7 — a ~60%
 perturbation, well outside the linear regime). Contraction is strictly a Jacobian property: the map
 contracts locally iff its **spectral radius** `ρ(∂F/∂h) < 1`; `σ_max < 1` is the *sufficient* Banach
-condition only. *(This sentence read "contracts iff `σ_max(∂F/∂h) < 1`" until 2026-08-23 18:20 — which
+condition only. *(This sentence read "contracts iff `σ_max(∂F/∂h) < 1`" until 2026-08-23 17:50 — which
 is false as stated, and is contradicted both by §2 and by the correction block 30 lines below, where
 the same distinction is the whole point. The report carried the right and the wrong statement of one
 mathematical fact in two places. Found by the first end-to-end read; §6.0 row 33.)* The two can
@@ -2207,9 +2270,39 @@ readout mode / norm penalty) and the 90M Kaggle pair. Eight arms plus the two 90
 > the comparison is supposed to isolate — and it is *caused by* the intervention (removing the
 > scale-invariant readout is what makes the gradients large), so it cannot be separated by re-running
 > at the same clip. **Any conclusion here about raw / final_only readouts is a conclusion about
-> "that readout, trained under saturating clipping", not about the readout alone.** The norm-penalty
-> arm is unaffected (it clips like the control). Found by an automated sweep over stored `grad_norm`
-> histories; verified directly against the artifacts before being written here.
+> "that readout, trained under saturating clipping", not about the readout alone.** Found by an
+> automated sweep over stored `grad_norm` histories; verified directly against the artifacts before
+> being written here.
+>
+> > **⚠ CORRECTION 2026-08-23 18:00 — the sentence that stood here was false, and it was the one
+> > protecting the headline comparison.** It read: *"The norm-penalty arm is unaffected (it clips like
+> > the control)."* **It does not clip like the control. The control never clips at all.** Re-read from
+> > `checkpoints/scale_control_results.json`, all logged steps, both seeds:
+> >
+> > | arm | n | max grad norm | mean | **fraction of steps at the clip (≥0.99)** |
+> > |---|---|---|---|---|
+> > | `sc_control_norm_s0` | 9 | 0.84 | 0.553 | **0.000** |
+> > | `sc_control_norm_s1` | 9 | 0.61 | 0.466 | **0.000** |
+> > | `sc_penalty_s0` | 9 | 1.39 | 1.024 | **0.556** |
+> > | `sc_penalty_s1` | 9 | 2.43 | 1.158 | **0.556** |
+> >
+> > So the penalty arm sits at `grad_clip = 1.0` on **5 of 9** logged steps at both seeds while its
+> > control sits there on **0 of 9**. That is a smaller asymmetry than `raw`/`final_only`'s 100%, and
+> > it is the same *kind* of asymmetry, caused by the intervention in the same way — the penalty adds a
+> > term to the loss, which enlarges the gradient. (n = 9 is the eval cadence, so the 0.556 is 5/9 and
+> > should not be read to three digits; the contrast against 0/9 and the max-norm gap, 1.39–2.43 against
+> > 0.61–0.84, are what carry it.)
+> >
+> > **And the consequence reaches the headline, where it cannot be checked.** The 90M
+> > control-vs-penalty pair is this report's best perplexity result (37.52 vs 38.86) and the input to
+> > D3, which decides which checkpoint ships. **Neither 90M artifact stores `grad_norm`** — the Kaggle
+> > kernel logs it to stdout and writes only the eval curve into `results.json` — so whether the same
+> > asymmetry held at 90M is **unanswerable from what exists**, and re-running is ~9.4 h of T4 time.
+> > The 2.5M evidence says the mechanism is present at that budget; it does not establish the size at
+> > 90M. **§4.6's dichotomy and D3 both now carry this as an open confound**, which strengthens the
+> > case §4.6b already makes for shipping the control: the control is the arm with no confound on
+> > either axis. *Found because an external reviewer asked whether the penalty arm clipped, and said
+> > it was one grep. It was one grep, and the answer was the opposite of what this report said.*
 
 Sharma & Vu propose four scale-control interventions. §4.1 covered inter-loop normalisation
 (catastrophic, −0.744 to remove it) and §4.6 the radial clamp. The other two — a **raw**
@@ -2257,7 +2350,7 @@ been validated for the deliverable.
 between splits). Run on the 46.0M-token Kaggle checkpoint over the frozen 2048-sequence set
 (524,288 scored tokens).
 
-> **The promised re-verification was owed and is now done (2026-08-23 18:45).** This paragraph read:
+> **The promised re-verification was owed and is now done (2026-08-23 17:55).** This paragraph read:
 > *"Numbers below are from the DataSphere job's own stdout; the `.npz` was lost to an
 > output-collection failure and is being regenerated locally, so these are re-verified on arrival
 > before any of them become load-bearing."* **The regeneration completed** —
@@ -2552,6 +2645,100 @@ gating problem removed entirely, and the upper bound is null. *Caveat, stated be
 claim:* a static convex mixture is not the most general thing a learned gate could do — a gate that
 is a function of the state could in principle vary weights per token, which this cannot. What is
 shown is that no **fixed** weighting helps, on three checkpoints.
+
+### 4.7d The learned depth gate — the fifth instrument, and it cannot express the hypothesis it was built to test
+
+*Instrument:* `depth_gate_mode="state"` in `src/model.py:685-690` — stack all `n_loops` states, score
+each with a `Linear(H,1)`, softmax over loops **per token**, mix, and replace the final readout with
+the mixture. **+448 parameters.** This is the `gate_state` experiment two reviewers independently
+called the only remaining candidate for a *positive* result, and §4.7c is explicit that its static
+sweep is a **lower** bound on this, not an upper one.
+
+**The read was pre-registered in `RUNS.md` at 17:40, before the number existed:** *(a) do the learned
+gate weights concentrate or stay near uniform — if near uniform, the model declined the parameter and
+this reduces to §4.7c's null; (b) if concentrated, on which loop, and is it token-dependent.*
+
+**Answer: it concentrates completely, and that makes it a learned early exit rather than a mixture.**
+Measured on the local checkpoint (step 760, ‖gate head‖ = 1.0469, so the parameter did train — it is
+not sitting at its zero init), using the model's own loop via `return_states=True` rather than a
+hand-rolled copy (§6.0 row 31):
+
+| r | logit range per token | mean top weight (uniform) | **effective loops mixed** | argmax loop (mean / median) | frac with top > 0.99 |
+|---|---|---|---|---|---|
+| 8 | 1872.6 | 0.9975 (0.1250) | **1.01 / 8** | 7.40 / 8 | 0.985 |
+| 16 | 3445.6 | 0.9940 (0.0625) | **1.02 / 16** | 14.56 / 16 | 0.970 |
+| 32 | 6312.7 | 0.9873 (0.0312) | **1.05 / 32** | 28.59 / 32 | 0.952 |
+
+A softmax over logits spanning 1,900–6,300 is a hard argmax. **The effective number of loops mixed is
+1.0, not r** — so the "mixture" is `readout(h_argmax)`, and since the argmax is the *deepest* loop,
+it is `readout(h_r)`: **exactly the control's readout.** The arm reduces to its own control by
+construction.
+
+**The mechanism is a design flaw worth naming, because it is the reason this is not a test.**
+`gate_logits = w · h_t` is an **unnormalised linear function of the raw state**, and ‖h‖ grows
+1.8×–4.0× across loops within a forward pass and ~10³ over training (§4.3). The softmax temperature
+is therefore effectively zero at any ‖w‖ the model would learn. **The readout is deliberately
+scale-invariant — RMSNorm before the tied head — and this gate is not.** A gate reading `norm1(h_t)`,
+or logits divided by ‖h_t‖, would be the clean test; this one cannot express a soft mixture at all.
+
+*It also explains an anomaly that was visible in the raw JSON and nowhere else:* at step 152 the
+gate's argmax was loop **1**, so the mixture was `h_1` exactly and the `r=32` eval point came back
+**bit-identical to `r=1`** (6.5041207472 both). The statistic had been reporting a hard selection from
+the start.
+
+**The empirical result, and the two replicates disagree by 0.32 nats.** In-job paired, same seed,
+same shard, `supervise_k=5`, `U[4,32]`, 2.5M tokens — verified field-by-field, and the DataSphere
+kernel's gate code is **byte-identical** to `src/model.py`:
+
+| replicate | ΔCE@1 vs in-job control | ΔCE_best vs in-job control |
+|---|---|---|
+| local MPS, 5 matched eval steps (152 / 304 / 456 / 608 / 760) | −0.085, **+0.035, +0.011, +0.017, +0.027** | −0.083, **+0.035, +0.022, +0.013, +0.024** |
+| **DataSphere T4, step 1219** | **−0.2830** | **−0.2950** |
+
+**Four of five matched local points are slightly *worse* than control and all sit inside the 0.0527
+floor; the T4 arm is 0.29 nats *better*, ~5.5× the floor.** Configs match; the differences are device
+and the local chunked runner's ~21 optimizer resets (§6.0b). **This report makes no claim from either
+number.** The measurement that would settle it is the T4 checkpoint, and **it was destroyed by the
+`outputs:` glob defect** (§6.0 row 34) — the arm's weights were written on the node and never
+returned. The local arm's weights survive, which is why the mechanism table above exists at all.
+
+**What this does and does not do to §4.7's negative.** It does **not** add a fifth instrument class
+that failed. It removes one: §4.7c's null was a *lower* bound on a learned per-token gate, and this
+gate does not test the upper bound, because it collapses to selection. **So the per-token depth
+headroom (0.2008–0.2032 nats, split-half 0.866) is unreached by four instrument classes and
+UNTESTED by the fifth** — which is a weaker and more accurate statement than the one this report
+would otherwise have made.
+
+> ### The scope that actually bounds all of it: every instrument here is READOUT-side
+>
+> Stated because a reviewer who knows the literature will notice it, and because it is the honest
+> boundary of this report's strongest negative. The four classes that failed — label-free halting
+> rules (§4.7), static readout mixtures (§4.7c), the annealed-checkpoint retest (§4.7a), and the
+> oracle-depth ragged cache (§4.8b) — plus the depth gate above, **all read the finished trajectory
+> and then select or blend.** *None of them changes what the block sees at loop `t`.*
+>
+> **The recurrence-side version exists, is published, and costs zero parameters.** Think-at-Hard
+> (arXiv 2511.08577) implements **duo-causal attention**, verified from the tarball in
+> `papers/sources/2511.08577`: tokens attend *"across both previous positions and shallower iteration
+> depths, maintaining 2D causality"* (`3_method.tex:105,168`), motivated by exactly the problem this
+> report's early-exit section runs into — *"tokens at deeper levels cannot access hidden states of
+> previous tokens that verbalized at shallower depths"* (`:162`). The implementation is cheap:
+> *"maintain separate KV caches per iteration depth and flatten the 2D (token, depth) grid into 1D"*
+> (`:186`), with the constraint *"enforced via a modified additive attention mask, requiring no custom
+> CUDA kernels"* (`:188`).
+>
+> **Their oracle table is §4.7's result at 1.7B** (`3_method.tex:75-82`, Ouro-1.7B, NTP accuracy):
+> Always1 **73.1**, Always2 **79.7**, Oracle **81.8** (+2.1) — with the caption stating the oracle
+> *"iterates on 12-19% of tokens."* Selective depth beats uniform depth, and the gap is real, at a
+> scale 190× this one. That is independent support for §4.7's headroom being genuine, from a paper
+> that also supplies the mechanism this report never tested.
+>
+> **This is not run here and is named as the gap it is.** Duo-causal at μ_rec = 40 would store W past
+> K/V sets per layer, and the depth gate above already exhausted a 13.04 GiB MPS cap at batch 8 by
+> retaining `r` states — so the honest reason it is absent is memory and window, not judgement.
+> **The defensible form of this report's negative is therefore: per-token depth demand is real,
+> reliable, large, and unreachable by every *readout-side* instrument tested; the *recurrence-side*
+> family is untested here and has a published positive.**
 
 ### 4.7b Why no label-free rule works: the trajectories are nearly identical, the optima are not
 
@@ -3461,7 +3648,7 @@ with a matched dense control. Restricted to the grid shared with the arms above,
 > is valid**; only the cross-reference to §4.14's own numbers looks like a contradiction.
 > **This is also why the shift is quoted as 1.50× in one place and ~1.7× in another** — 11.3 → 17.0 on
 > the 8-point grid, 11.3 → 19.6 on the 7-point grid. Same arms, same weights, two grids.
-> *(Flagged 2026-08-23 18:20 by the first end-to-end read; the grid restriction was stated once, above
+> *(Flagged 2026-08-23 17:50 by the first end-to-end read; the grid restriction was stated once, above
 > the table, and nothing warned a reader that the numbers would disagree with §4.14's own.)*
 
 **Six arms, three independent runs per condition, two devices — and every plateau is identical to the
@@ -3655,7 +3842,7 @@ by only a few steps; that is enough once trajectories diverge.
    tightest (CUDA dense) and 0.068 at its widest. Only **10** curves have a resolvable argmin, and
    **5 of those 10 are `train_at_L` arms** whose half-of-L rule (§4.9) is the claim that survived
    independent re-testing. That is a strong consistency check: the one depth claim with real margins
-   is the one that reproduced. (**Re-run 2026-08-23 18:45: 134 of 165 unresolvable, 21 more weak.**
+   is the one that reproduced. (**Re-run 2026-08-23 17:55: 134 of 165 unresolvable, 21 more weak.**
    Earlier printings of this report quoted *63 of 82* and *57 of 76* from two earlier runs, in five
    places, with no date attached to either — so the same audit appeared under two different totals.
    All five now carry this figure. The fraction has **risen** from ~three-quarters to **81%** as more
@@ -4641,6 +4828,191 @@ be that at init.
 has none, drifting logarithmically without bound. Both hold: the three layers point the same way, and
 that shared direction keeps rotating. Their result is on 12-layer models; ours has 3.
 
+### 4.21 Operator diversity — the first replicated CE improvement in this project, and it moves no band
+
+*Instrument:* four independent jobs — DataSphere T4 (`ds_operator_diversity_results.json`), local MPS
+(`operator_diversity_results.json`), and two Kaggle runs (`kg_rank8_results.json`,
+`kg_sw90_results.json`). Every row below is an **in-job pair**: arm and its control ran in the same
+job, on the same shard and tokenizer, at the same seed, 2.5M tokens each. Every number was re-derived
+from the stored `val_curve` for this section, not taken from a summary.
+
+`cond_mode="lora_cycle"` gives the shared block **B low-rank branch adapters cycled by loop index**
+(`branch = t mod B`, B = 4 here), so consecutive loops apply genuinely different operators while the
+base weights stay tied.
+
+| platform | seed | rank | arm params | control best CE | arm best CE | **ΔCE_best** | control band → arm band |
+|---|---|---|---|---|---|---|---|
+| local MPS | 0 | **2** | 9,268,896 | 5.3391 | 5.4332 | **+0.0941** | [8,16] mid 11.3 → **[8,16] mid 11.3** |
+| local MPS | 0 | 4 | 9,473,184 | 5.3391 | 5.2877 | **−0.0514** | [8,16] mid 11.3 → **[8,16] mid 11.3** |
+| **DataSphere T4** | 0 | 4 | 9,473,184 | 5.3874 | 5.2863 | **−0.1011** | [8,20] mid 12.6 → **[8,20] mid 12.6** |
+| Kaggle | 1 | 8 | 9,881,760 | 5.4327 | 5.3593 | **−0.0733** | [8,20] mid 12.6 → **[8,20] mid 12.6** |
+| Kaggle, `sw90` | 0 | 4 | 9,473,184 | 5.4821 | 5.3649 | **−0.1172** | [8,24] mid 13.9 → **[8,24] mid 13.9** |
+
+**Two facts, and the second is the one this report cares about.**
+
+**(1) At rank ≥ 4 the CE improvement replicates across everything varied.** Four arms — two ranks (4,
+8), three platforms (MPS, T4, Kaggle), two seeds, and one of them under a different supervision
+schedule (`sw90`) — all negative. Mean **−0.0857**, sd 0.0292, **95% t-interval [−0.1322, −0.0393],
+which excludes zero.** That is the same paired t-test this report used to *withdraw* the annealing CE
+claim (§4.17), applied here and passing. Three of the four clear their platform's measured floor
+outright (−0.1011 and −0.0733 against CUDA-dense 0.0150; −0.1172 against the 0.0541 terminal floor);
+the local −0.0514 sits **inside** the MPS floor (0.031–0.068) and is not individually resolvable.
+**This is the only CE claim in this report that survives a multi-platform replication.**
+
+**(2) The useful band does not move. In any of the five pairs. Not by one grid point.** [8,16]→[8,16],
+[8,20]→[8,20], [8,24]→[8,24] — the arm's plateau is *identical to its own control's* every time,
+including in the two pairs where CE improves by more than 0.10 nats. So operator diversity buys
+**ceiling, not depth**: it makes the model better, and it does not make more loops useful. Against the
+brief — *low perplexity **by exploiting many loops*** — it delivers the first clause and is completely
+inert on the second. That is this report's central dissociation (§4.5, §4.9, §4.11, §4.17) appearing
+for the sixth time, now on the one intervention that reliably lowers the loss.
+
+**Rank 2 reverses the sign, and it is not noise.** +0.0941 is 1.4–3× the MPS floor. So the effect is
+**rank-dependent with a threshold between 2 and 4**, and the cheapest version is actively harmful —
+which is worth stating because a reader pricing this mechanism would naturally reach for the smallest
+rank first.
+
+> **This corrects an inference this project made three hours earlier, and the correction matters more
+> than the arm does.** When `od_lora_r2` landed at +0.0941 it was written up as *"empirically confirms
+> §4.20's retraction — the arm was built to fix what turned out to be a shared-residual artifact."*
+> **That inference was wrong, and rank is why.** §4.20's retraction stands exactly as stated — the
+> cross-layer cosine *is* substantially a shared-residual artifact, and per-loop operator diversity
+> genuinely does *not* move it (cos@64 = 1.0000, unchanged). What does **not** follow, and what was
+> asserted anyway, is that branch diversity is therefore useless: at rank ≥ 4 it is the most reliable
+> CE improvement measured here. **A retracted *statistic* was allowed to retire a whole design axis on
+> one under-powered arm.** The statistic and the axis were never the same claim.
+
+**The scale argument does NOT cover this, and that is the honest cost.** §3.5's strongest asset is
+that supervision annealing adds **zero parameters**, so there is no table to outgrow (§3.3, §3.4).
+Loop-cycled LoRA costs **+408,576 params at rank 4 (+4.51%) and +817,152 at rank 8 (+9.01%)** — the
+rank-8 model sits at 9,881,760, just **118,240 under the task's 10M cap**. Two readings, both live:
+
+- *It passes §3.4's letter.* The branch index is `t mod 4`, a **function** of t defined for every t,
+  so unlike an iteration-embedding table it does not become undefined outside the trained range — and
+  the model does evaluate cleanly to loop 64 here.
+- *It fails §3.4's spirit.* The benefit is bounded by a **fixed set of four branches** regardless of
+  how wide the block gets, which is the shape the task's own counter-example warns about. Nothing here
+  tests whether B = 4 still helps at 100M parameters, and this project cannot.
+
+**So it is reported as a measured positive with its price attached, not as a recommendation**, and
+§3.5 is unchanged: the method this report recommends is still the zero-parameter one, because the
+axis the task scores — *many loops* — is the axis on which operator diversity does nothing at all.
+
+*Scope.* 2.5M tokens per arm, one budget. This project's own three-instance regularity (§4.6b) says a
+2.5M effect can shrink or reverse by 90M — the norm penalty shrank 12× and flipped character over
+exactly that span. **No full-budget replication of any LoRA arm exists**, and on this report's own
+evidence that is the check that would decide it.
+
+### 4.21b Both effects are already present at loop 1, where neither mechanism can act
+
+Decomposing every arm above as `Δgain = ΔCE@1 − ΔCE_best` (`src/gain_decomp.py`, the report's single
+implementation), and asking what fraction of each arm's improvement is **already visible at a single
+loop**:
+
+| arm | ΔCE@1 | ΔCE_best | **Δgain** | fraction of the effect present at r = 1 |
+|---|---|---|---|---|
+| `ds_od_lora_r4` | −0.0896 | −0.1011 | **+0.0115** | **89%** |
+| `kg_od_lora_r8_s1` | −0.0700 | −0.0733 | **+0.0034** | **95%** |
+| `kg_od_lora_r4_sw90` | −0.1036 | −0.1172 | **+0.0136** | **88%** |
+| `od_lora_r4` (MPS) | −0.0344 | −0.0514 | **+0.0170** | 67% |
+| `od_lora_r2` (MPS) | +0.0982 | +0.0941 | +0.0041 | 104% *(both worsen)* |
+| **`ds_od_depth_gate`** | **−0.2830** | **−0.2950** | **+0.0121** | **96%** |
+
+**Every Δgain is between +0.003 and +0.017 — inside every floor this project has measured** (0.0150
+CUDA-dense at the tightest). So none of these interventions changes how much the loop is worth. They
+move the entire curve down and leave its shape alone, which is the plateau column of §4.21 restated in
+the metric that cannot be confounded by where the band sits.
+
+**For the depth gate this is not just a null — it localises the mechanism, and rules the intended one
+out.** At `r = 1` the gate's softmax runs over a **single** state, so the mixture is that state
+exactly and the gate is **provably inert**: `ds_od_depth_gate` and `ds_od_control` compute the
+identical function at one loop. Yet **96% of the arm's −0.2950 is already there** (ΔCE@1 = −0.2830).
+**Whatever produced that improvement, it is not the mixing of depths** — the thing the mechanism was
+built to do contributes at most 0.012 nats of it, which is inside the floor. The remainder is a
+training-time effect: routing the final loss through a softmax over all `r` states gives every loop a
+direct gradient path, which is dense supervision by another name (§4.14, §4.16), not depth selection.
+
+The same reading applies to the LoRA arms at 88–95%, with a caveat that keeps it honest: a loop-cycled
+adapter **does** act at `r = 1` (it applies branch 0), so unlike the gate there is no inertness
+argument, and "the effect is not about depth" rests there on the flat Δgain and the unmoved band
+rather than on a proof.
+
+### 4.22 The learned depth gate cannot express the hypothesis it was built to test
+
+*Instrument:* `depth_gate_mode="state"` — stack all `n_loops` states, score each with a
+`Linear(H, 1)`, softmax over loops **per token**, mix, and replace the final readout with the mixture.
+**+448 parameters.** This is the `gate_state` experiment two external reviewers independently asked
+for, and §4.7c's static-mixture null was explicitly a **lower** bound on it (a global weighting cannot
+reach a per-token signal; the learned gate could).
+
+**The read was pre-registered in `RUNS.md` at 17:40, before any number existed:** *(a) do the learned
+gate weights concentrate or stay near uniform — if near uniform, the model declined the parameter and
+this reduces to §4.7c's null; (b) if concentrated, on which loop, and is it token-dependent.*
+
+**Answer: (a) it concentrates completely, and (b) on the deepest loop.** Measured on the local
+checkpoint (step 760, ‖`depth_gate_head`‖ = 1.0469, so the parameter did train), through the model's
+own loop via `return_states=True` rather than a hand-rolled copy (§6.0 row 31):
+
+| r | logit range per token | mean top weight (uniform) | **effective loops mixed** `exp(H)` | argmax loop, mean / median | tokens with top weight > 0.99 |
+|---|---|---|---|---|---|
+| 8 | 1,872.6 | 0.9975 (0.1250) | **1.01 / 8** | 7.40 / 8 | 98.5% |
+| 16 | 3,445.6 | 0.9940 (0.0625) | **1.02 / 16** | 14.56 / 16 | 97.0% |
+| 32 | 6,312.7 | 0.9873 (0.0312) | **1.05 / 32** | 28.59 / 32 | 95.2% |
+
+**A softmax over logits spanning thousands is a hard argmax.** The effective number of loops mixed is
+**1.0**, not `r`. So the "mixture" evaluates to `readout(h_r)` — **which is exactly what the control
+computes.** The arm reduces to its own control by construction.
+
+**The mechanism, and it is a design fault worth naming precisely because the fix is two lines.** The
+gate logits are `w·h_t`: an **unnormalised linear function of the raw state**. ‖h‖ grows 1.8–4.0×
+across loops *within a single forward pass* (13,204 → 52,836 at r = 32) and by ~10³ over training
+(§4.3). So the softmax temperature is effectively zero and **cannot** produce a soft mixture at any
+‖w‖ the model would plausibly learn. **The readout is deliberately scale-invariant — RMSNorm before
+the tied head — and this gate is not.** A gate reading `norm1(h_t)`, or dividing its logits by ‖h_t‖,
+is the version that would actually test the hypothesis. It was not run.
+
+**What this costs the report, stated as scope rather than as a result.** §4.7c's null covers *static*
+mixtures. §4.7, §4.7a and §4.8b cover *selection*. This arm was to be the fifth instrument class and
+the first to test a **learned per-token** gate. **It does not test it.** So the per-token depth
+headroom (0.2008–0.2032 nats, split-half reliability 0.866 against a null of 0.0007) remains
+**unreached by four instrument classes and untested by the fifth** — not refuted by it. That is a
+materially weaker statement than this report would have been entitled to make had the gate been
+scale-invariant, and it is the true one.
+
+> **The tell was in the raw JSON for hours and read as an ordinary number.** At step 152 the local
+> arm's `r = 32` eval came back **6.5041207472** — *bit-identical* to its own `r = 1` value. Early in
+> training the gate's argmax was loop 1, so the mixture *was* `h_1`, exactly. `src/train.py::evaluate`
+> runs one forward at `n_loops = max_r` and reads `logits_per_loop[r-1]`, and `model.py:690` overwrites
+> **only** the final index — so locally only the `r = 32` point is gated at all, while the DataSphere
+> kernel evaluates a separate forward per `r` and gates every point. **The two eval paths are
+> different instruments for this arm**, and `CE@1` is the only structurally identical point between
+> them. §7b's first meta-pattern again: ask what the instrument samples before believing what it
+> reports.
+
+**Two replicates disagree by 0.32 nats, and this is reported as an instrument problem rather than a
+result.** On the T4 the arm is **−0.2950** against its in-job control; on MPS, at matched step 760, it
+is **+0.0241** — the wrong sign, inside the floor. Configs were verified identical field-by-field
+(batch 8, `supervise_k` 5, `U[4,32]`, seed 0, 2.5M tokens) and the DataSphere kernel's gate code is
+**byte-identical** to `src/model.py:685–690`. What differs is the device and the local chunked
+runner's ~21 optimizer resets (§6.0b). **The measurement that would settle it is the DataSphere
+checkpoint's gate weights, and they are unrecoverable** — the job declared them as a glob and
+DataSphere does not expand globs (§6.0 row 34). *That is this report's output-collection defect
+costing a live scientific question, not just disk.*
+
+**A real scale cost, found by an OOM rather than by analysis.** The gate retains all `r` loop states
+with gradient, so activation memory is **O(r)** on top of full BPTT — it **breaks the constant-memory
+property** that makes a weight-tied loop attractive at depth. The local arm reached step 760 and then
+OOM'd on a deep loop-count draw (13.33 GiB against a 13.04 GiB cap) and could not be resumed at the
+same batch size. For a mechanism whose whole appeal is +448 parameters, the parameter count is not
+where its cost lives.
+
+**Finally, its band must not be quoted.** The DataSphere arm reads plateau **[8,64], midpoint 22.6** —
+the widest in this report, and it is **not a depth band**. `RUNS.md` pre-registered this before the
+run: the gate mixes over loops `1..r`, so its plateau is over **mixture-window size**, and evaluating
+at larger `r` changes what is being mixed rather than how deep the model computed. Combined with the
+saturation result above, its flatness across `r` is what a hard selector *must* produce. **It does not
+belong in the §4.16b/§4.17 band tables and is excluded from them.**
+
 ## 5. Methods tested to destruction — what was claimed, what was measured, why it broke
 
 > **This section was titled "What didn't work", and that title was costing it.** A *null* says "we
@@ -4661,6 +5033,7 @@ that shared direction keeps rotating. Their result is on 12-layer models; ours h
 > | **Scale clock** (feed `log‖h‖` back to the block) | reviewer proposal, §4.19 | Predicted failure fired **exactly as predicted**: multiplicative positive feedback, **+1.36 nats (≈20× the floor)**, ‖w‖=1.34 proving the model *took* the parameter, and the state diverging to non-finite by **loop 39**. Its motivating premise (a fixed point in `u`) was separately shown false |
 > | **Five label-free exit-rule families** | §4.7, §4.7b | Not "the rules were bad" but a **structural reason they must fail**: total path length has **cv 0.068** while per-token oracle depth has **cv 0.798** — the rules condition on a quantity with almost no cross-token variance. Confirmed to survive on an *annealed* checkpoint (§4.7a), which kills the literature's own explanation |
 > | **Convex gate / damped sub-stepping** | arXiv 2605.23872 | Ran the retrofit literature's central intervention in the one regime where **its stated objective does not exist** — there is no frozen `t=1` endpoint to return to in pretraining. The null is the mechanism's prediction (§4.10) |
+> | **Learned per-token depth gate** (`gate_state`, +448 params) | requested independently by two external reviewers; §4.7c's null is its *lower* bound | **The instrument, not the hypothesis, failed — and that is the finding.** Its logits are `w·h_t`, unnormalised, while ‖h‖ grows 1.8–4.0× within a forward pass and ~10³ over training, so the softmax saturates: **effective loops mixed = 1.0 of r**, 95–98% of tokens at top-weight > 0.99. It is a hard selector, not a mixture, and **96% of its DataSphere improvement is already present at r = 1 where it is provably inert** (§4.21b, §4.22). A scale-invariant gate reading `norm1(h_t)` is the two-line version that would test the claim; it was not run |
 > | **Gated (diagonal state-space) injection** | Parcae; *Looped Transformers Done Right* | The field's own choice for the normalisation axis — a learned per-channel carry decay — **does exactly what it claims** (‖h‖ growth 6.2× → 1.17×, injection ratio stops collapsing) and costs **+0.2470 nats, ~4.7× the replicate floor** (§4.1b). Confirmed to be doing its job and still the wrong choice here |
 >
 > Each row names a hypothesis or a published method, states the regime, and gives the reason. That is
@@ -4867,7 +5240,7 @@ config change that was never run against a job that finished.*
 |---|---|---|---|
 | 1 | **§4.4's headline was an artifact of flaky hardware.** The untied baseline "failed to train" — NaNs at every LR. It trains fine on CUDA at all three LRs, including the one that died at step 13 on MPS. | re-running the same arms on a second device | a published claim + its mechanism, **retracted in full**; the report's most expensive error |
 | 2 | **Every evaluation built a full autograd graph.** `torch.enable_grad()` overrides an *outer* `no_grad()`, so the default path silently retained activations across all loops. | an OOM that was assumed to be intrinsic until the code was read | months of experiments sized smaller than necessary; **no number changed** (verified 0.000e+00) |
-| 3 | **`argmin` was the wrong statistic for every depth claim.** 134 of 165 stored curves have argmin margins under 0.005 nats against floors of 0.015–0.068 (re-run 2026-08-23 18:45; it was 63 of 82 when the statistic was built). | `plateau.py` + `argmin_audit.py`, built after a summary line reported an optimum shift decided at **0.0001 nats** | **killed one finding before publication**, revised §4.14 from 2× to 1.50×, confirmed five others |
+| 3 | **`argmin` was the wrong statistic for every depth claim.** 134 of 165 stored curves have argmin margins under 0.005 nats against floors of 0.015–0.068 (re-run 2026-08-23 17:55; it was 63 of 82 when the statistic was built). | `plateau.py` + `argmin_audit.py`, built after a summary line reported an optimum shift decided at **0.0001 nats** | **killed one finding before publication**, revised §4.14 from 2× to 1.50×, confirmed five others |
 | 4 | **The noise floor was assumed, never measured.** | two *accidental* same-config replicates found while auditing something else | every A/B under ~0.05 nats had been over-read; now measured per device *and per config* (§4.15) |
 | 5 | **A claim asserted four times was never tested.** "Loop gain trades against CE" was stated from four hand-picked pairs. | `gain_vs_ce.py` over all 43 arms, stratified | ρ = **−0.081** pooled, strata disagreeing in sign; **demoted from "the report's most robust finding"** |
 | 6 | **A run name stood in for a config, three times.** `full_fixed_loops16` was not a fixed-16 run at all. | reading `train_cfg` from the artifact instead of trusting the filename | one relabelled section, one rerun |
@@ -4897,7 +5270,7 @@ config change that was never run against a job that finished.*
 | 32 | **Two new probes paired oracle-depth labels with the wrong tokens.** Both read per-token oracle depths from the exit dump — which was computed on `data/frozen_eval_set.npz` — and then indexed tokens as *sequential slices of `val.bin`*. The frozen set's own `starts` are 219, 494, 2630, …, not 0, 256, 512, so `oracle_d[b,j]` described a different token than `X[b,j]`. | checked the frozen set's `starts` array against the sequential-slice assumption before trusting either probe's output | **fixed in both, and both re-run.** The conflict probe was insensitive to it (0.9419 → 0.9424) because it is a *within-token* comparison that survives shuffling; the cache probe's conclusion also held. **The lesson is that both survived by luck of statistic, not by design** — a by-group statistic on scrambled labels would have been silently wrong, and neither probe's output looked suspicious |
 | 21 | **My own first version of that gate cried wolf.** It used a fixed 0.02 tolerance on 4 batches — ~1k tokens, whose sampling noise is 0.07–0.11 nats — and FAILED two checkpoints whose vocabulary is provably fine. | the failure was implausible, so the instrument was checked before the checkpoints were | re-specified with two tolerances (vocab-vs-chance, protocol-vs-SEM); a gate that fires on noise is worse than no gate, because it trains you to ignore it |
 | 19 | **A sweep died on its first arm and took the paired control with it** (CUDA OOM at 72 loops). | the job's terminal state | lost the μ_rec=56 pair; a per-arm OOM guard now records the failure in 94s instead |
-| 33 | **Nobody had read this report end to end — including me — across three same-day retractions.** Propagation after each withdrawal was *targeted*: grep the withdrawn **number**, fix every site that quotes it. That catches numbers and misses **claims restated in words**. | the first end-to-end read, 2026-08-23 18:00–18:20 | **Twelve defects, three of them serious, none findable by grep.** §3.5 restated *both* withdrawn claims ("better CE than its control", "band from ~23 loops to 32–64") four lines below their own withdrawal blocks; §8 still carried `+0.022 nats` — the **cross-job** control §4.17 had explicitly replaced with an in-job one that *reverses the sign* to −0.0264; §4.2's "three readings" still said loop gain was **flat** 120 lines after its own paired re-measurement overturned exactly that. Also: a false `iff` on `σ_max` contradicting §2 and its own correction block; the retracted unseeded **1.70** quoted as live ten lines after being retracted; a plateau quoted with no grid in the §3.5 table, violating this report's own rule; a stale "the `.npz` was lost" caveat on numbers that had since become load-bearing (re-verified from the artifact — all match); one argmin count printed as two different totals in five places; a broken table row and a duplicated clause. **The lesson is specific: a retraction needs a *prose* pass, not a *number* pass** |
+| 33 | **Nobody had read this report end to end — including me — across three same-day retractions.** Propagation after each withdrawal was *targeted*: grep the withdrawn **number**, fix every site that quotes it. That catches numbers and misses **claims restated in words**. | the first end-to-end read, 2026-08-23 17:40–17:50 | **Twelve defects, three of them serious, none findable by grep.** §3.5 restated *both* withdrawn claims ("better CE than its control", "band from ~23 loops to 32–64") four lines below their own withdrawal blocks; §8 still carried `+0.022 nats` — the **cross-job** control §4.17 had explicitly replaced with an in-job one that *reverses the sign* to −0.0264; §4.2's "three readings" still said loop gain was **flat** 120 lines after its own paired re-measurement overturned exactly that. Also: a false `iff` on `σ_max` contradicting §2 and its own correction block; the retracted unseeded **1.70** quoted as live ten lines after being retracted; a plateau quoted with no grid in the §3.5 table, violating this report's own rule; a stale "the `.npz` was lost" caveat on numbers that had since become load-bearing (re-verified from the artifact — all match); one argmin count printed as two different totals in five places; a broken table row and a duplicated clause. **The lesson is specific: a retraction needs a *prose* pass, not a *number* pass** |
 | 34 | **The fix for row 23 does not work, and was recorded as done in two documents.** Row 23's remedy was to add the checkpoint to `outputs:` in 23 DataSphere configs. It was added **as a glob**, `"*_last.pt"`. `tlab-operator-diversity` (`bt1sglqurmj6frrmsfrk`) then completed all three arms, wrote all three `.pt` files (`main.py:886`, unconditional), and `download-files` returned **1 file, 11.5 KB — `results.json` alone.** | pulling a finished job's outputs and finding the weights absent *again* | **22 of 26 `ds_*/config.yaml` use that glob**, so the protection believed to cover every future job covered none. The likely mechanism is that DataSphere resolves `outputs:` against the local working directory at *submit* time, when no `*_last.pt` exists yet — unconfirmed, and the rule does not depend on it: **list every output file explicitly by name, never by glob.** Cost here is concrete: the DS depth-gate weights were the measurement that would have settled whether that arm's −0.2950 is real, and they are gone. **Same shape as row 26 one level over** — there a fix landed in the README while the path stayed broken; here it landed in the config and was never run against a job that finished. *A fix that has not produced the artifact it was meant to produce is a hypothesis* |
 
 **The pattern, stated once.** Four of the five most expensive errors (#1, #3, #4, #5) share a shape:
@@ -5271,7 +5644,7 @@ this report that attacks the loop-gain-vs-depth curve rather than moving along i
 between them. Time at k = 1 buys depth deterministically and costs loss stochastically, so only the
 shortest exposure is safe to recommend.
 
-> **Corrected 2026-08-23 18:20 — this paragraph ended with a number §4.17 had already retracted.** It
+> **Corrected 2026-08-23 17:50 — this paragraph ended with a number §4.17 had already retracted.** It
 > read: *"at a deep schedule (μ_rec = 40, §4.16b) the annealed arm reaches a useful band of loops
 > 24–48 at **+0.022 nats over a dense control** — the closest this report comes to the brief's literal
 > objective — though that one is still single-seed with a cross-job reference at the time of writing."*

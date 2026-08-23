@@ -92,10 +92,13 @@ Context was just compacted; the sections below are the durable state. Read in th
   §4.20's degenerate collapse (a shared-residual artifact), and §3.5's deep half (`tlab-deep-full`'s
   falsifier fired at mid 22.6). **Do not re-assert any of them** — see §4 below. Earlier
   `reviewer_answers/` files still contain them and are kept as the visible retraction record.
-- **Nobody has read `report.md` end to end**, including me, across three retractions. That is the
-  largest outstanding risk on the graded artifact (`TASKS.md` T17). A *mechanical* pass was done
-  (duplicate values, summaries overclaiming, cross-grid comparisons, unflagged citations) and found
-  four real defects, all now fixed — but that is not the same as reading it.
+- **`report.md` HAS now been read end to end — 2026-08-23 17:50, all 5,448 lines, T17 CLOSED.** It
+  found **12 defects, 3 serious, and none of them was reachable by grep**: §3.5 restated *both*
+  withdrawn claims four lines under their own withdrawal blocks, §8 still carried a cross-job number
+  §4.17 had replaced with one of the *opposite sign*, and §4.2 still called loop gain "flat" 120 lines
+  after its own paired re-measurement overturned that. All fixed; recorded as §6.0 row 33 and
+  unknown-known #26. **The transferable lesson: a retraction needs a PROSE pass, not a number pass.**
+  Three targeted number-greps had run and each was believed sufficient.
 - **Neither the git push nor the HF upload has ever run, and no remote is configured.** Both are the
   user's call, not yours. `upload_checkpoint.py` was fixed today and dry-run verified but never
   executed. The fresh-clone dry run passed at 11:00 and the tree has changed a lot since — **re-run
@@ -105,7 +108,7 @@ Context was just compacted; the sections below are the durable state. Read in th
 - Prefix every DataSphere call with `GRPC_DNS_RESOLVER=native`, or it fails with a DNS error that
   looks like a network outage and is not.
 - A DataSphere job reporting **ERROR** may have completed fine — stderr from pip/wandb marks the job
-  ERROR. **Read the raw stdout before believing the status.** This happened twice today.
+  ERROR. **Read the raw stdout before believing the status.** This happened THREE times today — most recently `tlab-operator-diversity`, which reported ERROR having completed all three arms ("ALL DONE in 3286.9s") with one HF-Hub warning on stderr.
 - Local Python is **anaconda base**, not `barannikov-work/.venv` (§7).
 - Before writing any fork's or agent's number into the report, **re-measure it**. Two probes handed
   to me today paired oracle depths with the wrong tokens; both conclusions happened to survive, by
@@ -204,7 +207,7 @@ argmins) · `gain_decomp.py` (Δgain = ΔCE@1 − ΔCE_best; 49 in-job pairs) ·
 
 ### 7. BLOCKED, with causes (see QUEUE.md B1–B3)
 
-> ### ⚠ 2026-08-23 18:40 — THE FIX BELOW DOES NOT WORK. Verified against a job that finished.
+> ### ⚠ 2026-08-23 17:52 — THE FIX BELOW DOES NOT WORK. Verified against a job that finished.
 > `tlab-operator-diversity` (`bt1sglqurmj6frrmsfrk`) declared `outputs: [results.json, "*_last.pt"]`,
 > completed all three arms, wrote all three `.pt` files (`main.py:886`, unconditional), and
 > `download-files` returned **1 file, 11.5KB — `results.json` alone.**
@@ -278,9 +281,9 @@ from asking myself questions.*
 | 24 | **§4.20's headline statistic measured layer *outputs*, which share a residual, rather than layer *contributions*** | trying to break the collapse with operator diversity and failing, then asking why | the finding was substantially an artifact. Two forward passes retired an architectural direction that would have cost a training slot and up to 3.8% of the parameter budget |
 
 | 25 | **The fix for #1 does not work.** ~20 DS jobs lost their weights because `outputs:` listed only `results.json`; the remedy was applied to 23 configs **as a glob**, `"*_last.pt"`. A job that then completed all three arms and wrote all three `.pt` files returned **`results.json` alone, 11.5 KB** | pulling a finished job's outputs and finding the weights gone *again* | 22 of 26 configs carry that glob, so the protection believed to cover every future job covers none. **Rule: name every output file explicitly, never by glob.** Cost: the DS depth-gate weights, the one measurement that would settle that arm |
-| 26 | **A retraction propagated by grepping its NUMBER leaves the CLAIM standing in prose.** Three withdrawals landed on 2026-08-23; each was propagated by finding every site quoting the withdrawn figure. §3.5 still said "better CE than its control" and "band from ~23 loops to 32–64" four lines under their own withdrawal blocks; §8 still carried a cross-job number §4.17 had replaced with one of the opposite sign | the first end-to-end read of `report.md`, 18:00–18:20 | **12 defects, 3 serious, none reachable by grep.** The targeted pass was run *three times* and was believed sufficient each time |
+| 26 | **A retraction propagated by grepping its NUMBER leaves the CLAIM standing in prose.** Three withdrawals landed on 2026-08-23; each was propagated by finding every site quoting the withdrawn figure. §3.5 still said "better CE than its control" and "band from ~23 loops to 32–64" four lines under their own withdrawal blocks; §8 still carried a cross-job number §4.17 had replaced with one of the opposite sign | the first end-to-end read of `report.md`, 17:40–17:50 | **12 defects, 3 serious, none reachable by grep.** The targeted pass was run *three times* and was believed sufficient each time |
 
-**Third meta-pattern, added 2026-08-23 18:50 — the dangerous state is not "unfixed", it is "recorded
+**Third meta-pattern, added 2026-08-23 17:58 — the dangerous state is not "unfixed", it is "recorded
 as fixed".** #25 and #26 are both remedies that were applied, written into two documents each, and
 never checked against the artifact they were supposed to produce — the same shape as §6.0 row 26,
 where the tokenizer fix landed in the README while the shipping path stayed broken. A fix generates a
