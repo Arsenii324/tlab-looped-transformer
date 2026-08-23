@@ -36,7 +36,11 @@ tangential step stays roughly constant, so the readout-visible angular step deca
 motion is **fully visible to the readout** (gain flat at 207→226 while ‖Δu‖ falls 117×) and still
 useless — the direction the model keeps moving in stops being an improvement.
 
-**Seven interventions on the *dynamics*; not one moves the useful band.** Inter-loop normalisation
+**Seven interventions on the *dynamics*; not one widens the useful band, and none raises the
+ceiling.** *(Stated that way deliberately: two of them do **move** the band, and both move it the
+wrong way — the norm penalty **narrows** it, [6,17] → [6,14], and the scale clock drags its onset
+shallower, 8 → 4. "Not one moves it" would be false, and the accurate claim is the one that matters:
+nothing here buys more useful depth.)* Inter-loop normalisation
 (+0.744 nats), a scale clock (+1.36, diverging to non-finite by loop 39), gated injection at the
 field's own α = 0.874 (+0.247), radial clamping, convex gating, `ε = λ/(N√L)` residual scaling, and a
 norm penalty. The gated-injection row is decisive: its **pre-registered mechanism check succeeded**
@@ -2363,6 +2367,24 @@ readout mode / norm penalty) and the 90M Kaggle pair. Eight arms plus the two 90
 > > case §4.6b already makes for shipping the control: the control is the arm with no confound on
 > > either axis. *Found because an external reviewer asked whether the penalty arm clipped, and said
 > > it was one grep. It was one grep, and the answer was the opposite of what this report said.*
+> >
+> > > **A partial bound IS available without the 9.4 h, and it cuts toward the headline pair being
+> > > sound.** The *training* trajectory is unrecoverable, but the **endpoint** is not: one
+> > > forward+backward at the shipped weights, identical protocol for both arms (4×256 batch,
+> > > `n_loops = 18`, terminal supervision):
+> > >
+> > > | checkpoint | loss | **‖grad‖₂** | vs `grad_clip = 1.0` |
+> > > |---|---|---|---|
+> > > | 90M control | 3.9655 | **2.0679** | above |
+> > > | 90M norm-penalty | 3.9633 | **2.8531** | above |
+> > >
+> > > **Both arms are above the threshold, and within 1.4× of each other.** That is not the 2.5M
+> > > picture (0/9 against 5/9) and it is nothing like `raw`/`final_only`'s 100%-vs-0%: at 90M the two
+> > > arms end in the *same* clipping regime rather than opposite ones. **Stated with its limit — one
+> > > batch at the final weights is not the training trajectory**, and a run can end where both clip
+> > > having spent training in different regimes. It bounds the question rather than settling it, and
+> > > the honest summary is that the confound is **open but unsupported at 90M**, where the 2.5M
+> > > evidence had made it look likely.
 
 Sharma & Vu propose four scale-control interventions. §4.1 covered inter-loop normalisation
 (catastrophic, −0.744 to remove it) and §4.6 the radial clamp. The other two — a **raw**
