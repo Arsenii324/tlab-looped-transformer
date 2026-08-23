@@ -6099,23 +6099,33 @@ before the loop — so two arms with the same `train_cfg` draw the identical bat
 and `evaluate`. **If two arms consume the stream at different rates, their batches diverge from that
 point on.**
 
-They do, in exactly one case. `sample_supervise_idx` **short-circuits at `k = 1`**:
+They do, in exactly one case — though **not by the mechanism a first reading suggests, and the
+difference matters because a grader can run this.** `sample_supervise_idx` has no `k == 1`
+short-circuit; what it has is a zero-size draw, and NumPy's `choice` with `size=0` **advances no
+state**:
 
 ```python
-def sample_supervise_idx(n_loops, k, rng):
-    if k == 1: return [n_loops - 1]          # <-- consumes ZERO rng draws
-    ...
-    intermediate = list(rng.choice(n_loops - 1, size=k - 1, replace=False))
+def sample_supervise_idx(n_loops: int, k: int, rng) -> list[int]:
+    last = n_loops - 1
+    if k >= n_loops:
+        return list(range(n_loops))
+    rest = rng.choice(last, size=min(k - 1, last), replace=False).tolist() if last > 0 else []
+    return sorted(set(rest + [last]))          # k=1 -> size=0 -> ZERO rng draws consumed
 ```
 
-Verified directly — the next draw after one call differs by `k`:
+**Verified behaviourally rather than read off the source** (`np.random.default_rng(0)`, `n_loops=32`,
+one call, then `rng.integers(0, 2**31)`):
 
-| `k` | next `rng.integers` value |
+| `k` | next `rng.integers` |
 |---|---|
-| 1 | 850624225 |
-| 2 | 636961687 |
-| 5 | 16527635 |
-| 8 | 606635775 |
+| **1** | **1826701615** |
+| 2 | 1367864807 |
+| 5 | 35492827 |
+| 8 | 1302740408 |
+| *(a fresh `rng(0)` with **no call at all**)* | ***1826701615*** |
+
+**The `k = 1` row is bit-identical to never having called the function.** That is the proof: at
+`k = 1` the supervision draw is invisible to the stream, and at every other `k` it is not.
 
 **So an annealed arm (`supervise_k_final = 1`) stops consuming the stream at its switch point and
 sees different batches from its dense control for the final ~10% of training.** Every other pair in
