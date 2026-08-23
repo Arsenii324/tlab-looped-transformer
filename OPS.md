@@ -231,7 +231,7 @@ from both diffs — they remain in the base commit, so a reviewer can still open
 `git tag pre-squash-history` (963fab4) holds the pre-squash linear history; all of its content also
 survives in `review`, verified file-by-file, but the commit-by-commit record lives only on that tag.
 
-### 7b. UNKNOWN KNOWNS — things that were true, visible in my own artifacts, and unwritten
+### 7b. UNKNOWN KNOWNS — 24 things that were true, visible in my own artifacts, and unwritten
 *Kept here rather than in `reviewer_answers/` because by definition these are what a fresh context
 will not think to look for. Every one surfaced when an artifact collided with an action — none came
 from asking myself questions.*
