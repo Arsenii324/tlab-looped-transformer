@@ -2528,6 +2528,30 @@ reads as train-at-L, and this project had exactly one train-at-L point before th
 *Instrument:* DataSphere `tlab-convex-gate`. Paired — **same seed, same data order, same loop-count
 draws** — and token-matched at 10.0M tokens each.
 
+> **This null is the *predicted* outcome of running a retrofit intervention in a pretraining regime,
+> and saying so is stronger than reporting a disappointment.** *Training-Free Looped Transformers*
+> (arXiv **2605.23872**) derives that a pre-norm block **is** a forward Euler step at `h=1` on an ODE,
+> so looping the window `K` times integrates to `t=K` while the frozen post-loop layers were trained
+> to receive `t=1`. Their fix is damped sub-stepping,
+> `x_{k+1} = (1 − 1/K)·x_k + (1/K)·g(x_k)` — **which is exactly the convex gate above, with
+> `g = 1/K`.** Verified from source (`papers/sources/2605.23872/method.tex:75`):
+>
+> > *"The principled goal of `g^(K)` is therefore **not to advance integration to t=K, but to better
+> > approximate the same endpoint x(t=1)** that the unmodified network already targets."*
+>
+> **In pretraining there is no trained one-step endpoint to return to** — this project trains at the
+> depth it runs, and there are no frozen downstream layers expecting `t=1`. Their method is explicitly
+> *"a lightweight inference-time wrapper… on a frozen checkpoint without additional fine-tuning"*
+> (abstract). So the intervention's entire objective is absent here, and a null is what the mechanism
+> predicts rather than a failure of the mechanism. For scale, their own numbers for how badly naive
+> looping fails in the regime where the objective *does* exist: toy MSE 2.88 → 0.36 at K=2, and
+> 335 → 1.04 at K=8.
+>
+> **What this changes:** §4.10 is not "we tried a gate and nothing moved". It is *"we ran the retrofit
+> literature's central intervention in the one regime where its stated objective does not exist, and
+> it did nothing — as it should."* The gate remains a null for **this** setting, and their result
+> stands undisturbed for theirs.
+
 §8.2 sets out a trilemma: every scale-control mechanism tested here bounds ‖h‖ *by shrinking per-step
 progress* (`state_renorm` contracts, ε-scaling shrinks the step, no-control lets the angular step
 decay as 1/t). A **convex combination** is the one structure that bounds the norm without scaling the
