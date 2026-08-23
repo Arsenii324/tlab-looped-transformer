@@ -1217,9 +1217,26 @@ would silently invalidate them.
 >
 > | run | tokens | CE | **val ppl** | bits/byte | plateau *(grid)* | loop gain |
 > |---|---|---|---|---|---|---|
-> | previous headline | 46.0M | 4.0071 | 54.99 | 1.7330 | [5,14] *(dense 1..64)* | 0.2509 |
-> | **90M control** *(the config §3.5 describes)* | 90.0M | **3.6599** | **38.86** | **1.5829** | [6,17] *(dense 1..64)* | 0.3047 |
-> | **90M + norm penalty** *(best perplexity)* | 90.0M | **3.6250** | **37.52** | **1.5678** | [6,14] *(dense 1..64)* | 0.5611 |
+> | run | tokens | CE | **val ppl** | bits/byte | plateau *(grid)* | CE@1 | loop gain |
+> |---|---|---|---|---|---|---|---|
+> | previous headline | 46.0M | 4.0071 | 54.99 | 1.7330 | [5,14] *(dense 1..64)* | 4.2580 | 0.2509 |
+> | **90M control** *(the config §3.5 describes)* | 90.0M | **3.6599** | **38.86** | **1.5829** | [6,17] *(dense 1..64)* | 3.9622 | **0.3023** |
+> | **90M + norm penalty** *(best perplexity)* | 90.0M | **3.6250** | **37.52** | **1.5678** | [6,14] *(dense 1..64)* | 4.1803 | **0.5553** |
+>
+> > **⚠ The loop-gain column was cross-protocol until 2026-08-23 18:10, in the one table whose entire
+> > purpose is that it is not.** It read **0.3047** and **0.5611** — which are the *kernel's* figures
+> > (kernel control 3.9192 − 3.6146 = 0.3046), sitting in a row whose CE, perplexity and bits/byte are
+> > all local re-scores. Under the local protocol that produced every other cell, the gains are
+> > **0.3023** and **0.5553**. The `CE@1` column is now shown so the subtraction is checkable from the
+> > table itself rather than taken on trust. Found by `src/headline.py`, this repo's own source-of-truth
+> > checker, which computes the gain from the artifact and disagreed with the report by 0.0024.
+> >
+> > **The differences are small and nothing turns on them — which is the point.** This report warns
+> > twice that a local and a kernel number are not interchangeable at the 0.04-nat level, and then
+> > mixed them inside the table that demonstrates the warning. §4.6b's decomposition was re-derived
+> > under the local protocol as a check: ΔCE_best **−0.0349**, ΔCE@1 **+0.2181**, loop-1 share
+> > **86%** against the kernel-protocol **88%**. **The conclusion is protocol-independent** — the norm
+> > penalty's loop-gain advantage is overwhelmingly loop-1 damage either way.
 >
 > **The grid is named in the table because the plateau statistic is grid-conditional and the swing is
 > large enough to change the story.** All three rows come from `src/eval.py`'s every-integer sweep, so
