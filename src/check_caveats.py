@@ -37,6 +37,11 @@ RULES = [
          why="XSA replicates at n=2 (-0.2162 / -0.2633) but 84-91% of the effect is at r=1, so it "
              "improves the BLOCK not the looping -- and its band does not survive seed 1 "
              "([8,20]->[8,16]), so 'band unmoved' is withdrawn."),
+    dict(token="[CV-REDERIVED]",
+         claim=r"0\.7983|cv is 0\.798|1\.1802",
+         why="0.798 is the cv of the angular DISTANCE AT each token's oracle depth, not of oracle "
+             "depth. Summaries that call it 'oracle depth's cv' swap a distance for a depth. The "
+             "per-token oracle DEPTH cv is 1.1802 and is a separate statistic."),
     dict(token="[RANK-PROJECTION]",
          claim=r"31\.8[03]|11\.7×|11\.7x",
          why="most of the untied-vs-tied key-rank gap is per-layer PROJECTION randomness; at the "

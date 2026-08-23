@@ -2954,3 +2954,43 @@ Corrected in §4.23c with the over-broad withdrawal left visible.
 
 Propagated to `report.md` §4.23c, `submission/RESULTS.md` (LoRA row, caveat block, §5.2 now shows
 four LANDED and one running), `submission/NEGATIVE_RESULTS.md`.
+
+## 21:10–21:20 — end-to-end review of `submission/`, and three unknown-unknown checks that paid
+
+**UNKNOWN UNKNOWN 1 — the parameter cap looks VIOLATED to a grader who counts the obvious way.**
+`sum(v.numel() for v in state_dict.values())` on the shipped checkpoint = **10,899,616**, over the 10M
+cap. The true unique count is **9,064,608**; the difference is exactly `4096 × 448 = 1,835,008`,
+the tied embedding registered under two names. **This is explained in `report.md` §6.0 row 27 and
+appeared NOWHERE a grader looks** — not in `submission/`, not on the HF model card. **This is the
+single most costly possible misreading of the submission** (the hardest constraint in the brief, and
+the counting artifact is caused by weight tying, the architecture's central feature). Added to
+`submission/README.md` (a bordered note), `METHOD.md` §1's parameter row, and the HF card generator;
+card regenerated and **re-uploaded**.
+
+**UNKNOWN UNKNOWN 2 — nobody had ever looked at what the model writes.** 6,700 report lines, all
+teacher-forced CE, zero samples. The sibling project's worst error was a capability verdict printed
+over empty strings. Generated from the shipped checkpoint at r=10, temp 0.8: *"The capital of France
+is adopted to the intimidation of our collective taste…"*, *"In the beginning, we have two rows to the
+same place."* **Fluent, grammatical, semantically incoherent — exactly right for 9M params on 90M
+tokens. No degeneracy, no repetition collapse, no empty output. The model works.** Reassuring rather
+than alarming, but it was unchecked.
+
+**UNKNOWN UNKNOWN 3 — the plateau tolerance was set to 0.01 once and NEVER VARIED.** Every band claim
+in the project is a `tol = 0.01` statement, and direction was being read off ±1 grid interval. Swept
+tol ∈ {0.005, 0.01, 0.02, 0.05} over the seven pairs any band claim rests on (§4.25):
+- **Annealing widens at 0.005, 0.01 AND 0.02 and never reverses.** The claim the report leans on
+  hardest is the tolerance-robust one.
+- **The narrowing claims are not robust.** Duo-causal W=3 is *unchanged* at 0.005 at both seeds; XSA
+  *widens* at seed 0 at 0.005 while narrowing at seed 1. **"Three of the five narrow it" is downgraded
+  from a finding to a `tol = 0.01` observation** in `report.md` §4.23b/§4.23d, `RESULTS.md` and
+  `README.md`.
+- **The dissociation is unaffected**: no loss-lowering arm moves the band consistently at any
+  tolerance.
+*This is §4.15's retired-argmin failure in a new costume — a statistic with a **free parameter**, set
+once, never swept. `test_plateau.py`'s 8 checks verify what it computes, none asks whether the answer
+is stable in `tol`.*
+
+**Plus `submission/EARLY_EXIT.md`** — the brief's optional early-exit clause had no owner document;
+evidence was spread across §4.7/§4.7a–e/§4.8/§4.22/§4.23. And a 12-defect end-to-end read (see the
+commit message) including two `0.2008` vs `0.3084` figures both called "oracle headroom" on
+*different checkpoints*, and my own "nine rules" over an eight-row table.

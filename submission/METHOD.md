@@ -18,12 +18,22 @@ One **Qwen3-style decoder block of 3 layers**, weight-tied, applied `r` times.
 | MLP intermediate (SwiGLU) | 1344 |
 | layers per loop | 3 |
 | vocabulary (tied embedding) | 4096, byte-level BPE trained on FineWeb |
-| **total parameters** | **9,064,608** ≤ 10M ✓ |
+| **total parameters** | **9,064,608** ≤ 10M ✓ — `sum(p.numel() for p in model.parameters())`. **A `state_dict` sum gives 10,899,616**, double-counting the tied embedding (`4096 × 448 = 1,835,008`); see `README.md` |
 | — in the reused block | 7,228,704 (79.7%) |
 | training tokens | **90.0M** ≤ 100M ✓ |
 
 Verified against the real `transformers` Qwen3 reference at **max\|diff\| = 2.4e-07** before any
 training compute was spent (`src/test_model.py`, 13 checks).
+
+> **One trap for anyone who clones and instantiates.** `LoopedTransformer(Config())` — the *bare
+> default* — reports **9,065,056** parameters, not 9,064,608. The 448 is `loop_norm.weight`, because
+> **`Config()`'s default is `state_renorm=True`**: the inter-loop RMSNorm this report measures at
+> **+0.744 nats** and rejects. **The default config is the arm we argue against**, kept as the
+> default only because it is the field's convention and every ablation is expressed as a delta from
+> it. The released architecture is `state_renorm=False`, and the shipped checkpoint's own `model_cfg`
+> carries it — load from the checkpoint rather than from `Config()` and the count is 9,064,608.
+> *(The checkpoint's `state_dict` sums to 10,899,616 because the tied embedding appears under two
+> keys: 9,064,608 + 4096×448 = 10,899,616. Nothing is untied.)*
 
 **Four choices are load-bearing, each with the measurement that decided it:**
 

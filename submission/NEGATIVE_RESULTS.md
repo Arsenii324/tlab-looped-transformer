@@ -137,9 +137,14 @@ two are not comparable), split-half reliability
 
 **Two structural reasons, and the second is the deeper one.**
 
-*First:* the rules condition on total path length, whose cross-token **cv is 0.068**, while oracle
-depth's **cv is 0.798**. Every trajectory-reading rule is reading a quantity with almost no
-cross-token variance in order to predict one with an order of magnitude more.
+*First:* the rules condition on total path length, and **that quantity barely varies**. Cross-token
+**cv 0.0682** for the total angular distance, against **cv 0.7983** for the distance at each token's
+*own* optimum — **two quantities in the same units, an order of magnitude apart**, re-derived on the full
+524,288-token array `[CV-REDERIVED]`. Every trajectory-reading rule reads a near-constant in order to
+predict something that varies by an order of magnitude more. *(An earlier printing of this line called 0.798
+"oracle **depth**'s cv". It is not a depth — it is an angular **distance measured at** the oracle
+depth, and §4.7b always labelled it correctly. The mislabel is corrected here and in report.md §0/§4.7;
+the per-token oracle **depth** CV, computed separately, is 1.1802.)*
 
 *Second, and it explains the whole family at once:* **a token's 32 depth keys span an effective rank
 of ~1.6** (mean pairwise cosine 0.91–0.97; 84–86% of pairs above 0.95). **There is almost nothing for

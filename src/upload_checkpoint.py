@@ -170,6 +170,17 @@ for four reasons measured rather than asserted:
 The control has no confound on either axis. See `report.md` §4.6b and §6.0b/D3, and
 `submission/METHOD.md` §4.
 
+## Counting the parameters — the obvious way gives the wrong answer
+
+`sum(v.numel() for v in state_dict.values())` returns **10,899,616**, which is *over* the task's 10M
+cap. That is an artifact of **weight tying**, this architecture's central feature: `lm_head` and
+`embed` are the same `nn.Parameter` under two names, so a `state_dict` sum counts the tied embedding
+twice. The difference is exactly `vocab x hidden` = **1,835,008**.
+
+```python
+sum(p.numel() for p in m.parameters())   # 9,064,608  <- the real count, and what every number uses
+```
+
 ## Files, and why the tokenizer is one of them
 
 - `model.pt` — weights (`torch.load`, `weights_only=False`; contains `model`, `model_cfg`, `train_cfg`)

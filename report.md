@@ -29,10 +29,29 @@ times, no prelude, no coda, no inter-loop normalisation — trained on **90M Fin
 **38.86 validation perplexity (1.5829 bits/byte)**, with useful depth spanning **loops 6–17**. Both
 caps are respected with margin. This report asks what sets that range.
 
+> **A note for anyone who clones this repo and instantiates the model.**
+> `LoopedTransformer(Config())` — the bare default — reports **9,065,056** parameters, not 9,064,608.
+> The 448-parameter difference is `loop_norm.weight`, because **`Config()`'s default is
+> `state_renorm=True`**: the inter-loop RMSNorm this report measures at **+0.744 nats** and rejects
+> (§4.1). **The default config is the arm the report argues against**, kept as the default because it
+> is the field's convention and every ablation here is expressed as a delta from it. The released
+> architecture is `state_renorm=False`; load `model_cfg` from the checkpoint rather than constructing
+> `Config()` and the count is 9,064,608. *(The checkpoint's `state_dict` sums to 10,899,616 because
+> the tied embedding appears under two keys: 9,064,608 + 4096×448. Nothing is untied.)*
+> **An automated pass reported this 448 as `depth_gate_head` instantiated unconditionally. That is
+> wrong — `depth_gate_head` contributes 0 parameters at `depth_gate_mode="none"`, verified. The
+> number was right and the mechanism was not**, which is why the check was to instantiate both
+> configs and diff the parameter names rather than to accept or dismiss the report.
+
+
 **The trajectory does not converge.** The unit state drifts *logarithmically* — a one-parameter
 log-drift model fits at R² 0.986 against a convergent power law's 0.748 with two, 0.18 rad of real
 angular motion still accumulates between loops 129 and 384, and `ρ(∂F/∂h) = 1.62` at loop 2
-corroborates it. An untrained model of the same shape drifts *faster*, so **non-convergence is
+corroborates it. *(Both the R² pair and `ρ = 1.62` are measured **on the 90M control**; the
+2.5M donor checkpoints in `checkpoints/angular_convergence.json` and `jacobian_spec_results.json`
+give 0.834/0.989 and ρ(2) = 1.23 — same sign, different model. An automated pass read those files
+against these numbers and reported a discrepancy; there is none, and the row in §4.3 names the
+checkpoint.)* An untrained model of the same shape drifts *faster*, so **non-convergence is
 architectural, present before any gradient.** Yet cross-entropy stops improving at loop ~8. That is
 **saturation without convergence**, and it contradicts the premise the task itself advances — that
 fast convergence is what makes further compute pointless. Here convergence never happens and the
@@ -84,7 +103,11 @@ this report's most-replicated finding.
 want depths past 32. Four independent **readout-side** instrument classes fail to capture more than
 0.1% of it; a fifth, a learned per-token gate, turned out unable to express the hypothesis it was
 built to test. Two structural reasons, and the second is the deeper one. Rules condition on total path
-length, whose cross-token **cv is 0.068**, while oracle depth's **cv is 0.798**. And **a token's
+length, and **that quantity barely varies**: total angular distance travelled has cross-token
+**cv 0.0682**, while the distance at each token's *own* optimum has **cv 0.7983** — an order-of-magnitude gap
+**between two quantities in the same units** `[CV-REDERIVED]`. *(Per-token oracle **depth** itself has
+cv **1.1802**; that is a different statistic and it is not the one the diagnostic rests on.)* And
+**a token's
 thirty-two depth keys span an effective rank of ~1.6** (mean pairwise cosine 0.91–0.97): there is
 almost nothing for any mixing or selection mechanism to discriminate *between*. That collapse is
 present **at initialisation** and **training makes it worse** (rank 2.73 → 1.83) — and the one
@@ -1931,6 +1954,18 @@ hypotheses fit to `‖u_t − u_T‖` over loops 8–256 at `T = 384`, fixed 4×
 | model | power law `A·t^−b` *(convergent, 2 params)* | `C·ln(T/t)` *(log-drift, 1 param)* | angular motion, loops 129→384 |
 |---|---|---|---|
 | 90M control | t^−0.657, R² **0.748** | C = 0.1539, R² **0.986** | **0.1836 rad** |
+
+> **Which checkpoint these are, stated because the repo ships a JSON that will mislead.** The row
+> above is the **90M control**. `checkpoints/angular_convergence.json` holds the **2.5M donor**
+> checkpoints and gives log-drift/power R² of **0.9885 / 0.8341** (`sw75_s0`) and **0.9938 / 0.8404**
+> (`sd_dense_k5_s0`). **Log-drift wins on every checkpoint measured**, but the margin is much wider on
+> the 90M control than on the 2.5M donors, so a reader recomputing from the shipped JSON will get
+> 0.834 rather than 0.748 and should not read that as a contradiction. The same applies to
+> `ρ(∂F/∂h) = 1.6227 at loop 2` (§0, §4.3): that is the **90M control**, while
+> `checkpoints/jacobian_spec_results.json` holds the 2.5M donors at **ρ(2) = 1.2273** and **1.0801**.
+> **All three are > 1 and the non-convergence conclusion is identical; only the magnitude is
+> checkpoint-specific.** *(Added 21:20 after an automated audit drew exactly this false conclusion
+> from the shipped JSONs.)*
 | 46M no-renorm | t^−0.651, R² **0.744** | C = 0.1508, R² **0.983** | **0.1816 rad** |
 
 **Log-drift wins decisively, with half the free parameters.** The mechanism is this section's own two
@@ -2697,6 +2732,43 @@ Q-exit at PALBERT's own specification still cannot predict it.** A reliable-but-
 is a sharper result than an unreal one: the information an exiter needs is present *in the token* and
 absent from every scalar summary of the state tried here.
 
+> ### The CV diagnostic, re-derived on the full array — and the defect is a LABEL, not a number `[CV-REDERIVED]`
+>
+> **An automated adversarial pass reported that 0.798 and 27.9% were computed on a sub-sample while
+> the full artifact was on disk, and a second reviewer promoted that to the most serious finding of
+> the batch. Both are wrong, and the check is one script.** Artifact:
+> `checkpoints/full_no_state_renorm_kaggle/exitdump_full_no_state_renorm_kaggle.npz` — the full
+> `(2048, 256, 64)` array, **524,288 tokens, no subsample**.
+>
+> | quantity | re-derived (full array) | as printed in §4.7b |
+> |---|---|---|
+> | total angular distance, per token | mean 2.8635 · sd 0.1952 · **cv 0.0682** | 2.8635 / 0.1952 / 0.068 ✓ |
+> | angular distance **at each token's own oracle depth** | mean 1.3680 · sd 1.0921 · **cv 0.7983** | 1.3680 / 1.0921 / 0.798 ✓ |
+> | argmin-depth bins 1 / 2–8 / 9–32 / **33–64** | 21.6% / 32.0% / 18.5% / **27.9%** | identical ✓ |
+> | bin mean gains | 0.0000 / 0.3827 / 0.8746 / **1.0060** | identical ✓ |
+>
+> **Every number in §4.7b reproduces to four digits. Nothing was subsampled and nothing is stale.**
+> The 30.93% the pass reported is a *different quantity on a different model*: fraction-at-the-cap of
+> a **32-loop** dump of a 2.5M checkpoint, against this report's `[33,64]` bin on a **64-loop** sweep
+> of the 90M control. A token capped at 32 has an unknown optimum ≥ 32 — that is **censoring**, not a
+> smaller tail.
+>
+> **But there IS a real defect, and neither pass found it: `0.798` was being paraphrased as "oracle
+> *depth*'s cv" in §0, in §4.7's summary sentence, and in `submission/NEGATIVE_RESULTS.md` §3.** It is
+> not a depth. It is an **angular distance measured at** the oracle depth. The §4.7b table above
+> labels it correctly and always did; the one-line summaries downstream swapped a *distance* for a
+> *depth*, which changes what the diagnostic claims — and makes it look like a comparison between a
+> path length and a loop count when it is a comparison between two path lengths **in the same units**,
+> which is the version that actually licenses the conclusion.
+>
+> **This is `FAILURES.md`'s third pattern — a quantity measured in one space read as a claim about
+> another — occurring in this report's own abstract, and surviving three end-to-end reads.** The
+> correctly-labelled per-token oracle **depth** CV is **1.1802**, computed here for the first time; it
+> supports the same conclusion by a different route and is now stated as its own statistic rather
+> than borrowed as a label for a different one.
+>
+> *Fixed in §0, §4.7 and `NEGATIVE_RESULTS.md` §3. §4.7b's table is unchanged because it was right.*
+
 **Where the headroom sits if one conditions on the label anyway.** Grouping tokens by the depth they
 want, and asking how much each group gains from being run there:
 
@@ -2847,7 +2919,7 @@ signal none of these four carry, not a differently-trained model.
 *Scope, stated because it bounds the claim.* One seed, 2.5M tokens, `sw75` (not the `sw90` §3.5
 recommends — `sw75` releases the anchor for **longer**, so it is the more favourable setting for the
 trajectory account and its failure there is the stronger direction). The four signal families are the
-same ones §4.7 swept; a fifth signal is not ruled out, and §4.7b's `cv 0.068 vs 0.798` diagnostic says
+same ones §4.7 swept; a fifth signal is not ruled out, and §4.7b's `cv 0.068 vs 0.798` diagnostic (total path length vs the budget at the oracle depth) says
 what a fifth would have to look like.
 
 ### 4.7c No static *mixture* over depths reaches the headroom either
@@ -2878,9 +2950,9 @@ best mixture does not beat the best single depth at four decimal places at all.
 **This extends §4.7's negative from selection to combination**, which is the materially stronger
 claim: *the per-token depth headroom is reachable neither by choosing a depth nor by blending depths.*
 It is not that the rules were badly chosen — it is that the information distinguishing tokens is not
-present in any fixed linear read of the trajectory. §4.7b says why the rules cannot see it (path
-length has cv 0.068 against oracle depth's cv 0.798); this says that removing the need to decide does
-not help.
+present in any fixed linear read of the trajectory. §4.7b says why the rules cannot see it (total path
+length has cv 0.068 against cv 0.798 for the path length **at each token's own optimum** — two
+distances, same units `[CV-REDERIVED]`); this says that removing the need to decide does not help.
 
 **And it retires a proposal before it was made.** A learned per-token gate over depths would cost
 O(T) parameters for a scalar per depth, or ~14k for a state-conditioned gate — cheap, scale-clean,
@@ -5933,6 +6005,61 @@ r = 1" is measured only in the regime where the denominator is smallest.**
 unstated scope condition. §5's rule — an instrument that has not passed a null cannot retire a
 hypothesis — has a counterpart here: a regularity measured at one budget cannot be asserted at
 another, and saying so is cheaper than being corrected on it.*
+
+### 4.25 The plateau tolerance was never varied, and varying it changes which band claims survive
+
+§4.15 retired `argmin` for depth claims because 134 of 165 stored curves had argmin margins below the
+noise floor — a statistic decided within noise. Its replacement, `plateau(curve, tol)`, takes a
+**tolerance**, and **that tolerance was set to 0.01 once and never varied in this project.** Every band
+claim in this report and in `submission/` is a `tol = 0.01` statement. This section varies it.
+
+*No new compute: `src/plateau.py` over the stored curves at tol ∈ {0.005, 0.01, 0.02, 0.05}.*
+
+| comparison | tol 0.005 | **tol 0.01** | tol 0.02 | tol 0.05 |
+|---|---|---|---|---|
+| **annealing** (`rec_dense_s2` → `rec_sw90_s2`, 10M) | [8,12]→[12,20] **widen** | [8,16]→[8,24] **widen** | [8,20]→[8,24] **widen** | [4,32]→[4,32] same |
+| duo-causal W=3, seed 0 | [8,16]→[8,16] same | [8,20]→[8,16] narrow | [4,24]→[8,24] narrow | [4,32]→[4,32] same |
+| duo-causal W=3, seed 1 | [8,16]→[8,16] same | [8,20]→[8,16] narrow | [8,24]→[8,24] **same** | [4,32]→[4,32] same |
+| XSA, seed 0 | [8,12]→[8,16] **widen** | [8,16]→[8,16] same | [4,24]→[8,24] narrow | [2,32]→[4,32] narrow |
+| XSA, seed 1 | [8,16]→[8,12] narrow | [8,20]→[8,16] narrow | [4,24]→[8,20] narrow | [4,32]→[4,32] same |
+| LoRA cycled, seed 0 | [8,16]→[8,16] same | [8,20]→[8,20] same | [4,24]→[8,24] narrow | [2,32]→[4,32] narrow |
+| pin-2, seed 1 | [8,16]→[8,16] same | [8,20]→[8,16] narrow | [4,24]→[8,24] narrow | [4,48]→[4,32] narrow |
+
+**Three readings, and two of them cost this report something.**
+
+**1. The claim the report leans on hardest is the one that survives.** *Supervision annealing widens
+the band* holds at **0.005, 0.01 and 0.02** and never reverses sign; it collapses only at 0.05, where
+the tolerance is 3.6× the terminal-only replicate floor and every curve saturates the grid. **The
+strongest positive depth claim in the project is tolerance-robust.**
+
+**2. The narrowing claims are NOT robust, and "three of the five narrow it" is overstated.**
+Duo-causal W=3 narrows at `tol = 0.01` and is **unchanged at 0.005 at both seeds**; at 0.02 it is
+unchanged at seed 1. XSA narrows at seed 1 and at `tol = 0.01`, but at 0.005 seed 0 **widens**. **The
+honest statement is that no loss-lowering intervention moves the band *consistently* — not that three
+of them narrow it.** The `tol = 0.01` narrowings are real at that tolerance and are not stable to
+halving it.
+
+**3. The central negative is unaffected and is arguably strengthened.** *No loss-lowering intervention
+widens the useful band reliably* holds at every tolerance: the single widening cell in the table (XSA
+seed 0 at 0.005) reverses at its own second seed. **What the tolerance sweep removes is a decoration —
+the specific direction of the small band movements — not the dissociation**, which is the claim that
+depth-band behaviour is uncoupled from loss behaviour.
+
+> **This is §4.15's failure in a new costume and it should be named as such.** The project replaced a
+> statistic that was decided within noise (`argmin`) with one that has a **free parameter**, set that
+> parameter once, and then read direction off differences of ±1 grid interval for the rest of the
+> project. `src/test_plateau.py`'s 8 checks verify the statistic computes what it claims; **none of
+> them asks whether the answer is stable in `tol`.** *An instrument with a free parameter needs a
+> sensitivity sweep in the same way an instrument needs a null, and this one did not get it until now.*
+>
+> **What changes as a result:** §4.23b's and §4.23d's narrowing claims are downgraded from findings to
+> `tol = 0.01` observations; §4.17/§4.23e's widening claim is upgraded, because it now has a
+> robustness check it did not have before; and every band table in this report should be read as
+> carrying an implicit "at tolerance 0.01".
+
+*Scope: seven in-job pairs, the ones whose band movement any claim rests on. The full 135-arm sweep at
+four tolerances was not run and would not change the three readings above, which turn on the pairs
+listed.*
 
 ## 5. Methods tested to destruction — what was claimed, what was measured, why it broke
 

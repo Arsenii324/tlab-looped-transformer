@@ -79,10 +79,21 @@ way round.** The norm penalty lowers best CE by 0.030 and **wins perplexity outr
 38.86) — but `ΔCE@1 = +0.2263`, so **88% of its apparent loop-gain advantage is loop-1 damage**, and
 its band *narrows*. It buys loop gain by making loop 1 worse rather than by making depth worth more.
 
-**Not one of the twelve widens the useful band. Three of the five loss-lowering arms narrow it** —
-the norm penalty ([6,17]→[6,14]), duo-causal W = 3 ([8,20]→[8,16], both seeds), and XSA
-([8,20]→[8,16] at seed 1, unmoved at seed 0). The one lever that moves the band *outward* —
-supervision annealing, **5/5 seeds**, zero parameters — **does not lower the loss.**
+**Not one of the twelve widens the useful band.** At the tolerance every table here uses
+(`tol = 0.01`) three of the five loss-lowering arms *narrow* it — the norm penalty ([6,17]→[6,14]),
+duo-causal W = 3 ([8,20]→[8,16], both seeds) and XSA ([8,20]→[8,16] at seed 1). The one lever that
+moves the band *outward* — supervision annealing, **5/5 seeds**, zero parameters — **does not lower
+the loss.**
+
+> **⚠ The narrowings are tolerance-dependent; the widening is not. Varied for the first time at
+> 21:14 (§4.25).** `plateau()` takes a tolerance, it was set to 0.01 once, and **it had never been
+> varied** — which is §4.15's retired-`argmin` failure in a new costume, since direction was being
+> read off ±1 grid interval. Sweeping tol ∈ {0.005, 0.01, 0.02, 0.05}: **annealing widens at 0.005,
+> 0.01 AND 0.02 and never reverses**, but duo-causal W = 3 is *unchanged* at 0.005 at both seeds, and
+> XSA *widens* at seed 0 at 0.005 while narrowing at seed 1. **So "three of the five narrow it" is a
+> `tol = 0.01` observation, not a finding, and it is downgraded here.** What survives every tolerance
+> is the claim the dissociation actually needs: **no loss-lowering intervention moves the band
+> consistently, and the one lever that widens it does not lower the loss.**
 
 **So the honest count is sharper than "twelve interventions, five lower the loss", and it is not
 kinder:** *eleven loop-specific mechanisms were tested; not one widens the useful band; the four that
