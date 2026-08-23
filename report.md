@@ -5690,9 +5690,9 @@ it is the first one this project has built.*
 | arm | CE@1 | best CE | ΔCE@1 | **ΔCE_best** |
 |---|---|---|---|---|
 | `dc_control_s0` | 5.2631 | 5.1577 | — | — |
-| `dg_norm_s0` | 5.2630 | **5.1565** | −0.0001 | **−0.0012** |
+| `dg_norm_s0` | 5.2629 | **5.1565** | −0.0001 | **−0.0012** |
 | `dc_control_s1` | 5.2547 | 5.1251 | — | — |
-| `dg_norm_s1` | 5.2484 | **5.1274** | −0.0063 | **+0.0023** |
+| `dg_norm_s1` | 5.2485 | **5.1274** | −0.0063 | **+0.0023** |
 
 The sign reverses across seeds and both magnitudes are more than an order of magnitude inside the
 0.0150 CUDA-dense floor. **A working mixture over a representation whose depth keys span ~1.6 of 32
@@ -5735,9 +5735,10 @@ regardless. Composed with 78–101% of the gain sitting at `r = 1`, where GATE 1
 is inert, **the CE gain is a training-time perturbation that yields a better block, not duo-causal
 attention doing what it claims.**
 
-**It is also the first intervention in this report that narrows the useful band** — [8,20] → [8,16] at
-both seeds. Combined with the norm penalty's [6,17] → [6,14], two of the five loss-lowering
-interventions actively cost useful depth.
+**It is also the first intervention in this report to narrow the useful band *at both seeds of an
+in-job pair*** — [8,20] → [8,16]. The norm penalty narrows too ([6,17] → [6,14]) but at one 90M arm,
+and XSA narrows at one seed of two; duo-causal W = 3 is the only one where the narrowing replicates.
+**Three of the five loss-lowering interventions actively cost useful depth.**
 
 *This is the mirror of §4.2's gated-injection row, and the pair is why both are reported the same way:
 there, the mechanism check **succeeded** and the loss got worse; here, the loss got better and the
@@ -5848,7 +5849,9 @@ this project's own regularity is that effects shrink ~12× between screening and
 external reviewer suggested the question is answerable retrospectively from stored curves. **It is
 answerable, and the answer is unfavourable: it cannot be closed from stored data.**
 
-**Every paired intervention in this project sits at 2.5–3.5M tokens.** Extracting the r=1 share for
+**Every paired intervention that *lowers* CE sits at 2.5–3.5M tokens.** (Paired arms do exist at
+larger budgets — `rec_sw90_s2` at 10M, §4.23e — but they raise CE, so no r=1 share of a *gain* can be
+computed from them.) Extracting the r=1 share for
 every arm that lowers CE against its own in-job control, with each arm's budget attached:
 
 | budget | arms lowering CE | r=1 shares |
