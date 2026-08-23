@@ -3,3 +3,4 @@
 # "tlab-loop-normpenalty" and reported a permission error that looked like a dead run.
 arsen4ikvar/tlab-loop-fullrun
 arsen4ikvar/tlab-loop-normpenalty
+arsen4ikvar/tlab-lora-scaleup

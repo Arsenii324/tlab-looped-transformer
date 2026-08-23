@@ -5,7 +5,7 @@ open.** Not a plan, not a backlog, not everything that could be done. `QUEUE.md`
 ledger; this file is the short list I can un-stack. **Delete a line when it is done — this file only
 ever shrinks unless the user adds to it.**
 
-Last updated 2026-08-23 ~15:05.
+Last updated 2026-08-23 18:22.
 
 ---
 
@@ -14,12 +14,12 @@ Last updated 2026-08-23 ~15:05.
 | # | task | from | state |
 |---|---|---|---|
 | ~~T17~~ | **DONE 2026-08-23 17:50.** First end-to-end read of `report.md` (5,448 lines). **12 defects found, 3 serious, none findable by grep**: sec3.5 restated both withdrawn claims under their own withdrawal blocks; sec8 carried the cross-job number sec4.17 replaced with one of opposite sign; sec4.2 still said loop gain was "flat" after its own paired correction. All fixed; recorded as sec6.0 row 33 + unknown-known #26 | unknown-known #7 | **CLOSED** |
-| T14 | **Learned depth gate** (`gate_scalar` +32 / `gate_state` +14,336) — restored as the best remaining candidate for a positive after correcting the 'E1 is E2's upper bound' error (E1 is a LOWER bound; a global weighting cannot reach a per-token signal) | reviewers x2 | **not launched**, local GPU busy with od arms |
-| ~~T11~~ | **Gemini's `tlab-operator-diversity` DS job errored on `ModuleNotFoundError: tokenizers`** — its `cmd` installs it but `system.log` shows the install never ran. Local run produced only `od_control`. **Decide: relaunch or drop.** Note `lora_cycle` costs +408,576 params (4.51%) and is a fixed per-branch table — if it wins, §3.5's zero-param scale argument does not cover it | Gemini session, 16:23 | **not relaunched** |
-| ~~T12~~ | **`od_lora_r2`/`od_lora_r4`/`od_depth_gate` arms never completed** — the learned depth gate (+448 params) is the one the reviewers twice called the only remaining chance at a positive | Gemini + reviewers | local GPU is free |
-| T1 | **Read the remaining project `.md`s in full.** Still unread end-to-end: `LOG.md` (2098), `PLAN.md` (246), `BRIEFING.md` (366), `RUNS.md` (299+), `STATE_FOR_REVIEWER.md` (259), `REVIEW_NOTES.md` (188), `DECISIONS.md`, `METHODS.md`, `INTERVENTIONS.md`, `README.md`, `HANDOFF.md`, and the 3 paper-summary `.md`s | "Read all .md's that you expect to have in context, in full" | **not started.** I read `QUEUE.md`, `DATASPHERE_NOTES.md`, the task statement, `anthropic-prompting.md`, `compute-yandex-datasphere.md` + the `.py` files I touched |
-~~T4~~ Kaggle `tlab-seed-extension` harvested 15:37 -> n=4 result WITHDRAWS the headline (see T10).
+| ~~T14/T11/T12~~ | **CLOSED 18:19.** The learned depth gate ran and §4.22 measured *why* it fails: its logits are `w·h_t` on the RAW state, so the softmax saturates to a hard argmax (effective loops mixed **1.0 of r**). It cannot express a mixture. The **scale-invariant** rewrite (`state_norm`) is now launched — see T18 | reviewers x2 | **CLOSED, superseded by T18** |
+| **T18** | **IN FLIGHT — `tlab-duocausal-s0` / `-s1`, launched 18:19 on two T4s.** 4 in-job arms each (control, duo-causal W=2, W=3, scale-invariant gate), 3.5M tok/arm, seeds 0+1. **Read pre-registered in `RUNS.md` 18:19 with four falsifiers, before any data existed.** ETA ~20:30. Harvest: (a) plateau band vs in-job control, (b) `cos(du_t,du_{t−1})` post-hoc on the returned checkpoints — outputs named explicitly, not globbed | the readout-side/recurrence-side gap | **running** |
+| **T19** | **Full-budget replication of the LoRA positive.** §4.21 states plainly that no full-budget LoRA arm exists and that this is the check that decides it — the norm penalty shrank 12× and flipped character between 2.5M and 90M. Kaggle has ~7h quota. **Kaggle is NOT early-stop-safe**, so it must fit end to end | §4.21's own scope caveat | **next action** |
+| T1 | **Read the remaining project `.md`s in full.** Still unread end-to-end: `LOG.md`, `PLAN.md`, `BRIEFING.md`, `RUNS.md`, `STATE_FOR_REVIEWER.md`, `REVIEW_NOTES.md`, `DECISIONS.md`, `METHODS.md`, `INTERVENTIONS.md`, `README.md`, `HANDOFF.md`, 3 paper summaries | "Read all .md's… in full" | **not started.** Read so far: `QUEUE.md`, `INDEX.md`, `OPS.md`, `TASKS.md`, `DATASPHERE_NOTES.md`, **`report.md` end to end (T17)**, reviewer replies 14–18, the task statement |
 | T7 | **§8 writing items still owed**: W1 (MLA × LLA), W2 (LoopMTP aggregation conflict), W4 (STARS Pre-Sandwich), W5 (decomposition tables for remaining §4 sections) | reviewer, logged in QUEUE | not started |
+| ~~T20~~ | **Fresh-clone dry run — DONE 18:15.** Cloned the ship branch `review` cold (670 files): `test_model.py` ALL PASS (incl. 4 new arm checks), `test_plateau.py` ALL PASS, `headline.py check` consistent after repointing at the 90M control, and `check_tokenizer_identity.py` on the SHIPPED checkpoint **PASS, \|diff\| 0.0020**. **`submission` is 5.5h stale and must not be pushed** | submission gate | **CLOSED** |
 ~~T8~~ done, §4.20.
 
 ## Blocked on the user

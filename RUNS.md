@@ -496,3 +496,29 @@ the *generated* driver, not just from `src/`.
 
 **Explicit outputs, named file by file, never a glob** — §6.0 row 34 cost this project the DataSphere
 depth-gate weights this morning, and read (b) requires the checkpoints.
+
+### Addendum to the 18:19 pre-registration — source verified myself, and one honest difference
+
+Checked in `papers/sources/2511.08577` rather than relayed (§6.0 row 22's rule):
+
+- `3_method.tex:105,168` — duo-causal *"lets tokens attend across both previous positions and shallower
+  iteration depths, maintaining 2D causality."* That is exactly the mask implemented here: token-causal,
+  replicated across depths.
+- `3_method.tex:174` — *"When all tokens iterate only once (as in standard transformers), this reduces
+  to regular causal attention."* **This is the property the pre-launch gate checks**, and `kv_window=1`
+  reproduces the untouched model at `max|diff| = 0.000e+00`.
+- `3_method.tex:163-165` — the dilemma is *"requiring up-to-date context from all previous tokens
+  [while] maintaining parallel training where depth-d computations cannot depend on uncomputed deeper
+  states."* Attending only to **shallower** depths is what preserves full training parallelism, which
+  is why this is affordable at all.
+- `4_experiment.tex:277-280` — their own ablation: replacing duo-causal with *"attending only to the
+  first iteration"* costs **5.4%**, with *"attending only to the current iteration"* (what this project
+  does everywhere) costs **8.5%**. That is their measured size for the mechanism, at 1.7B.
+
+**The difference between their mechanism and this arm, stated before the data.** Theirs attends to
+**all** shallower depths; this arm attends to a **window** of the last `W-1` (W = 2, 3), because
+storing every depth's K/V is the O(r) memory that already OOM'd §4.22's gate at a 13.04 GiB cap.
+**So a null here bounds the windowed form, not the full triangle** — and W = 2 vs 3 is in the sweep
+precisely so the dose-response says whether more window is buying anything before anyone pays for the
+full version. If W=3 > W=2 > W=1 monotonically, the full triangle is worth someone's compute; if
+W=3 ≈ W=2 ≈ W=1, it is not, and that is a more useful negative than one window would give.
