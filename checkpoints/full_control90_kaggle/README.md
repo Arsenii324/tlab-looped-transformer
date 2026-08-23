@@ -84,7 +84,7 @@ Stated because the released models differ in state scale by up to 380x. Any abso
 
 ## Config
 
-`{"vocab_size": 4096, "hidden_size": 448, "n_heads": 4, "n_kv_heads": 2, "head_dim": 112, "intermediate_size": 1344, "layers_per_loop": 3, "n_prelude": 0, "n_coda": 0, "rms_norm_eps": 1e-06, "rope_theta": 10000.0, "max_position_embeddings": 512, "readout_mode": "norm", "convex_gate": false, "explore_noise": 0.0, "explore_anneal": true, "fixed_gate": null, "truncate_bptt": null, "state_renorm": false, "inject_mode": "additive", "depth_init": true, "residual_scale": null, "scale_clock": false, "gate_alpha_init": 0.874, "n_loop_eff": 24, "cond_mode": "none", "cond_lora_rank": 4, "cond_lora_branches": 4, "cond_fixed_branch": null, "depth_gate_mode": "none", "xsa": false, "kv_window": 1}`
+`{"vocab_size": 4096, "hidden_size": 448, "n_heads": 4, "n_kv_heads": 2, "head_dim": 112, "intermediate_size": 1344, "layers_per_loop": 3, "n_prelude": 0, "n_coda": 0, "rms_norm_eps": 1e-06, "rope_theta": 10000.0, "max_position_embeddings": 512, "readout_mode": "norm", "convex_gate": false, "explore_noise": 0.0, "explore_anneal": true, "fixed_gate": null, "truncate_bptt": null, "state_renorm": false, "inject_mode": "additive", "depth_init": true, "residual_scale": null, "scale_clock": false, "gate_alpha_init": 0.874, "n_loop_eff": 24, "cond_mode": "none", "cond_lora_rank": 4, "cond_lora_branches": 4, "cond_fixed_branch": null, "kv_untie_buckets": 1, "depth_gate_mode": "none", "xsa": false, "kv_window": 1}`
 
 See the GitHub repo's `report.md` for the full ablation set, the negative results, and the
 failure log (§6.0).

@@ -43,44 +43,58 @@ is a row but not a claim. Where a count appears in this folder it is this one.
 
 ## The answer to the brief, in five sentences
 
-The task asks for low perplexity **by exploiting many loops**. We report a **dissociation**: those are
-two goals and this architecture does not deliver them together.
+**9,064,608 parameters · 89,999,360 training tokens · validation perplexity 38.86 (1.5829 bits/byte)
+· useful-depth band loops 6–17.** The task asks for low perplexity **by exploiting many loops.** We
+report a **dissociation with a measured mechanism**: those are two goals, this architecture does not
+deliver them together, and we can say why.
 
-1. **The trajectory never converges** — the unit state drifts *logarithmically* (R² 0.986 on a
-   one-parameter model against 0.748 for a convergent power law) — **and it saturates at loop ~8
-   anyway.** That is *saturation without convergence*, and it contradicts the premise the brief
-   itself advances (that fast convergence is what makes further compute pointless).
-2. **Twelve interventions. Five lower the loss. Not one widens the useful band** — and none moves it
-   *consistently*: at `tol = 0.01` three of the five narrow it, but that direction does not survive
-   halving the plateau tolerance (§4.25), so it is reported as an observation rather than a finding.
-   **That "five" is not a softening of an earlier "two" — it is the dissociation appearing five times
-   independently, in two opposite directions.** Four interventions help at loop 1 and the help does
-   not propagate into depth; one *hurts* at loop 1 and the loop-gain statistic rewards it for that.
-   **Both say the same thing: the loop's own contribution is untouched by anything that moves the
-   loss.**
-3. **Four of those five put 67–101% of their gain at a *single* loop, where their own mechanism is
-   provably inert or irrelevant** — loop-cycled LoRA 67–95% `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]`, exclusive self attention
-   84–91% `[XSA-AT-R1]`, duo-causal attention at W = 3 78–101%, the learned depth gate 96%. **They improve the
-   block, not the looping.** The fifth is the mirror image: the norm penalty wins perplexity (37.52 vs
-   38.86) by *damaging* loop 1 — 88% of its loop-gain advantage is `ΔCE@1 = +0.2263`.
-4. **One lever does move the useful band** — *where the loss is applied* (supervision annealing),
-   at **5/5 seeds**, **zero added parameters**, and with the *same* edge decomposition at 2.5M and at
-   10M tokens (onset 8 → 8, end 16 → 24) — but its effect on the *ceiling* was withdrawn at n=4 by a
-   criterion registered before the data existed, and a fifth point at 4× the budget is the worst yet
-   (**+0.1119**) `[WITHDRAWN-ANNEAL-CE]`.
-5. **Per-token depth demand is real — and the evidence is the split-half reliability (0.866 against a
-   null of 0.0007), not the oracle headroom.** *The 0.3084-nat headroom cannot carry the claim by
-   itself: both nulls built to bound it are **mis-specified**, destroying the per-token curves'
-   smoothness (4.6× rougher) and so producing **more** headroom than the real data — 0.3877 and
-   0.4110. What survives a null is that each token's preferred depth is **reproducible**, and that is
-   what an exit rule would need. `EARLY_EXIT.md` §1 and §4.7 state this in place.* The demand is real
-   **and unreachable by eight rules across five instrument classes — the best captures 0.1%.** We can now say why: **a token's 32 depth keys span
-   an effective rank of ~1.6.** There is almost nothing for a mixing or selection mechanism to
-   discriminate between. **The one test that could have refuted that explanation was run and did not:**
-   a *scale-invariant* depth gate (a different arm from the saturating one in sentence 3) that
-   demonstrably mixes — 7.6/8, 15.0/16, 29.8/32 effective loops — returns **−0.0012 / +0.0023** at two
-   seeds. A working mixture over a collapsed representation buys nothing `[RANK-PROJECTION]`.
-   **`EARLY_EXIT.md` is the whole case.**
+1. **The brief's own diagnosis does not hold here.** It attributes saturation to DEQ-style
+   convergence. This model's state **never converges** — the unit drifts *logarithmically* (R² 0.986
+   on one parameter against a convergent power law's 0.748; ρ > 1 at every measured depth; 0.18 rad
+   still accumulating between loops 129 and 384) — **and it saturates at loop ~8 anyway.** The drift
+   is architectural: an untrained model of the same shape drifts *faster*.
+
+2. **What actually binds is that the depths are not distinguishable.** A token's 32 depth keys span an
+   **effective rank of ~1.6**, present **at initialisation** and worse after training. The cause is
+   weight tying via **projection asymmetry**: an unshared stack manufactures a near-orthogonal key set
+   from a state stream that is *just as collinear* as the tied one (4.36 vs 1.40 of 33), purely
+   because each layer owns a `W_K`. **One shared projection cannot buy that at any width**
+   `[RANK-PROJECTION]`. Rank scales as ≈ 1.6 × (number of distinct projections), so the fix is priced
+   and it is not cheap: 4 buckets costs +10.0% of the parameter budget (§4.28).
+
+3. **We built the experiment that would have refuted that, and registered the criterion before the arm
+   existed.** A *scale-invariant* depth gate that **demonstrably mixes** — 7.58/8, 14.96/16, 29.84/32
+   effective loops, zero tokens above 0.99 top-weight, where the project's earlier gate saturated to a
+   hard argmax — with the falsifier written first: *mixes and gains ⇒ the explanation is wrong.*
+   **It mixes. It returns −0.0012 / +0.0023 at two seeds.** A working mixture over a collapsed
+   representation buys nothing. *Mixture-over-depths was tested seven ways in all; every one is null
+   or an instrument failure (`RESULTS.md` §1b).*
+
+4. **Twelve interventions. Five lower the loss. Not one widens the useful band.** Four of the five put
+   **67–101%** of their gain at a *single* loop where their own mechanism is provably inert — LoRA
+   67–95% `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]`, XSA 84–91% `[XSA-AT-R1]`, duo-causal W = 3
+   78–101%, the saturating depth gate 96%. **They improve the block, not the looping.** The fifth is
+   the mirror image: the norm penalty wins perplexity (37.52 vs 38.86) by *damaging* loop 1
+   (`ΔCE@1 = +0.2263`). **And the only one that replicated across three platforms vanishes at 5× the
+   budget** — −0.0936 at 2.5M against **+0.0077** at 12M in a config-identical pair (§4.29). *We did
+   not pre-register a direction for that run, so we report it as **consistent with** reading those
+   gains as block improvements, not as a prediction confirmed.* **This project has no replicated CE
+   improvement at scale.**
+
+5. **One lever moves depth, costs zero parameters, and survives the two tests the others failed.**
+   Supervision annealing widens the band at **5 of 5 seeds**, with the *same* edge decomposition at
+   2.5M and 10M; it survives halving the plateau tolerance where three other band claims did not
+   (§4.25); and on an **every-integer sweep of depths 12–32** the annealed arms hold within tolerance
+   over **19 and 16 depths against their controls' 9 and 8 — 2.1× and 2.0× at two seeds**, with the
+   coarse grid having *understated* it (§4.25c). **Its effect on the ceiling was withdrawn at n = 4**
+   by a criterion registered before the data existed, and a fifth point at 4× budget is the worst yet
+   (+0.1119) `[WITHDRAWN-ANNEAL-CE]`. **It buys depth, not loss.**
+
+**Per-token depth demand is real and unreachable, and that is the whole of `EARLY_EXIT.md`.** The
+evidence for "real" is the split-half reliability — **0.866 against a null of 0.0007** — *not* the
+0.3084-nat oracle headroom, whose two nulls are **mis-specified**: they destroy the per-token curves'
+smoothness (4.6× rougher) and produce *more* headroom than the real data (0.3877, 0.4110). Eight rules
+across five instrument classes capture at most **0.1%** of it, for the reason in sentence 2.
 
 The brief states that *«отсутствие положительного результата при хорошем анализе всех негативных —
 хороший результат»*. This submission is largely that: a negative with a measured mechanism, one
