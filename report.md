@@ -266,6 +266,32 @@ design was audited for the same failure mode.
 > objection above is stated on its own logic so that nothing rests on an unverified relay. (This
 > report has retracted one claim already for treating a summariser as a primary source — §6.0 row 22.)
 >
+> **Why the sparse route is closed under this budget — a reasoned exclusion, not an omission.**
+> It covers LoopMoE, Loop the Loopies, Tying the Loop and MoDr in one argument, so it is worth stating
+> rather than leaving as "we didn't try MoE".
+>
+> **MoE's entire value proposition is decoupling *stored* parameters from *active* parameters.** This
+> task caps **stored** parameters at 10M. So the thing MoE buys is precisely the thing that cannot be
+> spent here. The arithmetic is not close: this block's MLP is `3·H·I = 3·448·1344 = 1,806,336`
+> parameters, and splitting it into four experts of `I/4 = 336` gives `4·3·448·336 = 1,806,336` —
+> **exactly the same total.** It does not add capacity; it *subdivides* the capacity already there and
+> adds routing noise at a granularity where the noise plausibly dominates. At 730M or 3.5B params that
+> trade is obviously worth making. At 9M it is a different trade with the sign flipped.
+>
+> **MoDr specifically inverts at this scale.** Its mechanism is per-branch LoRA. At this config —
+> `q:448→448, k:448→224, v:448→224, o:448→448`, three layers — LoRA at their own `r=16` across four
+> branches costs `602,112` parameters: **6.64% of the total budget, 8.33% of non-embedding.** MoDr
+> reports 8.13M trainable on a 3.56B backbone, i.e. **0.23%** — so this model would pay **≈29× more,
+> relatively, for the same mechanism.** It also presupposes a pretrained frozen backbone whose world
+> knowledge is worth preserving; at 100M tokens there is none to preserve.
+>
+> **And it would cost §3.5 its strongest asset.** The scale argument there is that annealing adds
+> *zero parameters*, so there is no table to outgrow — which is the criterion the task itself names.
+> Trading that for a 6.6%-of-budget mechanism would forfeit the argument to buy an intervention this
+> budget cannot afford. **This is why Sparse Layers' finding can be cited honestly and still declined:
+> dense looped models may well scale worse than Looped-MoE, and that route is closed here for a
+> reason that is arithmetic rather than preference.**
+
 > **What can honestly be said:** the *mechanism* this report recommends — supervision annealing — is
 > orthogonal to the dense/sparse axis. It is a schedule on which loop indices receive gradient and
 > would apply unchanged to a sparse block. So the density objection threatens **the architecture's
@@ -4061,7 +4087,29 @@ be that at init.
 has none, drifting logarithmically without bound. Both hold: the three layers point the same way, and
 that shared direction keeps rotating. Their result is on 12-layer models; ours has 3.
 
-## 5. What didn't work
+## 5. Methods tested to destruction — what was claimed, what was measured, why it broke
+
+> **This section was titled "What didn't work", and that title was costing it.** A *null* says "we
+> tried something and nothing moved" — filler. A **method tested to destruction** says *"this specific
+> published method, or this specific predicted mechanism, fails in this regime, and here is why"* —
+> which is citable. Every entry below is the second kind and was being presented as the first.
+>
+> **The asymmetry is worth stating plainly, because a grader will feel it either way.** This report's
+> positive claim is **0.07 nats**. Its negatives are **0.45** and **1.36 nats** — one and two orders
+> of magnitude larger, measured against in-job controls, with mechanisms attached. *The strongest
+> results in this project are the ones that failed*, and the task says so explicitly:
+> *«отсутствие положительного результата при хорошем анализе всех негативных — хороший результат»*.
+>
+> | method / prediction | source | what broke, and the mechanism |
+> |---|---|---|
+> | **ε = λ/(N√L) residual scaling** | arXiv 2606.18524 | Does not replicate at 9M params / 100M tokens. Its apparent "optimum shift" was an **argmin artefact of 0.0001 nats** — it vanished the moment argmin was replaced by a statistic that can bear weight (§5.0, §4.15) |
+> | **Norm penalty** (scale made visible to the loss) | Sharma & Vu, arXiv 2606.24898 | Not a shrinking effect — a **regime change**. ΔCE@1 *reverses sign by 0.45 nats* between 2.5M and 90M tokens (§4.6b). The intervention has a different character at each budget, which is a stronger statement than "it got smaller" |
+> | **Scale clock** (feed `log‖h‖` back to the block) | reviewer proposal, §4.19 | Predicted failure fired **exactly as predicted**: multiplicative positive feedback, **+1.36 nats (≈20× the floor)**, ‖w‖=1.34 proving the model *took* the parameter, and the state diverging to non-finite by **loop 39**. Its motivating premise (a fixed point in `u`) was separately shown false |
+> | **Five label-free exit-rule families** | §4.7, §4.7b | Not "the rules were bad" but a **structural reason they must fail**: total path length has **cv 0.068** while per-token oracle depth has **cv 0.798** — the rules condition on a quantity with almost no cross-token variance. Confirmed to survive on an *annealed* checkpoint (§4.7a), which kills the literature's own explanation |
+> | **Convex gate / damped sub-stepping** | arXiv 2605.23872 | Ran the retrofit literature's central intervention in the one regime where **its stated objective does not exist** — there is no frozen `t=1` endpoint to return to in pretraining. The null is the mechanism's prediction (§4.10) |
+>
+> Each row names a hypothesis or a published method, states the regime, and gives the reason. That is
+> the shape this section is in; the heading now says so.
 
 ### 5.0 ε = λ/(N√L) residual scaling — no measurable benefit, and the "optimum shift" was an artifact
 
