@@ -2364,6 +2364,42 @@ depth), even though the *total path length* nearly is. §8.2's per-token rate-co
 therefore have to predict a per-token budget, which this section shows is the harder object, not the
 easier one.
 
+### 4.8a The within-sequence conflict of interest — real in sign, negligible in size
+
+§4.8 asks whether a query at depth `t` tolerates a cache written at depth `k`. **It does not ask a
+different and sharper question**, raised by a reviewer: is the depth-20 state *of a token whose oracle
+depth is 4* worse than the depth-20 state of a token whose oracle is 24? Same cache depth, different
+token populations. A conflict of interest would be structural — the shared block must produce a good
+shallow state for that token's own readout *and* good deep material for later tokens to attend to,
+and if the prefix mostly prefers shallow exits then most of the deep cache is damage.
+
+**Tested on the token populations §4.7 already identifies.** Per-token oracle depths come from the
+exit dumps (deciles 1 / 2 / 8 / 32 / 32 — the spread that gives §4.7b its cv 0.798); tokens split into
+shallow-oracle (≤4) and deep-oracle (≥24); statistics compared at depth 20, forward passes only.
+
+| checkpoint | shallow n | deep n | ‖Δu‖@20 ratio | ‖h‖@20 ratio |
+|---|---|---|---|---|
+| `sd_dense_k5_s0` (dense) | 6,824 | 5,586 | **0.9871** | **1.0033** |
+| `local_anneal_sw75_s0` (annealed) | 5,813 | 6,466 | **0.9744** | **0.9874** |
+
+**A ratio of 1.000 means the two populations are indistinguishable at depth 20 — and they nearly
+are.** Shallow-oracle tokens keep moving at 97–99% of the rate of deep-oracle tokens and carry states
+of the same magnitude. Their deep representations are not stale, not collapsed, and not smaller.
+**The conflict of interest does not bite at this scale.**
+
+**The supervision-dependence prediction is confirmed in sign and refuted in size.** It was
+pre-registered that dense supervision — which trains every token at every sampled loop — should
+*suppress* the effect, so releasing it should widen the gap. It does: the annealed arm deviates
+further from 1.0 on **both** statistics (0.9744 vs 0.9871; 0.9874 vs 1.0033). But the total effect is
+**≤2.6%**, against a report whose smallest resolvable CE difference is ~0.05 nats. A mechanism that is
+directionally real and 2.6% in magnitude is not a mechanism this project can build on, and saying so
+is more useful than reporting the sign alone.
+
+**Why it matters that this was asked separately.** §4.8's grid holding does *not* answer it — the
+reviewer was right that these are different questions — and it would have been easy to treat one as
+covering the other. It also means §4.8's "ragged cache is nearly free" survives a second, harder test
+than the one that produced it.
+
 ### 4.8 Cross-depth KV: a ragged cache costs almost nothing here
 
 > **This section is the author's own idea, and it resolves against its own premise — which is why the
