@@ -2113,6 +2113,26 @@ establish what training under a clamp would give.
 *Instrument:* `src/run_scale_control.py` (MPS, 2,498,560 tokens/arm, μ_rec = 18, arms differ only in
 readout mode / norm penalty) and the 90M Kaggle pair. Eight arms plus the two 90M runs.
 
+> **A confound found on 2026-08-23, in this comparison, and not previously noticed.** The
+> `raw` and `final_only` readout arms train with their gradients **pinned at the clip threshold for
+> 100% of logged steps**, while the `norm` control never clips at all:
+>
+> | arm | fraction of steps with gnorm ≥ 0.99 | max raw grad norm |
+> |---|---|---|
+> | `sc_control_norm_s0` (the control) | **0%** | 0.84 |
+> | `sc_final_only_s0` | **100%** | **26.10** |
+> | `sc_raw_s0` | **100%** | **85.07** |
+>
+> `grad_clip = 1.0`, so the two scale-exposing arms are effectively trained with a **normalised
+> gradient direction and a fixed step size** while the control is trained with true gradient
+> magnitudes. That is a second, unintended difference between the arms on top of the readout change
+> the comparison is supposed to isolate — and it is *caused by* the intervention (removing the
+> scale-invariant readout is what makes the gradients large), so it cannot be separated by re-running
+> at the same clip. **Any conclusion here about raw / final_only readouts is a conclusion about
+> "that readout, trained under saturating clipping", not about the readout alone.** The norm-penalty
+> arm is unaffected (it clips like the control). Found by an automated sweep over stored `grad_norm`
+> histories; verified directly against the artifacts before being written here.
+
 Sharma & Vu propose four scale-control interventions. §4.1 covered inter-loop normalisation
 (catastrophic, −0.744 to remove it) and §4.6 the radial clamp. The other two — a **raw**
 (scale-visible) readout and a **final-only** norm — plus the **norm penalty** are here, at two seeds,
