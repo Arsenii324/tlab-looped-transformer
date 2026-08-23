@@ -130,10 +130,25 @@ checking — for the wrong reason.
 method pays. But the hit rate on flagged items is **~20%**, and the failure mode is monotonous: *the
 same space-mismatch family named above, applied to artifacts instead of geometry.*
 
+**A third pass, an hour later, refines this in a useful direction.** Five items: **two were refuted by
+checking** — "cross-job CE is incomparable because each job trains its own vocabulary" (every
+DataSphere kernel's `train_tokenizer` is byte-identical, md5 `1dab774d…`, so they share one
+vocabulary) and "the 5-of-5 band claim may splice two different eval grids" (every annealing arm used
+the same 11-point grid, including the depth 20 the objection assumed was missing). **Three were
+right, and all three were about *documents* rather than numbers**: `INDEX.md` still telling a reader
+that §1 was reserved for the author when §1 is agent-written with a disclosure banner; the
+batch-pairing exception living in §4.26 and not in the two documents that *claim* pairing; and a
+supposedly-blocked measurement that was not blocked at all.
+
+**So the sharpened rule is not just "assume four in five fail" but *which* four.** These passes are
+**poor at re-deriving numbers** — every numeric flag so far has been a scope mismatch — and **good at
+spotting contradictions between documents**, which is exactly the surface that grew from one file to
+thirty in five hours and where human reading has failed repeatedly.
+
 **The operating rule that follows: an automated pass is a generator of checks, never a source of
-corrections.** Every item costs one re-derivation, and budgeting for one means assuming four in five
-will not survive it. *That is still cheap relative to shipping a mislabelled statistic in the
-abstract, which is what it caught.*
+corrections.** Every item costs one re-derivation. *That is still cheap relative to shipping a
+mislabelled statistic in the abstract, or a contradicted authorship disclosure in the index — both of
+which it caught.*
 
 ## The instrument defect found last, and it is the same shape as the first
 

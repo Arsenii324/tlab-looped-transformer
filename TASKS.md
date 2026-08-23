@@ -13,13 +13,20 @@ Last updated 2026-08-23 18:22.
 
 | # | task | state |
 |---|---|---|
-| **T24** | **Harvest `tlab-divx-s1`** (capacity-vs-diversity, 3 arms in one job, seed 1) and **Kaggle `tlab-lora-scaleup`** (12M/arm, ~21:52 — the only scale check on the LoRA positive). Both drop into slots that exist: `report.md` §4.23c and `RESULTS.md` §5.2 | **NEXT** |
-| **T25** | **Nobody has read the CURRENT `submission/` end to end.** It changed substantially 20:06–20:52 (count convention, XSA at n=2, annealing's 5th seed, the loop-specific/generic split). The last end-to-end read of a same-shape document found 12 defects, 3 serious, none grep-reachable | open — **the highest-value remaining action** |
-| T7 | §8 writing: W5 decomposition tables. W1/W2/W4 done → §8.0d. §8's synthesis block re-derived 20:47 | open |
-| T1 | Read remaining project `.md`s in full | partial |
+| **T26** | **Harvest `tlab-untie-s0`** (`bt1anqsjuulfo4061jrd`, EXECUTING) — §4.28's causal test of §4.7e. GATES A/B/C registered in `RUNS.md` before submission | **running** |
+| **T27** | **Harvest Kaggle `tlab-lora-scaleup`** — the only budget probe of §4.24 | **running** |
+| **T28** | **A1: dense integer sweep 12–32 on the Kaggle annealing pair** — unblocked because Kaggle's saved tokenizer is **byte-identical** to the shipped one; seeds 2/3 checkpoints pulled to `/tmp/kg_seedext/` | **running locally** |
+| T7 | §8 W5 decomposition tables | open |
 
-**Closed 20:06–20:52:** T21 (all 12 submission findings), T22 (EXPERIMENTS' six missing arms + the
-coverage block is now *generated*), T23 (tonight's four jobs written up as report §4.23a–e).
+**Closed 21:45–22:00 (the reviewer's five points):** grid-provenance of the 5/5 band claim — **checked,
+no splicing**; cross-job-vocabulary objection — **refuted by md5, and the sharper true fact stated in
+§4.27**; `INDEX.md`'s §1 contradiction — **fixed**; the batch-pairing qualifier — **propagated to
+`NEGATIVE_RESULTS.md` and `METHOD.md`**; A1 — **unblocked and running**.
+
+**Known-and-not-doing, with reasons:** a 90M same-config replicate to measure the floor at full budget
+(~9 h T4); a dense sweep on the *DataSphere* arms (impossible — those jobs return no tokenizer, §4.27);
+a full end-to-end re-read of `report.md` (a targeted read of the new sections was done instead);
+ablations A2, A4–A7 (costed in `SUBMISSION_STATE.md`, unrun).
 
 ## Blocked on the user
 
