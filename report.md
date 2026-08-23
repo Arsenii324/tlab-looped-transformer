@@ -3397,6 +3397,25 @@ inside noise and should not be read as terminal-only being *better or worse* on 
 
 ### 4.15 The noise floor, measured from two accidental replicates — fixed seed does *not* give replicates
 
+> **Eval-grid audit, 2026-08-23 — seven distinct grids exist across this project's artifacts, and the
+> load-bearing comparisons are clean.** `plateau_mid` is grid-conditional (17% swing on one
+> checkpoint), so this was checked mechanically rather than assumed. The grids in use:
+>
+> | grid | arms |
+> |---|---|
+> | `(1,2,4,8,12,16,24,32)` | 96 |
+> | `(1,2,4,8,12,16,20,24,32,48,64)` | 24 |
+> | `(1,2,4,8,16,24,32,48,64,96,128)` | 16 |
+> | `(1,2,4,8,16,32,48,64)` | 10 |
+> | three others (12- and 13-point, deep sweeps) | 7 |
+>
+> **Verified clean:** all four seeds in §3.5's n=4 annealing extension — the comparison the
+> withdrawal and the 4/4 band result both rest on — sit on the **identical 11-point grid**, as do
+> §4.17's original two seeds and §4.18's falsifier arms. So band deltas across those are comparable.
+> The μ_rec = 40 arms use a different 12-point grid, and are only ever compared *to each other*.
+> **No cross-grid midpoint comparison was found.** Recorded because the risk was real and unwritten
+> until today, not because it fired.
+
 > **A same-config MPS replicate floor, n=3, measured 2026-08-23 — the gap this section admits is now
 > partly closed for the local dense configuration.** Three runs turned out to be config-identical
 > without being intended as replicates: `sd_dense_k5_s0`, `sc_ctrl` (the scale-clock control) and

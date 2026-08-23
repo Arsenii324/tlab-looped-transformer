@@ -13,7 +13,6 @@ Last updated 2026-08-23 ~15:05.
 
 | # | task | from | state |
 |---|---|---|---|
-| T16 | **Cross-series plateau-grid audit** (Q9 unknown known): screening arms use an 8-point eval grid, 2026-08-23 DS arms use an 11-point grid. `plateau_mid` is NOT comparable between series and both appear in `report.md`. Audit whether any cross-series midpoint comparison actually occurs | self, 18:00 | **top of stack** |
 | T17 | **End-to-end read of `report.md`** — never done, and two retractions have landed since. Largest outstanding risk on the graded artifact | unknown-known #7 | not started |
 | T14 | **Learned depth gate** (`gate_scalar` +32 / `gate_state` +14,336) — restored as the best remaining candidate for a positive after correcting the 'E1 is E2's upper bound' error (E1 is a LOWER bound; a global weighting cannot reach a per-token signal) | reviewers x2 | **not launched**, local GPU busy with od arms |
 | ~~T11~~ | **Gemini's `tlab-operator-diversity` DS job errored on `ModuleNotFoundError: tokenizers`** — its `cmd` installs it but `system.log` shows the install never ran. Local run produced only `od_control`. **Decide: relaunch or drop.** Note `lora_cycle` costs +408,576 params (4.51%) and is a fixed per-branch table — if it wins, §3.5's zero-param scale argument does not cover it | Gemini session, 16:23 | **not relaunched** |
@@ -34,6 +33,8 @@ Last updated 2026-08-23 ~15:05.
 | U4 | Any GitHub / HF push. **Note: `git push --tags` or `--mirror` WILL be rejected** — a tag carries 1.83 GB of >100 MB blobs; branches are clean (`OPS.md`) |
 
 ## Closed today (kept one cycle, then deleted)
+
+- **T16 closed clean.** Seven distinct eval grids exist; the load-bearing comparisons (§3.5's n=4 annealing extension, §4.17's original seeds, §4.18's falsifier) all share one 11-point grid. μ_rec=40 arms use a different grid but are only compared to each other. No cross-grid midpoint comparison found. Recorded in §4.15.
 
 - **T13** §6.0b now states the `n_loop_eff=24` limitation (in-job pairs unaffected; cross-schedule carry it).
 - **T15** §4.20's retraction propagated to the two sections that cited it as a live architectural finding.
