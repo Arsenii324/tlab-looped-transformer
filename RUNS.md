@@ -681,3 +681,9 @@ discriminate between. The registered outcomes are therefore **two-dimensional**,
 
 **Registered now because the joint reading is what makes it worth anything**, and adopting it after
 seeing which cell fired would be precisely §6.0 rows 5 and 16.
+
+**All six job IDs, one place (a compaction loses these):**
+`tlab-duocausal-s0` **bt1qvi35v7gsejmvn1it** · `-s1` **bt1lkbri6cqj6q9fssoa** ·
+`tlab-recmethod-s2` **bt1s4mag4kdvsvts536m** · `tlab-diversity-control-s0` **bt1ps6o54qhrecg40etf** ·
+`tlab-pin2-control-s0` **bt1b76se42lip6987fb9** · `tlab-xsa-s0` **bt15egv862odi4o20qtn** ·
+Kaggle **arsen4ikvar/tlab-lora-scaleup**. Harvest all six: `./harvest_duocausal.sh`.

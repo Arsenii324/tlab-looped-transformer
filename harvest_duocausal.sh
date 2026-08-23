@@ -8,6 +8,9 @@ declare -A JOBS=(
   [bt1qvi35v7gsejmvn1it]=dc_s0
   [bt1lkbri6cqj6q9fssoa]=dc_s1
   [bt1s4mag4kdvsvts536m]=recmethod_s2
+  [bt1ps6o54qhrecg40etf]=diversity_s0
+  [bt1b76se42lip6987fb9]=pin2_s0
+  [bt15egv862odi4o20qtn]=xsa_s0
 )
 OUT=/tmp/ds_harvest; mkdir -p $OUT
 for id in "${!JOBS[@]}"; do
