@@ -1,5 +1,21 @@
 # reviewer_answers/
 
+**START WITH `16_WHOLE_STATE.md`.** It is self-contained, supersedes every earlier reply where they
+disagree, and ends with a self-check. Files 00–15 are the incremental record and several of their
+claims were withdrawn by later measurements in this same project — they are kept unedited because
+this project retracts visibly rather than deleting.
+
+Superseded-in-part, and by what:
+- `12`, `13` report the annealing CE advantage as holding at n=2 → **withdrawn at n=4** (§3(i) of 16)
+- `13` presents the degenerate cross-layer collapse as a headline → **largely a shared-residual
+  artifact** (§3(iii) of 16)
+- anything quoting `rho = 1.7019` → **false precision from an unseeded estimator**; the seeded value
+  is 1.6227 (§3(iv) of 16)
+
+---
+
+# reviewer_answers/
+
 One file per reply to the external reviewer, newest last.
 
 **CONVENTION (added 11:25, learned the hard way):** files here are sent at creation time and are

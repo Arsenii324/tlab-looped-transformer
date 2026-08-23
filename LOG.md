@@ -2230,3 +2230,12 @@
   Disagreed on skipping the oracle cache -- already run, null as they predicted, but it closes the
   FOURTH independent instrument class against 4.7's headroom, which is why the negative is strong.
   reviewer_answers/15 written.
+2026-08-23 17:35 — reviewer_answers/16_WHOLE_STATE.md written: consolidated self-contained state,
+  supersedes 00-15 where they disagree, with a 9-item self-check whose answers are the places
+  earlier replies were wrong (annealing is both positive and negative; non-convergence is
+  architectural; cos->1 is a residual artifact; PG gap is token budget not architecture; four
+  instrument classes; gated injection is the decisive row; deep-full is not an annealing test;
+  n_loop_eff doesn't confound in-job pairs; the strongest claim is saturation-without-convergence).
+  README now points there first and lists what is superseded.
+  od_lora_r2 landed: +0.0941 CE, band unmoved -- empirically confirms 4.20's retraction (the arm was
+  built to fix an artifact).
