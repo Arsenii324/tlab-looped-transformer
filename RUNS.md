@@ -740,3 +740,23 @@ mechanism in this project and the report's central negative is wrong.**
 **Stated cost, so this is not read as free:** the untied arms spend **+10.0%** of the parameter budget
 on `W_K` alone. Even a positive result here is *not* a recommendation for the submitted architecture —
 it would be a mechanism finding, and §4.28 records that 8 buckets does not fit at this budget at all.
+
+**Procedural amendment to `tlab-untie-s0`, written 21:52 — BEFORE any data, and it changes no
+falsifier.** I registered GATE A as "measure the trained arm's depth-key rank with
+`src/depth_key_rank.py`". **That job will return its weights WITHOUT its tokenizer**, like every
+DataSphere job here (§4.27's quarantine note), so a local forward pass will feed it token ids that
+mean something different from what it trained on. **This does not invalidate GATE A, and the reason
+should be on record before the number exists:**
+
+- GATE A is a **relative** comparison — `ut_b4_gate_s0`'s key rank against `ut_ctrl_s0`'s — and **both
+  arms are evaluated on the identical local token stream**, so the mismatch is common-mode.
+- Effective rank of the depth-key stream is a **structural** property: §4.7e measures it on
+  **untrained** models, where no tokenizer relationship exists at all. It is not a capability readout.
+- **GATES B and C are untouched**: they read the **in-job** `val_curve`, computed inside the job with
+  that job's own tokenizer.
+
+**What I should have done and did not:** added `tokenizer.json` to this job's `outputs:` before
+submitting. It is one line, I knew about the failure ninety minutes earlier because I quarantined an
+artifact produced by exactly it, and I still did not apply it to the job I launched afterwards.
+**Recorded as a process failure rather than fixed retroactively**, because the job is already running
+and editing the registration to hide the omission is the thing this file exists to prevent.
