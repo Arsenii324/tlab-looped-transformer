@@ -2663,3 +2663,41 @@ diversity's own contribution is **~0.044** -- only just above the measured cross
 ([8,20] -> [8,20]) while the pinned arm **narrows** it ([8,20] -> [8,16]). If that holds, capacity
 buys CE at the cost of band while diversity preserves it -- but it is single-seed, cross-job, and one
 grid point, so it is recorded as an observation, not a result.
+
+## 2026-08-23 19:56 — diversity job SUCCESS: the IN-JOB capacity number is 82%, and it retracts my 19:47 band observation
+
+`download-files` returned **4 files, 107.0 MB — all three `.pt` checkpoints.** Second confirmation
+that sec6.0 row 34's explicit-filename fix works.
+
+**All three arms in ONE job, one seed, one shard — no cross-job confound:**
+
+| arm | best CE | ΔCE_best | band |
+|---|---|---|---|
+| `dv_control_s0` | 5.3765 | — | [8,20] mid 12.6 |
+| `dv_lora_r4_s0` (cycled) | 5.2514 | **−0.1251** | [8,20] mid 12.6 |
+| `dv_lora_fixed0_s0` (pin-0, zero diversity) | 5.2734 | **−0.1031** | [8,20] mid 12.6 |
+
+**Pin-0 recovers 82% of the cycled arm's gain in-job.** Diversity's own contribution is **0.0220** --
+*inside* the CUDA-dense floor's neighbourhood and well inside the cross-job drift band. Combined with
+the cross-job pin-2 figure (−0.0815, 65%), the two independent pins bracket diversity's contribution
+at **18-35%, none of it comfortably resolvable**. sec4.21 is a capacity result on three independent
+lines now: r=1 decomposition, pin-0 in-job, pin-2 cross-job.
+
+**RETRACTING my 19:47 observation.** I flagged that pin-2 *narrowed* the band ([8,20] → [8,16]) while
+the cycled arm kept it, and suggested "capacity buys CE at the cost of band while diversity preserves
+it". **In-job, pin-0 keeps the band at [8,20] mid 12.6, identical to both the control and the cycled
+arm.** So the pin-2 narrowing is **cross-job noise, not a capacity-vs-diversity asymmetry.** I labelled
+it "an observation, not a result" at the time, which is why it cost nothing -- but the labelling is
+the only reason.
+
+**Caveat that remains:** pin-0 carries the branch-specialisation confound (branch 0 is the only branch
+trained at r=1). Pin-2 does not, but was cross-job. **`tlab-divx-s1` (bt1attom37m9m5ahnhj5), launched
+19:54, puts control + cycled + pin-2 in ONE job at seed 1** -- which removes both confounds at once
+and adds a second seed. ETA ~20:45.
+
+**A launch error worth recording, caught by a guard I added earlier today.** The `divx` generator
+aborted on its own assertion -- *"unsubstituted SEED marker left in generated main.py"* -- because a
+log string I wrote contained the literal token the substitution guard checks for. My shell chain then
+ran the launch unconditionally, so `datasphere ... execute` fired with **no `main.py` on disk**. It
+failed cleanly (`FileNotFoundError`), **no job was created and no compute was spent**. The guard did
+its job; the `&&` chaining did not. Fixed and relaunched.
