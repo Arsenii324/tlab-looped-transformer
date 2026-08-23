@@ -421,6 +421,7 @@ mechanisms in the current literature (read from source where marked):
 | per-iteration LayerNorm table `LN^prev_t`, gate biases `β_t`, and `1/T` residual scaling (LoopMTP) | table over t; `T` fixed at train time | **no** — architecturally T-locked |
 | iteration embeddings (Huginn-style) | table over t | **no** |
 | depth-wise LoRA per loop | table over t, and O(T) params | **no** |
+| **loop-CYCLED LoRA branches** (`branch = t mod B`, B = 4) — *added 2026-08-23 after it produced this report's only replicated CE improvement, §4.21* | **`t mod B` is a function of t**, O(B) params, defined for every t | **yes, on the letter — and this row was missing.** The rule as written above lists only the *per-loop* form, which is O(T) and T-locked. A **cyclic** bank is neither: 4 branches serve any depth, and the arm evaluates cleanly to loop 64 having trained at ≤32. **The spirit is arguable and both readings are stated in §4.21**: the benefit is bounded by a fixed four-branch table however wide the block gets, which is the shape the task's own counter-example warns about. At +4.51% of budget (rank 4) it is affordable here and is **not** covered by §3.5's zero-parameter argument |
 | **IterAdaLN** (IterMoE, arXiv 2606.04438) | `v_k = MLP_iter(PE(k))` — fixed sinusoidal encoding of the iteration index through a small learnable MLP, fused with a projection of the current token state | **yes** — defined for every k, extrapolates by construction |
 | soft-MTP loop-to-target alignment (LoopMTP) | function of t (the target index) | structurally yes, but see below |
 
