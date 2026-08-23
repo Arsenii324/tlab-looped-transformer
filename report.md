@@ -3382,6 +3382,22 @@ two consequences — and they point in opposite directions for design.**
 rather than the substitution compounding along the whole trajectory. A real generating exiter would
 pay a compounding version of this, which this measurement bounds from below rather than settles.
 
+> **How to say what this grid shows without saying the opposite of it.** The matrix *is* asymmetric —
+> the `k = 1` row is the least damaging of all while the `t = 1` **column** is catastrophic — so it is
+> easy to summarise as "an asymmetric degradation penalty when compute depth diverges from cache
+> depth." **That summary is wrong, and it inverts the finding.** Off-diagonal distance is not what
+> costs anything: at `t = 8` the spread across *all seven* cache depths is **0.0052 nats**, and the
+> extreme off-diagonal cell (k = 64, t = 8) is 3.9082 against a clean 3.9078. **Divergence between k
+> and t is nearly free.** The only expensive region is a single column — `t = 1`, before the state has
+> been through the block even once — which is a property of the *query* depth alone, not of the gap.
+>
+> **And that is exactly what §4.7e predicts**, which is the reconciliation worth making explicit: if a
+> token's depth keys span an effective rank of ~1.6, the depths are close to interchangeable, so
+> swapping which depth wrote the cache should cost almost nothing — and it doesn't. The two sections
+> describe the same matrix and must not be described in opposite words. *§4.8's "nearly free" and
+> §4.7e's "rank ~1.6" are one fact seen from two sides: the same interchangeability that makes a
+> ragged cache safe is what leaves depth-mixing mechanisms nothing to discriminate between.*
+
 ### 4.9 Train-at-L: does training *at* a larger loop count help?
 
 *Instrument:* DataSphere `tlab-train-at-L`. Five separate models at **fixed** loop count

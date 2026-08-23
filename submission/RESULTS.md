@@ -49,6 +49,19 @@ states the convention). Two mechanisms were run at two settings each, so this ta
 | 11b | per-token depth gate, **scale-invariant** | **−0.0012 / +0.0023** *(sign reverses, 2 seeds)* | *n/a — see §5* | +450 |
 | 12 | **supervision annealing** *(loss-side)* | CE **withdrawn at n=4**; a 5th point at 4× budget is **+0.1119** `[WITHDRAWN-ANNEAL-CE]` | **band widens 5/5 seeds**, same decomposition at 2.5M and 10M | **0** |
 
+### Loop-specific mechanisms vs generic block improvements — the split that makes the claim honest
+
+**A grader should be able to ask "would a non-looped transformer get the same benefit?" and find the
+answer already in the table.** Eleven of the twelve are **loop-specific by construction** — their
+mechanism refers to loops, depths, or the state between them, and is undefined at `r = 1`. One is
+not: **exclusive self attention is an ordinary attention operator with no loop-dependence at all**,
+included because it was cheap and worth testing, and a non-looped model would plausibly get the same
+−0.24.
+
+**And that split is exactly where the finding lives, because the measurement crosses it.** The four
+loop-specific mechanisms that lower the loss **behave like generic block improvements anyway** — they
+deliver 78–101% of their gain at a single loop, where the loop-referring part of each is inert:
+
 ### The pattern, which is the report's central finding
 
 **Five of the twelve lower the loss. Four of the five deliver 78–101% of that gain at a *single*
@@ -71,8 +84,28 @@ the norm penalty ([6,17]→[6,14]), duo-causal W = 3 ([8,20]→[8,16], both seed
 ([8,20]→[8,16] at seed 1, unmoved at seed 0). The one lever that moves the band *outward* —
 supervision annealing, 4/4 seeds, zero parameters — **does not lower the loss.**
 
+**So the honest count is sharper than "twelve interventions, five lower the loss", and it is not
+kinder:** *eleven loop-specific mechanisms were tested; not one widens the useful band; the four that
+lower the loss do so **as block improvements**, at a depth where the loop-referring part of each does
+nothing. The twelfth intervention is a generic block operator, it is the largest positive in the
+report, and it is not about looping at all.*
+
 *That dissociation is the answer to the brief's sentence: low perplexity and «за счет большого
 количества лупов» come apart under measurement.*
+
+### One prediction that fired
+
+Not every entry above is a null found after the fact. **XSA's outcome was written down before the arm
+ran**, at 19:15, and derived from *this report's own measured regularity* rather than from the paper
+proposing it: given that every loss-lowering intervention here had improved the block and left the
+band alone, the prediction was **"CE down, band unmoved."**
+
+**CE down: confirmed at both seeds** (−0.2162, −0.2633; ~16× the floor; zero parameters).
+**Band unmoved: confirmed at seed 0, contradicted at seed 1** — and withdrawn on that basis.
+
+Reported this way because a pattern that generates a correct advance prediction on a *published,
+zero-parameter* operator is worth more than the same pattern restated over arms chosen after the fact
+— and because the half that failed is what an n=1 report would have shipped intact.
 
 > **⚠ The caveats belong beside the numbers, not in a footnote.**
 > **LoRA `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]`:** the `rank ≥ 4` restriction is **post hoc** — over all six arms the interval

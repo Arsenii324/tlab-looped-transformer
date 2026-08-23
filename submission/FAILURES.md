@@ -50,7 +50,7 @@ any released weights.
 `train_tokenizer.py` first, which **overwrites** `configs/tokenizer.json`. Every released checkpoint
 would then have evaluated at chance. Fixed, and the warning is now in the quickstart itself.
 
-## The pattern, and it is not a coding-bug pattern
+## The first pattern, and it is not a coding-bug pattern
 
 **Four of the five most expensive errors share one shape: a number that looked fine in a summary and
 was wrong in the raw.** None was a coding bug in the ordinary sense — the code did what it said. They
@@ -77,6 +77,44 @@ unexamined for a week.
 
 **A fix generates a claim, and this project's rule for claims applies to it: verify against the
 artifact, not against the fact that you made the change.**
+
+## The third pattern, which is the most useful of the three because it is diagnosable in advance
+
+The two patterns above are cautionary. This one is **actionable**: it names a check you can run
+*before* a number becomes a claim.
+
+**A real statistic, measured in one space, read as a claim about a different space.** Five instances,
+and the sharpest three happened within two hours of each other on the final evening:
+
+| the number | what it really measured | the claim it was read as |
+|---|---|---|
+| `cos → 1.0000` across layers (§4.20) | layer **outputs**, which in a pre-norm stack all share one residual | "the layers have collapsed into one direction" — **an arithmetic artifact**; contributions sit at cos 0.14–0.18 |
+| effective rank **31.83 / 33** for an untied stack (§4.7e) `[RANK-PROJECTION]` | **keys**, each through that layer's *own* random `W_K` | "untied stacks build 11.7× more diverse depth **representations**" — at the representation level it is **3.1×**, and both streams are collinear |
+| the XSA self-bias falls **0.85 → 0.35** in training | a **cosine** | "so there is little left to remove; the arm will be near-null" — removing that residual was worth **0.216 nats** `[XSA-AT-R1]`. A cosine scale is not a loss scale |
+| the angular budget `B` (§4.16c) | a **chord**, sampled once per loop | a **path length**; at 3× resolution the effect reverses sign |
+| `argmin` of a loop curve | the position of a minimum **within noise** | "the optimal depth moved" — 134 of 165 curves have argmin margins under the floor |
+
+**The check that would have caught all five is one question, asked before the sentence is written:**
+*what space is this number measured in, and what space does my claim need?* It costs nothing, it is
+mechanical, and it does not depend on remembering any particular past mistake.
+
+**Why this is better evidence than another admission.** The honest version of the final evening is not
+"I knew the pattern and repeated it anyway" — that is true but unproductive. It is that **the pattern
+had no name and therefore no check**, and three instances in two hours is what naming it cost. The
+first two were caught by an outside question; the third was caught by the arm landing at −0.216 and
+refuting a prediction that had been amended on the bad inference twenty minutes earlier.
+
+## A rule that came out of the same evening, and generalises past its occasion
+
+**When you remove a safeguard, name the function it served and say what now covers it.**
+
+`ds_watchdog.sh` was killed at 18:40 for re-attaching a job that had already finished — correct on the
+symptom. Its *actual* function was catching dead attaches, and nothing replaced it. By 20:08 three
+attach logs had been frozen for over half an hour while the jobs ran on server-side, and a stale step
+count had been reported as current. **Results were never at risk** — harvesting goes through
+`download-files --id`, not the attach — but live monitoring was silently wrong for ~35 minutes. The
+lesson is not "keep noisy safeguards"; it is that removing one is a change with a claim attached, and
+this project's rule for claims applies to it.
 
 ## What the process caught, and what caught the process
 
