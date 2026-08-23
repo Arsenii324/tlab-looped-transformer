@@ -2164,3 +2164,10 @@
   (val shards ~89% overlapping, not identical -- data.py skips 20,000 docs, the kernel continues its
   own iterator from ~19,319); eval.py gained three guards; load_checkpoint now names silently
   defaulted behavioural fields.
+2026-08-23 15:45 — MAJOR: sw90 CE advantage over dense WITHDRAWN at n=4 (Kaggle seed extension,
+  seeds 2/3: dCE_best +0.0482/-0.0902 vs original -0.0811/-0.0609). Both pre-registered triggers
+  fired (straddles 0; mean -0.0460 inside 0.0541 floor). Headline table + 4.17 primary para fixed;
+  ~13 other mentions stale, logged as TASKS T10. Gated injection (4.1b) complete: gi_gated_a874
+  succeeds on its own mechanism test (||h|| growth 6.2x->1.17x) and costs +0.2470 CE, ~4.7x floor.
+  agy jobs A/B returned (unverified by me); C never ran (syntax error, not relaunched). Learned
+  depth gate NOT launched -- deferred per user's token-budget note. reviewer_answers/13 written.
