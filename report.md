@@ -6118,6 +6118,59 @@ written, and the reason it was not is that the instrument passed its own eight u
 test that it computes the plateau correctly, not that the plateau is stable under its free parameter.
 **A test suite is not a null.***
 
+### 4.26 "In-job paired" is batch-identical for every comparison here EXCEPT the annealing ones
+
+Every A/B claim in this report rests on **in-job pairing**: arms in one job share a shard, a
+tokenizer and a seed. Nobody had checked what that guarantees at the level of the *actual batches*.
+
+**The kernel re-seeds per arm** — `run_arm()` does `rng = np.random.default_rng(train_cfg.seed)`
+before the loop — so two arms with the same `train_cfg` draw the identical batch sequence. **But one
+`rng` object is shared by four consumers**: `get_batch`, the `n_loops` draw, `sample_supervise_idx`,
+and `evaluate`. **If two arms consume the stream at different rates, their batches diverge from that
+point on.**
+
+They do, in exactly one case. `sample_supervise_idx` **short-circuits at `k = 1`**:
+
+```python
+def sample_supervise_idx(n_loops, k, rng):
+    if k == 1: return [n_loops - 1]          # <-- consumes ZERO rng draws
+    ...
+    intermediate = list(rng.choice(n_loops - 1, size=k - 1, replace=False))
+```
+
+Verified directly — the next draw after one call differs by `k`:
+
+| `k` | next `rng.integers` value |
+|---|---|
+| 1 | 850624225 |
+| 2 | 636961687 |
+| 5 | 16527635 |
+| 8 | 606635775 |
+
+**So an annealed arm (`supervise_k_final = 1`) stops consuming the stream at its switch point and
+sees different batches from its dense control for the final ~10% of training.** Every other pair in
+this report shares `supervise_k` and is **batch-identical throughout** — duo-causal, XSA, LoRA,
+`dg_norm`, the pins, the depth gate.
+
+**What this does and does not do to the annealing result, stated carefully.**
+
+- **It is not a bias.** Both arms draw i.i.d. from the same shard; neither is advantaged. Nothing here
+  favours dense over annealed or vice versa.
+- **It is added variance, and it lands on the one comparison that was withdrawn for variance.**
+  Annealing's ΔCE_best spread is −0.0811 / −0.0609 / +0.0482 / −0.0902 / +0.1119 — a spread the
+  withdrawal at n=4 was based on. **Part of that spread is plausibly this**, and it is a *mechanism*
+  for the noise rather than another observation of it.
+- **It does not touch the band result**, which is the half that survives: the band decomposition is
+  identical (onset 8 → 8, end 16 → 24) at 2.5M and at 10M across 5 seeds, and a difference in the
+  final 10% of batches does not produce the same two edges five times.
+- **It slightly weakens the phrase "same shard, same tokenizer, same seed, same data"** used of
+  annealing pairs elsewhere in this report. For those pairs the true statement is *same shard, same
+  tokenizer, same seed, and identical batches until the switch.*
+
+*The fix, not applied because it would invalidate every stored comparison for a variance reduction on
+one axis: give `get_batch` its own `rng`, independent of the supervision and loop-count draws. Recorded
+in §6.0b as an inherited design that was never examined.*
+
 ## 5. Methods tested to destruction — what was claimed, what was measured, why it broke
 
 > **This section was titled "What didn't work", and that title was costing it.** A *null* says "we
