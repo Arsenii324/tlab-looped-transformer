@@ -17,7 +17,7 @@ are *in-job paired*. **Across sources the vocabulary itself differs**: every Dat
 own 4096-token BPE from a fresh FineWeb stream (§4.27), so absolute CEs in different source files are
 not on the same scale. Measured directly — the same control configuration, same seed, same 1,219
 steps, in three different jobs gives **5.3765 / 5.3052 / 5.2851, a spread of 0.0914 nats**, about 3×
-the 0.0074–0.0334 within-tokenizer drift band this report quotes elsewhere. **Read the `best CE`
+the 0.0074–0.0334 within-tokenizer drift band this report quotes elsewhere — **and §4.27 now measures 0.0914 directly, on three controls with verified-identical configs (5.3765 / 5.3052 / 5.2851), 6× the in-job replicate floor.** **Read the `best CE`
 column down a source file, never across one.**
 
 ## Coverage — checked mechanically, and it is not perfect

@@ -27,13 +27,13 @@ loss-side lever is §5 below. Rows added after this document was first written a
 | gated (diagonal state-space) injection, α = 0.874 | Parcae; *Done Right* | **+0.247** | unmoved |
 | loop-cycled LoRA, rank 2 | MoDr lineage | **+0.094** | unmoved |
 | **loop-cycled LoRA, rank ≥ 4** | MoDr lineage | **−0.094** ⚠ | **unmoved (5 of 5 pairs)** |
-| **exclusive self attention (XSA)** | arXiv 2603.09078 | **−0.216 / −0.263** *(2 seeds)* ⚠ | unmoved (s0); **narrows** [8,20]→[8,16] (s1) |
+| **exclusive self attention (XSA)** | arXiv 2603.09078 | **−0.216 / −0.263** *(2 seeds)* ⚠ | seeds **disagree** — unresolved (§4.25) |
 | radial clamp (inference-time) | Sharma & Vu | ~0 | *relocates* the optimum; ceiling invariant to 0.006 |
 | convex gate / damped sub-stepping | arXiv 2605.23872 | null | unmoved |
 | ε = λ/(N√L) residual scaling | arXiv 2606.18524 | null | unmoved |
 | norm penalty (training-time) | Sharma & Vu | −0.030, **wins ppl** | **narrows** [6,17] → [6,14] |
 | duo-causal attention, W = 2 | Think-at-Hard | **+0.009 / −0.011** *(sign reverses)* | **identical to the digit, both seeds** |
-| ✚ **duo-causal attention, W = 3** | Think-at-Hard | **−0.087 / −0.039** ⚠ | **narrows** [8,20] → [8,16], both seeds |
+| ✚ **duo-causal attention, W = 3** | Think-at-Hard | **−0.087 / −0.039** ⚠ | narrows [8,20] → [8,16] **at tol 0.01 only** (§4.25) |
 | ✚ per-token depth gate, unnormalised | this project | **−0.295** ⚠ | *instrument failure — §4 below* |
 | ✚ **per-token depth gate, scale-invariant** | this project | **−0.001 / +0.002** *(sign reverses)* | *mixture window, not depth — `RESULTS.md` §5.1* |
 

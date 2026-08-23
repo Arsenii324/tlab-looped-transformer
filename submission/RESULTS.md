@@ -41,13 +41,17 @@ states the convention). Two mechanisms were run at two settings each, so this ta
 | 5 | radial clamp | ~0 *(ceiling invariant to 0.006)* | relocates | 0 |
 | 6 | convex gate / fixed-`g` sweep | null | unmoved | +66k |
 | 7 | ε = λ/(N√L) residual scaling | null *(its "shift" was a 0.0001-nat argmin flip)* | unmoved | 0 |
-| 8 | norm penalty λ=0.01 (90M) | **−0.030** *(wins ppl)* ⚠ | **narrows** [6,17]→[6,14] | 0 |
+| 8 | norm penalty λ=0.01 (90M) | **−0.030** *(wins ppl)* ⚠ | narrows [6,17]→[6,14] *(90M, not in the tol sweep)* | 0 |
 | 9a | duo-causal attention, **W = 2** | +0.0093 / −0.0115 *(sign reverses, 2 seeds)* | **unmoved, to the digit** | 0 |
-| 9b | **duo-causal attention, W = 3** | **−0.0871 / −0.0394** ⚠ | **narrows** [8,20]→[8,16], both seeds | 0 |
-| 10 | **exclusive self attention (XSA)** | **−0.2162 / −0.2633** *(2 seeds, agreeing)* ⚠ | unmoved (s0); **narrows** [8,20]→[8,16] (s1) | **0** |
+| 9b | **duo-causal attention, W = 3** | **−0.0871 / −0.0394** ⚠ | narrows [8,20]→[8,16] **at tol 0.01 only** † | 0 |
+| 10 | **exclusive self attention (XSA)** | **−0.2162 / −0.2633** *(2 seeds, agreeing)* ⚠ | seeds **disagree**: s0 unmoved (widens at tol 0.005), s1 narrows 3/3 † | **0** |
 | 11a | per-token depth gate, unnormalised | **−0.2950** ⚠ | *(gate saturates — see below)* | +449 |
 | 11b | per-token depth gate, **scale-invariant** | **−0.0012 / +0.0023** *(sign reverses, 2 seeds)* | *n/a — see §5* | +450 |
 | 12 | **supervision annealing** *(loss-side)* | CE **withdrawn at n=4**; a 5th point at 4× budget is **+0.1119** `[WITHDRAWN-ANNEAL-CE]` | **band widens 5/5 seeds**, same decomposition at 2.5M and 10M | **0** |
+
+**† Band direction is a `tol = 0.01` statement for these rows.** Sweeping the plateau tolerance
+(§4.25) shows four of eleven paired band verdicts are tolerance-dependent; the two the argument below
+rests on — **annealing widens** and **LoRA leaves the band unmoved** — are robust at 3/3.
 
 ### Loop-specific mechanisms vs generic block improvements — the split that makes the claim honest
 
