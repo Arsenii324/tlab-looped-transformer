@@ -3706,6 +3706,22 @@ recalled.*
   > not touch *depth exploitation*. That is worth stating in both directions: it is a negative result
   > about hyperparameter tuning as a route to the task's actual objective, and it is reassurance that
   > the inherited LR was not quietly setting the depth conclusions this report is built on.
+- **Local runs reset the optimizer ~21 times and no config records it.** The MPS-corruption
+  workaround runs training as a sequence of 240s subprocesses, and `train.py` deliberately does not
+  restore `optimizer.state_dict()` on resume (a device-transfer bug makes it raise
+  `ZeroDivisionError` inside Adam, deterministically — see the load site). So a 2.5M-token local run
+  takes roughly `budget/240` Adam-momentum resets, **and that count is a function of wall-clock
+  speed**: a slower machine, or a machine sharing its GPU with another session, takes more. For the
+  local *matched pairs* this report uses (§4.17, §4.14) both arms run under the same conditions so it
+  largely cancels — but it is an uncontrolled variable that no saved config captures, and it is a
+  reason to prefer the CUDA in-job comparisons where the whole run is one process.
+- **Checkpoints written by the Kaggle kernel carry a partial `model_cfg`** — 15–18 of 23 fields,
+  because the kernel has its own condensed `Config`. Missing fields silently take `src/model.py`'s
+  *current* defaults on load. Structural drift would be caught by `load_state_dict(strict=True)`;
+  behavioural flags would not, and `readout_mode` changes what the model computes with byte-identical
+  weights. It is correct today — `test_model.py` check [7] pins kernel-vs-`src` at `max|diff| = 0.0`
+  — but nothing asserted the correspondence, so `load_checkpoint` now prints which behavioural fields
+  it is defaulting and to what.
 - **No gradient checkpointing anywhere.** Activations are retained across every loop, which is why
   memory — not compute — is what bounds the deep schedules (§4.16b: μ_rec = 56 and 44 both OOM'd on a
   14.75 GiB card; 40 fits). Checkpointing every recurrent step is what Huginn does, and it would have

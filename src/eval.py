@@ -47,6 +47,22 @@ if torch.backends.mps.is_available():
 
 def load_checkpoint(path: pathlib.Path, device: str):
     ckpt = torch.load(path, map_location=device, weights_only=False)
+    # Checkpoints written by the Kaggle kernel carry a PARTIAL model_cfg (15-18 of 23 fields): the
+    # kernel has its own condensed Config and only saves what it defines. Missing fields silently
+    # take whatever `src/model.py` defaults to TODAY. Structural drift would be caught by
+    # load_state_dict(strict=True), but the behavioural flags would not -- `readout_mode` in
+    # particular changes what the model computes with byte-identical parameters, so a changed
+    # default would mis-evaluate a shipped checkpoint with no error anywhere. Currently correct
+    # (test_model.py check [7] pins kernel-vs-src at max|diff| = 0.0), and now it says so out loud
+    # instead of relying on that staying true.
+    _missing = [f.name for f in dataclasses.fields(ModelConfig) if f.name not in ckpt["model_cfg"]]
+    _behavioural = [f for f in _missing
+                    if f in ("readout_mode", "convex_gate", "fixed_gate", "explore_noise",
+                             "residual_scale", "state_renorm", "inject_mode", "truncate_bptt")]
+    if _behavioural:
+        print(f"  ⚠ {path.parent.name}: model_cfg omits {len(_missing)} field(s); "
+              f"BEHAVIOURAL ones default silently: {_behavioural}. Values used: "
+              f"{ {k: getattr(ModelConfig(), k) for k in _behavioural} }", flush=True)
     cfg = ModelConfig(**ckpt["model_cfg"])
     model = LoopedTransformer(cfg).to(device)
     model.load_state_dict(ckpt["model"])
