@@ -5835,6 +5835,62 @@ report's main negative result and its most useful screening instrument at the sa
 out-of-sample point. It is falsifiable and cheap to falsify, which is the property that makes it
 worth stating strongly.
 
+### 8.0d Three connections to the literature that this report owes and had not written
+
+*Each was raised by an external reviewer, logged in `QUEUE.md` as W1/W2/W4, and deferred for weeks
+as "§8 material". Written 2026-08-23 18:25. The first is verified from source; the other two are
+structural arguments that do not depend on numbers I have not read.*
+
+**W1 — MLA imposes the structure a looped model's KV already has, and LLA measured it.** Multi-head
+Latent Attention is usually read as a *quality-neutral memory* play: project K/V into a low-rank
+latent and pay a little accuracy for a lot of cache. **LLA (arXiv 2607.15456, verified in
+`papers/sources/`) shows that in a looped model the low-rank structure is not imposed — it is
+already there, along the loop axis specifically.** Their abstract: the loop-indexed cache *"carries
+far fewer degrees of freedom than its nominal size… the per-loop K/V vectors trace a short, low-rank
+trajectory"*; their figures are titled *"Cross-loop K/V is low-rank, and its per-loop trajectory
+stabilizes"* and *"Loop trajectories are low-rank, not collapsed"* (`results_space_optimized.tex:320,
+329`), and they report recurrence as **the most compressible cache axis** across Ouro-1.4B,
+Ouro-2.6B-Thinking and Huginn-3.5B.
+
+**And their sharpest detail reproduces this report's own measurement at 1/150th the scale.** Their
+contribution list states *"K and V follow different trajectories, motivating `r_v > r_k`"* — keys need
+fewer latent dimensions than values. §4.3 measures exactly that asymmetry here, without knowing it:
+across 64 loops the attention input norm `‖norm1(h)‖` is **flat, 25.13 → 21.36**, while `‖v‖`
+**falls 2×, 82.9 → 39.6**. Keys are near depth-invariant; values are not. **Two independent
+projects, three orders of magnitude apart in parameters, arrive at the same anisotropy on the same
+axis** — and it is the mechanism §4.8 already credits for a ragged KV cache costing almost nothing
+here. *So the honest form of the MLA suggestion is not "add MLA": it is that a looped model's cache
+is the setting where MLA's assumption is least of an assumption, and that this report's §4.8 result
+is a small-scale instance of LLA's premise.*
+
+**W2 — LoopMTP's aggregation and this report's annealing pull in opposite directions, and only one
+of them can be right about where the readout should look.** LoopMTP's gate *aggregates* the readout
+across the loop trajectory — every iteration contributes to the prediction. **Supervision annealing
+does the exact opposite**: it withdraws the loss from intermediate loops and concentrates it on the
+terminal one (§4.14, §4.16, §4.17), and §4.18's account says that is *why* the useful band moves
+outward — the trajectory is allowed to run unanchored. **These are not two flavours of the same
+idea; they are contradictory prescriptions for the same design decision.** This report cannot
+adjudicate it, and the reason is worth naming rather than hiding: the two are measured against
+different objectives (their aggregation is evaluated on downstream tasks with a multi-token
+prediction target; this is next-token CE), and §4.14's own disagreement with Sharma & Vu already
+shows this axis flips sign with depth — both of their comparisons run at K = 4, where §4.9's curve
+says a dense-supervised model is still near its own optimum, whereas this project runs at
+μ_rec = 18–40. **The falsifier is cheap and was not run:** aggregate the readout across loops *and*
+anneal, in one arm. If aggregation helps a model whose loss has been annealed away from the
+intermediate loops, the two mechanisms are orthogonal and this paragraph is wrong.
+
+**W4 — STARS's untested fourth cell, with this project's prediction attached.** STARS's taxonomy of
+where to put the normalisation around a residual branch has four cells, and the **Pre-Sandwich** form
+— `h + Norm(f(Norm(h)))` — is the one they do not test. It is worth naming here because this report
+has measured the other three (§4.1's inter-loop RMSNorm, the plain pre-norm this model uses, and
+§4.1b's gated write). **The prediction, recorded so it can be checked rather than admired: it will
+not change the `1/t` dilution, because normalising the branch *output* leaves ‖h‖ growing linearly —
+the residual stream still accumulates a roughly constant-norm increment per loop, which is the entire
+content of §4.3's geometry.** What it should change is the *variance* of that increment, so the
+plausible effect is on training stability, not on useful depth. *Flagged as second-hand: STARS is not
+in `papers/sources/` and no number of theirs is quoted here; the prediction rests on this report's own
+measured geometry, which is checkable.*
+
 ### 8.1 The objection I would raise against my own architecture
 
 **75% of the looped block's parameters, and ~68% of its per-loop FLOPs, are position-local.** The
