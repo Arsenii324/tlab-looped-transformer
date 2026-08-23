@@ -760,3 +760,43 @@ submitting. It is one line, I knew about the failure ninety minutes earlier beca
 artifact produced by exactly it, and I still did not apply it to the job I launched afterwards.
 **Recorded as a process failure rather than fixed retroactively**, because the job is already running
 and editing the registration to hide the omission is the thing this file exists to prevent.
+
+### `tlab-untie-s0` — GATE A pre-flight, run 22:22, BEFORE the job returned
+
+**Why now rather than at harvest:** GATE A ("the trained arm's depth-key rank must exceed ~4, else
+nothing is decided") is the gate that can waste the whole run. It is checkable **untrained**, on the
+exact kernel that is executing, for zero GPU — so it was, rather than discovering at harvest that the
+buckets never took.
+
+| kernel config (untrained, `ds_untie/main.py`) | depth-key effective rank |
+|---|---|
+| `kv_untie_buckets=1` (tied — what the control is) | **2.729 / 32** |
+| `kv_untie_buckets=4` (the arm) | **8.818 / 32** |
+
+**Two things this establishes.**
+
+1. **The instrument is the same one §4.7e used.** The tied figure **2.729** reproduces §4.7e's
+   independently-measured untrained tied rank of **2.73** to three digits, on a different code path
+   (the DataSphere kernel rather than `src/depth_key_rank.py`). *That is a cross-implementation
+   agreement on a load-bearing number, which this project had not had for this quantity.*
+2. **The mechanism is wired and diversifies at initialisation — 3.2×.** GATE A is therefore expected
+   to pass, and the job should return an interpretable result rather than an instrument failure.
+
+**One prediction attached, so this is falsifiable too:** §4.7e measures that **training makes the tied
+rank worse** (2.73 → 1.83). If that also applies to the bucketed arm, its *trained* rank should land
+**below 8.818 — plausibly 5–6 — while still clearing GATE A's threshold of 4.** *If the trained
+bucketed rank comes back at or below ~4, GATE A fails and nothing about §4.7e is decided by this run.*
+
+**What each landing outcome means, written now so it is not reasoned out under time pressure:**
+
+| GATE A | `Δgate_hi = CE(ut_b4_gate) − CE(ut_b4)` | reading |
+|---|---|---|
+| passes | **materially negative** (beyond 0.0150) | **§4.7e confirmed causally.** The rank collapse *was* the binding constraint on the whole depth-mixing family, and it is fixable for +10.0% of the parameter budget |
+| passes | **null**, like `dg_norm`'s −0.0012/+0.0023 at rank 1.6 | **§4.7e is INCOMPLETE.** Rank is not what binds; the explanation the report leans on is at best partial, and the honest move is to say so in §4.7e rather than defend it |
+| fails | either | **nothing decided.** Instrument failure, exactly as in §4.22 |
+
+**A second, independent question the same job answers, worth reading even if GATE B is null:**
+`ut_b4` vs `ut_ctrl` is *untying's own CE effect*, with no gate involved — **does spending +10.0% of
+the parameter budget on three extra `W_K` matrices buy anything at all?** On this report's own
+regularity (§4.24) I expect any gain to sit mostly at `r = 1`, i.e. capacity rather than depth — and
+**§4.28 already prices the alternative: at 8 buckets it does not fit under the 10M cap at all.**
