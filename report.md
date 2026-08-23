@@ -1248,6 +1248,48 @@ growth with a roughly constant step.
 > oscillates rather than converging for a complex-dominant eigenvalue, which 12 iterations cannot
 > detect; that caveat is unresolved.
 
+**The anchor-response diagnostic (SCSE, arXiv 2607.27656), and all three of my predictions failed.**
+SCSE formalises a quantity this architecture has and never measured. Verified from their source
+(`papers/sources/2607.27656/lvr.tex` §131–137): with an input-conditioned anchor `h*(e)` held fixed
+through the unroll and deviation `Δ_t = h_t − h*`, the **zero-deviation forcing bias** is
+`b_t(e) := 𝒯_t(0; e)` — the next deviation produced *from the anchor itself*. `b = 0` exactly when
+the anchor is a one-step fixed point; additive-injection models do not get that for free. Their
+theory is explicit that the bias's task effect "can be harmful, neutral, or beneficial depending on
+the readout and loss" — **SCSE does not claim it causes saturation**, so it is cited here as a prior
+formalisation, not as an explanation this report concedes. Anchor taken as `h* = h0 + e`, which is
+literally what `forward()` starts from (`model.py`), not one imposed for the diagnostic.
+
+| checkpoint | ‖h*‖ | **‖b‖** | b/‖h*‖ | update@1 | update@64 | **R@1** | **R@64** |
+|---|---|---|---|---|---|---|---|
+| 46M no-renorm | 2.21 | 1715.0 | **775×** | 1659.5 | 393.3 | 1.042 | **4.719** |
+| 90M control | 1.43 | 429.1 | **299×** | 466.7 | 171.7 | 0.926 | **2.696** |
+| 90M norm-penalty | 1.57 | 4.74 | **3.0×** | 4.9 | 1.2 | 0.976 | **5.342** |
+
+**Predictions written before running, and the scorecard.** (1) `b` is constant in `t` — the block is
+weight-tied with no loop conditioning, so `𝒯_t` has no `t` dependence: **held, by construction.**
+(2) `b` is set by the embedding, so R should be **far larger** in the norm-penalty arm: **FALSIFIED.**
+R is comparable across all three (1.90 / 2.98 / 3.37 at loop 8) despite a **380× spread in state
+norm**, and ‖b‖ tracks the *state* scale (1715 / 429 / 4.7), not ‖e‖ (1.50–2.21, essentially equal
+across arms). The pre-registered falsifier said exactly this would mean *"b scales with the state
+rather than the input"* — and it does. (3) R should decay in `t`: **FALSIFIED**, it rises
+monotonically in every arm.
+
+**What the measurement actually shows, which is worth more than the predictions were.** The anchor
+is nowhere near a one-step fixed point: applying the map at `h*` moves it by **299–775× its own
+norm**. And because `b` is constant while the realized per-step update decays, **the input-conditioned
+forcing term exceeds the model's own per-step motion from roughly loop 2 onward, reaching 2.7–5.3× by
+loop 64.** SCSE predicts additive-injection models retain nonzero late-step anchor response; this
+quantifies it, and adds what their study could not: **the ratio is scale-invariant** across a 380×
+norm range, so it is a property of the shared map rather than of the regime it runs in.
+
+*Not promoted to §3.5.* This is explanation, pre-committed to §4.3 in the instrument's own docstring
+before it ran. *One flag raised and not resolved:* the per-step updates here (466.7 → 171.7 for the
+90M control, against ‖h‖ 466.6 → 12424) give ‖Δh‖/‖h‖ falling roughly as 1/t, whereas this section's
+table above reports that column as ~constant at 1.25. Those cannot both be the per-loop increment.
+The likely reading is that the table's column is displacement from `h₀` rather than the per-step
+increment — in which case it is mislabelled — but that has **not** been verified and no claim here
+depends on it.
+
 **The direct test: the unit state does not converge — it drifts logarithmically.** ρ is an indirect
 instrument, a linearisation whose deep-loop readings sit inside their own estimator bias. The direct
 question is whether `u_t = h_t/‖h_t‖` settles, and `u` is worth asking about because it is the
