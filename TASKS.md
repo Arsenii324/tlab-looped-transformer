@@ -13,7 +13,6 @@ Last updated 2026-08-23 ~15:05.
 
 | # | task | from | state |
 |---|---|---|---|
-| T10 | **WITHDRAWN headline: sw90's CE advantage over dense did not survive n=4** (seed 2 reversed: +0.0482; n=4 mean -0.0460 inside the 0.0541 floor). Fixed at the headline table + sec3.5's primary claim. **~13 other mentions of '-0.0811, -0.0609 / both seeds' elsewhere in report.md are now stale** and need the same correction propagated | Kaggle tlab-seed-extension, harvested 15:37 | **6 of ~15 locations fixed** (headline table, 3.5 primary claim, sec8 dissociation para, sec8 'main result' circular defense, gain_decomp table footnote); remaining are inside the withdrawal block itself (raw data, correctly labeled) or in sec4.9/2581/2950's unrelated pooled-rho use of '-0.081' (different quantity, NOT this claim -- verify before touching) |
 | T1 | **Read the remaining project `.md`s in full.** Still unread end-to-end: `LOG.md` (2098), `PLAN.md` (246), `BRIEFING.md` (366), `RUNS.md` (299+), `STATE_FOR_REVIEWER.md` (259), `REVIEW_NOTES.md` (188), `DECISIONS.md`, `METHODS.md`, `INTERVENTIONS.md`, `README.md`, `HANDOFF.md`, and the 3 paper-summary `.md`s | "Read all .md's that you expect to have in context, in full" | **not started.** I read `QUEUE.md`, `DATASPHERE_NOTES.md`, the task statement, `anthropic-prompting.md`, `compute-yandex-datasphere.md` + the `.py` files I touched |
 | T2 | **Harvest `tlab-deep-full`** and fill §4.17's deep half | standing | EXECUTING, step 11800/19531 (60%) as of 15:45; plan is to let it finish (~16:45-17:00) rather than early-harvest, see reviewer_answers/13 sec6. Read against the pre-registration in `RUNS.md` 13:30 — it is **sw75**, which §3.5 narrowed away from |
 | T3 | **Harvest `tlab-anchor-tokenkey`** — §4.18's falsifier (sw90 at k=5/3/2) + token-vs-fraction at 10M | "we should still not be dropping testing ideas" | EXECUTING |
@@ -31,6 +30,8 @@ Last updated 2026-08-23 ~15:05.
 | U4 | Any GitHub / HF push. **Note: `git push --tags` or `--mirror` WILL be rejected** — a tag carries 1.83 GB of >100 MB blobs; branches are clean (`OPS.md`) |
 
 ## Closed today (kept one cycle, then deleted)
+
+- **T10: annealing-withdrawal propagation, complete.** Checked all 8 remaining mentions of '0.0811' after the first pass -- all are either raw per-seed data (seed 0 genuinely was -0.0811; still true) or already inside a withdrawal/context block. Fixed: headline table, sec3.5 primary claim, sec8 dissociation-reopened paragraph, sec8 'main result' circular defense, gain_decomp table footnote.
 
 - Process every point across **all** reviewer messages, not just the latest → cumulative ledger R1–R60 in `QUEUE.md`
 - Reviewer-facing answers as separate files in a subfolder → `reviewer_answers/00`–`12`
