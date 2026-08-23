@@ -2260,3 +2260,18 @@
     two series, and both appear in the report. Cross-series midpoint audit is now top of the stack.
   Q10 most likely failure mode: the report reads as a methodology audit rather than an answer to the
     brief; its most defensible claim is a negative and sec1 is empty.
+2026-08-23 17:25 — tlab-deep-full HARVESTED (SUCCESS, 24481s, 30.0M tokens, step 14646/19531 --
+  wall-clock budget hit mid-arm, as designed). df_mu40_sw75, U[32,48], mu_rec=40.
+  CE_best=3.9287@24 (ppl 50.84, bpb 1.6991), CE@1=4.4864, plateau [16,32] mid 22.6 onset 16.
+  *** PRE-REGISTERED FALSIFIER FIRED *** The trigger, written at launch, was "if its plateau
+  midpoint returns near 22 (dense-like) rather than >=32, the deep half of 3.5's table is withdrawn."
+  It returned 22.6. Also mid/mu_rec = 0.57, inside 4.16b's DENSE range (0.50-0.71), NOT the
+  terminal-only range (0.98-1.09) -- so at full budget this ANNEALED deep arm behaves like a dense
+  arm on the statistic 4.16b uses to separate them.
+  The 2.5M screen said [32,64] mid 45.3; the 30M artifact says [16,32] mid 22.6. Third instance of a
+  2.5M-screen effect not surviving scale-up (norm penalty -0.366->-0.030; annealing CE n=2->withdrawn
+  at n=4; now this).
+  WHAT SURVIVES: band [16,32], CE improving to loop 24, graceful degradation to 128. Deepest useful
+  band measured in this project, on a model trained with every step at >=32 loops. Weights NOT
+  returned (this job predates the outputs: fix) -- curves only, as expected.
+  Artifact copied to checkpoints/deep_full_results.json.

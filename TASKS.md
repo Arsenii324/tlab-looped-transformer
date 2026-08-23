@@ -18,7 +18,6 @@ Last updated 2026-08-23 ~15:05.
 | ~~T11~~ | **Gemini's `tlab-operator-diversity` DS job errored on `ModuleNotFoundError: tokenizers`** — its `cmd` installs it but `system.log` shows the install never ran. Local run produced only `od_control`. **Decide: relaunch or drop.** Note `lora_cycle` costs +408,576 params (4.51%) and is a fixed per-branch table — if it wins, §3.5's zero-param scale argument does not cover it | Gemini session, 16:23 | **not relaunched** |
 | ~~T12~~ | **`od_lora_r2`/`od_lora_r4`/`od_depth_gate` arms never completed** — the learned depth gate (+448 params) is the one the reviewers twice called the only remaining chance at a positive | Gemini + reviewers | local GPU is free |
 | T1 | **Read the remaining project `.md`s in full.** Still unread end-to-end: `LOG.md` (2098), `PLAN.md` (246), `BRIEFING.md` (366), `RUNS.md` (299+), `STATE_FOR_REVIEWER.md` (259), `REVIEW_NOTES.md` (188), `DECISIONS.md`, `METHODS.md`, `INTERVENTIONS.md`, `README.md`, `HANDOFF.md`, and the 3 paper-summary `.md`s | "Read all .md's that you expect to have in context, in full" | **not started.** I read `QUEUE.md`, `DATASPHERE_NOTES.md`, the task statement, `anthropic-prompting.md`, `compute-yandex-datasphere.md` + the `.py` files I touched |
-| T2 | **Harvest `tlab-deep-full`** and fill §4.17's deep half | standing | EXECUTING, step 11800/19531 (60%) as of 15:45; plan is to let it finish (~16:45-17:00) rather than early-harvest, see reviewer_answers/13 sec6. Read against the pre-registration in `RUNS.md` 13:30 — it is **sw75**, which §3.5 narrowed away from |
 ~~T4~~ Kaggle `tlab-seed-extension` harvested 15:37 -> n=4 result WITHDRAWS the headline (see T10).
 | T7 | **§8 writing items still owed**: W1 (MLA × LLA), W2 (LoopMTP aggregation conflict), W4 (STARS Pre-Sandwich), W5 (decomposition tables for remaining §4 sections) | reviewer, logged in QUEUE | not started |
 ~~T8~~ done, §4.20.
@@ -33,6 +32,8 @@ Last updated 2026-08-23 ~15:05.
 | U4 | Any GitHub / HF push. **Note: `git push --tags` or `--mirror` WILL be rejected** — a tag carries 1.83 GB of >100 MB blobs; branches are clean (`OPS.md`) |
 
 ## Closed today (kept one cycle, then deleted)
+
+- **T2 harvested 17:23.** `tlab-deep-full` SUCCESS, 30.0M tokens. **Pre-registered falsifier fired**: plateau mid 22.6 against a trigger of "near 22"; mid/μ_rec 0.57 is dense-range. Deep half of §3.5 withdrawn. Survives: band [16,32], the deepest useful band in the project.
 
 - **T16 closed clean.** Seven distinct eval grids exist; the load-bearing comparisons (§3.5's n=4 annealing extension, §4.17's original seeds, §4.18's falsifier) all share one 11-point grid. μ_rec=40 arms use a different grid but are only compared to each other. No cross-grid midpoint comparison found. Recorded in §4.15.
 
