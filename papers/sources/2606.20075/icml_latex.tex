@@ -1,0 +1,180 @@
+%%%%%%%% ICML 2026 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
+
+\documentclass{article}
+
+% Recommended, but optional, packages for figures and better typesetting:
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs} % for professional tables
+
+% hyperref makes hyperlinks in the resulting PDF.
+% If your build breaks (sometimes temporarily if a hyperlink spans a page)
+% please comment out the following usepackage line and replace
+% \usepackage{icml2026} with \usepackage[nohyperref]{icml2026} above.
+\usepackage{hyperref}
+
+
+% Attempt to make hyperref and algorithmic work together better:
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Use the following line for the initial blind version submitted for review:
+% \usepackage{icml2026}
+
+% For preprint, use
+% \usepackage[preprint]{icml2026}
+
+% If accepted, instead use the following line for the camera-ready submission:
+\usepackage[accepted]{icml2026}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+
+% if you use cleveref..
+\usepackage[capitalize,noabbrev]{cleveref}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THEOREMS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% \usepackage{algpseudocode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TABLES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{pifont} % for checkmark/xmark
+\usepackage{xcolor}
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+\usepackage[table]{xcolor}
+
+
+% Todonotes is useful during development; simply uncomment the next line
+%    and comment out the line below the next line to turn off comments
+%\usepackage[disable,textsize=tiny]{todonotes}
+\usepackage[textsize=tiny]{todonotes}
+
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+\icmltitlerunning{What Makes Effective Supervision in Latent Chain-of-Thought: An Information-Theoretic Analysis}
+
+\begin{document}
+
+\twocolumn[
+  \icmltitle{What Makes Effective Supervision in Latent Chain-of-Thought: \\
+  An Information-Theoretic Analysis}
+
+  % It is OKAY to include author information, even for blind submissions: the
+  % style file will automatically remove it for you unless you've provided
+  % the [accepted] option to the icml2026 package.
+
+  % List of affiliations: The first argument should be a (short) identifier you
+  % will use later to specify author affiliations Academic affiliations
+  % should list Department, University, City, Region, Country Industry
+  % affiliations should list Company, City, Region, Country
+
+  % You can specify symbols, otherwise they are numbered in order. Ideally, you
+  % should not use this facility. Affiliations will be numbered in order of
+  % appearance and this is the preferred way.
+  \icmlsetsymbol{equal}{*}
+
+  \begin{icmlauthorlist}
+    \icmlauthor{Xinghao Chen}{eit,polyu}
+    \icmlauthor{Chak Tou Leong}{polyu}
+    \icmlauthor{Wenjin Guo}{eit}
+    \icmlauthor{Jian Wang}{polyu}
+    \icmlauthor{Wenjie Li}{polyu}
+    \icmlauthor{Xiaoyu Shen}{eit}
+  \end{icmlauthorlist}
+
+  \icmlaffiliation{eit}{Ningbo Institute of Digital Twin, Eastern Institute of Technology, Ningbo, China}
+  \icmlaffiliation{polyu}{Department of Computing, The Hong Kong Polytechnic University, Hong Kong, China}
+
+  \icmlcorrespondingauthor{Xiaoyu Shen}{xyshen@eitech.edu.cn}
+
+  % You may provide any keywords that you find helpful for describing your
+  % paper; these are used to populate the "keywords" metadata in the PDF but
+  % will not be shown in the document
+  \icmlkeywords{Machine Learning, ICML}
+
+  \vskip 0.3in
+]
+
+% this must go after the closing bracket ] following \twocolumn[ ...
+
+% This command actually creates the footnote in the first column listing the
+% affiliations and the copyright notice. The command takes one argument, which
+% is text to display at the start of the footnote. The \icmlEqualContribution
+% command is standard text for equal contribution. Remove it (just {}) if you
+% do not need this facility.
+
+% Use ONE of the following lines. DO NOT remove the command.
+% If you have no special notice, KEEP empty braces:
+\printAffiliationsAndNotice{}  % no special notice (required even if empty)
+% Or, if applicable, use the standard equal contribution text:
+% \printAffiliationsAndNotice{\icmlEqualContribution}
+
+\begin{abstract}
+Latent Chain-of-Thought (CoT) internalizes reasoning within continuous hidden states, offering a promising alternative to verbose discrete reasoning traces. However, robust latent reasoning remains difficult because outcome supervision provides weak learning signals and leaves latent trajectories prone to semantic drift. In this work, we analyze Latent CoT from an information-theoretic perspective and identify this failure as a dual collapse: gradient attenuation along the optimization path and representational drift in the latent space.
+We further decompose process supervision into two complementary dimensions: Trajectory Supervision, which injects dense stepwise reasoning signals, and Space Supervision, which preserves the semantic structure of the latent manifold. Our analysis shows that rigid geometric compression can collapse the reasoning space, whereas generative reconstruction provides a more flexible semantic anchor that better preserves information capacity.
+To measure these effects, we introduce the Unified Latent Probe (ULP), which quantifies the mutual information between latent trajectories and explicit reasoning steps. Experiments reveal a clear Information–Performance Binding: reasoning accuracy depends on the information fidelity preserved in the latent chain. These findings provide a principled framework for latent reasoning supervision and suggest shifting from geometric imitation toward mutual information maximization. Our code is available at \href{https://github.com/EIT-NLP/Supervision-in-Latent-CoT}{this repository}.
+
+
+\end{abstract}
+
+\input{Sections/1_Intro}
+\input{Sections/2_Problem_setup}
+\input{Sections/3}
+\input{Sections/4}
+\input{Sections/5}
+\input{Sections/6_related_work}
+\input{Sections/7_conclusion}
+\section*{Acknowledgement}
+We thank EIT and IDT High Performance Computing Center for providing computational resources for this project. This work was supported by the General Research Fund (GRF) of the Research Grants Council of Hong Kong (PolyU 15209724), and the 2035 Key Research and Development Program of Ningbo City under Grant No.2024Z123 and No.
+2025Z034.
+
+
+\section*{Impact Statement}
+
+This work advances the field of efficient and interpretable Large Language Models by establishing a theoretical framework for Latent Chain-of-Thought reasoning. 
+Our findings have two primary societal implications.
+First, regarding Computational Efficiency, our validation of high-fidelity latent reasoning supports the development of models that decouple reasoning capability from generation length. This offers a pathway toward ``Green AI,'' significantly reducing the energy consumption and latency associated with verbose Explicit CoT without sacrificing performance.
+Second, regarding Safety and Interpretability, a significant concern with latent reasoning is its potential to become an unverifiable ``black box.'' Our work mitigates this risk by demonstrating that decodability is a functional prerequisite for performance. By promoting architectures grounded in mutual information maximization, we ensure that latent thought processes remain auditable and aligned with human logic, thereby discouraging the emergence of opaque or deceptive reasoning patterns in future autonomous systems.
+
+
+
+\bibliography{custom}
+\bibliographystyle{icml2026}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\appendix
+\onecolumn
+\input{Appendix/A_hyperparameters}
+% \input{Appendix/B_Detailed_res}
+\input{Appendix/C_OS_State}
+\input{Appendix/E_rebuttal}
+\input{Appendix/D_probe}
+\input{Appendix/B_Oracle}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}

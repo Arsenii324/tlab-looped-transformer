@@ -1,0 +1,10 @@
+
+\section{Conclusion}
+\label{sec:discussion}
+
+Our analysis establishes structural scaffolding as the prerequisite for effective supervision, modeled here as mutual information maximization. In trajectory control, we find that outcome supervision degenerates into shortcuts due to unconstrained optimization, whereas Process Supervision succeeds by maximizing local stepwise information to minimize conditional entropy, effectively retaining predictability within the latent manifold. 
+Regarding space supervision, we expose that rigid Geometric Compression acts as a destructive constraint, collapsing the high-dimensional reasoning manifold onto sparse static points. In contrast, Generative Reconstruction serves as a flexible semantic tether; by optimizing reconstructibility, it preserves intrinsic dimensionality. 
+Ultimately, we confirm a rigorous information-performance binding: reasoning capability is strictly bounded by the mutual information retained in the latent chain. While autoregressive generation inherently suffers from spatiotemporal information decay, effective scaffolding periodically ``resets'' semantic drift, ensuring the trajectory remains a high-fidelity carrier of logical process.
+
+\paragraph{Limitations.}
+Our current analysis is bounded by the model scale (GPT-2) and task specificity, necessitating further validation on larger foundation models and broader domains. Additionally, the reliance on process annotations restricts immediate scalability, while our MI estimation remains inherently constrained by the variational probe's capacity, potentially providing a conservative lower bound on the true information content.

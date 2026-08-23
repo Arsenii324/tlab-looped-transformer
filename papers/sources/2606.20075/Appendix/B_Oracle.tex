@@ -1,0 +1,43 @@
+\section{Oracle Embedding Experiment}
+\label{app:oracle_embedding}
+
+To investigate whether the geometric target of GC is fundamentally capable of supporting reasoning, we design an \textbf{Oracle Embedding} experiment that provides the model with \textit{perfect} ground-truth step embeddings at training time.
+The GC mechanism trains latent states to approximate the average embedding of corresponding reasoning steps. A natural question arises: \textit{even if this alignment were perfect, would such representations be sufficient for accurate answer prediction?}
+Instead of learning latent representations, we directly replace each placeholder token's embedding with the oracle target—the average of ground-truth step token embeddings (Algorithm~\ref{alg:oracle}).
+
+Despite providing perfect oracle embeddings (the exact target that GC attempts to approximate), the model achieves only 41.2\%. This negative result reveals a fundamental limitation: \textit{average embeddings discard critical sequential and compositional information} required for multi-step reasoning. The centroid of a step's tokens loses the ordering, syntax, and logical structure that distinguish meaningful reasoning from arbitrary token mixtures.
+This experiment provides strong evidence that the GC objective is inherently flawed: even perfect alignment to embedding centroids cannot recover the information necessary for reasoning. 
+
+\begin{algorithm}[h]
+\footnotesize
+\caption{Oracle Embedding Experiment (Upper Bound for GC)}
+\label{alg:oracle}
+\begin{algorithmic}[1]
+\STATE {\bf Input:} Question $q$, Steps $\mathcal{S} = \{S_1, \ldots, S_K\}$, Answer $a$, Embedding table $\mathbf{E}$
+\STATE {\bf Output:} Loss $\mathcal{L}_{\text{Oracle}}$
+
+\STATE
+\STATE {\it // Compute ground-truth step average embeddings}
+\FOR{$i = 1$ to $K$}
+    \STATE $\mathbf{t}_i \gets \textsc{Tokenize}(S_i)$
+    \STATE $\bar{\mathbf{e}}_i \gets \frac{1}{|\mathbf{t}_i|} \sum_{j} \mathbf{E}[\mathbf{t}_i^{(j)}]$ 
+\ENDFOR
+
+\STATE
+\STATE $\mathbf{x}_q \gets \textsc{Tokenize}(q)$
+\STATE $\mathbf{x}_a \gets \textsc{Tokenize}(\texttt{"\#\#\# "} \| a \| \texttt{<eos>})$
+\STATE $\mathbf{x} \gets [\mathbf{x}_q; \texttt{<placeholder>} \times K; \mathbf{x}_a]$
+
+\STATE
+\STATE $\mathbf{X}_{\text{emb}} \gets \mathbf{E}[\mathbf{x}]$
+\FOR{$i = 1$ to $K$}
+    \STATE $\mathbf{X}_{\text{emb}}[\text{pos}_i] \gets \bar{\mathbf{e}}_i$
+\ENDFOR
+
+\STATE
+\STATE $\hat{\mathbf{y}} \gets \textsc{GPT2}(\mathbf{X}_{\text{emb}})$
+\STATE $\mathcal{L}_{\text{Oracle}} \gets \textsc{CrossEntropy}(\hat{\mathbf{y}}, \mathbf{x}_a)$ 
+
+\STATE {\bf return} $\mathcal{L}_{\text{Oracle}}$
+\end{algorithmic}
+\end{algorithm}

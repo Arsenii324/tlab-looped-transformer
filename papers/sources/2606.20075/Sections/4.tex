@@ -1,0 +1,95 @@
+
+\section{Process Supervision: Transcending the Optimization Barrier}
+\label{sec:process_supervision}
+
+To surmount the optimization barrier identified in Section~\ref{sec:optimization_barrier}, prior work \citep{hao2025training} introduced process supervision of latent CoT, a paradigm that fundamentally alters the learning dynamics by explicitly leveraging the ground truth rationale as a structural scaffold.
+
+
+
+\input{Tables/1_table_sec4}
+
+\subsection{The Scaffolding Effect: How Trajectory Supervision Reshapes Training Dynamics}
+\label{subsec:ps_dynamics}
+ 
+% At stage $k$ out of $T$ reasoning steps, the model learns to generate a hybrid trajectory consisting of the first $k$ reasoning steps projected into continuous space (comprising $g \cdot k$ continuous hidden states, where $g$ is the granularity) followed by the remaining $T-k$ discrete reasoning steps.
+At stage $k$ of total steps $T$, the model learns to generate a hybrid trajectory consisting of the first $k$ reasoning steps projected into continuous space, i.e., $L_{\le k}$, which comprises $g\cdot k$ continuous vectors, followed by the remaining $T-k$ discrete reasoning steps. The training objective at stage $k$ is formulated as:
+\begin{equation}
+    \mathcal{L}_{\text{stage-}k}
+    =
+    - \sum_{j=k+1}^{T}
+    \log P_{\theta}
+    \left(
+        S_j
+        \mid
+        \underbrace{L_{\le k}}_{\text{Latent CoT}},
+        \underbrace{S_{k+1}, \dots, S_{j-1}}_{\text{Trajectory Scaffold}}
+    \right),
+    \label{eq:progressive_objective}
+\end{equation}
+
+ 
+where $L_{\le k}=(L_1,\ldots,L_k)$ denotes the latent blocks generated for the first $k$ reasoning steps.~(See Appendix~\ref{app:os_ps_pseudocode} for full training algorithms).
+
+We leverage this progressive framework, denoted as \textsc{PS-Latent}, as a controlled probe to dissect the training dynamics, and identify trajectory scaffolding and optimization shock as the coupled mechanisms driving the substantial performance recovery compared to the baseline.
+
+Table~\ref{tab:part2} confirms that this scaffolding strategy effectively counters the optimization barrier. It allows strong supervision signals to \textbf{bridge the gradient gap inherent in deep chains}, enforcing precise state updates at the immediate generation frontier, supported by dense explicit supervision and a natural curriculum of increasing difficulty.
+Instead of struggling to maximize the distal mutual information with the final answer $I(L; y)$, the objective is decomposed into maximizing the local stepwise mutual information $I(L_{\le k}; S_{k+1})$. This constraint enforces the predictability of the latent trajectory, requiring that the accumulated hidden states $L_{\le k}$ contain sufficient information to accurately forecast the immediate reasoning step $S_{k+1}$. This injection of causal logical information significantly reduces the conditional entropy of the latent manifold, preventing it from collapsing into shortcut solutions.
+Beyond structural scaffolding, the \textit{optimization state} proves critical. Since the transition to continuous vectors fundamentally shifts the loss landscape (Figure~\ref{fig:grad_reset}), retaining historical states introduces ``stale momentum''. Resetting the optimizer is thus essential to induce a necessary ``exploration shock''.
+
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{Figures/Fig2/gradient_norms_compare.pdf} 
+    \caption{Impact of optimizer resetting on gradient dynamics. (a) With Reset: Distinct gradienzt spikes at stage transitions indicate active adaptation to new latent positions. (b) Without Reset: Stale momentum suppresses gradients.}
+    \label{fig:grad_reset}
+\end{figure}
+
+
+\subsection{Beyond Supervision: Calibrating Latent Reasoning via Space Supervision}
+\label{subsec:statealign}
+\textsc{PS-Latent} still trails the Explicit CoT upper bound. This signals that while trajectory supervision resolves the \textit{optimization} bottleneck, a \textit{representation} bottleneck persists.
+To address the representation bottleneck and mitigate semantic drift, prior research~\citep{shen-etal-2025-codi, colar, ccot} has investigated various regularization mechanisms designed to ground evolving continuous hidden states in the established semantics of the discrete vocabulary. 
+However, a fundamental challenge remains: unlike discrete tokens, continuous hidden states lack directly golden signals and their optimal trajectories are inherently unobservable.
+To systematically dissect the mechanisms used to navigate this unobservable landscape, we collectively define representative approaches as an auxiliary \textit{Space Supervision} objective, categorized into two paradigms based on the \textbf{modality of the supervision signal}.
+If the constraint is applied directly to the geometry of the hidden state, we term it \textsc{Geometric Compression}. This approach enforces a rigid topological alignment by minimizing the distance between the generated continuous hidden states $L_t$ and the ground truth average embedding per step $e_{c_t}$:
+\begin{equation}
+    \mathcal{L}_{\text{GC}}(L_t)
+    =
+    \| L_t - e_{S_t} \|_2^2.
+\end{equation}
+Alternatively, if the grounding is achieved via an indirect reconstruction signal, we term it \textsc{Generative Reconstruction}. These methods employs a specialized decoder $D_{\psi}$ to recover the original discrete token from the continuous hidden states~\citep{simcot, he2025semcot}, preserving semantic information without enforcing strict geometric conformity:
+\begin{equation}
+    \mathcal{L}_{\text{GR}} = - \log D_{\psi}(S_t \mid L_t)
+\end{equation}
+Here, the decoder $D_{\psi}$ is fully trainable and optimized jointly with the main backbone. The gradients derived from the alignment objective backpropagate directly through the $L_t$, explicitly shaping the latent representation of the latent CoT model to satisfy these semantic constraints (See Appendix~\ref{app:state_alignment_pseudocode} for full training algorithms).
+
+Integrating this with the trajectory control framework (See Eq.~(\ref{eq:progressive_objective})), the final joint optimization objective at stage $k$ is defined as:
+\begin{equation}
+    \mathcal{L}
+    =
+    \mathcal{L}_{\text{stage-}k}
+    +
+    \lambda
+    \sum_{t=1}^{k}
+    \mathcal{L}_{\text{Align}}(L_t, S_t).
+\end{equation}
+where $\mathcal{L}_{\text{Align}} \in \{ \mathcal{L}_{\text{GC}}, \mathcal{L}_{\text{GR}} \}$ denotes the chosen alignment loss computed for each generated continuous hidden state.
+
+
+
+\paragraph{The Pitfalls of Rigid Geometric Alignment.}
+We analyze the effectiveness of these strategies and the performance is shown in Table~\ref{tab:part2}, where \textsc{PS-GC} leads to distinct performance degradation. 
+To assess target validity, we conduct an \textbf{oracle experiment} measuring the upper bound of the compression target $e_{c_t}$, where the model is trained to predict the answer conditioned solely on these ``ground truth'' embeddings (Appendix~\ref{app:oracle_embedding}); the resulting peak performance ($41.23\%$) is inferior even to the Explicit CoT baseline which generates the full reasoning chain, confirming that compressing a reasoning path into a fixed geometric point inherently incurs severe information loss. 
+Regarding generation optimization, it is geometrically insufficient relying on MSE loss: in high-dimensional spaces, minimizing Euclidean distance fails to constrain directional alignment, allowing errors to be dispersed across dimensions or shifted into irrelevant subspaces despite a low element-wise loss. Consequently, we determine that rigid geometric compression against static targets constitutes an ill-suited paradigm for space supervision, as it suffers from both \textit{informational upper-bound limitations} and \textit{optimization inefficacy}.
+
+\paragraph{Semantic Tethering via Generative Reconstruction.}
+In contrast to rigid geometric constraints, \textsc{PS-GR} achieves substantial improvements by employing a generative decoder that acts as a ``semantic tether,'' preserving the semantic fidelity of the latent chain without artificially restricting its geometric manifold.
+This naturally raises a fundamental question: what is the optimal \textbf{information density} for these continuous hidden states? We investigate this by modulating the granularity $g$ to analyze the impact of information density, as detailed in Table~\ref{tab:part3}. The results reveal that performance progressively improves as granularity increases, indicating that overly compressing reasoning steps induces a severe information bottleneck.
+However, a trade-off exists between computational efficiency and representational capacity. Thus, the optimal granularity must be balanced against the dataset's inherent difficulty, the magnitude of its reasoning jumps and the capability of model itself.
+To probe the limits of this approach, we conducted an \textbf{upper-bound experiment} at the maximum granularity where every discrete token is substituted with a continuous state. We find that while performance converges towards the Explicit CoT baseline, it fails to surpass it. This suggests that structural imitation is inherently bounded by the quality of the explicit supervision, implying that to transcend this limit, the model must fully internalize the latent CoT paradigm, potentially unlocking capabilities that go beyond mere reproduction in future training stages. 
+We also provide an analysis of Space Supervision performance and underlying mechanisms under OS settings in Appendix~\ref{app:c}.
+
+From an information-theoretic perspective, the fundamental objective of Space Supervision is to maximize the reconstructibility of the latent state, formally defined as maximizing the mutual information $I(L_t; S_t)$ between the continuous representation and the explicit rationale. 
+In this context, \textsc{GC} proves theoretically deficient; minimizing Euclidean distance serves as a rigid, low-fidelity proxy that fails to guarantee information retention in high-dimensional manifolds, explaining the observed performance degradation. 
+Conversely, \textsc{GR} is theoretically rigorous: its objective effectively minimizes the conditional entropy $H(S_t|L_t)$, thereby maximizing the variational lower bound of $I(L_t; S_t)$. 
+

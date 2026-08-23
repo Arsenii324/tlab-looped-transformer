@@ -1,0 +1,227 @@
+\section*{Appendix}
+\label{sec:appendix}
+
+\section{Experimental Details}
+\label{app:A}
+
+\subsection{Datasets and Hyperparameters for Main Experiments}
+\label{app:hyper}
+
+\paragraph{Dataset.} We conduct all experiments on an augmented version of the GSM8K-Aug dataset~\citep{deng2023implicitchainthoughtreasoning}. The training set contains 385,620 samples, while validation and test sets retain their original sizes. Table~\ref{tab:combined_data_hyper} (Left) provides a formatting example.
+
+\paragraph{Base Model \& Training.} All models are initialized from a GPT-2 (124M) checkpoint pre-trained on full chain-of-thought sequences for 11 epochs. We use the AdamW optimizer with a learning rate of $10^{-4}$ and an effective batch size of 128. For \textbf{progressive methods}, the optimizer state is reset at each stage transition.
+
+\begin{table}[h]
+    \centering
+    \small
+    \caption{\textbf{Dataset Example and Common Hyperparameters.}}
+    \label{tab:combined_data_hyper}
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \vspace{0pt}
+        \renewcommand{\arraystretch}{1.3}
+        \begin{tabular}{p{1.0cm}|p{5.8cm}}
+        \toprule
+        \textbf{Field} & \textbf{Content} \\
+        \midrule
+        \texttt{Q} & Out of 600 employees in a company, 30\% got promoted while 10\% received bonus. How many employees did not get either a promotion or a bonus? \\
+        \midrule
+        \texttt{Steps} & \footnotesize\texttt{["<<600*30/100=180>>", "<<600*10/100=60>>", "<<180+60=240>>", "<<600-240=360>>"]} \\
+        \midrule
+        \texttt{Ans} & 360 \\
+        \bottomrule
+        \end{tabular}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.48\textwidth}
+        \centering
+        \vspace{0pt}
+        \renewcommand{\arraystretch}{1.1}
+        \begin{tabular}{l|c}
+        \toprule
+        \textbf{Hyperparameter} & \textbf{Value} \\
+        \midrule
+        Base Model & GPT-2 (124M) \\
+        Optimizer & AdamW \\
+        Learning Rate & $1 \times 10^{-4}$ \\
+        Weight Decay & 0.01 \\
+        Batch Size & 32 (Eff: 128) \\
+        Max Epochs & 25 \\
+        Precision & FP32 \\
+        \multicolumn{2}{c}{\textit{Progressive Settings}} \\
+        Epochs per Stage & 3 \\
+        Max Latent Tokens & 6 \\
+        \bottomrule
+        \end{tabular}
+    \end{minipage}
+\end{table}
+
+\paragraph{Model-Specific Configurations.} Table~\ref{tab:model_configs} details the unique settings for each paradigm. \textbf{OS-variants} use a fixed latent structure, while \textbf{PS-variants} employ a progressive training strategy.
+
+\begin{table}[h]
+\centering
+\caption{\textbf{Model-Specific Configurations.} $g$ denotes latent tokens per step.}
+\label{tab:model_configs}
+\small
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{l|ccccc}
+\toprule
+\textbf{Model} & \textbf{Schedule} & \textbf{Tokens ($g$)} & \textbf{Alignment} & \textbf{Loss Weight} & \textbf{Aux Decoder} \\
+\midrule
+OS-No-CoT & Fixed & -- & -- & -- & -- \\
+OS-LATENT & Fixed & Fixed $N=6$ & -- & -- & -- \\
+PS-LATENT & Progressive & $g=1$ & -- & -- & -- \\
+PS-GC & Progressive & $g=1$ & MSE & $\lambda_{\text{GC}}=1.0$ & \ding{55} \\
+PS-GR & Progressive & $g=1$ & Recon & $\lambda_{\text{GR}}=1.0$ & GPT-2 \\
+PS-GR (Ext) & Progressive & $g=2$ & Recon & $\lambda_{\text{GR}}=1.0$ & GPT-2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Progressive PS Schedule.} 
+We adopt a \textbf{progressive schedule}~\citep{hao2025training} as PS strategy: training starts by compressing the first reasoning step into $g$ latent tokens and incrementally incorporates subsequent steps every 3 epochs until the full sequence is internalized, after which the model is fine-tuned with full capacity for the remaining epochs.
+
+\subsection{Pseudocode for Outcome and Process Supervision}
+\label{app:os_ps_pseudocode}
+
+This section provides the pseudocode for the two primary supervision strategies described in Section~\ref{sec:optimization_barrier} and~\ref{subsec:ps_dynamics}.
+
+\paragraph{Outcome Supervision (OS-LATENT).} 
+The OS strategy initializes a fixed sequence of $N$ latent tokens. The model must autonomously discover internal representations that maximize the likelihood of the final answer $a$, as there are no intermediate path constraints. The loss is computed solely on the answer tokens (Algorithm~\ref{alg:os}).
+
+
+\paragraph{Trajectory Supervision (PS-LATENT).} 
+This strategy employs a Progressive Schedule (Algorithm~\ref{alg:ps}). Training starts in Hybrid Mode, where the first $m$ steps are compressed into latent tokens while the remaining explicit steps are supervised to scaffold the trajectory. As training progresses, more steps are internalized until the model reaches Latent Mode, where supervision applies only to the final answer.
+
+
+\begin{algorithm}[h]
+\footnotesize
+\caption{Outcome Supervision (OS-LATENT)}
+\label{alg:os}
+\begin{algorithmic}[1]
+\STATE {\bf Input:} Question $q$, Answer $a$, Total latent tokens $N$
+\STATE {\bf Output:} Loss $\mathcal{L}_{\text{OS}}$
+
+\STATE $\mathbf{x}_q \gets \textsc{Tokenize}(q)$
+\STATE $\mathbf{x}_l \gets [\texttt{<|start-latent|>}, \underbrace{\texttt{<|latent|>}, \ldots, \texttt{<|latent|>}}_{N}, \texttt{<|end-latent|>}]$
+\STATE $\mathbf{x}_a \gets \textsc{Tokenize}(\text{``\#\#\# ''} + a + \texttt{<eos>})$
+\STATE $\mathbf{x} \gets [\mathbf{x}_q; \mathbf{x}_l; \mathbf{x}_a]$ 
+
+\STATE
+\STATE $\mathbf{y} \gets [\underbrace{-100, \ldots, -100}_{|\mathbf{x}_q| + |\mathbf{x}_l|}; \mathbf{x}_a]$ 
+
+\STATE $\hat{\mathbf{y}} \gets \textsc{LatentLM}(\mathbf{x})$
+\STATE $\mathcal{L}_{\text{OS}} \gets \textsc{CrossEntropy}(\hat{\mathbf{y}}, \mathbf{y})$
+
+\STATE {\bf return} $\mathcal{L}_{\text{OS}}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[h]
+\footnotesize
+\caption{Trajectory Supervision with Progressive Schedule (PS-LATENT)}
+\label{alg:ps}
+\begin{algorithmic}[1]
+\STATE {\bf Input:} Question $q$, Reasoning Steps $\mathcal{S} = \{S_1, \ldots, S_K\}$, Answer $a$
+\STATE {\bf Input:} Current epoch $e$, Epochs per stage $E_s$, Granularity $g$
+\STATE {\bf Output:} Loss $\mathcal{L}_{\text{PS}}$
+
+\STATE $s \gets \lfloor e / E_s \rfloor$ 
+\STATE $m \gets s + 1$ 
+\STATE $N_{\text{latent}} \gets m \times g$ 
+
+\STATE $\mathbf{x}_q \gets \textsc{Tokenize}(q)$
+\STATE $\mathbf{x}_l \gets [\texttt{<|start-latent|>}, \underbrace{\texttt{<|latent|>}, \ldots}_{N_{\text{latent}}}, \texttt{<|end-latent|>}]$
+
+\IF{$m < K$} 
+    \STATE $\mathbf{x}_r \gets \textsc{Tokenize}(S_{m+1}, \ldots, S_K)$ 
+    \STATE $\mathbf{x}_a \gets \textsc{Tokenize}(\text{``\#\#\# ''} + a + \texttt{<eos>})$
+    \STATE $\mathbf{x} \gets [\mathbf{x}_q; \mathbf{x}_l; \mathbf{x}_r; \mathbf{x}_a]$
+    \STATE $\mathbf{y} \gets [\underbrace{-100, \ldots}_{|\mathbf{x}_q| + |\mathbf{x}_l|}; \mathbf{x}_r; \mathbf{x}_a]$
+
+\ELSE 
+    \STATE $\mathbf{x}_a \gets \textsc{Tokenize}(\text{``\#\#\# ''} + a + \texttt{<eos>})$
+    \STATE $\mathbf{x} \gets [\mathbf{x}_q; \mathbf{x}_l; \mathbf{x}_a]$
+    \STATE $\mathbf{y} \gets [\underbrace{-100, \ldots}_{|\mathbf{x}_q| + |\mathbf{x}_l|}; \mathbf{x}_a]$
+\ENDIF
+
+\STATE
+\STATE $\hat{\mathbf{y}} \gets \textsc{LatentLM}(\mathbf{x})$
+\STATE $\mathcal{L}_{\text{PS}} \gets \textsc{CrossEntropy}(\hat{\mathbf{y}}, \mathbf{y})$
+
+\STATE {\bf return} $\mathcal{L}_{\text{PS}}$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Pseudocode for Space Supervision Mechanisms}
+\label{app:state_alignment_pseudocode}
+
+This section details the two geometric constraint mechanisms introduced in Section~\ref{subsec:statealign}: \textbf{Geometric Compression (GC)} and \textbf{Generative Reconstruction (GR)}. Both operate on top of the PS framework (Algorithm~\ref{alg:ps}), adding an auxiliary loss to shape the latent representation space.
+
+The \textbf{GC} mechanism enforces a geometric prior by aligning the \textit{representative} latent state (typically the last token of the block) to the centroid of the corresponding step token embeddings via MSE loss. This encourages the latent space to mirror the geometry of the explicit reasoning space (Algorithm~\ref{alg:gc}).
+
+The \textbf{GR} mechanism employs an auxiliary decoder to reconstruct the explicit reasoning tokens from latent hidden states. This enforces that the latent representation preserves sufficient semantic content to regenerate the original step (Algorithm~\ref{alg:gr}).
+
+
+\begin{algorithm}[h]
+\footnotesize
+\caption{Geometric Compression (PS-GC)}
+\label{alg:gc}
+\begin{algorithmic}[1]
+\STATE {\bf Input:} Latent hidden states $\mathbf{H}_l = \{\mathbf{h}_1, \ldots, \mathbf{h}_{N_{\text{total}}}\}$
+\STATE {\bf Input:} Steps to compress $\mathcal{S}_{\text{comp}} = \{S_1, \ldots, S_m\}$, Embedding table $\mathbf{E}$, Granularity $g$
+\STATE {\bf Output:} Alignment loss $\mathcal{L}_{\text{GC}}$
+
+\STATE $\mathcal{L}_{\text{GC}} \gets 0$
+\STATE
+\FOR{$i = 1$ to $m$}
+    \STATE $\mathbf{t}_i \gets \textsc{Tokenize}(S_i)$ 
+    \STATE $\bar{\mathbf{e}}_i \gets \frac{1}{|\mathbf{t}_i|} \sum_{j} \mathbf{E}[\mathbf{t}_i^{(j)}]$ 
+    \STATE $k \gets i \times g$ 
+    \STATE $\mathbf{h}_{\text{rep}} \gets \mathbf{H}_l[k]$ 
+    
+    \STATE $\mathcal{L}_{\text{GC}} \gets \mathcal{L}_{\text{GC}} + \| \mathbf{h}_{\text{rep}} - \bar{\mathbf{e}}_i \|^2$
+\ENDFOR
+\STATE
+\STATE $\mathcal{L}_{\text{GC}} \gets \mathcal{L}_{\text{GC}} / m$
+\STATE $\mathcal{L}_{\text{total}} \gets \mathcal{L}_{\text{PS}} + \lambda_{\text{GC}} \cdot \mathcal{L}_{\text{GC}}$
+
+\STATE {\bf return} $\mathcal{L}_{\text{total}}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[h]
+\footnotesize
+\caption{Generative Reconstruction (PS-GR)}
+\label{alg:gr}
+\begin{algorithmic}[1]
+\STATE {\bf Input:} Latent hidden states $\mathbf{H}_l = \{\mathbf{h}_1, \ldots, \mathbf{h}_{N_{\text{total}}}\}$
+\STATE {\bf Input:} Steps to reconstruct $\mathcal{S}_{\text{comp}} = \{S_1, \ldots, S_m\}$, Granularity $g$
+\STATE {\bf Output:} Reconstruction loss $\mathcal{L}_{\text{GR}}$
+
+\STATE $\mathcal{L}_{\text{GR}} \gets 0$
+\STATE $n_{\text{valid}} \gets 0$
+\STATE
+\FOR{$i = 1$ to $m$}
+    \STATE $\mathbf{t}_i \gets \textsc{Tokenize}(S_i)$ 
+    
+    \STATE {\it // Construct latent input block}
+    \STATE
+    \IF{$g = 1$}
+        \STATE $\mathbf{z}_i \gets \mathbf{H}_l[i]$ 
+    \ELSE
+        \STATE $\mathbf{z}_i \gets [\mathbf{H}_l[(i-1)g + 1]; \ldots; \mathbf{H}_l[i \cdot g]]$ 
+    \ENDIF
+    \STATE
+    \STATE $\text{Input} \gets [\mathbf{z}_i; \mathbf{E}[\mathbf{t}_i^{(1)}]; \ldots; \mathbf{E}[\mathbf{t}_i^{(|\mathbf{t}_i|-1)}]]$
+    \STATE $\hat{\mathbf{y}}_i \gets \textsc{AuxDecoder}(\text{Input})$
+    \STATE $\mathcal{L}_{\text{GR}} \gets \mathcal{L}_{\text{GR}} + \textsc{CrossEntropy}(\hat{\mathbf{y}}_i, \mathbf{t}_i, \text{reduction=`sum'})$
+    \STATE $n_{\text{valid}} \gets n_{\text{valid}} + |\mathbf{t}_i|$
+\ENDFOR
+\STATE
+\STATE $\mathcal{L}_{\text{GR}} \gets \mathcal{L}_{\text{GR}} / n_{\text{valid}}$
+\STATE $\mathcal{L}_{\text{total}} \gets \mathcal{L}_{\text{PS}} + \lambda_{\text{GR}} \cdot \mathcal{L}_{\text{GR}}$
+
+\STATE {\bf return} $\mathcal{L}_{\text{total}}$
+\end{algorithmic}
+\end{algorithm}

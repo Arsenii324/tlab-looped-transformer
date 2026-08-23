@@ -1,0 +1,22 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{From Explicit to Latent Chain-of-Thought.}
+Chain-of-Thought has significantly advanced the reasoning capabilities by enabling the decomposition of complex problems into explicit intermediate steps~\citep{wei2022chain}. Early research~\citep{goyal2023think, wang2023guiding, chen-etal-2025-unveiling-key}, demonstrates that allocating intermediate computation enhances reasoning capacity even without meaningful semantics~\citep{pfau2024let, shi2025meaninglesstokensmeaningfulgains}.
+Building on this, the field has shifted towards Latent Chain-of-Thought, which fully internalizes reasoning into hidden states~\citep{hao2025training, shen-etal-2025-codi}, with variants exploring parallelization~\citep{wu2025parallelcontinuouschainofthoughtjacobi}, test-time scaling~\citep{pttslatent} and kv-cache distillation~\citep{kava}. Complementing these horizontal structures, recursive and looped architectures have also emerged to scale reasoning depth through iterative state~\citep{geiping2025scaling, wang2025hierarchicalreasoningmodel, jolicoeurmartineau2025morerecursivereasoningtiny, zhu2025scalinglatentreasoninglooped}.
+% However, supervision paradigms for these opaque states have bifurcated: Geometric Compression methods force latent states to approximate average embeddings~\citep{ccot, colar}, whereas Semantic Reconstruction approaches employ auxiliary decoding objectives to ensure the recoverability of logical steps~\citep{simcot, he2025semcot}. 
+A central challenge in Latent CoT is how to supervise opaque continuous states.
+Existing approaches can be broadly viewed as forms of space supervision.
+Geometric compression (GC) constrains latent states to match target representations, such as average embeddings of reasoning steps~\citep{ccot, colar}.
+Generative reconstruction (GR), in contrast, uses an auxiliary decoding objective to preserve the recoverability of explicit reasoning steps from latent states~\citep{simcot, he2025semcot}.
+This distinction connects Latent CoT to broader representation learning objectives.
+GC is analogous to JEPA-style representation prediction, where models are trained to predict target representations in latent space rather than reconstruct raw observations~\citep{lecun2022path}.
+GR is closer in spirit to reconstruction-based objectives such as masked autoencoders, which recover the original input from a learned representation~\citep{he2022masked}.
+
+
+
+
+\paragraph{Internal Dynamics and Theoretical Perspectives.}
+~\citet{ton2025understanding} analyses characterize Explicit CoT as a potentially inefficient channel, where generated rationales often suffer from significant redundancy and low information gain.
+Transcending the information bottleneck of discrete symbols, continuous representations offer provable advantages in efficiency: \citet{zou2025latentcollaborationmultiagentsystems} demonstrate that they achieve exponentially higher information transmission rates than discrete tokens. To address the resulting ``black box'' opacity, theoretical studies postulate that high-dimensional latent spaces enable \textit{reasoning by superposition}~\citep{zhu2025reasoning, xu2025formalcomparisonchainofthoughtlatent}. This mechanism allows models to process parallel logic paths simultaneously, a capability fundamentally unattainable by sequential discrete decoding~\citep{zhang2025soft}.
+However, empirical scrutiny challenges this theoretical optimism: recent causal and adversarial analyses reveal that without robust grounding, latent tokens frequently degenerate into uninterpretable shortcuts or heuristic pattern-matching rather than encoding faithful step-by-step logic~\citep{lin-etal-2025-implicit, zhang2025latenttokensthinkcausal, yu2025llmsreallythinkstepbystep}, highlighting the critical difficulty in verifying the causal validity of internalized thought.

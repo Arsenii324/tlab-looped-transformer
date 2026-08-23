@@ -3621,6 +3621,47 @@ headroom unchanged (0.2008 → 0.2032) and still 0.0–0.1% capturable. **So the
 band sits; it says nothing about why per-token depth demand is unpredictable.** Those are two
 different phenomena and this report should not let one framing appear to cover both.
 
+**A published result points the other way, and it is worth stating at full strength.**
+**arXiv 2606.20075**, *"What Makes Effective Supervision in Latent Chain-of-Thought: An
+Information-Theoretic Analysis"* — **verified from the LaTeX source** (`papers/sources/2606.20075`,
+tarball obtained 2026-08-23; this report quotes no number it has not read in the source, after
+§6.0 row 22). Their central finding is that removing intermediate supervision is a **pathology**:
+
+| their arm | what it is | max acc |
+|---|---|---|
+| `OS-No-CoT` | no latent chain at all | 18.7% |
+| `OS-Latent` | outcome supervision only, no space supervision | **9.8 / 18.3%** |
+| `OS-GC` | + geometric compression (MSE to token embeddings) | 13.1% (↓5.2) |
+| `OS-GR` | + generative reconstruction (states must stay decodable) | 18.2% (↓0.1) |
+| `Explicit CoT` | upper bound | 43.1% |
+
+Outcome-only latent CoT does **no better than having no chain at all**, which they diagnose as a
+"dual collapse" — gradient attenuation plus representational drift — and conclude that *"outcome
+supervision alone is insufficient to induce meaningful latent CoT steps"*. **This report measures
+the opposite sign**: removing intermediate supervision (k=1) is what moves the useful band 1.50×
+deeper (§4.14, §4.16b) and, annealed, improves the ceiling (§4.17).
+
+**Why both can hold, stated as scope rather than as a dismissal.** Their latent steps are supervised
+against *ground-truth rationale text* — each step is meant to carry **different** content, and
+removing that supervision removes the only signal saying what each step should contain. Every loop
+here predicts the **same next token**; there is no per-loop target to lose, and "dense supervision"
+means applying the identical next-token CE at interior loops rather than teaching them distinct
+content. So their result says an unsupervised chain has nothing to learn *what to be*; it does not
+say an unsupervised **refinement** loop degrades. Those are different claims, and this report should
+not be read as contradicting a measurement it did not make.
+
+**The convergence is the more interesting half.** Their `OS-GR` arm — *"a specialized decoder to
+recover the original discrete token from the continuous hidden states… preserving semantic
+information without enforcing strict geometric conformity"* — **is a decodability anchor**, the same
+constraint §4.18 is about. And they find it is the *benign* form: it costs 0.1 points while rigid
+geometric compression costs 5.2, because it *"preserves the intrinsic dimensionality of the latent
+space"*. So two independent projects, on different tasks with different objectives, both isolate
+**decodability-to-the-token-space** as the constraint that governs the geometry of a latent
+trajectory. They find it preserves capacity; this report finds it caps useful depth. Those are
+compatible — a tether that keeps a manifold from drifting is also a tether that keeps it from
+travelling — and the agreement that *this is the operative variable* is stronger evidence than either
+result alone.
+
 **What would falsify it, and what has not been run.** (a) A *fixed* `g` convex-gate arm that bounds
 ‖h‖ without touching supervision should leave the band where dense puts it — §4.10 finds the gate
 null, which is consistent but was not run as an anchor test. (b) The account predicts the band should

@@ -109,3 +109,15 @@ Every SECOND-HAND row that appears in `report.md` is being hedged in place (next
 2606.22325 are marked as relayed-not-verified at the point of use, and §4.7's novelty argument is
 restated so it rests on the structural claim (past the optimum the final layer is not the target)
 rather than on an exhaustive literature sweep.
+
+## 2606.20075 — VERIFIED FROM SOURCE 2026-08-23 (was blocked/unobtainable)
+Tarball arrived in ~/Downloads mid-session; extracted to `papers/sources/2606.20075/`.
+Title (from `icml_latex.tex`): *"What Makes Effective Supervision in Latent Chain-of-Thought: An
+Information-Theoretic Analysis"*. Numbers read from `Tables/1_table_sec4.tex`, quotes from
+`Sections/1_Intro.tex` and `Sections/4.tex`:
+- `OS-No-CoT` 18.7 / `OS-Latent` **9.8 / 18.3** / `OS-GC` 13.1 / `OS-GR` 18.2 / `Explicit CoT` 43.1
+- *"outcome supervision alone is insufficient to induce meaningful latent CoT steps"* (Intro)
+- `OS-GR` = *"a specialized decoder to recover the original discrete token from the continuous hidden
+  states... preserving semantic information without enforcing strict geometric conformity"* (§4)
+Used in §4.18. **No number is quoted that was not read in the source** — the standing rule after the
+73%/85% retraction (§6.0 row 22).

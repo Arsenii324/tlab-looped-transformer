@@ -1,0 +1,84 @@
+
+\section{Preliminaries and Problem Formulation}
+\label{sec:preliminaries}
+ 
+
+We formalize the problem of complex reasoning as learning a conditional distribution $p(y|x)$ that maps an input query $x \in \mathcal{X}$ to a final answer $y \in \mathcal{Y}$.
+For tasks requiring multi-step logic, learning this direct mapping reliably is difficult, as a single forward pass must implicitly capture all intermediate reasoning. Standard approaches address this by introducing an explicit intermediate rationale that decomposes the reasoning process into tractable steps.
+
+\subsection{Formulation of Reasoning Dynamics}
+\label{subsec:formulation}
+
+\paragraph{Explicit Chain-of-Thought.}
+In the standard paradigm, the rationale is a sequence of discrete tokens $C = (c_1, c_2, \dots, c_N)$ drawn from a fixed vocabulary $\mathcal{V}$. The joint distribution factorizes as:
+\begin{equation}
+    p(y, C | x) = p(y | C, x) \prod_{i=1}^N p(c_i | c_{<i}, x).
+\end{equation}
+Projecting abstract reasoning onto discrete symbols acts as a \textit{lossy compression} of the underlying thought process, fundamentally constrained by the finite vocabulary and the discrete nature of language.% 引用
+
+\paragraph{Latent Chain-of-Thought.}
+We investigate \textit{Latent Chain-of-Thought}, where this scaffold is internalized into a trajectory of continuous hidden states $L = (L_1, L_2, \dots, L_T)$.
+Each reasoning step $L_t$ consists of a sequence of $g$ continuous vectors, where $g$ denotes the latent granularity:
+\begin{equation}
+    L_t = (h_{t,1}, \dots, h_{t,g}) \in \mathbb{R}^{g \times d},
+\end{equation}
+where $d$ is the hidden dimension. The inference marginalizes over the latent trajectory:
+\begin{equation}
+    p(y|x) = \int p(y|L, x) p(L|x)\,dL.
+\end{equation} % latent variable 边缘化公式。
+
+
+
+\paragraph{The Representational Interface Gap.}
+The contrast between explicit and latent CoT can be viewed as a difference in the bandwidth of the intermediate reasoning interface.
+Let \(R\) denote an idealized random variable representing the task-relevant reasoning state underlying a complete solution.
+For explicit CoT, this information must pass through \(C \in \mathcal{V}^N\).
+Since \(C\) consists of \(N\) vocabulary tokens, its conditional entropy is upper-bounded by
+\begin{equation}
+    H(C \mid x) \le N \log_2 |\mathcal{V}|.
+\end{equation}
+In practice, syntactic and semantic constraints of natural language make the empirical entropy of emitted rationales substantially lower.
+Equivalently, any information about the underlying reasoning process that is recoverable from the emitted rationale satisfies
+\begin{equation}
+    I(R; C \mid x) \le H(C \mid x) \le N \log_2 |\mathcal{V}|.
+\end{equation}
+If the rationale corresponds to \(T\) conceptual reasoning steps with an average of \(\bar{n}\) tokens per step (\(N \approx T \bar{n}\)), this gives
+\begin{equation}
+    I(R; C \mid x) \lesssim T \bar{n} \log_2 |\mathcal{V}|.
+\end{equation}
+
+Latent CoT instead exposes a sequence of continuous intermediate states \(L=(L_1,\ldots,L_T)\), where each \(L_t \in \mathbb{R}^{g \times d}\).
+For a simplified upper-bound comparison, we consider a finite-precision or noise-limited discretization \(\tilde{L}=Q(L)\), with at most \(B_{\mathrm{eff}}\) reliable bits per dimension.
+Then the information recoverable from the latent interface is bounded by
+\begin{equation}
+    I(R; \tilde{L} \mid x)
+    \le H(\tilde{L} \mid x)
+    \le T g d B_{\mathrm{eff}}.
+    \label{eq:latent_entropy_bound}
+\end{equation}
+This suggests that latent reasoning states can encode richer non-linguistic computational features that are inevitably lost under explicit symbolic compression~\citep{zhu2025reasoning,zou2025latentcollaborationmultiagentsystems},  since \(d B_{\mathrm{eff}}\) can substantially exceed \(\log_2 |\mathcal{V}|\).
+High-dimensional latent states may carry task-relevant computation, but they may also encode noise, spurious correlations, or representations that drift away from the semantic structure learned during language pre-training. 
+
+
+\subsection{Supervision Challenges in Latent CoT}
+\label{subsec:induction_dilemma}
+The theoretical objective of latent Chain-of-Thought (CoT) reasoning is to maximize the mutual information (MI,~\citealt{MI}) between the latent trajectory $L$ and the target answer $y$, such that each latent state $L_t$ captures answer-relevant intermediate information. However, unlike discrete reasoning tokens, latent states have no observable ground truth, and the optimal latent trajectory remains inherently hidden. This makes supervision fundamentally challenging: optimizing solely for the final answer provides no direct guarantee that the learned latent states correspond to meaningful reasoning steps. In high-dimensional continuous spaces, the model may instead rely on shortcut features or spurious representations that are unrelated to valid reasoning~\citep{zhang2025latenttokensthinkcausal}. This setting corresponds to \textbf{outcome supervision (OS)}, where latent states are shaped exclusively by gradients propagated from the final answer.
+To mitigate this limitation, existing work increasingly incorporates explicit rationales $C=(c_1,\ldots,c_N)$ as additional supervision signals. We collectively refer to these approaches as \textbf{process supervision (PS)}. Let the rationale be partitioned into $T$ reasoning steps, denoted as $S_1,\ldots,S_T$. We observe that existing process supervision methods can be understood through two complementary dimensions: \textit{trajectory supervision} and \textit{space supervision}.
+
+\paragraph{Trajectory Supervision.}
+Trajectory supervision regulates the \emph{temporal dynamics} of latent reasoning.
+By requiring the accumulated latent states $L_{\le t}$ to predict future reasoning content, such as the next explicit step $S_{t+1}$ or the future suffix $S_{>t}=(S_{t+1},\ldots,S_T)$, trajectory supervision enforces the sequential predictability of the latent trajectory.
+It therefore encourages the continuous flow to follow the logical progression of the explicit chain and provides dense signals for mitigating temporal information decay.
+
+\paragraph{Space Supervision.}
+Space supervision regulates the \emph{semantic grounding} of individual latent states.
+It encourages each latent state $L_t$ to preserve information about its corresponding explicit step $S_t$.
+We distinguish two strategies based on the \textit{space} where the alignment constraint is applied:
+1) \textit{Generative Reconstruction (GR):}
+This approach performs alignment in the symbolic space.
+It employs an auxiliary decoder to recover the corresponding textual reasoning step $S_t$ from $L_t$, thereby encouraging the latent state to retain recoverable semantic content without forcing it into a fixed embedding geometry.
+2) \textit{Geometric Compression (GC):}
+Conversely, this approach performs alignment directly in the latent space.
+Instead of generating raw tokens, it constrains $L_t$ to minimize the geometric distance to an encoded representation of $S_t$, typically using a frozen encoder as a stable semantic anchor.
+
+
