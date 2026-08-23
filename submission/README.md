@@ -55,7 +55,7 @@ published positives in the depth-mixture family rather than contradicting them.
    78–101%, the saturating depth gate 96%. **They improve the block, not the looping.** The fifth is
    the mirror image: the norm penalty wins perplexity (37.52 vs 38.86) by *damaging* loop 1
    (`ΔCE@1 = +0.2263`). **And the only one that replicated across three platforms vanishes at 5× the
-   budget**: −0.0936 at 2.5M `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]` against **+0.0077** at 12M, in a config-identical pair.
+   budget**: −0.0936 at 2.5M against **+0.0077** at 12M, in a config-identical pair.
    **This project has no replicated CE improvement at scale.** *(§4.29; `RESULTS.md` §1b for what
    that leaves standing.)*
 
