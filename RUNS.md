@@ -854,3 +854,27 @@ it can be wrong.
 
 **Status: this is explicitly a FOLLOW-UP.** It cannot land before 23:59. Whatever it returns is
 **not** part of the submitted result and will be reported as post-deadline work.
+
+**`tlab-width-s0` — harvested 23:47, POST-DEADLINE, and it is PARTIAL. Not written up in the
+submission, by the policy set before it launched.**
+
+**The 896 arm OOM'd** (`out of memory` in stderr) after logging step 0 — 32.6M parameters under full
+backprop through up to 32 loops does not fit the T4 alongside the smaller arms' allocations. Arms
+`wd_224_s0` and `wd_448_s0` completed and returned checkpoints.
+
+**Trained depth-key rank, measured on in-distribution tokens** (`--val val_datasphere.bin`):
+
+| arm | params | trained rank / 32 | mean cos |
+|---|---|---|---|
+| `wd_224_s0` | 2,726,304 | **1.57** | 0.9267 |
+| `wd_448_s0` | 9,064,608 | **1.59** | 0.9248 |
+| `wd_896_s0` | 32,579,232 | **did not train — OOM** | — |
+
+**Both land inside the registered 1.5–1.9 window**, so the trained collapse is width-independent
+**across the 3.3× parameter range that ran**. **The registration also says an arm failing to train
+means nothing is decided for the three-width claim**, and that is the honest status: the 12× range is
+settled at *initialisation* (§4.31) and only 3.3× of it is settled *trained*. The prediction recorded
+before launch — width-independent — holds as far as the data goes and is not confirmed at 896.
+
+*A rerun would put the 896 arm in its own job. Not attempted: the deadline has passed and this is
+follow-up work.*
