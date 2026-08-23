@@ -82,6 +82,12 @@ class Config:
     # first screen showed this value decides whether the mechanism is testable at all -- see _inject().
     n_loop_eff: int = 24                   # for depth_init scaling; ~ mean of train-time loop sampler
 
+    # Operator diversity & Depth gating extensions (Gemini Antigravity Agent)
+    cond_mode: str = "none"                # "none" | "lora_cycle" -- loop-cycled LoRA adapters
+    cond_lora_rank: int = 4                # rank r for LoRA branches (default: 4)
+    cond_lora_branches: int = 4            # number of cycled branches N (default: 4)
+    depth_gate_mode: str = "none"          # "none" | "state" -- learned state-conditioned depth gate
+
 
 # ---------------------------------------------------------------------------------------- primitives
 
@@ -132,9 +138,11 @@ def apply_rope(q, k, cos, sin):
 class Attention(nn.Module):
     def __init__(self, cfg: Config):
         super().__init__()
-        self.n_h, self.n_kv, self.d_h = cfg.n_heads, cfg.n_kv_heads, cfg.head_dim
+        self.n_h = cfg.n_heads
+        self.n_kv = cfg.n_kv_heads
+        self.d_h = cfg.head_dim
         self.groups = self.n_h // self.n_kv
-        self.scale = self.d_h ** -0.5
+        self.scale = 1.0 / math.sqrt(self.d_h)
         H = cfg.hidden_size
         self.q_proj = nn.Linear(H, self.n_h * self.d_h, bias=False)
         self.k_proj = nn.Linear(H, self.n_kv * self.d_h, bias=False)
@@ -143,7 +151,7 @@ class Attention(nn.Module):
         self.q_norm = RMSNorm(self.d_h, cfg.rms_norm_eps)
         self.k_norm = RMSNorm(self.d_h, cfg.rms_norm_eps)
 
-    def forward(self, x, cos, sin, kv_source=None):
+    def forward(self, x, cos, sin, kv_source=None, lora=None):
         """`kv_source`, when given, supplies keys and values while `x` still supplies queries. This
         is the one hook needed to ask what an early-exit KV cache costs: under teacher forcing every
         position is processed at every depth, so "the context exited at depth k while this token is
@@ -151,15 +159,26 @@ class Attention(nn.Module):
         Defaults to None = ordinary self-attention, bit-identical (test_model.py check [8])."""
         B, T, _ = x.shape
         kv = x if kv_source is None else kv_source
-        q = self.q_norm(self.q_proj(x).view(B, T, self.n_h, self.d_h)).transpose(1, 2)
-        k = self.k_norm(self.k_proj(kv).view(B, T, self.n_kv, self.d_h)).transpose(1, 2)
-        v = self.v_proj(kv).view(B, T, self.n_kv, self.d_h).transpose(1, 2)
+        q_raw = self.q_proj(x)
+        k_raw = self.k_proj(kv)
+        v_raw = self.v_proj(kv)
+        if lora is not None:
+            q_raw = q_raw + F.linear(F.linear(x, lora.q_A), lora.q_B)
+            k_raw = k_raw + F.linear(F.linear(kv, lora.k_A), lora.k_B)
+            v_raw = v_raw + F.linear(F.linear(kv, lora.v_A), lora.v_B)
+
+        q = self.q_norm(q_raw.view(B, T, self.n_h, self.d_h)).transpose(1, 2)
+        k = self.k_norm(k_raw.view(B, T, self.n_kv, self.d_h)).transpose(1, 2)
+        v = v_raw.view(B, T, self.n_kv, self.d_h).transpose(1, 2)
         q, k = apply_rope(q, k, cos, sin)
         k = k.repeat_interleave(self.groups, dim=1)
         v = v.repeat_interleave(self.groups, dim=1)
         out = F.scaled_dot_product_attention(q, k, v, is_causal=True, scale=self.scale)
         out = out.transpose(1, 2).reshape(B, T, self.n_h * self.d_h)
-        return self.o_proj(out)
+        o_out = self.o_proj(out)
+        if lora is not None:
+            o_out = o_out + F.linear(F.linear(out, lora.o_A), lora.o_B)
+        return o_out
 
 
 class MLP(nn.Module):
@@ -169,8 +188,52 @@ class MLP(nn.Module):
         self.up = nn.Linear(cfg.hidden_size, cfg.intermediate_size, bias=False)
         self.down = nn.Linear(cfg.intermediate_size, cfg.hidden_size, bias=False)
 
-    def forward(self, x):
-        return self.down(F.silu(self.gate(x)) * self.up(x))
+    def forward(self, x, lora=None):
+        gate_out = self.gate(x)
+        up_out = self.up(x)
+        if lora is not None:
+            gate_out = gate_out + F.linear(F.linear(x, lora.gate_A), lora.gate_B)
+            up_out = up_out + F.linear(F.linear(x, lora.up_A), lora.up_B)
+        act = F.silu(gate_out) * up_out
+        down_out = self.down(act)
+        if lora is not None:
+            down_out = down_out + F.linear(F.linear(act, lora.down_A), lora.down_B)
+        return down_out
+
+
+class LoRALayerAdapter(nn.Module):
+    """Parameter-efficient LoRA branch for a single DecoderLayer (MoDr lineage).
+    Adds low-rank adapters with B initialized to zero, ensuring exact step-0 bit-identity."""
+
+    def __init__(self, cfg: Config, rank: int = 4):
+        super().__init__()
+        H = cfg.hidden_size
+        I = cfg.intermediate_size
+        self.rank = rank
+
+        # In PyTorch F.linear(x, W): W is (out_features, in_features).
+        # A projects in_dim -> rank: shape is (rank, in_dim).
+        # B projects rank -> out_dim: shape is (out_dim, rank).
+        self.q_A = nn.Parameter(torch.randn(rank, H) / math.sqrt(H))
+        self.q_B = nn.Parameter(torch.zeros(cfg.n_heads * cfg.head_dim, rank))
+
+        self.k_A = nn.Parameter(torch.randn(rank, H) / math.sqrt(H))
+        self.k_B = nn.Parameter(torch.zeros(cfg.n_kv_heads * cfg.head_dim, rank))
+
+        self.v_A = nn.Parameter(torch.randn(rank, H) / math.sqrt(H))
+        self.v_B = nn.Parameter(torch.zeros(cfg.n_kv_heads * cfg.head_dim, rank))
+
+        self.o_A = nn.Parameter(torch.randn(rank, cfg.n_heads * cfg.head_dim) / math.sqrt(cfg.n_heads * cfg.head_dim))
+        self.o_B = nn.Parameter(torch.zeros(H, rank))
+
+        self.gate_A = nn.Parameter(torch.randn(rank, H) / math.sqrt(H))
+        self.gate_B = nn.Parameter(torch.zeros(I, rank))
+
+        self.up_A = nn.Parameter(torch.randn(rank, H) / math.sqrt(H))
+        self.up_B = nn.Parameter(torch.zeros(I, rank))
+
+        self.down_A = nn.Parameter(torch.randn(rank, I) / math.sqrt(I))
+        self.down_B = nn.Parameter(torch.zeros(H, rank))
 
 
 class DecoderLayer(nn.Module):
@@ -180,14 +243,21 @@ class DecoderLayer(nn.Module):
         self.attn = Attention(cfg)
         self.norm2 = RMSNorm(cfg.hidden_size, cfg.rms_norm_eps)
         self.mlp = MLP(cfg)
+        if cfg.cond_mode == "lora_cycle":
+            self.lora_branches = nn.ModuleList(
+                LoRALayerAdapter(cfg, cfg.cond_lora_rank) for _ in range(cfg.cond_lora_branches)
+            )
+        else:
+            self.lora_branches = None
 
-    def forward(self, x, cos, sin, kv_source=None):
+    def forward(self, x, cos, sin, kv_source=None, branch_idx: int | None = None):
         # kv_source is normed by THIS layer's norm1, matching how it would have been normed on the
         # pass that produced it -- norm1 is the same module either way, so a depth-k cache entry is
         # the same tensor it would have been at depth k.
         kv = None if kv_source is None else self.norm1(kv_source)
-        x = x + self.attn(self.norm1(x), cos, sin, kv)
-        x = x + self.mlp(self.norm2(x))
+        lora = self.lora_branches[branch_idx % len(self.lora_branches)] if (self.lora_branches is not None and branch_idx is not None) else None
+        x = x + self.attn(self.norm1(x), cos, sin, kv, lora=lora)
+        x = x + self.mlp(self.norm2(x), lora=lora)
         return x
 
 
@@ -200,7 +270,7 @@ class LoopedBlock(nn.Module):
         super().__init__()
         self.layers = nn.ModuleList(DecoderLayer(cfg) for _ in range(cfg.layers_per_loop))
 
-    def forward(self, x, cos, sin, kv_sources=None, collect=None):
+    def forward(self, x, cos, sin, kv_sources=None, collect=None, branch_idx: int | None = None):
         """`kv_sources`: per-layer KV inputs (list, len == layers_per_loop) for cross-depth attention.
         `collect`: if a list is passed, each layer's INPUT is appended to it -- that is what a later
         cross-depth pass needs as its kv_sources, so the two are captured and replayed by the same
@@ -208,7 +278,7 @@ class LoopedBlock(nn.Module):
         for i, layer in enumerate(self.layers):
             if collect is not None:
                 collect.append(x)
-            x = layer(x, cos, sin, None if kv_sources is None else kv_sources[i])
+            x = layer(x, cos, sin, None if kv_sources is None else kv_sources[i], branch_idx=branch_idx)
         return x
 
 
@@ -297,7 +367,36 @@ class LoopedTransformer(nn.Module):
         else:
             self.inj_a = self.inj_b = None
 
+        if cfg.depth_gate_mode == "state":
+            # Learned state-dependent depth gating (AttnRes / Depth-Mixture family)
+            # Scores each loop state h_t and forms a soft convex mixture before readout.
+            # Zero-initialized weights guarantee exact uniform weighting (1/n_loops) at step 0.
+            self.depth_gate_head = nn.Linear(H, 1, bias=False)
+            nn.init.zeros_(self.depth_gate_head.weight)
+        else:
+            self.depth_gate_head = None
+
         self.apply(self._init_weights)
+        # Re-zero the clock, gate, depth_gate, and LoRA B weights if present, ensuring exact init semantics
+        if self.clock_w is not None:
+            nn.init.zeros_(self.clock_w)
+        if self.depth_gate_head is not None:
+            nn.init.zeros_(self.depth_gate_head.weight)
+        if self.gate_mlp is not None:
+            nn.init.zeros_(self.gate_mlp[-1].weight)
+            nn.init.constant_(self.gate_mlp[-1].bias, 2.0)
+        if cfg.cond_mode == "lora_cycle":
+            for layer in self.block.layers:
+                if layer.lora_branches is not None:
+                    for b in layer.lora_branches:
+                        nn.init.zeros_(b.q_B)
+                        nn.init.zeros_(b.k_B)
+                        nn.init.zeros_(b.v_B)
+                        nn.init.zeros_(b.o_B)
+                        nn.init.zeros_(b.gate_B)
+                        nn.init.zeros_(b.up_B)
+                        nn.init.zeros_(b.down_B)
+
         if cfg.residual_scale is not None:
             # mutually exclusive with depth_init: both rescale the same two matrices, and stacking
             # them would silently apply 1/sqrt(2*n_loop_eff) * lambda/(N*sqrt(L)) -- a constant
@@ -520,6 +619,7 @@ class LoopedTransformer(nn.Module):
         k = self.cfg.truncate_bptt
 
         log_rms0 = None
+        all_h_states = []
         for t in range(n_loops):
             no_grad = k is not None and t < (n_loops - k)
             # nullcontext, NOT torch.enable_grad(): enable_grad() overrides an OUTER no_grad(), so
@@ -538,12 +638,15 @@ class LoopedTransformer(nn.Module):
                         log_rms0 = torch.log(
                             h.float().pow(2).mean(-1, keepdim=True).sqrt().clamp_min(1e-8)).detach()
                     h_in = self._clock(h_in, h, log_rms0)
-                h_new = self.block(h_in, cos, sin)
+                branch_idx = t if self.cfg.cond_mode == "lora_cycle" else None
+                h_new = self.block(h_in, cos, sin, branch_idx=branch_idx)
                 if self.gate_mlp is not None or self.cfg.fixed_gate is not None:
                     h_new, _g = self._gate(h, h_new, t)
                 h = h_new
                 if self.loop_norm is not None:
                     h = self.loop_norm(h)
+            if self.depth_gate_head is not None:
+                all_h_states.append(h)
             if self.cfg.explore_noise > 0.0 and self.training:
                 # STOCHASTIC EXPLORATION DURING LOOPS -- the task names this directly ("exploration
                 # во время лупов") and EBT, one of its three cited exemplars, does exactly this:
@@ -578,6 +681,13 @@ class LoopedTransformer(nn.Module):
                      (supervise_idx is None and return_all_loops)
             logits_per_loop.append(
                 self.readout(h, cos, sin, is_final=(t == n_loops - 1)) if wanted else None)
+
+        if self.depth_gate_head is not None and len(all_h_states) == n_loops:
+            H_stack = torch.stack(all_h_states, dim=2)  # [B, T, n_loops, H]
+            gate_logits = self.depth_gate_head(H_stack).squeeze(-1)  # [B, T, n_loops]
+            gate_weights = F.softmax(gate_logits, dim=-1)           # [B, T, n_loops]
+            h_weighted = (H_stack * gate_weights.unsqueeze(-1)).sum(dim=2)  # [B, T, H]
+            logits_per_loop[-1] = self.readout(h_weighted, cos, sin, is_final=True)
 
         if return_states and return_state_rms:
             return logits_per_loop, state_norms, states, state_rms

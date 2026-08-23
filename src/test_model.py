@@ -342,14 +342,91 @@ def check_state_renorm_bounds_norm():
     return True
 
 
+def check_operator_diversity_and_depth_gate():
+    """Checks for operator diversity (cond_mode="lora_cycle") and state depth gating:
+    1. Param count matches param_budget analytical formula across configs.
+    2. Exact bit-identity at step 0 under zero-init (max|diff| == 0.0).
+    3. Perturbation non-vacuousness when weights are non-zero.
+    4. Gradient flow / differentiability during training."""
+    # 1. Param count check
+    c_lora = Config(state_renorm=False, cond_mode="lora_cycle", cond_lora_rank=4, cond_lora_branches=4)
+    m_lora = LoopedTransformer(c_lora)
+    bud_lora = total_params(c_lora.hidden_size, c_lora.n_heads, c_lora.n_kv_heads, c_lora.head_dim,
+                            c_lora.intermediate_size, c_lora.vocab_size, c_lora.layers_per_loop,
+                            c_lora.inject_mode, state_renorm=False, cond_mode="lora_cycle",
+                            cond_lora_rank=4, cond_lora_branches=4)
+    expected_lora = bud_lora["total"] - bud_lora["exit_head_reserve"]
+    actual_lora = m_lora.num_parameters()
+    ok_p1 = actual_lora == expected_lora
+
+    c_gate = Config(state_renorm=False, depth_gate_mode="state")
+    m_gate = LoopedTransformer(c_gate)
+    bud_gate = total_params(c_gate.hidden_size, c_gate.n_heads, c_gate.n_kv_heads, c_gate.head_dim,
+                            c_gate.intermediate_size, c_gate.vocab_size, c_gate.layers_per_loop,
+                            c_gate.inject_mode, state_renorm=False, depth_gate_mode="state")
+    expected_gate = bud_gate["total"] - bud_gate["exit_head_reserve"]
+    actual_gate = m_gate.num_parameters()
+    ok_p2 = actual_gate == expected_gate
+
+    print(f"[10] param count lora_cycle: model={actual_lora:,} budget={expected_lora:,} {'OK' if ok_p1 else 'MISMATCH'}")
+    print(f"[10] param count depth_gate: model={actual_gate:,} budget={expected_gate:,} {'OK' if ok_p2 else 'MISMATCH'}")
+
+    # 2. Bit-identity check at step 0
+    torch.manual_seed(42)
+    x = torch.randint(0, 4096, (2, 16))
+    base_m = LoopedTransformer(Config(state_renorm=False)).eval()
+    lora_m = LoopedTransformer(c_lora).eval()
+    # Copy identical base weights to isolate the effect of zero-initialized LoRA adapters
+    lora_m.load_state_dict(base_m.state_dict(), strict=False)
+
+    with torch.no_grad():
+        out_base, _ = base_m(x, n_loops=8, return_all_loops=True)
+        out_lora, _ = lora_m(x, n_loops=8, return_all_loops=True)
+
+    diff_lora = max((out_lora[i] - out_base[i]).abs().max().item() for i in range(8))
+    ok_id1 = diff_lora == 0.0
+    print(f"[11] step-0 bit-identity (lora_cycle vs base): max|diff|={diff_lora:.2e} {'OK' if ok_id1 else 'MISMATCH'}")
+
+    # 3. Non-vacuousness check: perturb LoRA weights and assert divergence
+    with torch.no_grad():
+        lora_m.block.layers[0].lora_branches[0].q_B.add_(torch.randn_like(lora_m.block.layers[0].lora_branches[0].q_B) * 0.1)
+        out_lora_pert, _ = lora_m(x, n_loops=8, return_all_loops=True)
+    diff_pert = max((out_lora_pert[i] - out_base[i]).abs().max().item() for i in range(8))
+    ok_pert = diff_pert > 1e-4
+    print(f"[12] perturbation divergence (lora B!=0): diff={diff_pert:.4f} {'OK' if ok_pert else 'MISMATCH'}")
+
+    # 4. Gradient differentiability
+    lora_train = LoopedTransformer(c_lora).train()
+    logits, _ = lora_train(x, n_loops=4, return_all_loops=True)
+    loss = logits[-1].mean()
+    loss.backward()
+    has_lora_grads = any(p.grad is not None and p.grad.abs().sum().item() > 0
+                         for layer in lora_train.block.layers
+                         for b in layer.lora_branches
+                         for p in b.parameters())
+    print(f"[13] lora gradient flow: grads_present={has_lora_grads} {'OK' if has_lora_grads else 'MISMATCH'}")
+
+    return ok_p1 and ok_p2 and ok_id1 and ok_pert and has_lora_grads
+
+
 def dataclasses_replace(cfg, **kw):
     import dataclasses
     return dataclasses.replace(cfg, **kw)
 
 
 def main():
-    results = [check_readout_modes(), check_kv_source_identity(), check_kaggle_copy_matches(), check_sandwich(), check_param_count(), check_against_real_qwen3(), check_bptt_identity(),
-               check_nograd_windowing(), check_state_renorm_bounds_norm()]
+    results = [
+        check_readout_modes(),
+        check_kv_source_identity(),
+        check_kaggle_copy_matches(),
+        check_sandwich(),
+        check_param_count(),
+        check_against_real_qwen3(),
+        check_bptt_identity(),
+        check_nograd_windowing(),
+        check_state_renorm_bounds_norm(),
+        check_operator_diversity_and_depth_gate(),
+    ]
     ok = all(results)
     print(f"\n{'ALL CHECKS PASSED' if ok else 'AT LEAST ONE CHECK FAILED -- do not train on this yet'}")
     return 0 if ok else 1

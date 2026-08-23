@@ -27,9 +27,24 @@ def block_params(H: int, n_h: int, n_kv: int, d_h: int, I: int) -> int:
     return attn + norms + mlp
 
 
+def lora_adapter_params(H: int, n_h: int, n_kv: int, d_h: int, I: int, rank: int) -> int:
+    q = H * rank + (n_h * d_h) * rank
+    k = H * rank + (n_kv * d_h) * rank
+    v = H * rank + (n_kv * d_h) * rank
+    o = H * rank + H * rank
+    gate = H * rank + I * rank
+    up = H * rank + I * rank
+    down = H * rank + I * rank
+    return q + k + v + o + gate + up + down
+
+
 def total_params(H, n_h, n_kv, d_h, I, V, layers_per_loop, inject_mode,
-                  n_prelude: int = 0, n_coda: int = 0, state_renorm: bool = True) -> dict:
+                  n_prelude: int = 0, n_coda: int = 0, state_renorm: bool = True,
+                  cond_mode: str = "none", cond_lora_rank: int = 4, cond_lora_branches: int = 4,
+                  depth_gate_mode: str = "none") -> dict:
     blk = block_params(H, n_h, n_kv, d_h, I) * layers_per_loop
+    lora_params = (lora_adapter_params(H, n_h, n_kv, d_h, I, cond_lora_rank) * cond_lora_branches * layers_per_loop
+                   if cond_mode == "lora_cycle" else 0)
     embed = V * H  # tied
     final_norm = H            # readout norm, applied before the LM head
     # Separate RMSNorm confining the carried state. Only allocated when state_renorm=True -- this
@@ -39,13 +54,14 @@ def total_params(H, n_h, n_kv, d_h, I, V, layers_per_loop, inject_mode,
     h0 = H                     # learned initial state, decoupled from content
     adapter = 2 * H * H if inject_mode == "concat" else 0
     exit_head_reserve = H + 1  # tiny scalar halting head, reserved even if unused in v1
+    depth_gate = H if depth_gate_mode == "state" else 0
     # Unshared prelude/coda layers (sandwich topology). These are NOT multiplied by loop count -- they
     # run once -- which is exactly why they are expensive here: they consume budget that would
     # otherwise sit in the block the loop reuses r times. At H=448 one layer is 2.41M of a 10M ceiling.
     once = block_params(H, n_h, n_kv, d_h, I) * (n_prelude + n_coda)
-    total = blk + embed + final_norm + loop_norm + h0 + adapter + exit_head_reserve + once
-    return dict(block=blk, embed=embed, final_norm=final_norm, loop_norm=loop_norm, h0=h0,
-                adapter=adapter, exit_head_reserve=exit_head_reserve, prelude_coda=once, total=total)
+    total = blk + lora_params + embed + final_norm + loop_norm + h0 + adapter + exit_head_reserve + depth_gate + once
+    return dict(block=blk, lora=lora_params, embed=embed, final_norm=final_norm, loop_norm=loop_norm, h0=h0,
+                adapter=adapter, exit_head_reserve=exit_head_reserve, depth_gate=depth_gate, prelude_coda=once, total=total)
 
 
 def search(budget=10_000_000, margin_low=8_500_000, margin_high=9_800_000):
