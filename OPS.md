@@ -189,13 +189,18 @@ argmins) · `gain_decomp.py` (Δgain = ΔCE@1 − ΔCE_best; 49 in-job pairs) ·
 (+fixed-range +untrained control) · `intraloop_states.py` · `cumulative_exit.py` ·
 `check_tokenizer_identity.py` · `tl_seed_check.py` · `normpen_compare.py` · `ds_harvest.py`
 
-### 6. Live compute
-- **`tlab-deep-full`** — the deep artifact, μ_rec=40 annealed, ~step 3750/19531, **harvest ~17:18**,
-  ~32M tokens. **Returns curves only** (see §7). This fills §4.17's deep half.
-- **`tlab-hyper-screen`** — wd arms finishing. LR **settled: 3e-3 optimal** of {1e-3,3e-3,6e-3}.
-- **Kaggle**: both 90M runs done, downloaded, re-scored. **Local**: idle.
-- Monitors up: `monitor_kaggle.sh`, `ds_watchdog.sh` (13 re-attaches today), `monitor_failures.sh`.
-- **Compute is NOT hard-capped at 18:00** (user, 13:45). ~6h of framing time after that is adequate.
+### 6. Live compute — as of 2026-08-23 17:30
+
+| stream | state |
+|---|---|
+| DS `tlab-deep-full` | **DONE 17:23, harvested.** Falsifier fired (mid 22.6). Artifact at `checkpoints/deep_full_results.json`. Curves only — predates the `outputs:` fix |
+| DS `tlab-anchor-tokenkey` | **DONE, harvested.** ERROR status was cosmetic; all 6 arms completed |
+| Kaggle `tlab-seed-extension` | **DONE, harvested** — produced the n=4 withdrawal |
+| local `run_operator_diversity` | arm 4/4 (`od_depth_gate`) running. **Read pre-registered in `RUNS.md` 17:40** with two caveats: it zero-inits to a *uniform mixture* not the control, and its eval curve mixes over loops 1..r so **its plateau is over mixture-window size, not depth** — do not put it in the band tables |
+| DS `tlab-operator-diversity` | ERRORED (`tokenizers` install never ran). Not relaunched; motivation retired by retraction #2 |
+| agy jobs A/B | returned, **unverified except 3 sampled findings**; job C (citation cross-check) never ran — substitute audit done by hand, in `VERIFICATION.md` |
+
+**Nothing else is queued. Local GPU frees up when arm 4/4 finishes.**
 
 ### 7. BLOCKED, with causes (see QUEUE.md B1–B3)
 - **Every DataSphere job discarded its weights** — configs listed only `results.json` under
