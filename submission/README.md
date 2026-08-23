@@ -1,7 +1,7 @@
 # A looped transformer on FineWeb — submission
 
 **Start here.** `../report.md` is the complete record (6,400+ lines) and is *evidence*, not reading
-material. This folder is the readable submission: five documents, each answering one thing the task
+material. This folder is the readable submission: six documents, each answering one thing the task
 asks for, each linking into the report for the measurement behind it.
 
 ---
