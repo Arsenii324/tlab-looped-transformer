@@ -25,7 +25,7 @@ One **Qwen3-style decoder block of 3 layers**, weight-tied, applied `r` times.
 Verified against the real `transformers` Qwen3 reference at **max\|diff\| = 2.4e-07** before any
 training compute was spent (`src/test_model.py`, 13 checks).
 
-*A fresh `LoopedTransformer(Config())` prints **9,065,056**, 448 more. The difference is `loop_norm.weight` (448 = hidden size), which is allocated unconditionally in `__init__` and is **unused** in the shipped configuration because `state_renorm=False`. **9,064,608 is the count of parameters the released model actually uses**; both are under the 10M cap. Stated because someone who clones and instantiates will see the other number.*
+
 
 > **One trap for anyone who clones and instantiates.** `LoopedTransformer(Config())` — the *bare
 > default* — reports **9,065,056** parameters, not 9,064,608. The 448 is `loop_norm.weight`, because
@@ -51,7 +51,8 @@ omission.** **Eleven mechanisms** were tested on it — inter-loop norm, gated (
 injection at the field's own α, a scale clock, radial clamping, convex gating, ε = λ/(N√L) residual
 scaling, a norm penalty, loop-cycled LoRA, exclusive self attention, duo-causal attention, and a
 per-token depth-mixture gate — plus one lever on the loss schedule. **Five lower the loss; none
-widens the useful band; three of the five narrow it.** And **four of the five deliver 78–101% of that
+widens the useful band; at `tol = 0.01` three of the five narrow it, a direction that does not
+survive halving the tolerance (§4.25).** And **four of the five deliver 78–101% of that
 gain at a single loop where their own mechanism is inert**, so they improve the block rather than the
 looping (`RESULTS.md` §2). Elaborating the block was measured and did not pay in the way the brief
 asks for.

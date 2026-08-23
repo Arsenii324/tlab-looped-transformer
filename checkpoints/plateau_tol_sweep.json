@@ -1,0 +1,431 @@
+[
+  {
+    "pair": "duo-causal W3 s0",
+    "tol": 0.005,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      16,
+      16
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "duo-causal W3 s0",
+    "tol": 0.01,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      20,
+      16
+    ],
+    "verdict": "narrows"
+  },
+  {
+    "pair": "duo-causal W3 s0",
+    "tol": 0.02,
+    "onset": [
+      4,
+      8
+    ],
+    "end": [
+      24,
+      24
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "duo-causal W3 s1",
+    "tol": 0.005,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      16,
+      16
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "duo-causal W3 s1",
+    "tol": 0.01,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      20,
+      16
+    ],
+    "verdict": "narrows"
+  },
+  {
+    "pair": "duo-causal W3 s1",
+    "tol": 0.02,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      24,
+      24
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "duo-causal W2 s0",
+    "tol": 0.005,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      16,
+      16
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "duo-causal W2 s0",
+    "tol": 0.01,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      20,
+      20
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "duo-causal W2 s0",
+    "tol": 0.02,
+    "onset": [
+      4,
+      8
+    ],
+    "end": [
+      24,
+      24
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "duo-causal W2 s1",
+    "tol": 0.005,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      16,
+      16
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "duo-causal W2 s1",
+    "tol": 0.01,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      20,
+      20
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "duo-causal W2 s1",
+    "tol": 0.02,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      24,
+      24
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "XSA s0",
+    "tol": 0.005,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      12,
+      16
+    ],
+    "verdict": "widens"
+  },
+  {
+    "pair": "XSA s0",
+    "tol": 0.01,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      16,
+      16
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "XSA s0",
+    "tol": 0.02,
+    "onset": [
+      4,
+      8
+    ],
+    "end": [
+      24,
+      24
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "XSA s1",
+    "tol": 0.005,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      16,
+      12
+    ],
+    "verdict": "narrows"
+  },
+  {
+    "pair": "XSA s1",
+    "tol": 0.01,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      20,
+      16
+    ],
+    "verdict": "narrows"
+  },
+  {
+    "pair": "XSA s1",
+    "tol": 0.02,
+    "onset": [
+      4,
+      8
+    ],
+    "end": [
+      24,
+      20
+    ],
+    "verdict": "narrows"
+  },
+  {
+    "pair": "LoRA cycled s0",
+    "tol": 0.005,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      16,
+      16
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "LoRA cycled s0",
+    "tol": 0.01,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      20,
+      20
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "LoRA cycled s0",
+    "tol": 0.02,
+    "onset": [
+      4,
+      8
+    ],
+    "end": [
+      24,
+      24
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "LoRA pin-0 s0",
+    "tol": 0.005,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      16,
+      16
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "LoRA pin-0 s0",
+    "tol": 0.01,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      20,
+      20
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "LoRA pin-0 s0",
+    "tol": 0.02,
+    "onset": [
+      4,
+      4
+    ],
+    "end": [
+      24,
+      24
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "LoRA cycled s1",
+    "tol": 0.005,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      16,
+      16
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "LoRA cycled s1",
+    "tol": 0.01,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      20,
+      20
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "LoRA cycled s1",
+    "tol": 0.02,
+    "onset": [
+      4,
+      8
+    ],
+    "end": [
+      24,
+      24
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "LoRA pin-2 s1",
+    "tol": 0.005,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      16,
+      16
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "LoRA pin-2 s1",
+    "tol": 0.01,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      20,
+      16
+    ],
+    "verdict": "narrows"
+  },
+  {
+    "pair": "LoRA pin-2 s1",
+    "tol": 0.02,
+    "onset": [
+      4,
+      8
+    ],
+    "end": [
+      24,
+      24
+    ],
+    "verdict": "same"
+  },
+  {
+    "pair": "annealing 10M",
+    "tol": 0.005,
+    "onset": [
+      8,
+      12
+    ],
+    "end": [
+      12,
+      20
+    ],
+    "verdict": "widens"
+  },
+  {
+    "pair": "annealing 10M",
+    "tol": 0.01,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      16,
+      24
+    ],
+    "verdict": "widens"
+  },
+  {
+    "pair": "annealing 10M",
+    "tol": 0.02,
+    "onset": [
+      8,
+      8
+    ],
+    "end": [
+      20,
+      24
+    ],
+    "verdict": "widens"
+  }
+]

@@ -1,5 +1,10 @@
 # INDEX — every doc, classified by KIND
 
+> **`SUBMISSION_STATE.md`** (root, written 2026-08-23 21:20) is the agent's honest read of where the
+> submission stands: component-by-component confidence, what it would and would not bet on, ranked
+> concerns, the five unknown-unknown checks run that evening, and a costed ablation queue. **For the
+> author, not for the jury** — it is deliberately not in `submission/`.
+
 Three kinds, because they age differently and you should trust them differently.
 
 - **WORKING** — changes constantly, describes *now*. Overwritten, not appended. Trust the newest.

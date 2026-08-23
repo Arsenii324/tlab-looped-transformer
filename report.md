@@ -77,8 +77,10 @@ against — and 88% of its apparent loop-gain advantage is loop-1 damage.
 attention 84–91%, duo-causal attention at W = 3 78–101%, the unnormalised depth gate 96%; the fifth,
 the norm penalty, instead wins perplexity by *damaging* loop 1). **The largest of them is exclusive
 self attention — −0.2162 / −0.2633 at two seeds for zero added parameters — and 84–91% of it is at
-loop 1.** **Not one of the twelve widens the useful band, and three of the five that lower the loss
-narrow it.** Loop-cycled LoRA branches improve best CE at rank ≥ 4 across four in-job pairs
+loop 1.** **Not one of the twelve widens the useful band. At `tol = 0.01` three of the five
+that lower the loss narrow it, but that direction is not stable to halving the tolerance (§4.25) —
+the durable claim is that **no loss-lowering intervention moves the band consistently in either
+direction**. Loop-cycled LoRA branches improve best CE at rank ≥ 4 across four in-job pairs
 spanning three platforms, two seeds and two supervision schedules (mean **−0.086**, 95% t-interval
 [−0.132, −0.039]) — **though the rank ≥ 4 restriction is post hoc and over all five arms the interval
 covers zero**, and there is no dose–response above the threshold. It is the only CE claim here that
@@ -185,8 +187,8 @@ was the one held to a pre-registered falsifier and withdrawn when four seeds dis
 The honest finding is that **those two clauses come apart under measurement**: twelve interventions,
 **five** of which lower the loss — and **four of the five deliver 78–101% of that gain at a single
 loop, where their own mechanism is provably inert**, so they improve the *block*, not the *looping*.
-The fifth wins perplexity by *damaging* loop 1. **Not one widens the useful band; three of the five
-narrow it.** One lever moves the band robustly at zero parameter cost — at 5 of 5 seeds, with the same
+The fifth wins perplexity by *damaging* loop 1. **Not one widens the useful band; at `tol = 0.01`
+three of the five narrow it, though that direction does not survive halving the tolerance (§4.25).** One lever moves the band robustly at zero parameter cost — at 5 of 5 seeds, with the same
 edge decomposition at 2.5M and at 10M tokens — **and does not lower the loss.** Per-token depth demand
 is real, reliable and large, and unreachable by five instrument classes — with a measured reason
 underneath rather than five shrugs (§4.7e), which was then **exposed to refutation and survived**
@@ -5820,7 +5822,9 @@ attention doing what it claims.**
 **It is also the first intervention in this report to narrow the useful band *at both seeds of an
 in-job pair*** — [8,20] → [8,16]. The norm penalty narrows too ([6,17] → [6,14]) but at one 90M arm,
 and XSA narrows at one seed of two; duo-causal W = 3 is the only one where the narrowing replicates.
-**Three of the five loss-lowering interventions actively cost useful depth.**
+**At `tol = 0.01`, three of the five loss-lowering interventions cost useful depth** — though §4.25's
+tolerance sweep shows the *narrowing* direction is not stable to halving `tol`, so this is a
+tolerance-0.01 observation rather than a finding.
 
 *This is the mirror of §4.2's gated-injection row, and the pair is why both are reported the same way:
 there, the mechanism check **succeeded** and the loss got worse; here, the loss got better and the
@@ -6025,6 +6029,12 @@ claim in this report and in `submission/` is a `tol = 0.01` statement. This sect
 
 *No new compute: `src/plateau.py` over the stored curves at tol ∈ {0.005, 0.01, 0.02, 0.05}.*
 
+**Two facts that frame the sweep.** First, **`tol = 0.01` is *tighter* than the measured CUDA-dense
+replicate floor of 0.0150** — the tolerance is smaller than the noise it exists to absorb, which is
+the wrong direction and was never noticed. Second, the instability is not confined to a few arms:
+recomputing every one of the **135 stored arms** at `tol = 0.0150` instead of 0.01, **65 (48%) change
+at least one band edge.** What follows is why the *paired* claims mostly survive that anyway.
+
 | comparison | tol 0.005 | **tol 0.01** | tol 0.02 | tol 0.05 |
 |---|---|---|---|---|
 | **annealing** (`rec_dense_s2` → `rec_sw90_s2`, 10M) | [8,12]→[12,20] **widen** | [8,16]→[8,24] **widen** | [8,20]→[8,24] **widen** | [4,32]→[4,32] same |
@@ -6070,53 +6080,6 @@ depth-band behaviour is uncoupled from loss behaviour.
 *Scope: seven in-job pairs, the ones whose band movement any claim rests on. The full 135-arm sweep at
 four tolerances was not run and would not change the three readings above, which turn on the pairs
 listed.*
-
-### 4.25 The band statistic's own tolerance, nulled against the noise floor
-
-**Every band claim in this report is produced by one instrument with one free parameter, and that
-parameter had never been varied.** `src/plateau.py` calls a depth "useful" if its CE is within
-`tol = 0.01` nats of the curve minimum. **The measured CUDA-dense replicate floor is 0.0150** — so the
-tolerance is *tighter than the noise it is supposed to absorb*, which is the wrong direction. This
-was not raised by any reviewer; it is the kind of thing §5's rule is about, and it had not been
-checked.
-
-**Sensitivity, over all 135 stored arms.** Recomputing every band at `tol = 0.0150` instead of 0.01:
-**70 of 135 arms (52%) keep exactly the same band; 48% move at least one edge.** Taken alone that
-looks fatal for the band axis.
-
-**It is not, because every band claim here is a *paired* delta, and the pairs move together.**
-Re-deriving each load-bearing comparison at both tolerances:
-
-| pair | at `tol = 0.010` (used) | at `tol = 0.0150` (the floor) | verdict |
-|---|---|---|---|
-| annealing `sw90` seed 0 | [8,16] → [8,24] **widens** | [8,20] → [8,24] **widens** | holds |
-| annealing `sw90` seed 1 | [8,16] → [8,24] **widens** | [4,20] → [8,32] **widens** | holds |
-| annealing 10M (`rec_sw90_s2`) | [8,16] → [8,24] **widens** | [8,20] → [8,24] **widens** | holds |
-| duo-causal W = 3, seed 0 | [8,20] → [8,16] narrows | [8,24] → [8,20] narrows | holds |
-| duo-causal W = 3, seed 1 | [8,20] → [8,16] narrows | [8,24] → [8,20] narrows | holds |
-| XSA seed 1 | [8,20] → [8,16] narrows | [8,24] → [8,20] narrows | holds |
-| LoRA pin-2, seed 1 | [8,20] → [8,16] narrows | [8,24] → [8,20] narrows | holds |
-| **XSA seed 0** | [8,16] → [8,16] *unmoved* | [4,20] → [8,20] **narrows** | **flips** |
-| **LoRA cycled, seed 0** | [8,20] → [8,20] *unmoved* | [4,20] → [8,20] **narrows** | **flips** |
-
-**Seven of nine verdicts are identical at a tolerance 50% larger than the one used. The two that flip
-both go from "unmoved" to "narrows" — against the interventions, not in their favour.**
-
-**What this licenses, and what it does not.**
-- **The report's central band claim is robust.** *Not one intervention widens the useful band* holds
-  at both tolerances, and at the floor tolerance the loss-lowering arms look **worse** on the depth
-  axis, not better.
-- **The one positive band claim is robust.** Supervision annealing widens at both tolerances in all
-  three pairs tested, including the 10M pair.
-- **Absolute band edges are not robust and should not be over-read.** A control's onset reads 8 at
-  `tol = 0.01` and 4 at `tol = 0.0150` in two arms. **The headline `[6,17]` is a tolerance-dependent
-  number**, and any comparison of band edges *across* jobs or tolerances is not supported. Every band
-  claim in this report is deliberately a within-pair delta, which is the form that survives.
-
-*Cost: one script over stored curves, no compute. It should have been run when `plateau.py` was
-written, and the reason it was not is that the instrument passed its own eight unit tests — which
-test that it computes the plateau correctly, not that the plateau is stable under its free parameter.
-**A test suite is not a null.***
 
 ### 4.26 "In-job paired" is batch-identical for every comparison here EXCEPT the annealing ones
 
@@ -6775,7 +6738,8 @@ therefore reproduces and measures the saturation problem the task poses; it does
 > are no less parallel than the control's — so the CE gain is not evidence for duo-causal attention.
 > **The depth gate: an instrument failure**, a hard argmax that could not express a mixture (§4.22).
 >
-> **And no arm widens the useful band; three of the five narrow it** — the norm penalty
+> **And no arm widens the useful band; at `tol = 0.01` three of the five narrow it** *(a
+> tolerance-dependent direction — §4.25)* — the norm penalty
 > ([6,17] → [6,14]), duo-causal W = 3 ([8,20] → [8,16], both seeds) and XSA ([8,20] → [8,16] at seed
 > 1). So the corrected form of this report's synthesis is: **twelve interventions, five lower the loss,
 > none widens the useful band, and every one of the five is either a block improvement or a loop-1
