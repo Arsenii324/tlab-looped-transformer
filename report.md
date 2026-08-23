@@ -93,10 +93,17 @@ There, the limit is geometric dilution: ‖h‖ grows linearly while the tangent
 constant, so the readout-visible angular step decays as `1/t`.
 
 **The rebuttal holds on the strictest definition of convergence available, which is the one this
-premise implies.** A map converges to a fixed point iff its Jacobian spectral norm `σ_max(∂F/∂h) < 1`.
-Measured directly by power iteration on the winning configuration (§4.3): **1.7019 / 1.0471 / 1.0047 /
-1.0015 at loops 2 / 8 / 32 / 64** — strictly **above 1 at every depth**, approaching neutrality from
-above and never crossing it. The model is *not* contracting anywhere, at any depth, on the metric
+premise implies.** A map converges locally to a fixed point iff its Jacobian's **spectral radius**
+`ρ(∂F/∂h) < 1`. (Not `σ_max < 1` — that is the *sufficient* Banach condition, and a non-normal map
+can have `σ_max > 1` while still converging. The distinction matters here and the instrument was
+mislabelled for it; see §4.3's correction block.) Measured directly by power iteration on the winning
+configuration (§4.3): **1.7019 / 1.0471 / 1.0047 /
+1.0015 at loops 2 / 8 / 32 / 64** — above 1 at every depth, approaching neutrality from
+above and never crossing it. **Read with the estimator's known upward bias (~9% on a defective
+operator), only the low-loop readings are decisive: ρ = 1.70 at loop 2 is far outside any bias, while
+1.0015 at loop 64 is inside it and cannot be distinguished from exactly 1.** So the defensible form
+is *no convergence in the regime where the loops are doing work*, not an asymptotic claim. The model
+is *not* contracting anywhere in that regime, on the metric
 DEQ's own framing rests on — **and it saturates at loop 8 regardless**. That is saturation *without*
 convergence, and it means the premise's diagnosis ("fast convergence is welcomed, after it computation
 is meaningless") does not explain the ceiling in a model built to avoid convergence. Whatever limits
@@ -1080,6 +1087,55 @@ toward 1 from above** (1.70 → 1.0015), so the map is not "expanding" in any us
 is **asymptotically neutral**. That is more accurate than the superseded reading's "expanding map",
 and it fits the geometry exactly: a neutral map with a persistent drift is what produces linear ‖h‖
 growth with a roughly constant step.
+
+> ### ⚠ CORRECTION — this table is **ρ**, not σ_max, and that makes the claim stronger
+>
+> `jacobian_spec.py` was named `sigma_max` and its docstring claimed power iteration on `J^T J`. **It
+> never applied `J^T`.** The loop is `v ← Jv/‖Jv‖` — plain power iteration on `J`, which converges to
+> the dominant eigenvalue magnitude, i.e. the **spectral radius ρ**. Verified against a known
+> non-normal operator where the two differ by 10× (`python src/jacobian_spec.py --null`):
+>
+> ```
+> A = [[1, 10], [0, 1]]     rho = 1.0000     sigma_max = 10.0990
+> the iteration returns 1.0889   ->  it estimates rho
+> ```
+>
+> **This corrects the claim in the favourable direction, and the report was over-hedging itself.**
+> §2 says these numbers "only bound ρ from above" and therefore cannot establish non-convergence.
+> That was wrong twice over: they *are* ρ, and `σ_max < 1` is only the **sufficient** Banach
+> condition while `ρ < 1` is the actual iff for local convergence to a fixed point. The measured
+> quantity is the appropriate one, not a loose upper bound on it.
+>
+> **Re-measured across all three trained checkpoints, which now span a 380× range in ‖h‖:**
+>
+> | loop | 46M no-renorm | 90M control | 90M norm-penalty |
+> |---|---|---|---|
+> | 2 | 1.7006 | 2.2850 | 1.7766 |
+> | 8 | **1.0467** | **1.0692** | **1.0480** |
+> | 16 | 1.0162 | 1.0238 | 1.0103 |
+> | 32 | 1.0053 | 1.0074 | **0.9953** |
+> | 64 | 1.0015 | 1.0020 | **0.9915** |
+> | ‖h‖@8 for reference | 6639.7 | 2334.4 | **17.5** |
+>
+> Two findings, and the first is the one worth keeping. **ρ is very nearly scale-invariant:** at
+> loop 8 the three agree to within 2% (1.0467 / 1.0692 / 1.0480) while their state norms differ by
+> **380×**. The loop map's local dynamics are a property of the learned operator, not of the scale it
+> is evaluated at — which is the strongest available statement that §4.6's "scale sets the rate, not
+> the ceiling" is about scale as a *coordinate* rather than as a *mechanism*.
+>
+> **Second: the norm penalty is the only arm that ever converges.** It crosses below 1 at loops 32
+> and 64 (0.9953, 0.9915) while both others sit just above. The estimator's bias is *upward* (the
+> null overshoots a defective operator by ~9%), so a reading below 1 is conservative and the crossing
+> is real. This is a mechanism for that arm's **narrower plateau** ([6,14] against the control's
+> [6,17], §.headline): a converging map stops paying for extra loops sooner.
+>
+> **What must NOT be read from this.** The 1.0015 / 1.0020 readings at loop 64 are *inside* the
+> estimator's upward bias and cannot be distinguished from exactly 1. **"Does not converge" is
+> established at low loop counts (ρ = 1.70–2.29 at loop 2, far outside any bias) and is NOT
+> established at loop 64.** §2's "saturation without convergence" should be read as a statement about
+> the regime where the loops are doing work, not as an asymptotic claim. Power iteration also
+> oscillates rather than converging for a complex-dominant eigenvalue, which 12 iterations cannot
+> detect; that caveat is unresolved.
 
 *Reproducibility, because it bounds how much the numbers carry.* An independent implementation
 (different power-iteration details and ε) reproduced the qualitative conclusion exactly — σ_max > 1
@@ -3534,6 +3590,7 @@ someone re-read raw output that a summary line had already reported as fine.*
 | 23 | **Every DataSphere job silently discarded its trained weights.** The kernels write `OUT_DIR/{run_name}_last.pt`, but a file not listed under `outputs:` in the job config is never returned — and every DS config listed only `results.json`. | noticed only when §4.16c needed the five `train-at-L` checkpoints and none existed locally | **~20 jobs' weights unrecoverable**, including the five train-at-L arms, so §4.16c's angular-budget test could not be extended to them. The Kaggle runs are unaffected (they did declare the `.pt`), which is why every local checkpoint comes from Kaggle or MPS. Fixed in 23 configs going forward; the currently-running artifact job keeps its own config and will also return curves only |
 | 22 | **I "corrected" an external reviewer using a summarised web fetch instead of the primary source, and the correction was wrong.** They relayed that Think-at-Hard reports *"over 73% of next-tokens correctly predicted at the first iteration"*; I checked the arXiv **HTML** through a summarising fetch, got 85%, and told them their figure was wrong — in three separate documents. | the paper's **LaTeX tarball**, obtained later: `3_method.tex` line 206 reads *"over 73\% of next-tokens are correctly predicted at the first iteration"*. 85% appears in the source only as unrelated table cells in the experiments section | **their number was right and mine was not.** Retracted in `VERIFICATION.md` and all three reply files. The lesson is not "web fetches are unreliable" but the sharper one: **a summariser sits between you and the text, and I treated its output as a primary source while telling someone else to be more careful.** Citation claims now require the tarball, which is why `papers/sources/` ships |
 | 24 | **`radial_clamp.py`'s "fallback" was not one: on any checkpoint without a `dynamics_*.json` it set `levels = {}`, printed *"falling back to measured-on-the-fly norms"*, produced only the unclamped control, wrote a results file and exited 0.** Neither 90M checkpoint has that json, so running §4.6's experiment on the **shipped** model was a silent no-op that reads as a completed run. | found while verifying a claim in §4.6 that the script derives levels per-checkpoint — it does, but only down one of the two branches | fallback implemented for real (one forward pass; reproduces the json path to 0.3% — 78.41/313.70/504.30 vs the stored 78.18/313.22/502.36 — which is the instrument's own null), plus a `RuntimeError` refusing to write a results file that contains only the control. **No published number changes**: every clamp number in §4.6 came from the 46M checkpoint, which does have the json |
+| 25 | **The Jacobian instrument measured the wrong quantity under the right name for the whole project.** `jacobian_spec.py::sigma_max` documented power iteration on `J^T J`; its loop is `v <- Jv/||Jv||`, which never applies `J^T` and converges to the **spectral radius rho**, not the largest singular value. | an instrument null on a known non-normal operator (`rho`=1 vs `sigma_max`=10.0990) — the loop returns 1.0889 | **the error was in the report's favour and it had been hedging against itself**: §2 said these numbers 'only bound rho from above' and so could not establish non-convergence, when they *are* rho, and `rho<1` is the iff while `sigma_max<1` is only the sufficient Banach condition. Renamed, null wired in as `--null`, and §2's claim narrowed to the low-loop regime because the loop-64 readings sit inside the estimator's ~9% upward bias |
 | 21 | **My own first version of that gate cried wolf.** It used a fixed 0.02 tolerance on 4 batches — ~1k tokens, whose sampling noise is 0.07–0.11 nats — and FAILED two checkpoints whose vocabulary is provably fine. | the failure was implausible, so the instrument was checked before the checkpoints were | re-specified with two tolerances (vocab-vs-chance, protocol-vs-SEM); a gate that fires on noise is worse than no gate, because it trains you to ignore it |
 | 19 | **A sweep died on its first arm and took the paired control with it** (CUDA OOM at 72 loops). | the job's terminal state | lost the μ_rec=56 pair; a per-arm OOM guard now records the failure in 94s instead |
 
@@ -3772,8 +3829,8 @@ src/baseline_nonlooped.py  compute-matched untied control (§4.4)
 **Diagnostics (all post-hoc, no training)**
 ```
 src/state_dynamics.py    readout-space geometry: norms, perturbation, step, increment cosine (§4.3, §4.5)
-src/jacobian_spec.py     σ_max of the loop Jacobian by power iteration — the strict definition (§4.3)
-src/radial_clamp.py      rescale the state per token, sweep clamp level (§4.6)
+src/jacobian_spec.py     rho (spectral radius) of the loop Jacobian by power iteration; `--null` runs its instrument null (§4.3)
+src/radial_clamp.py      rescale the state per token, sweep clamp level; levels derived from the GIVEN checkpoint (§4.6)
 src/rate_vs_path.py      one path at different speeds, or different paths? (§8.2)
 src/cross_depth_kv.py    (cache depth k × compute depth t) CE grid (§4.8)
 src/grad_spectrum.py     tied-vs-untied accumulated-gradient spectrum (§6.3 / §8)
