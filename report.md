@@ -774,9 +774,27 @@ would silently invalidate them.
 >
 > **The best validation perplexity this project achieved is `exp(3.6250) = 37.52`**, on the
 > norm-penalty arm at 90.0M tokens. The plain configuration reaches **38.86**. Both re-score ~0.04
-> nats above their own kernel's in-run figure — a consistent offset from a different validation batch
-> draw, which is precisely why the swap waited for a protocol match rather than being taken from the
-> kernel logs (§4.6's cross-protocol warning).
+> nats above their own kernel's in-run figure — a consistent offset, which is precisely why the swap
+> waited for a protocol match rather than being taken from the kernel logs (§4.6's cross-protocol
+> warning).
+>
+> > **Correction to that attribution.** This was described as "a different validation batch draw".
+> > There is a second, *systematic* mechanism a batch-draw account does not cover: **the local and
+> > Kaggle validation sets are not the same text.** `src/data.py` skips a fixed `SKIP_DOCS = 20_000`
+> > documents before packing; `kaggle/main.py` reuses the *same* stream iterator its tokenizer was
+> > trained on and starts packing immediately after that slice, which the local run measured at
+> > **19,319 documents** for the identical 60M-character budget. The streams are offset by ~681
+> > documents ≈ 634k tokens, so with both taking 92M train + 6M val the shards overlap by roughly
+> > **89%, not 100%**. (`SKIP_DOCS_FOR_TOKENIZER = 20_000` in the kernel *looks* like it equalises
+> > this; it is dead code, never referenced — disjointness comes from the shared iterator instead.)
+> >
+> > **Both readings stay live and this report does not pick one.** The measured gate offset is
+> > 0.0450, which is also within 3×SEM of the local sample, so sampling noise alone can account for
+> > it — but ~11% non-overlapping text can produce a systematic component of the same order, and
+> > nothing measured here separates them. The operational consequence is what matters: **a local
+> > number and a kernel number are not interchangeable at the 0.04-nat level**, which is the size of
+> > several effects claimed in this report, so every comparison that decides something is run within
+> > a single protocol.
 >
 > **Which of the two is "the result" needs saying rather than choosing quietly.** The norm-penalty arm
 > wins perplexity by 1.34 ppl — but §4.6b shows that at this budget **88% of its loop-gain advantage is
