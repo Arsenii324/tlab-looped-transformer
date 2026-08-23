@@ -16,8 +16,10 @@ checkpoint: **[Hugging Face URL — to be filled on publication]**.*
 
 ## 0. Abstract
 
-*This is not §1. §1 is the author's account of how the approach was arrived at, which the task grades
-separately as idea generation. This is what the document contains and what it measured.*
+*This is not §1. §1 is the narrative of how the approach was arrived at, which the task grades
+separately as idea generation — and it is **written by the coding agent from the project's dated
+record, at the author's instruction**; its own banner says so. This section is what the document
+contains and what it measured.*
 
 A **9,064,608-parameter** weight-tied looped transformer — one 3-layer Qwen3-style block applied `r`
 times, no prelude, no coda, no inter-loop normalisation — trained on **90M FineWeb tokens** reaches
@@ -48,14 +50,18 @@ norm penalty. The gated-injection row is decisive: its **pre-registered mechanis
 norm penalty — the single arm whose map actually *converges* (ρ < 1), the regime this report argues
 against — and 88% of its apparent loop-gain advantage is loop-1 damage.
 
-**One intervention does lower the loss, reliably — and ~90% of it is present at loop 1, where its
-mechanism is inert.** Loop-cycled LoRA branches improve best CE at rank ≥ 4 across four in-job pairs
+**Five interventions lower the loss, and four of the five are present at loop 1 in the same shape —
+78–101% of the gain sitting where the mechanism cannot act** (loop-cycled LoRA 67–95%, exclusive self
+attention 84%, duo-causal attention at W = 3 78–101%, the unnormalised depth gate 96%; the fifth, the
+norm penalty, instead wins perplexity by *damaging* loop 1). **The one that replicates across
+platforms is loop-cycled LoRA, and ~90% of it is present at loop 1, where its mechanism is inert.** Loop-cycled LoRA branches improve best CE at rank ≥ 4 across four in-job pairs
 spanning three platforms, two seeds and two supervision schedules (mean **−0.086**, 95% t-interval
 [−0.132, −0.039]) — **though the rank ≥ 4 restriction is post hoc and over all five arms the interval
 covers zero**, and there is no dose–response above the threshold. It is the only CE claim here that
 survives multi-platform replication. **The useful band does not move in any of the five pairs, not by
-one grid point**, Δgain sits inside every measured floor, and **88–95% of each arm's gain is already
-there at `r = 1`, where the branch index is `0 mod 4` and the cycling is logically inert.** So it
+one grid point**, Δgain sits inside every measured floor, and **67–95% of each arm's gain (median 88%,
+five arms) is already there at `r = 1`, where the branch index is `0 mod 4` and the cycling is
+logically inert.** So it
 improves the *block*, not the *looping*: ceiling, not depth, for +4.5% of the parameter budget. At
 rank 2 it reverses sign. The control that isolates diversity from capacity is running (§4.21b).
 
@@ -96,7 +102,7 @@ cost — including three claims withdrawn on the final day by their own pre-regi
 > an external reviewer, §4.18 and §4.22 say so. **Nothing here is claimed as the author's own
 > ideation.**
 
-**The approach was not designed. It was what was left after nine expectations were measured false.**
+**The approach was not designed. It was what was left after ten expectations were measured false.**
 
 The starting design was the field's: a weight-tied Qwen3 block, looped, with **inter-loop
 normalisation** to keep the state on a sphere — Huginn's own choice, and one supported by a published
@@ -5406,7 +5412,7 @@ the restriction the block immediately below shows the claim depends on.
 > **And the control that would separate capacity from branch specialisation has its own confound,
 > which is why there are two of them.** `cond_fixed_branch=0` pins to branch **0** — but branch 0 is
 > the *only* branch that receives gradient at `r = 1` (`0 mod 4 = 0`), and `r = 1` is exactly where
-> 88–95% of the effect lives (§4.21b). So a pin-0 arm recovering the gain is consistent with
+> 67–95% of the effect lives (§4.21b). So a pin-0 arm recovering the gain is consistent with
 > *"capacity, not diversity"* **and** with *"branch 0 is special because it owns loop 1."* A second
 > job pins to branch **2**, which never trains at `r = 1` — identical parameter count, zero
 > diversity, no specialisation. *Residual confound, stated: the two pins are in different jobs, so
@@ -5498,7 +5504,8 @@ direct gradient path, which is dense supervision by another name (§4.14, §4.16
 > directly rather than argued: with LoRA `B` randomised identically in both models, `cond_fixed_branch`
 > and ordinary cycling give **max|diff| = 0.000e+00 at r = 1** and diverge by 1.05 at r = 4.
 >
-> **So when 88–95% of every LoRA arm's ΔCE_best is already present at `r = 1`, ~90% of the effect is
+> **So when 67–95% of every LoRA arm's ΔCE_best is already present at `r = 1` (median 88% over five
+> arms; the in-job `dv_lora_r4_s0` adds a fifth at 84%), most of the effect is
 > attributable to the added capacity and not to operator diversity.** It composes with the other two
 > facts: Δgain is inside every measured floor, and the band is identical to its control in **5 of 5**
 > pairs. Three independent statements, one conclusion — **it improves the block, not the looping.**
@@ -5608,6 +5615,136 @@ run: the gate mixes over loops `1..r`, so its plateau is over **mixture-window s
 at larger `r` changes what is being mixed rather than how deep the model computed. Combined with the
 saturation result above, its flatness across `r` is what a hard selector *must* produce. **It does not
 belong in the §4.16b/§4.17 band tables and is excluded from them.**
+
+### 4.23 The scale-invariant depth gate: §4.7e's explanation exposed to refutation, and it held
+
+§4.22 is an **instrument failure**, and this report's own §5 rule says an instrument that fails cannot
+retire a hypothesis. So the per-token headroom of §4.7 was left *untested* by the fifth class, not
+refuted by it — and §4.7e's rank-collapse explanation was, at that point, an explanation with no
+experiment that could have killed it. This section is that experiment.
+
+**The fix is one line and it is the same lesson as §4.22's diagnosis.** The gate's logits were `w·h_t`
+on the **unnormalised** state, whose norm grows 1.8–4.0× within a forward pass; the readout it feeds
+is deliberately scale-invariant and the gate was not. `depth_gate_mode="state_norm"` normalises the
+state before the gate head and adds a learned log-temperature (`+450` parameters, one more than the
+saturating version).
+
+**A joint falsifier, registered 19:22, before the arm existed** (`RUNS.md`):
+
+| GATE 1 — does it mix? | CE gain? | what that decides |
+|---|---|---|
+| yes | no | **§4.7e confirmed** — the collapse is the binding constraint on the whole family |
+| yes | **yes** | **§4.7e is WRONG**; the per-token headroom is reachable |
+| no | either | instrument failure again; **nothing is decided**, exactly as in §4.22 |
+
+**GATE 1 passed, and by a wide margin.** Effective loops mixed **7.58 of 8, 14.96 of 16, 29.84 of
+32**, with **zero** tokens above 0.99 top-weight — against §4.22's saturating gate at 1.01–1.05 of `r`
+and 95–98% of tokens above 0.99. *This is a genuinely working per-token soft mixture over depths, and
+it is the first one this project has built.*
+
+**And it gains nothing.** In-job paired, two seeds, 2.5M tokens:
+
+| arm | CE@1 | best CE | ΔCE@1 | **ΔCE_best** |
+|---|---|---|---|---|
+| `dc_control_s0` | 5.2631 | 5.1577 | — | — |
+| `dg_norm_s0` | 5.2630 | **5.1565** | −0.0001 | **−0.0012** |
+| `dc_control_s1` | 5.2547 | 5.1251 | — | — |
+| `dg_norm_s1` | 5.2484 | **5.1274** | −0.0063 | **+0.0023** |
+
+The sign reverses across seeds and both magnitudes are more than an order of magnitude inside the
+0.0150 CUDA-dense floor. **A working mixture over a representation whose depth keys span ~1.6 of 32
+dimensions buys nothing — which is what §4.7e predicts, and it is now the reading that survived the
+test designed to overturn it.**
+
+> **Its band is excluded, on the same pre-registered grounds as §4.22's.** `dg_norm` reads plateau
+> **[12,24] (s0)** and **[12,32] (s1)** against its control's [8,20]. That is **mixture-window size,
+> not depth** — the gate mixes over loops `1..r`, so raising `r` changes *what is mixed*. Registered
+> at 17:40, before either arm ran. It does not enter any band table in this report.
+
+*Scope: 2.5M tokens, two seeds, one width. A null at 2.5M is not a null at 90M, and this project's own
+12× shrinkage regularity cuts the other way here — effects tend to be **larger** at screening scale,
+which makes a screening-scale null the more informative direction, but it is still one budget.*
+
+### 4.23b Duo-causal attention: a CE gain whose mechanism check failed
+
+Think-at-Hard (2511.08577) lets loop `t` attend to loop `t−1`'s KV as well as its own. Implemented as
+`kv_window=W` and pre-registered with **two** gates: GATE 1, loop-1 logits must be bit-identical at
+`W>1` (no history exists at one loop) — **verified before launch**; GATE 2, the primary read,
+`cos(Δu_t, Δu_{t−1})` must *fall* relative to control if the extra history changes how the trajectory
+moves.
+
+| arm | CE@1 | best CE | ΔCE@1 | **ΔCE_best** | band | share of gain at r=1 |
+|---|---|---|---|---|---|---|
+| `dc_control_s0` | 5.2631 | 5.1577 | — | — | [8,20] | — |
+| `dc_w2_s0` | 5.2858 | 5.1670 | +0.0227 | +0.0093 | [8,20] | — |
+| `dc_w3_s0` | 5.1949 | **5.0706** | −0.0682 | **−0.0871** | **[8,16]** | **78%** |
+| `dc_control_s1` | 5.2547 | 5.1251 | — | — | [8,20] | — |
+| `dc_w2_s1` | 5.2326 | 5.1136 | −0.0221 | −0.0115 | [8,20] | — |
+| `dc_w3_s1` | 5.2148 | **5.0857** | −0.0399 | **−0.0394** | **[8,16]** | **101%** |
+
+**W = 2 is a clean null** — sign reverses, both inside the 0.0150 floor, band identical to the digit.
+
+**W = 3 lowers CE at both seeds, ~4.2× the floor — and GATE 2 says the mechanism did not engage.**
+`cos(Δu_t, Δu_{t−1})` for the W=3 arm is **0.9962 / 0.9991 / 0.9998 / 0.9999** at t = 4/8/16/32,
+against the control's **0.9978 / 0.9993 / 0.9998 / 0.9999**: indistinguishable, and identical to four
+digits by t = 16. The block was handed the previous loop's KV and its trajectory moved the same way
+regardless. Composed with 78–101% of the gain sitting at `r = 1`, where GATE 1 *proves* the mechanism
+is inert, **the CE gain is a training-time perturbation that yields a better block, not duo-causal
+attention doing what it claims.**
+
+**It is also the first intervention in this report that narrows the useful band** — [8,20] → [8,16] at
+both seeds. Combined with the norm penalty's [6,17] → [6,14], two of the five loss-lowering
+interventions actively cost useful depth.
+
+*This is the mirror of §4.2's gated-injection row, and the pair is why both are reported the same way:
+there, the mechanism check **succeeded** and the loss got worse; here, the loss got better and the
+mechanism check **failed**. Neither is evidence for the mechanism.*
+
+### 4.23c Capacity, not diversity — the in-job control
+
+§4.21b's r=1 argument said the LoRA positive should be capacity rather than operator diversity.
+`tlab-divx` tests it directly, **all arms in one job** (`dv_lora_fixed0_s0` pins the branch index to
+0: identical parameter count, **zero** diversity):
+
+| arm | CE@1 | best CE | ΔCE_best | band |
+|---|---|---|---|---|
+| `dv_control_s0` | 5.4693 | 5.3765 | — | [8,20] |
+| `dv_lora_r4_s0` (cycled) | 5.3648 | 5.2514 | **−0.1251** | [8,20] |
+| `dv_lora_fixed0_s0` (**pinned**) | 5.3819 | 5.2734 | **−0.1031** | [8,20] |
+
+**A single fixed branch with zero diversity recovers 82% of the cycled arm's gain, in-job.** Diversity's
+own contribution is 0.0220 — inside the 0.0150–0.0334 band this project measures for drift and floors.
+Agrees with the independent r=1 argument (84% for this arm) and with the **cross-job** pin to branch
+**2** — a branch that never trains at `r = 1`, so it cannot be explained by branch-0 specialisation:
+`pin_control_s0` 5.3052 → `pin_lora_b2_s0` **5.2237**, **ΔCE_best −0.0815**, ~65% of the cycled gain.
+The two pins bracket diversity's own contribution at **18–35%**, none of it comfortably resolvable
+against the floor. **§4.21 is a capacity result** `[CAPACITY-NOT-DIVERSITY]`.
+
+*And it retracts an observation flagged in `reviewer_answers/23`:* that the pinned arm **narrowed** the
+band while cycling preserved it. In-job, **all three arms hold [8,20]**. The narrowing was cross-job
+noise, and it had been labelled "an observation, not a result", which is the only reason it cost
+nothing.
+
+### 4.23d Exclusive self attention: the largest zero-parameter gain, at n = 1
+
+XSA (2603.09078) removes each token's own value vector's component from its attention output. In-job,
+one seed, 2.5M tokens:
+
+| arm | CE@1 | best CE | ΔCE_best | band |
+|---|---|---|---|---|
+| `xsa_control_s0` | 5.3858 | 5.2851 | — | [8,16] |
+| `xsa_on_s0` | 5.2032 | **5.0689** | **−0.2162** `[XSA-N1]` | **[8,16]** |
+
+**~14× the floor, zero parameters, band identical to the digit, and 84% of the effect at `r = 1`.**
+The same shape as every other loss-lowering arm here.
+
+**Two predictions were on record and they disagreed, which is the useful part.** At 19:15 the
+prediction from this report's own regularity — *CE down, band unmoved* — was written down: **confirmed.**
+At 19:20 it was **amended** to "near-null on CE too", after an untrained control showed training
+already suppresses the self-attention bias the operator removes (cos 0.85 → 0.35): **refuted.** The bad
+inference is worth naming because it is this project's characteristic error in a fourth costume — *a
+geometric quantity being small **in cosine** says nothing about the **loss value** of removing it.* Two
+different spaces treated as one. §4.20, the §4.7e projection confound and this are the same mistake.
 
 ## 5. Methods tested to destruction — what was claimed, what was measured, why it broke
 

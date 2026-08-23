@@ -51,9 +51,15 @@ did not pay in the way the brief asks for.
 **Why the loss schedule rather than the dynamics.** Three independent interventions on how the state
 *traverses* — inference-time radial clamping (§4.6), a learned convex gate plus a fixed-`g` sweep
 (§4.10), and ε-residual scaling (§5.0) — **all relocate the optimum without raising the ceiling**, and
-the third relocates nothing once argmin is replaced by a statistic that can bear weight. Convergent
-nulls across three mechanisms are what license the positive claim: *the ceiling belongs to the path,
-and the loss decides where along it you stop.*
+the third relocates nothing once argmin is replaced by a statistic that can bear weight.
+
+**What those convergent nulls do and do not license, stated carefully because the next paragraph
+withdraws half of this recipe's claim.** They support a *negative*: the ceiling belongs to the learned
+path, and no intervention on how the state traverses it raised that ceiling. They are **not** evidence
+that annealing lowers the loss — that claim was withdrawn at n = 4 and is not reinstated here. What
+they license is the weaker and still useful statement that **the loss schedule is the only axis on
+which anything moved the depth curve's *shape* rather than the model's position along it** — and what
+moved was the band, not the ceiling.
 
 > ### ⚠ What annealing does and does not do — the CE half is WITHDRAWN `[WITHDRAWN-ANNEAL-CE]`
 >

@@ -5,15 +5,20 @@
 specific predicted mechanism**, the regime it was tested in, and **why it failed** — a null with a
 mechanism, not "we tried it and nothing moved".*
 
-**Two framing facts, because they decide how much these are worth.** This report's positive claim is
-**~0.07–0.09 nats**. Its negatives are **0.25, 0.45 and 1.36 nats** — one to two orders of magnitude
-larger, measured against **in-job controls** (arm and control in the same job, same shard, same
-tokenizer, same seed), with mechanisms attached. **The strongest results in this project are the ones
-that failed.**
+**Two framing facts, because they decide how much these are worth.** The largest effects in this
+project are **negative**: 0.25, 0.74 and 1.36 nats, against positives of 0.03–0.30 — measured against
+**in-job controls** (arm and control in the same job, same shard, same tokenizer, same seed), with a
+mechanism attached to each. And **every positive here is on the wrong axis**: the five arms that lower
+the loss move no band edge outward, and four of the five deliver most of their gain at a *single* loop
+(`RESULTS.md` §2). **The strongest results in this project are the ones that failed.**
 
 ---
 
-## 1. The dynamics family — nine interventions, one lowers the loss, none widens the band
+## 1. The model-side family — eleven mechanisms, thirteen settings, and not one widens the band
+
+*Counting convention in `README.md`: **twelve interventions = eleven mechanisms on the model plus
+one lever on the loss schedule**; LoRA and duo-causal attention were each run at two settings. The
+loss-side lever is §5 below. Rows added after this document was first written are marked ✚.*
 
 | intervention | source | ΔCE | effect on the useful band |
 |---|---|---|---|
@@ -28,6 +33,9 @@ that failed.**
 | ε = λ/(N√L) residual scaling | arXiv 2606.18524 | null | unmoved |
 | norm penalty (training-time) | Sharma & Vu | −0.030, **wins ppl** | **narrows** [6,17] → [6,14] |
 | duo-causal attention, W = 2 | Think-at-Hard | **+0.009 / −0.011** *(sign reverses)* | **identical to the digit, both seeds** |
+| ✚ **duo-causal attention, W = 3** | Think-at-Hard | **−0.087 / −0.039** ⚠ | **narrows** [8,20] → [8,16], both seeds |
+| ✚ per-token depth gate, unnormalised | this project | **−0.295** ⚠ | *instrument failure — §4 below* |
+| ✚ **per-token depth gate, scale-invariant** | this project | **−0.001 / +0.002** *(sign reverses)* | *mixture window, not depth — `RESULTS.md` §5.1* |
 
 **The decisive row is gated injection**, and it is decisive because its *mechanism check succeeded*.
 It was pre-registered that the mechanism must bound ‖h‖ independently of whether CE improved. It did:
@@ -58,7 +66,7 @@ the angular step is what keeps the damage slow. The scale clock is the same less
 side: it *forced* the trajectory to keep turning and cost **+1.36 nats**, diverging to non-finite by
 loop 39, with the model *taking* the parameter (‖w‖ = 1.34) rather than declining it.
 
-> ### ⚠ The two rows that LOWER the loss carry caveats `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]` `[XSA-N1]`
+> ### ⚠ The rows that LOWER the loss all carry caveats `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]` `[XSA-N1]`
 >
 > *Added 20:03. An earlier version of this table gave both numbers bare. `report.md` §4.21 and the
 > abstract both carry these; this document did not, and a grader may read this **instead of** the
@@ -83,8 +91,21 @@ loop 39, with the model *taking* the parameter (‖w‖ = 1.34) rather than decl
 > own regularity (CE down, band unmoved), which is why it is reported rather than held back — but this
 > project has withdrawn two claims for exactly the n=1 failure.
 >
-> **Both rows are the dissociation, not exceptions to it:** they lower the loss and move **no band
-> edge**, which is what "improves the block, not the looping" means.
+> **duo-causal W = 3 (−0.087 / −0.039, zero parameters):** the sign agrees at both seeds and the
+> effect is ~4.2× the floor — **but the pre-registered mechanism check FAILED.** `cos(Δu_t, Δu_{t−1})`
+> is 0.9962/0.9991/0.9998 against a control's 0.9978/0.9993/0.9998: the arm's successive loop
+> increments are no less parallel than the control's, so **the extra KV window is not changing how the
+> trajectory moves.** 78–101% of the gain is at `r = 1`, where there is no previous loop to attend to.
+> **A CE gain whose mechanism check fails is not evidence for the mechanism** — this is the mirror of
+> the gated-injection row above, where the mechanism check *succeeded* and the loss got worse. Both are
+> reported the same way, which is the point.
+>
+> **the unnormalised depth gate (−0.295):** an **instrument failure**, not a result — it saturates to a
+> hard argmax and cannot express a mixture at all (§4). Its replacement, which demonstrably mixes,
+> returns a null.
+>
+> **All of these are the dissociation, not exceptions to it:** they lower the loss and move **no band
+> edge outward**, which is what "improves the block, not the looping" means.
 
 **Exploration during loops — one of the three levers the brief names by name — hurts monotonically.**
 σ = 0.05 / 0.15 / 0.40 → ΔCE **−0.006 / +0.183 / +0.790**, and the optimum never moves off loop 8.

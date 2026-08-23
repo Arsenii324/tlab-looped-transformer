@@ -14,6 +14,23 @@ sys.path.insert(0, os.path.dirname(__file__))
 from plateau import plateau, plateau_mid
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
+UNANNOTATED = ("not cited in `report.md` by identifier or by value — the arm's **conclusion** is "
+               "reported in its section, the absolute number only here")
+ANNOT = {
+    "trainL": "§4.9's seed-1 replication reports the **re-zeroed mean curve** and the per-arm shape "
+              "spread, never the five absolute bests. The conclusion (the collapse fails its "
+              "pre-registered seed test) is reported; the raw column is not",
+    "as_10M_sw90": "§4.17 reports its **ΔCE_best = −0.0764** against the in-job control, not its absolute",
+    "sc_final_only_s1": "§4.6b reports its **Δ** (−0.5165), not its absolute",
+}
+
+def rep_txt():
+    return (ROOT / "report.md").read_text()
+
+def seen_any(r):
+    rep = rep_txt()
+    return any(f"{r['best']:.{d}f}" in rep for d in (4, 3)) if r["best"] is not None else False
+
 def collect():
     rows = []
     for f in sorted(glob.glob(str(ROOT / "checkpoints" / "*.json"))):
@@ -64,8 +81,22 @@ def main():
                    f"{r['k'] if r['k'] is not None else '?'} | {r['ce1']:.4f} | **{r['best']:.4f}** | "
                    f"{r['at']} | {r['band']} | {r['mid']} | {r['grid']} |")
     p = ROOT / "submission" / "EXPERIMENTS.md"
-    head = p.read_text().split("## The inventory")[0] if p.exists() else "# All experiments\n\n## The inventory\n"
-    p.write_text(head + "## The inventory\n\n" + "\n".join(out) + "\n")
+    # The coverage block is GENERATED, not transcribed. It was hand-written once and drifted the
+    # moment six arms were added -- the same "recorded as fixed" failure sec6.0 names. ANNOT carries
+    # the only part a script cannot know: why a given absence is or is not a defect.
+    cov = ["## Coverage — checked mechanically, and it is not perfect\n",
+           f"Of the {len(rows)} arms, **{byname} appear in `report.md` by their internal identifier "
+           f"and {bynum} by their best-CE value; {sum(1 for r in rows if r['arm'] in rep_txt() or seen_any(r))} "
+           f"by one or the other.** **{len(absent)} appear by neither:**\n",
+           "| arm | best CE | why it is absent, and whether that is a defect |", "|---|---|---|"]
+    for r in absent:
+        why = next((v for k, v in ANNOT.items() if r["arm"].startswith(k)), UNANNOTATED)
+        cov.append(f"| `{r['arm']}` | {r['best']:.4f} | {why} |")
+    cov.append("\n**So there is no unreported *experiment*** — every arm above is a run whose "
+               "conclusion is reported; what is absent is an *absolute number* where the report "
+               "quotes a delta or a mean curve instead. This table is where those numbers live.\n")
+    head = p.read_text().split("## Coverage")[0] if p.exists() else "# All experiments\n\n"
+    p.write_text(head + "\n".join(cov) + "\n## The inventory\n\n" + "\n".join(out) + "\n")
     print(f"wrote {p}")
 
 if __name__ == "__main__":

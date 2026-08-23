@@ -111,28 +111,36 @@ negative reaches.
 
 **Measured. Both models untrained, identical hidden size, heads, head_dim and initialisation, 33
 depths each** — so training quality cannot explain the difference and the *only* variable is
-tied-vs-untied:
+tied-vs-untied. **The table carries four rows rather than two, because the two-row version was
+measured first and was substantially a confound** `[RANK-PROJECTION]`:
 
-| | effective rank | mean pairwise cos |
+| what is measured | effective rank | mean pairwise cos |
 |---|---|---|
-| **weight-tied** — one block applied 33 times | **2.73 / 33** | **0.8022** |
-| **untied** — 33 distinct layers, same width | **31.80 / 33** | **−0.0029** |
+| tied — depth **states**, no projection | **1.40 / 33** | +0.8044 |
+| untied — depth **states**, no projection | **4.36 / 33** | +0.8815 |
+| untied — the same states through **one shared** `W_K` | 4.36 / 33 | +0.8807 |
+| tied — **keys** (its one `W_K`) | 2.73 / 33 | +0.8022 |
+| **untied — keys, each layer's own `W_K`** | **31.83 / 33** | **+0.0000** |
 
-**11.7×, with smallness held fixed by construction.** An untied stack *at identical scale* has
-essentially full-rank, near-orthogonal depth keys.
+**Read the rows in that order and the mechanism is visible.** At the level of the *representations*
+the two architectures are **3.1×** apart and **both are highly collinear** — the untied stack's states
+are, if anything, *more* cosine-correlated (0.88 vs 0.80). The near-orthogonality appears only in the
+last row, and it appears **because each untied layer has its own `W_K`**: 33 independent random
+projections of even an *identical* state are near-orthogonal in ℝ²²⁴ by construction. Sharing the
+projection collapses 31.83 back to 4.36 immediately.
 
-> **CORRECTED 20:01 `[RANK-PROJECTION]` — and the correction changes the mechanism, not the conclusion.** Most of that
-> 11.7× is **projection randomness**, not representation diversity: each untied layer has its own
-> `W_K`, and 33 independent random projections of even an *identical* state are near-orthogonal by
-> construction. Holding the projection fixed, the untied stack's depth **states** have effective rank
-> **4.36 / 33** (cos 0.88) against the tied model's **1.40 / 33** (cos 0.80) — a **3.1×** gap, and both
-> streams are highly collinear.
->
-> **The scaling conclusion stands, on a better mechanism.** Depth attention reads *keys*, and in an
-> unshared stack those keys really are rank ~32 — because distinct projections **decorrelate a
-> collinear state stream for free.** A weight-tied loop has one `W_K` and cannot buy that at any width.
-> So the negative still generalises, and the reason is now the **projection asymmetry** rather than a
-> representation gap that turns out to be small.
+**So the asymmetry is in the projections, not in the representations — and that is the stronger form
+of the argument, because depth attention reads keys.** MoD-Attention and its family attend over the
+keys the model computes, so key-space rank is the right quantity for explaining their positive, and
+31.83 stands there. **Distinct per-layer projections decorrelate a collinear state stream for free. A
+weight-tied loop has one `W_K` and cannot buy that at any width.**
+
+> **What this replaces.** An earlier version of this section led with **"11.7×, with smallness held
+> fixed by construction"** — the ratio of the two *key* rows alone, which credits weight tying with a
+> representation gap that is really a projection artifact. The confound was raised by an external
+> reviewer and confirmed by a control run (hold the projection fixed) within six minutes. **The
+> conclusion did not change; the mechanism behind it did, and got more defensible.** The superseded
+> number is left visible rather than deleted, per this project's rule for retractions.
 
 **So the collapse is weight tying, and the negative generalises.** Three consequences for scaling:
 
@@ -144,10 +152,16 @@ essentially full-rank, near-orthogonal depth keys.
    reports +0.2 perplexity and +2.11% downstream at 1.5B on **24 and 48 unshared layers** — precisely
    the near-orthogonal key set measured above. **Their gain is a property of distinct layers**, now
    measured rather than argued.
-3. **It names the real cost of weight tying, which this report had not stated.** Tying buys parameter
-   efficiency and **pays for it in depth distinguishability**. Every depth-mixing mechanism needs two
-   different views of a token; one shared block cannot produce them. That is a structural trade, not a
-   tuning problem, and it is the sharpest scaling statement this project can make.
+3. **It names the real cost of weight tying, which this report had not stated — and the claim is
+   about keys, not representations.** Tying buys parameter efficiency and **pays for it in the
+   distinguishability of the depth *keys* a mixing mechanism actually attends over**. The narrower
+   claim is the one the correction above leaves standing, and it is also the sufficient one: an
+   unshared stack does **not** need diverse representations for depth attention to work, because its
+   diverse projections manufacture a near-orthogonal key set out of a collinear state stream. A tied
+   loop has one `W_K`. That is a structural trade, not a tuning problem, and it is the sharpest
+   scaling statement this project can make.
+   *Not claimed:* that an untied stack builds richer depth **representations**. Measured, it barely
+   does — 4.36 vs 1.40 of 33, both collinear.
 
 **Scope, stated:** one width and one depth count. The ratio at other widths is untested — though the
 mechanism (identical weights produce identical maps) does not obviously depend on width, and the
