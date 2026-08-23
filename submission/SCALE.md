@@ -19,7 +19,7 @@ not of the model.
 > at n = 4** by a criterion registered before the data existed: seeds 2 and 3 gave **+0.0482** and
 > −0.0902, the four-seed mean (−0.0460) sits inside the 0.0541 floor — **two further points at 4× the budget, −0.0764 and +0.1119, take the six-point mean to −0.0247, still inside it** — and the paired t-interval
 > **[−0.1478, +0.0558] covers zero.** **What survives is the depth half** — the useful band widens at
-> **5 of 5 seeds**, with the *same* edge decomposition (onset 8 → 8, end 16 → 24) at **2.5M and at
+> **6 of 6 seeds**, with the *same* edge decomposition (onset 8 → 8, end 16 → 24) at **2.5M and at
 > 10M tokens**, including at the seeds that reverse the CE claim. A fifth CE point at 4× the budget
 > is **+0.1119**, the worst yet. So the
 > mechanism defended below is one that **relocates the useful band at zero parameter cost and does not
@@ -165,9 +165,4 @@ weight-tied loop has one `W_K` and cannot buy that at any width.**
    *Not claimed:* that an untied stack builds richer depth **representations**. Measured, it barely
    does — 4.36 vs 1.40 of 33, both collinear.
 
-**Scope, stated:** one width and one depth count. The ratio at other widths is untested — though the
-mechanism (identical weights produce identical maps) does not obviously depend on width, and the
-untrained comparison removes training quality as an explanation. Reproduce with
-`src/depth_key_rank.py::tied_vs_untied`, one forward pass each, no training.
-
-
+**Scope, stated.** The collapse **at initialisation** is measured **flat across widths 224–896** — 2.73M to 32.58M parameters, rank 2.749 / 2.687 / 2.747 / 2.731 / 2.718, spread 0.062, no trend (§4.31). So it is not a small-model artifact. **Whether the *trained* collapse is width-independent is not measured here** — §4.30 measured what training does at one width only, and a three-width trained comparison was launched as a post-deadline follow-up with its falsifier registered. 

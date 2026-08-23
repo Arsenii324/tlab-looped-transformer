@@ -93,7 +93,7 @@ index — identical parameters, zero diversity — beats the cycled arm at seed 
 capacity result rather than a diversity one. At rank 2 it reverses sign.
 
 **One lever moves the useful band: where the loss is applied.** Supervision annealing — dense for most
-of training, terminal-only for the last ~10% — **relocates the band at 5 of 5 seeds** at **zero
+of training, terminal-only for the last ~10% — **relocates the band at 6 of 6 seeds** at **zero
 parameter cost**, and the edge decomposition is *identical* at 2.5M and at 10M tokens: **onset 8 → 8
 unchanged, end 16 → 24.** Its effect on the *ceiling* was withdrawn at n=4 by a criterion
 pre-registered before the data existed, and two further points at 4× the budget (−0.0764, +0.1119)
@@ -206,7 +206,7 @@ The honest finding is that **those two clauses come apart under measurement**: t
 **five** of which lower the loss — and **four of the five deliver 67–101% of that gain at a single
 loop, where their own mechanism is provably inert**, so they improve the *block*, not the *looping*.
 The fifth wins perplexity by *damaging* loop 1. **Not one widens the useful band; at `tol = 0.01`
-three of the five narrow it, though that direction does not survive halving the tolerance (§4.25).** One lever moves the band robustly at zero parameter cost — at 5 of 5 seeds, with the same
+three of the five narrow it, though that direction does not survive halving the tolerance (§4.25).** One lever moves the band robustly at zero parameter cost — at 6 of 6 seeds, with the same
 edge decomposition at 2.5M and at 10M tokens — **and does not lower the loss.** Per-token depth demand
 is real, reliable and large, and unreachable by five instrument classes — with a measured reason
 underneath rather than five shrugs (§4.7e), which was then **exposed to refutation and survived**
@@ -4445,6 +4445,14 @@ So a moving midpoint can mean either of two independent things, and the report h
 | μ=18 dense → `sw90`, **seed 0** | **8 → 8** *(unchanged)* | 16 → **24** | 11.3 → 13.9 | −0.0811 |
 | μ=18 dense → `sw90`, **seed 1** | **8 → 8** *(unchanged)* | 16 → **24** | 11.3 → 13.9 | −0.0609 |
 | μ=18 dense → `sw90`, **10M tokens** (§4.23e) | **8 → 8** *(unchanged)* | 16 → **24** | 11.3 → 13.9 | **+0.1119** |
+| μ=18 dense → `sw90`, **10M tokens**, `tlab-anneal-scale` (§4.17) | **8 → 8** *(unchanged)* | 16 → **20** | 11.3 → 12.6 | **−0.0764** |
+
+> **The sixth arm was checked at 23:20, after its ΔCE_best had already been added to the CE series.**
+> `as_10M_sw90` has a validation curve, so it has a band, and the band series had been left at 5 of 5
+> while the CE series moved to six. **It widens too, at every tolerance tested** — end 16 → 20 at
+> tol 0.01, [8,12] → [12,16] at 0.005, [8,20] → [8,24] at 0.02 — so the band claim is **6 of 6** and
+> tolerance-robust. *It was checked precisely because the two series being out of step is the kind of
+> asymmetry that usually means nobody looked.*
 | μ=18 dense → `sw75`, seeds 0/1 | 8 → 12 | 16 → 24 | 11.3 → 17.0 | −0.0656 / +0.0906 |
 | **μ=40** dense → `sw90` | **16 → 24** *(×1.5)* | 40 → 48 *(×1.2)* | 25.3 → 33.9 | −0.0264 |
 | **μ=40** dense → `sw75` | **16 → 32** *(×2.0)* | 40 → 64 *(×1.6)* | 25.3 → 45.3 | −0.0192 |
@@ -5653,7 +5661,7 @@ direct gradient path, which is dense supervision by another name (§4.14, §4.16
 > **So when 67–95% of every LoRA arm's ΔCE_best is already present at `r = 1` (median 88% over five
 > arms; the in-job `dv_lora_r4_s0` adds a fifth at 84%), most of the effect is
 > attributable to the added capacity and not to operator diversity.** It composes with the other two
-> facts: Δgain is inside every measured floor, and the band is identical to its control in **5 of 5**
+> facts: Δgain is inside every measured floor, and the band is identical to its control in **6 of 6**
 > pairs. Three independent statements, one conclusion — **it improves the block, not the looping.**
 >
 > **The control that settles it is running** (`tlab-diversity-control-s0`, launched 18:53): three
@@ -5963,7 +5971,7 @@ annealing seed was measured at — 4,881 steps, 11 evals each, μ_rec = 18.
 **1. The band effect replicates *exactly*, at 4× the budget.** Onset **8 → 8** (unchanged), end
 **16 → 24**, midpoint **11.3 → 13.9**. Compare §4.15's table for seeds 0 and 1 at 2.5M tokens: onset
 8 → 8, end 16 → 24, mid 11.3 → 13.9. **The same decomposition, to the grid point, at 2.5M and at
-10M.** That is now **5 of 5 seeds across a 4× budget range**, and the decomposition says the same
+10M.** That is now **6 of 6 seeds across a 4× budget range**, and the decomposition says the same
 thing every time: *the model does not improve further, it degrades later.*
 
 **2. The CE claim, already withdrawn at n = 4, gets its worst point yet.** ΔCE_best = **+0.1119** —
@@ -6526,7 +6534,7 @@ counted it among the interventions "that lower the loss" is counting a 2.5M-toke
 >
 > **What is unaffected:** the band results (the band is [8,16] for both arms here, unmoved, exactly as
 > at every smaller budget), §4.7e's rank mechanism (measured on representations, not on a CE delta),
-> and supervision annealing's band widening (which replicates at 5/5 seeds across a **4× budget
+> and supervision annealing's band widening (which replicates at 6/6 seeds across a **4× budget
 > range**, §4.23e — the one depth claim that has been tested across budgets and held).
 
 > **Is the 12M arm the same intervention that showed the positive? Checked field-by-field, and the

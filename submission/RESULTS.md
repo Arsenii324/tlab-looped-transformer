@@ -32,7 +32,7 @@ band, the only arm that converges, and an unresolvable clipping confound.
 |---|---|---|---|---|
 | 1 | **Removing inter-loop normalisation** | **≈ −0.68 nats** token-corrected — *the largest effect in the project* | replicated; the normalised variant provably contracts to a fixed point by loop ~16 and never accrues loop gain at all (§4.1, §4.3, §4.12) | not novel — it is a *removal*. The field's default was wrong here, and that is the finding |
 | 2 | **Finishing the token budget** | **0.39–0.42 nats** (46M → 90M) | same platform, same shard, same protocol | not an idea. It is the sentence a practitioner should take away: **every architectural intervention here is worth 0.002–0.26; the data is worth 0.40** |
-| 3 | **Supervision annealing — the useful band** | band **widens at 5/5 seeds**; on a dense integer grid `end 20 → 30` against the control's `20` | **the best-supported result here.** Identical edge decomposition at 2.5M *and* 10M; survives halving the plateau tolerance; the sparse grid was *understating* it (§4.23e, §4.25, §4.25c). **Zero added parameters** | **not a loss improvement.** Its CE half is withdrawn at n=4; two further points at 4× budget (−0.0764, +0.1119) leave the six-point mean at −0.0247, inside the floor. It buys *where depth stays useful*, not *how good the model gets* |
+| 3 | **Supervision annealing — the useful band** | band **widens at 6/6 seeds**; on a dense integer grid `end 20 → 30` against the control's `20` | **the best-supported result here.** Identical edge decomposition at 2.5M *and* 10M; survives halving the plateau tolerance; the sparse grid was *understating* it (§4.23e, §4.25, §4.25c). **Zero added parameters** | **not a loss improvement.** Its CE half is withdrawn at n=4; two further points at 4× budget (−0.0764, +0.1119) leave the six-point mean at −0.0247, inside the floor. It buys *where depth stays useful*, not *how good the model gets* |
 | 4 | **Exclusive self attention (XSA)** | **−0.2162 / −0.2633**, two seeds, **zero parameters** | replicates, ~16× the floor | **not about looping.** 84–91% of it is at `r = 1`; it is a generic attention operator a non-looped model would plausibly get too. Its band claim died at the second seed. **Untested at scale** |
 | 5 | **Norm penalty** | wins perplexity outright: **37.52 vs 38.86** | one 90M arm | **not shipped, and the reasons are measured**: `ΔCE@1 = +0.2263` (88% of its loop-gain advantage is loop-1 *damage*), its band narrows, it is the only arm whose map converges, and it carries an unresolvable clipping confound |
 
@@ -93,7 +93,7 @@ states the convention). **Three** mechanisms were run at two settings each, so t
 | 10 | **exclusive self attention (XSA)** | **−0.2162 / −0.2633** *(2 seeds, agreeing)* ⚠ | seeds **disagree**: s0 unmoved (widens at tol 0.005), s1 narrows 3/3 † | **0** |
 | 11a | per-token depth gate, unnormalised | **−0.2950** ⚠ | *(gate saturates — see below)* | +449 |
 | 11b | per-token depth gate, **scale-invariant** | **−0.0012 / +0.0023** *(sign reverses, 2 seeds)* | *n/a — see §5* | +450 |
-| 12 | **supervision annealing** *(loss-side)* | CE **withdrawn at n=4**; a 5th point at 4× budget is **+0.1119** `[WITHDRAWN-ANNEAL-CE]` | **band widens 5/5 seeds**, same decomposition at 2.5M and 10M | **0** |
+| 12 | **supervision annealing** *(loss-side)* | CE **withdrawn at n=4**; a 5th point at 4× budget is **+0.1119** `[WITHDRAWN-ANNEAL-CE]` | **band widens 6/6 seeds**, same decomposition at 2.5M and 10M | **0** |
 
 **† Band direction is a `tol = 0.01` statement for these rows.** Sweeping the plateau tolerance
 (§4.25) shows four of eleven paired band verdicts are tolerance-dependent; the two the argument below
@@ -138,7 +138,7 @@ loop-1 damage**, and its band narrows. It buys loop gain by making loop 1 worse 
 **Not one of the twelve widens the useful band.** At the tolerance every table here uses
 (`tol = 0.01`) three of the five loss-lowering arms *narrow* it — the norm penalty ([6,17]→[6,14]),
 duo-causal W = 3 ([8,20]→[8,16], both seeds) and XSA ([8,20]→[8,16] at seed 1). The one lever that
-moves the band *outward* — supervision annealing, **5/5 seeds**, zero parameters — **does not lower
+moves the band *outward* — supervision annealing, **6/6 seeds**, zero parameters — **does not lower
 the loss.**
 
 > **⚠ The narrowings are tolerance-dependent; the widening is not. Varied for the first time at

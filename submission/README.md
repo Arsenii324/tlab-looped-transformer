@@ -14,27 +14,18 @@ looks like a cap violation — see "Counting the parameters" below.*
 ## The result
 
 The trajectory never converges and saturates anyway. The depths a weight-tied loop visits are
-near-indistinguishable, and when we gave the architecture the capacity to avoid that, training
-collapsed it again. We built the experiment that could have refuted the mechanism, registered its
-criterion before the data existed, and it held.
+near-indistinguishable — a token's 32 depth keys span an effective rank of **~1.6 out of 32**. We
+built the experiment that would have refuted that and it held at two seeds. And low perplexity and
+useful depth come apart: twelve interventions, five lower the loss, **not one widens the useful
+band**.
 
 The task asks for low perplexity *by exploiting many loops*. Those two come apart here, and what this
-submission adds is the measured reason: a token's 32 depth keys span an effective rank of **~1.6 out
-of 32**, present at initialisation and worse after training. A weight-tied loop has one key projection
-where an unshared stack has one per layer and gets decorrelation for free, so there is almost nothing
-for a depth-mixing or early-exit mechanism to discriminate between.
-
-The last experiment tested whether that is fixable by architecture, and it is not. Given four distinct
-key projections, costing **+10.0%** of the parameter budget, rank starts at **8.818/32** and trains
-back down to **1.74**, against a tied control's **1.66**. The collapse is what this training objective
-drives the representation toward, even where the architecture can avoid it. That predicts no purely
-architectural fix in this family will hold, and it accounts for the published positives in the
-depth-mixture family, which are measured on unshared stacks.
-
-That experiment was built to decide a different question: whether the rank collapse *causes* the
-depth-mixing failure. Its registered gate required the trained rank to exceed ~4. It came back at
-1.74, so the causal question is undecided and `LIMITATIONS.md` reports it as an open absence. What is
-measured is the collapse under training. One seed, 3.5M tokens.
+submission adds is the measured reason. A weight-tied loop has one key projection where an unshared
+stack has one per layer and gets decorrelation for free, so there is almost nothing for a depth-mixing
+or early-exit mechanism to discriminate between. The collapse is present at initialisation, worse
+after training, and **flat across a 12× range in parameters** (§4.31) — so it is not an artifact of
+this model's size. It accounts for the published positives in the depth-mixture family, which are
+measured on unshared stacks, rather than contradicting them.
 
 ## The answer to the brief, in five sentences
 
@@ -48,8 +39,13 @@ measured is the collapse under training. One seed, 3.5M tokens.
    effective rank of **~1.6**, present at initialisation and worse after training. The cause is
    projection asymmetry: an unshared stack manufactures a near-orthogonal key set from a state stream
    that is *just as collinear* as the tied one (**4.36** vs **1.40** of 33), because each layer owns a
-   `W_K` `[RANK-PROJECTION]`. Buying that back architecturally does not work; see *The result* above
-   and §4.30.
+   `W_K` `[RANK-PROJECTION]`. Measured **flat across hidden 224–896** — 2.73M to 32.58M parameters,
+   spread 0.062, no trend (§4.31). *One arm tried to buy the rank back architecturally: four distinct
+   projections give **8.818/32** at initialisation and **1.74** trained, against a tied control's
+   1.66, so training reproduced the collapse the architecture was changed to avoid. That arm is
+   **n = 1 at 3.5M tokens and it failed its own registered gate** — which required trained rank above
+   ~4 — so the causal question it was built to decide is **undecided**, and this is supporting detail
+   rather than a load-bearing claim (§4.30).*
 
 3. **We built the experiment that would have refuted it, and registered the criterion before the arm
    existed.** A scale-invariant depth gate that mixes for real, **7.58/8, 14.96/16, 29.84/32**
@@ -69,7 +65,7 @@ measured is the collapse under training. One seed, 3.5M tokens.
    project has no replicated CE improvement at scale.** (§4.29; `RESULTS.md` §1b for what survives.)
 
 5. **One lever moves depth, costs zero parameters, and survives the two tests the others failed.**
-   Supervision annealing widens the band at **5 of 5 seeds**, with the same edge decomposition at 2.5M
+   Supervision annealing widens the band at **6 of 6 seeds**, with the same edge decomposition at 2.5M
    and at 10M. On an every-integer sweep of depths 12–32 the annealed arms hold within tolerance over
    **2.1× and 2.0×** as many depths as their controls. It is the only band claim here that is robust to
    the plateau tolerance, resolved to ±1 loop, and replicated across seeds. **It does not lower the

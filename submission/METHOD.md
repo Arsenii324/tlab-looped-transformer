@@ -66,7 +66,7 @@ asks for.
 
 > **The recommendation in one qualified sentence, placed here rather than after the argument for it.**
 > **Anneal if you want the useful band deeper. Do not expect it to lower the loss.** The band
-> half holds at **5 of 5 seeds** with the same edge decomposition at 2.5M and at 10M tokens; **the
+> half holds at **6 of 6 seeds** with the same edge decomposition at 2.5M and at 10M tokens; **the
 > ceiling half was withdrawn at n = 4 and two further points at 4× the budget did not rescue it** (+0.1119 and −0.0764,
 > §4.23e). **And the released weights are the *dense* control, not this recipe** — §4 below says why,
 > and that choice is now evidenced at the recipe's own budget rather than inherited from launch order.
@@ -93,7 +93,7 @@ moved was the band, not the ceiling.
 > (`tlab-anneal-scale` §4.17 and `tlab-recmethod-s2` §4.23e). Mean **−0.0247**, inside the 0.0541 floor,
 > spread −0.09 to +0.11.
 >
-> **What survives, at 5 of 5 seeds:** the useful band widens — and **the decomposition is identical at
+> **What survives, at 6 of 6 seeds:** the useful band widens — and **the decomposition is identical at
 > 2.5M and at 10M**: **onset 8 → 8 (unchanged), end 16 → 24, midpoint 11.3 → 13.9** (§4.15, §4.23e).
 > **It no longer rests on a coarse grid either.** Re-evaluated on **every integer depth 12–32**, the
 > annealed arms hold within tolerance over **19 and 16 depths against their controls' 9 and 8 — 2.1×

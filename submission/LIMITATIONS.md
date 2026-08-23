@@ -45,7 +45,7 @@ tokens* — 3.6% of that budget — and §4.24 shows loop gain roughly **triples
   that is **arithmetic, not measurement**, and it is the alternative most likely to threaten
   "loop a dense block many times".
 - **No width scan and no layers-per-loop scan.** One hidden size (448), one 3-layer block, one
-  vocabulary. **§4.7e's mechanism is claimed to hold at any width and is measured at one width.**
+  vocabulary. **§4.7e's mechanism is measured flat across widths 224–896 at initialisation** (12× the parameters, spread 0.062, no trend — §4.31), **but whether the *trained* collapse is width-independent is not measured**: §4.30 measured training's effect at one width only.
 - **No seed replication of the headline run.** The 90M control is n = 1.
 - **The noise floor at full budget is unmeasured.** 0.0150 / 0.0541 come from 2.5M-token replicates
   and every "×the floor" statement in the report inherits them. §4.27 has already shown the *related*
