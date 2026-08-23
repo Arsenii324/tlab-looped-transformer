@@ -3965,6 +3965,44 @@ loop 32 *at initialisation*, before any gradient. That matters in three ways: it
 fixed-point experiments are on **randomly initialised** models (`looped_llms.tex:277`); and it is a
 candidate mechanism for §4.5's inert prelude and §4.1's `inject_none` being the worst arm.
 
+**Three follow-ups, all at initialisation, all forward passes only.**
+
+**(a) Stronger injection does not prevent the collapse — it accelerates it.** Their account has
+injection as what keeps a looped model *off* the degenerate fixed point. Scaling `e` at init:
+
+| injection scale | min cross-layer cos @8 | @32 | @64 |
+|---|---|---|---|
+| ×1 | 0.9952 | 0.9998 | 1.0000 |
+| ×10 | 0.9995 | 1.0000 | 1.0000 |
+| ×100 / ×1000 | **1.0000** | 1.0000 | 1.0000 |
+
+**(b) The collapse does not depend on `layers_per_loop`** — 2 / 3 / 6 layers give 0.9998 at loop 32,
+indistinguishable. It is not an artefact of this block having three layers.
+
+**(c) Their contrast is not testable in this architecture at initialisation, and that is the honest
+limit.** A scale-0 row initially read `min cos = 0.0000`, which looked like a clean refutation.
+**It is void**: `h0` is `nn.Parameter(torch.zeros(H))`, so with no injection the state is *identically
+zero*, every layer output is zero, and the cosine is `0/0`. Not "no injection" — *no state*. Their
+no-injection arm is a model whose initial state is nonzero independent of the input; this one cannot
+be that at init.
+
+> **And this turns up something the report had not noticed: `h0` is a substantial learned component.**
+> Zero at initialisation, it trains to a norm comparable to the embedding itself:
+>
+> | checkpoint | ‖h0‖ | mean ‖e_row‖ | **‖h0‖/‖e‖** |
+> |---|---|---|---|
+> | 90M control | 1.3331 | 1.8019 | 0.74 |
+> | 90M norm-penalty | **2.4975** | 1.8951 | **1.32** |
+> | 46M no-renorm | 1.6983 | 2.6032 | 0.65 |
+> | `sd_dense_k5_s0` | 0.4445 | 1.3479 | 0.33 |
+> | `local_anneal_sw75_s0` | 0.4914 | 1.2503 | 0.39 |
+>
+> §3.3 classifies `h0` as "O(hidden width), the same scaling class as any bias or norm parameter, not
+> a separate capacity source" — correct about *parameter count*, and it now reads as understating the
+> *function*. The norm-penalty arm, which has by far the smallest state norms (§4.3), learns the
+> **largest** `h0` relative to its embedding — the one arm where the input-independent initial state
+> outweighs the input. Whether that is compensation or coincidence is not established here.
+
 **What it is not.** cos → 1 in *direction* is not a fixed point in the *state* — §4.3 shows the state
 has none, drifting logarithmically without bound. Both hold: the three layers point the same way, and
 that shared direction keeps rotating. Their result is on 12-layer models; ours has 3.
