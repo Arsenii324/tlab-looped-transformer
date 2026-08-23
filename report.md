@@ -6620,6 +6620,42 @@ at 21:48 was **67–101%, i.e. capacity rather than depth-mixing**. **Confirmed.
 training does to this architecture at this budget, not a proof that no untying schedule could hold
 rank.*
 
+### 4.31 Is the collapse width-independent? Measured across a 12× parameter range, and it is
+
+§4.7e's argument does not depend on width — a tied loop has one `W_K` and cannot decorrelate a
+collinear depth stream, whatever the width — but until now it was **measured at one width (448)**, and
+`submission/LIMITATIONS.md` named that as a gap. **Rank at initialisation needs no training, so the
+gap closes for the cost of five forward passes** (`src/width_rank_scan.py`).
+
+Same tied architecture, same 3-layer block, same 32 loops, head_dim held near-constant so width is
+what varies:
+
+| hidden size | parameters | depth-key effective rank / 32 | mean pairwise cos |
+|---|---|---|---|
+| 224 | 2.73M | **2.749** | 0.7990 |
+| 320 | 5.00M | **2.687** | 0.8169 |
+| **448** | **9.06M** *(this project)* | **2.747** | 0.8002 |
+| 640 | 17.37M | **2.731** | 0.8085 |
+| 896 | 32.58M | **2.718** | 0.8088 |
+
+**Flat. Across a 4× range in width and a 12× range in parameters, the rank varies by 0.062 — under
+2.3% — with no trend.** The 448 figure this report is built on is not a small-model artifact.
+
+**This is the cheapest result in the project and one of the more load-bearing**, because the
+generalisation claim in `submission/SCALE.md` §5 rested on a structural *argument* plus a measurement
+at a single width. It now rests on the argument plus a measurement across twelve times the parameter
+count. *A reader who suspected "rank ~1.6 of 32" was a consequence of 448 being small can stop
+suspecting it.*
+
+**What it does not show, stated because the distinction matters after §4.30.** This is rank **at
+initialisation**. §4.30 measured what *training* does — it collapsed a four-projection arm from
+8.818 to 1.74 — and that dynamic is measured at one width only. **So: the initial collapse is
+width-independent over 12× in parameters; whether training's further collapse is width-independent is
+untested.** The trained figure at width 448 is 1.52–1.83 (§4.7e).
+
+*Scope: untrained, one seed, one loop count, one layer. The trained comparison would need a second
+width trained to convergence, which is costed in `submission/LIMITATIONS.md` §7 as ~1 h at 2.5M.*
+
 ## 5. Methods tested to destruction — what was claimed, what was measured, why it broke
 
 > **This section was titled "What didn't work", and that title was costing it.** A *null* says "we
