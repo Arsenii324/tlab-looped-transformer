@@ -10,7 +10,11 @@ Three kinds, because they age differently and you should trust them differently.
 If resuming cold: read **`OPS.md`** (it is a full state dump written against context loss), then
 `QUEUE.md` (open points + the reviewer ledger), then `report.md`. Stop there.
 
-**`OPS.md` §7b is the UNKNOWN-KNOWNS list** — 14 things that were true, visible in the artifacts, and
+**If you have just been compacted: read `OPS.md` §0-PRE first**, then
+`reviewer_answers/16_WHOLE_STATE.md`. `COMPACTION_PROMPT.md` holds a custom compaction
+instruction for next time.
+
+**`OPS.md` §7b is the UNKNOWN-KNOWNS list** — 24 things that were true, visible in the artifacts, and
 unwritten until something collided with them. Read it before trusting any instrument here.
 
 **Three facts that are expensive to rediscover:** (1) HEAD is on branch `review`, a single squashed

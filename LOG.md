@@ -2275,3 +2275,16 @@
   band measured in this project, on a model trained with every step at >=32 loops. Weights NOT
   returned (this job predates the outputs: fix) -- curves only, as expected.
   Artifact copied to checkpoints/deep_full_results.json.
+2026-08-23 17:35 — COMPACTION PREP (second time this session).
+  OPS.md gains sec0-PRE post-compaction guide (read order; the 3 withdrawals not to re-assert; push
+  and HF upload have NEVER run and no remote is configured; behavioural traps: GRPC_DNS_RESOLVER,
+  ERROR-status-is-not-experiment-status, anaconda-not-.venv, re-measure delegated numbers).
+  OPS sec4 rewritten with all three of today's withdrawals + what survives each.
+  OPS sec6 live-compute refreshed. OPS sec7b unknown knowns extended 16 -> 24, with a SECOND
+  meta-pattern: the sharpest ones (17, 23, 24) surfaced from outside questions, not introspection,
+  and #17 is the case where I had written the lesson down, withdrawn a claim for violating it, and
+  violated it again 2h later. Writing a lesson down does not install it.
+  COMPACTION_PROMPT.md written -- custom compaction instruction targeting what this project has
+  actually lost (numbers+provenance, retractions+survivors, pre-registrations, job IDs, unverified/
+  delegated claims, and what only LOOKS done).
+  INDEX points at sec0-PRE first.
