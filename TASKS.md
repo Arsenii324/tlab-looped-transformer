@@ -17,8 +17,6 @@ Last updated 2026-08-23 ~15:05.
 | T2 | **Harvest `tlab-deep-full`** and fill §4.17's deep half | standing | EXECUTING, step 8100/19531. Read against the pre-registration in `RUNS.md` 13:30 — it is **sw75**, which §3.5 narrowed away from |
 | T3 | **Harvest `tlab-anchor-tokenkey`** — §4.18's falsifier (sw90 at k=5/3/2) + token-vs-fraction at 10M | "we should still not be dropping testing ideas" | EXECUTING |
 | T4 | **Harvest Kaggle `tlab-seed-extension`** — (sw90 − dense) at seeds 2,3 → n=4 paired estimates | "Do you not want to start any local and/or Kaggle runs?" | pushed |
-| T5 | **Report scale-clock arm 3** (`sc_clock_sw90`) and write the whole scale-clock negative into the report | reviewer proposal, user asked to test ideas | arm 3 running; arms 1–2 measured (**+1.36 nats, ‖w‖=1.34**) but **not yet in `report.md`** |
-| T6 | **Land the gated-injection result** (fork running) — the third cell on the normalisation axis | my ranked #1, user launched it | fork running |
 | T7 | **§8 writing items still owed**: W1 (MLA × LLA), W2 (LoopMTP aggregation conflict), W4 (STARS Pre-Sandwich), W5 (decomposition tables for remaining §4 sections) | reviewer, logged in QUEUE | not started |
 | T8 | **Write the degenerate-fixed-point result into the report** (min cross-layer cos → 1.0000 by loop 32) | measured today, reviewer-flagged | measured, **not yet in `report.md`** |
 

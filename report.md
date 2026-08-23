@@ -461,7 +461,7 @@ sparse subset of loops for most of training and to the final loop only for the l
 | **no inter-loop norm** (`state_renorm=False`) | RMSNorm between loops | −0.744 nats, the largest single effect in the project (§4.1); the normalised variant contracts and goes inert (§4.3) |
 | **no prelude/coda** | the sandwich every reference implementation uses | at a fixed 10M budget a prelude buys 0.355 nats *and makes the model depth-inert over the entire swept range* [1,96] (§4.5). It wins the metric by removing the reason to iterate |
 | **deep loop schedule** | `U[4,32]`, or a fixed small `r` | useful depth is ≈ a fixed fraction of trained depth (§4.11, §4.16b): dense 0.50–0.71·μ_rec, terminal-only 0.98–1.09·μ_rec, across three schedules and two devices |
-| **supervision annealing** | dense supervision throughout; or constant terminal-only | beats an **in-job** dense control on CE at both seeds (−0.081, −0.061) *while* widening the useful band and raising loop gain (§4.17); constant terminal-only costs **+0.1393 nats** against the *same in-job* dense control (5.4658) while annealing *gains* 0.0192–0.0264, and their band depths are **statistically tied across two seeds** (42.2 vs 41.5) — so annealing's advantage over constant terminal-only is on **CE, not depth** (§4.17). *Measured at μ_rec = 18; at the μ_rec = 40 schedule this method actually specifies, the comparison against dense is a trade — see the block below* |
+| **supervision annealing** | dense supervision throughout; or constant terminal-only | ⚠ **CE advantage over dense WITHDRAWN at n=4** (2 of 4 seeds negative, mean −0.0460 inside the 0.0541 floor — see the block below); still widens the useful band at every seed checked, and still beats constant terminal-only on the *depth-vs-CE* comparison (§4.17) — that half does not depend on the withdrawn number. *Measured at μ_rec = 18; at the μ_rec = 40 schedule this method actually specifies, the comparison against dense is a trade — see the block below* |
 
 **Why the loss schedule is the part that matters, and why the dynamics are not.** Three independent
 interventions on how the state *traverses* — inference-time radial clamping (§4.6), a learned convex
@@ -3841,7 +3841,34 @@ control run in the same job. It is the only row in the table that does.
 mean **−0.0710**, each 4–5× the measured in-job floor (0.0150, §4.15) — while widening the useful band
 (11.3 → 13.9 at both seeds) and raising loop gain. Terminal-only for the final **25%** reproduces the
 *depth* shift exactly (17.0 at both seeds) but its CE advantage **flips sign** (−0.0656, +0.0906;
-mean +0.0125). So the pre-registered claim holds for `sw90` and fails for `sw75`.
+mean +0.0125). So the pre-registered claim holds for `sw90` and fails for `sw75` — **at n=2**.
+
+> ### ⚠ WITHDRAWN AT n=4 — 2026-08-23 ~15:37. This section's `sw90` claim does not survive seeds 2/3.
+>
+> `RUNS.md` pre-registered, before this result existed: *"if the four paired differences straddle 0,
+> or their mean falls inside the 0.0541 CUDA terminal floor, §3.5's annealing recommendation is
+> withdrawn to 'not resolved at this budget'."* Kaggle `tlab-seed-extension` (in-job `sw90` vs dense,
+> seeds 2 and 3, config-identical to seeds 0/1 except `seed`/`supervise_k_final` — verified
+> field-by-field, both arms 9 evals, step 1219, no errors in the raw log):
+>
+> | seed | ΔCE_best (sw90 − dense) |
+> |---|---|
+> | 0 | −0.0811 |
+> | 1 | −0.0609 |
+> | **2** | **+0.0482** |
+> | 3 | −0.0902 |
+>
+> **Both triggers fired.** The four values straddle zero — seed 2 is positive, `sw90` is *worse* than
+> its own dense control there. And the n=4 mean is **−0.0460**, inside the 0.0541 CUDA terminal
+> floor. Under the pre-registration this recommendation is **withdrawn to "not resolved at this
+> budget."** What survives: `sw90` still beats `sw75` on the seed-stability question raised earlier in
+> this section (`sw75` was already worse-or-reversed at 2 of 2 seeds; `sw90` is negative at 3 of 4)
+> — the *ranking* between the two switch fractions holds even though `sw90`'s absolute advantage over
+> dense does not resolve. The n=2 numbers above are left in place, struck through in spirit rather
+> than deleted, because this project's rule is retraction with the superseded claim visible, not
+> silent removal. **Every other mention of "−0.0811, −0.0609" or "both seeds" elsewhere in this report
+> describes the same n=2 result and is now stale; a full propagation pass is owed and is logged in
+> `TASKS.md`.**
 
 **What is robust versus what is fragile, separated cleanly by these six arms.** The **plateau is the
 robust quantity**: 13.9/13.9 for `sw90` and 17.0/17.0 for `sw75`, identical to the digit across seeds,
