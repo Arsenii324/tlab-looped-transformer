@@ -161,11 +161,13 @@ report, and it is not about looping at all.*
 > the headline `[6,17]`, do not, and are not compared across jobs.*
 
 > **The band claim's edge is now resolved, and the sparse grid had been understating it (§4.25c).**
-> Re-evaluating the seed-2 annealing pair on **every integer depth 12–32** — possible because Kaggle's
-> saved tokenizer is byte-identical to the shipped one — the control holds within 0.01 nats over
-> **9** consecutive depths (ending at **20**) and the annealed arm over **19** (ending at **30**).
-> The sparse grid read the same pair as `16 → 24`. **The effect is 2.1× the control's width, not a
-> two-grid-point artifact.**
+> Re-evaluating **both** annealing pairs on **every integer depth 12–32** — possible because Kaggle's
+> saved tokenizer is byte-identical to the shipped one — the controls hold within 0.01 nats over
+> **9 and 8** consecutive depths (ending at **20** and **19**) and the annealed arms over **19 and 16**
+> (ending at **30** and **27**). The sparse grid read the seed-2 pair as `16 → 24`. **The effect is
+> 2.1× and 2.0× the control's width at two seeds — not a two-grid-point artifact, and the sparse grid
+> was understating it.** *Best CE in the same pairs: +0.0350 at one seed, −0.0052 at the other — the
+> withdrawn CE claim's own pattern, at higher resolution.*
 
 > **The scope condition, stated because it is the strongest objection to the above (§4.24).** **Every
 > one of these paired interventions was measured at 2.5–3.5M tokens** — there is no budget leverage in

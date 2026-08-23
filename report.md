@@ -6146,11 +6146,18 @@ shard with the identical vocabulary, chance guard passed on every curve.*
 | `kg_dense_s2` (control) | 5.4212 | 12 | 12 … **20** (9 depths) | **20** |
 | `kg_sw90_s2` (annealed) | 5.4562 | 14 | 12 … **30** (19 depths) | **30** |
 | `kg_dense_s3` (control) | 5.2747 | 12 | 12 … **19** (8 depths) | **19** |
+| `kg_sw90_s3` (annealed) | 5.2695 | 15 | 12 … **27** (16 depths) | **27** |
 
-**On the sparse grid this same seed-2 pair reads `end 16 → 24`. On the integer grid it reads
-`end 20 → 30`.** The annealed arm holds within 0.01 nats of its optimum over **19 consecutive integer
-depths** against the control's **9** — it is not a two-grid-point artifact, and the sparse grid was
-**understating** the effect rather than manufacturing it.
+**On the sparse grid the seed-2 pair reads `end 16 → 24`. On the integer grid it reads `end 20 → 30`,
+and seed 3 reads `19 → 27`.** The annealed arm holds within 0.01 nats of its optimum over **19 and 16
+consecutive integer depths** against its controls' **9 and 8** — **2.1× and 2.0× the control's width,
+at both seeds.** It is not a two-grid-point artifact, and the sparse grid was **understating** the
+effect rather than manufacturing it.
+
+**And the CE dissociation survives at higher resolution, in the same pairs.** At seed 2 the annealed
+arm's best CE is **worse** (5.4562 vs 5.4212, +0.0350); at seed 3 it is **better by 0.0052** — inside
+the replicate floor, signs disagreeing across seeds. *That is exactly the withdrawn CE claim's own
+pattern, reproduced on a finer grid: the ceiling does not move reliably and the band does.*
 
 **This is the strongest form the annealing depth result has taken**, and it is worth being precise
 about what it does and does not add:
