@@ -36,20 +36,33 @@ rather than rounding to confident.*
 - **Early exit does not pay here, and the reason is measured.** Eight rules, five classes, 0.1%.
 
 **I would not bet on these, and they are in the submission:**
-- **The LoRA positive.** Post hoc rank restriction, all-arms interval covers zero, no dose–response,
-  67–95% of the gain at `r=1`, a zero-diversity pin *beats* it at seed 1, and the cycled arm ranges
-  −0.0261…−0.1251 across two in-job pairs at one budget. **I think this is close to nothing and the
-  submission should probably say so more bluntly than it does.**
+- **The LoRA positive — and this is no longer a judgement call, it is settled (22:08).** The 12M
+  in-job pair landed at **+0.0077**: the arm is *worse* than its control and inside the replicate
+  floor, against −0.0733…−0.1251 at 2.5M (§4.29). That is the **sixth** deflation on top of the post
+  hoc rank restriction, an all-arms interval covering zero, no dose–response, 67–95% of the gain at
+  `r = 1`, and a zero-diversity pin *beating* it at seed 1. **I said this was close to nothing; a 5×
+  budget increase says the same.** The submission now states it bluntly in `README.md` §2,
+  `RESULTS.md`, `NEGATIVE_RESULTS.md` and `LIMITATIONS.md` §4b: **this project has no replicated CE
+  improvement at scale.**
 - **XSA's −0.24.** It replicates and it is large, but 84–91% is at `r=1`, it is a *generic* attention
   operator with no loop-dependence, and its band claim already died at the second seed. It belongs in
   the report; it is not evidence about looping.
 - **Anything about band *direction* for the loss-lowering arms.** Downgraded tonight and rightly.
 
-**The thing I am least sure about and cannot resolve:** whether the "78–101% at r=1" pattern is
-budget-invariant. Every arm showing it sits at 2.5–3.5M, and loop gain triples by 90M (§4.24). If the
-pattern is a screening-scale artifact, the report's central sentence is a statement about small
-models rather than about looped transformers. **The Kaggle 12M arm is the only probe and it can only
-show "shifted a lot" or "did not".**
+**The thing I am least sure about, and it got worse tonight rather than better:** whether the
+"67–101% at r=1" pattern is budget-invariant. Every arm showing it sits at 2.5–3.5M, and loop gain
+triples by 90M (§4.24). **The Kaggle 12M arm was the only probe, and it cannot answer the question:
+at 12M there is no gain left to decompose** (the share computes to 358%, meaningless with the
+denominator inside noise). **So the pattern's budget-invariance is untested and now has no probe at
+all** — while the one arm that *was* tested across budgets showed an effect vanishing entirely. *I
+would treat every §4.23 instance as fragile to budget, and say so where they are stated.*
+
+**What went the other way tonight, and it is the one depth claim tested across budgets:** annealing's
+band widening reproduces with an identical edge decomposition at 2.5M and 10M (§4.23e), survives
+halving the plateau tolerance (§4.25), and on a **dense integer grid** the seed-2 pair reads
+`end 20 → 30` where the sparse grid read `16 → 24` — the sparse grid was *understating* it (§4.25c).
+**That is now the best-supported result in the project**, and it is a result about *where depth stays
+useful*, not about loss.
 
 ## 3. Concerns, ranked by what they would cost if a grader hit them
 
