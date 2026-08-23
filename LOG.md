@@ -2701,3 +2701,39 @@ log string I wrote contained the literal token the substitution guard checks for
 ran the launch unconditionally, so `datasphere ... execute` fired with **no `main.py` on disk**. It
 failed cleanly (`FileNotFoundError`), **no job was created and no compute was spent**. The guard did
 its job; the `&&` chaining did not. Fixed and relaunched.
+
+## 2026-08-23 20:00 — XSA lands at −0.2162. The ORIGINAL prediction was right and MY AMENDMENT WAS WRONG.
+
+| arm | CE@1 | best | band | ΔCE_best | ΔCE@1 | Δgain |
+|---|---|---|---|---|---|---|
+| `xsa_control_s0` | 5.3858 | 5.2851 @r8 | [8,16] mid 11.3 | — | — | — |
+| `xsa_on_s0` | 5.2032 | **5.0689** @r12 | **[8,16] mid 11.3** | **−0.2162** | −0.1826 | +0.0336 |
+
+**−0.2162 is ~14× the CUDA-dense floor** and the largest single-arm CE improvement in this project
+outside the norm penalty's 2.5M figure. **Zero parameters** (9,064,608 both, verified pre-launch).
+
+**Two predictions were registered and they disagreed. The scoreboard:**
+- **Registered 19:15, from this report's own eight-intervention regularity: "CE down, band unmoved."
+  CONFIRMED, and strongly.** Ninth instance of the dissociation, from a published zero-parameter
+  operator, with the outcome fixed in advance.
+- **Amended 19:20 to "near-null on CE too", after the untrained null showed training already
+  suppresses the attention-similarity bias (0.85 → 0.35). REFUTED.**
+
+**The amendment was a bad inference and it is worth naming precisely.** I reasoned: the bias is
+mostly gone after training, therefore XSA's operator has little left to remove, therefore small CE
+effect. **Removing the residual 0.35 component is worth 0.216 nats.** A geometric quantity being
+small in cosine says nothing about the loss value of removing it — the two are not on the same scale,
+and I treated them as if they were. *This is the same class as sec4.20 and the depth-key confound: a
+measured geometric statistic reasoned about as if it were a capability.*
+
+**The band is identical to the digit** — [8,16] mid 11.3 both. Best loop moves 8 → 12 but the band
+does not. **ΔCE@1 = −0.1826, so 84% of the effect is at r = 1**: exactly the LoRA shape. **It improves
+the block, not the looping.**
+
+**So the eight-intervention table becomes ten, and the dissociation now holds on TWO interventions
+that lower the loss** — one costing +4.5% of parameters (LoRA, ~90% at r=1) and one costing **zero**
+(XSA, 84% at r=1). Neither moves a band edge.
+
+**Scope: one seed, 2.5M tokens.** `tlab-xsa-s1` (**bt146dpichvsg0hmo19b**) launched 20:00 for a second
+seed; this project has withdrawn two claims for exactly the n=1 failure and this one is large enough
+to matter.
