@@ -434,3 +434,65 @@ would be the project's first positive on that axis); (c) CE against `od_control`
 while a static mixture is global — so a per-token gate is exactly the instrument that could reach it,
 and E1's null is a *lower* bound on this, not an upper one. But four instrument classes have now
 failed on this headroom, so the base rate is not encouraging.
+
+## 2026-08-23 18:19 — PRE-REGISTERED READ for `tlab-duocausal-s0` / `-s1` (launched, no data exists yet)
+
+Two DataSphere T4 jobs, seeds 0 and 1, **four in-job paired arms each**, 3.5M tokens/arm, one grid
+(11-point), `U[4,32]`, `supervise_k=5`:
+`dc_control_s{0,1}` · `dc_w2_s{0,1}` · `dc_w3_s{0,1}` · `dg_norm_s{0,1}`.
+
+**Why these two mechanisms and not another.** Every instrument this project has aimed at the per-token
+depth headroom is **readout-side** -- label-free rules (§4.7), static readout mixtures (§4.7c), the
+annealed retest (§4.7a), the oracle-depth cache (§4.8b), and the learned gate (§4.22). All five read
+the *finished* trajectory and select or blend it. **None changes what the block sees at loop t.**
+
+1. **Duo-causal attention, `kv_window` = 2 and 3 — ZERO added parameters.** At loop t each layer
+   attends over the K/V of its own inputs from loops t-W+1..t, concatenated on the key axis under a
+   token-causal mask replicated across depths (Think-at-Hard, arXiv 2511.08577, verified from
+   tarball). Recurrence-side. Motivated by this project's own §4.3 anchor result: the forcing bias
+   exceeds the model's per-step motion from ~loop 2, so the update is largely history-independent --
+   and history is what the block cannot compute from `h_t` alone.
+2. **Scale-invariant depth gate, `state_norm` (+449 params).** §4.22 measured the existing gate as
+   unable to express a mixture: its logits are `w·h_t` on the RAW state, ‖h‖ grows 1.8-4.0x per pass
+   and ~1e3 over training, so the softmax saturates to a hard argmax (effective loops mixed
+   1.01-1.05 of r). This scores the DIRECTION (`w·h/‖h‖`) times a learned scalar temperature, so the
+   model chooses its own sharpness. It is the two-line version that actually tests the hypothesis.
+
+**Correctness gates run BEFORE launch** (a null from a broken arm is meaningless, not informative):
+`kv_window=1` is **bit-identical** to the untouched model (max|diff| = 0.000e+00); `W=2` and `W=3`
+provably change the forward (7.6e-01, and W3≠W2); duo-causal adds **zero** parameters
+(9,064,608 → 9,064,608); loop-1 logits are unchanged at W>1 (no history exists yet); gradients reach
+`k_proj` through the extra keys; `state_norm` = `state` + exactly 1 param; **both gates start at a
+uniform mixture** (effective loops 8.000/8 at init). All four arms construct and forward finite from
+the *generated* driver, not just from `src/`.
+
+**Reads, in order, decided now:**
+
+- **(a) PRIMARY, task axis — the plateau band vs the in-job control, grid-matched.** This is the axis
+  the brief scores and the one **nothing in this report has ever widened** (eight interventions).
+- **(b) PRIMARY, mechanism — `cos(du_t, du_{t−1})`, post-hoc on the returned checkpoint.** §4.3
+  measures it at **0.9999**: the state travels a near-straight ray. If the block can finally see its
+  own history, that increment should stop being a near-constant vector. **This read is independent of
+  CE**, which matters because CE at screening budgets has reversed on this project twice.
+- **(c) CE_best vs in-job control**, against the 0.0150 CUDA-dense floor.
+- **(d) Dose-response across W = 1 → 2 → 3.** Monotone is the signature of a real effect; non-monotone
+  across a swept parameter is the signature of noise (§4.10's own reasoning). **This is why W=3 is in
+  the sweep rather than W=2 alone.**
+- **(e) Gate: effective loops mixed.** ~1.0 again ⇒ saturation was never scale-driven. ~r with no CE
+  gain ⇒ it declined to discriminate and this reduces to §4.7c's null. Intermediate **and** band
+  widens ⇒ the first positive on the per-token axis.
+
+**Falsifiers, written before the data:**
+- Band unmoved at **both** seeds and `cos` unchanged ⇒ **the eighth and ninth nulls**, and the
+  report's central negative becomes materially stronger: it would then span **both** readout-side and
+  recurrence-side families rather than only the one it has tested.
+- `cos` falls but the band does not widen ⇒ **supply-side fixed, demand binding.** That is the
+  cleanest statement of the supply/demand split this report has, and a *better* result than a small
+  CE win.
+- CE regresses > 0.05 at both seeds ⇒ kill, and it becomes the fourth instance of "the model is given
+  the mechanism and gets worse".
+- Any effect that appears at one seed and reverses at the other ⇒ **not reported as a result.** This
+  project has withdrawn two claims for exactly that.
+
+**Explicit outputs, named file by file, never a glob** — §6.0 row 34 cost this project the DataSphere
+depth-gate weights this morning, and read (b) requires the checkpoints.

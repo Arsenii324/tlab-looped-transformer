@@ -86,7 +86,26 @@ class Config:
     cond_mode: str = "none"                # "none" | "lora_cycle" -- loop-cycled LoRA adapters
     cond_lora_rank: int = 4                # rank r for LoRA branches (default: 4)
     cond_lora_branches: int = 4            # number of cycled branches N (default: 4)
-    depth_gate_mode: str = "none"          # "none" | "state" -- learned state-conditioned depth gate
+    depth_gate_mode: str = "none"          # "none" | "state" | "state_norm" -- learned depth gate
+    kv_window: int = 1                     # DUO-CAUSAL attention window. 1 = ordinary self-attention.
+    #   W > 1: at loop t every layer attends over the K/V of its own inputs from loops t-W+1..t,
+    #   concatenated along the key axis under a token-causal mask replicated across depths. This is
+    #   Think-at-Hard's duo-causal attention (arXiv 2511.08577, verified from tarball: "across both
+    #   previous positions and shallower iteration depths", "enforced via a modified additive
+    #   attention mask, requiring no custom CUDA kernels"). Positions are encoded by TOKEN index only,
+    #   depth-invariant, exactly as they specify. ZERO added parameters.
+    #
+    #   Why this axis and not another: every instrument this project has aimed at the per-token depth
+    #   headroom -- label-free rules (§4.7), static readout mixtures (§4.7c), the annealed retest
+    #   (§4.7a), the oracle-depth cache (§4.8b), the learned gate (§4.22) -- is READOUT-side. All five
+    #   read the finished trajectory and select or blend it; none changes what the block SEES at loop
+    #   t. This does. §4.3's anchor result says the forcing bias exceeds the model's own per-step
+    #   motion from ~loop 2, so the update is largely history-independent -- and history is precisely
+    #   what the block cannot compute from h_t alone.
+    #
+    #   Cost at these shapes (T=256): attention-score FLOPs scale as W, and scores are ~0.46 of ~5.3
+    #   MFLOP per token per layer, so W=2 is ~+9% and W=3 ~+17% per loop. Memory holds W-1 past
+    #   per-layer inputs, [B,T,H] each -- ~11 MB at W=3, B=8, unlike the depth gate's O(r).
 
 
 # ---------------------------------------------------------------------------------------- primitives
@@ -151,7 +170,7 @@ class Attention(nn.Module):
         self.q_norm = RMSNorm(self.d_h, cfg.rms_norm_eps)
         self.k_norm = RMSNorm(self.d_h, cfg.rms_norm_eps)
 
-    def forward(self, x, cos, sin, kv_source=None, lora=None):
+    def forward(self, x, cos, sin, kv_source=None, lora=None, kv_extra=None):
         """`kv_source`, when given, supplies keys and values while `x` still supplies queries. This
         is the one hook needed to ask what an early-exit KV cache costs: under teacher forcing every
         position is processed at every depth, so "the context exited at depth k while this token is
@@ -167,13 +186,35 @@ class Attention(nn.Module):
             k_raw = k_raw + F.linear(F.linear(kv, lora.k_A), lora.k_B)
             v_raw = v_raw + F.linear(F.linear(kv, lora.v_A), lora.v_B)
 
-        q = self.q_norm(q_raw.view(B, T, self.n_h, self.d_h)).transpose(1, 2)
-        k = self.k_norm(k_raw.view(B, T, self.n_kv, self.d_h)).transpose(1, 2)
+        q_pre = self.q_norm(q_raw.view(B, T, self.n_h, self.d_h)).transpose(1, 2)
+        k_pre = self.k_norm(k_raw.view(B, T, self.n_kv, self.d_h)).transpose(1, 2)
         v = v_raw.view(B, T, self.n_kv, self.d_h).transpose(1, 2)
-        q, k = apply_rope(q, k, cos, sin)
-        k = k.repeat_interleave(self.groups, dim=1)
-        v = v.repeat_interleave(self.groups, dim=1)
-        out = F.scaled_dot_product_attention(q, k, v, is_causal=True, scale=self.scale)
+        q, k = apply_rope(q_pre, k_pre, cos, sin)
+        if kv_extra:
+            # DUO-CAUSAL: concatenate the K/V of this layer's inputs from earlier loops along the KEY
+            # axis. RoPE uses the same cos/sin for every depth -- positions are token-indexed and
+            # depth-invariant, which is what makes the extra keys addressable at all.
+            ks, vs = [], []
+            for e in kv_extra:
+                ek_raw, ev_raw = self.k_proj(e), self.v_proj(e)
+                if lora is not None:
+                    ek_raw = ek_raw + F.linear(F.linear(e, lora.k_A), lora.k_B)
+                    ev_raw = ev_raw + F.linear(F.linear(e, lora.v_A), lora.v_B)
+                ek = self.k_norm(ek_raw.view(B, T, self.n_kv, self.d_h)).transpose(1, 2)
+                ev = ev_raw.view(B, T, self.n_kv, self.d_h).transpose(1, 2)
+                _, ek = apply_rope(q_pre, ek, cos, sin)  # q_pre discarded; apply_rope is stateless
+                ks.append(ek); vs.append(ev)
+            k = torch.cat(ks + [k], dim=2)   # current depth LAST, so W=1 is the untouched path
+            v = torch.cat(vs + [v], dim=2)
+            k = k.repeat_interleave(self.groups, dim=1)
+            v = v.repeat_interleave(self.groups, dim=1)
+            causal = torch.ones(T, T, dtype=torch.bool, device=x.device).tril()
+            mask = causal.repeat(1, len(kv_extra) + 1)  # same token-causality at every depth
+            out = F.scaled_dot_product_attention(q, k, v, attn_mask=mask, scale=self.scale)
+        else:
+            k = k.repeat_interleave(self.groups, dim=1)
+            v = v.repeat_interleave(self.groups, dim=1)
+            out = F.scaled_dot_product_attention(q, k, v, is_causal=True, scale=self.scale)
         out = out.transpose(1, 2).reshape(B, T, self.n_h * self.d_h)
         o_out = self.o_proj(out)
         if lora is not None:
@@ -250,13 +291,14 @@ class DecoderLayer(nn.Module):
         else:
             self.lora_branches = None
 
-    def forward(self, x, cos, sin, kv_source=None, branch_idx: int | None = None):
+    def forward(self, x, cos, sin, kv_source=None, branch_idx: int | None = None, kv_extra=None):
         # kv_source is normed by THIS layer's norm1, matching how it would have been normed on the
         # pass that produced it -- norm1 is the same module either way, so a depth-k cache entry is
         # the same tensor it would have been at depth k.
         kv = None if kv_source is None else self.norm1(kv_source)
         lora = self.lora_branches[branch_idx % len(self.lora_branches)] if (self.lora_branches is not None and branch_idx is not None) else None
-        x = x + self.attn(self.norm1(x), cos, sin, kv, lora=lora)
+        xe = None if not kv_extra else [self.norm1(e) for e in kv_extra]
+        x = x + self.attn(self.norm1(x), cos, sin, kv, lora=lora, kv_extra=xe)
         x = x + self.mlp(self.norm2(x), lora=lora)
         return x
 
@@ -270,7 +312,8 @@ class LoopedBlock(nn.Module):
         super().__init__()
         self.layers = nn.ModuleList(DecoderLayer(cfg) for _ in range(cfg.layers_per_loop))
 
-    def forward(self, x, cos, sin, kv_sources=None, collect=None, branch_idx: int | None = None):
+    def forward(self, x, cos, sin, kv_sources=None, collect=None, branch_idx: int | None = None,
+                kv_extra_per_layer=None):
         """`kv_sources`: per-layer KV inputs (list, len == layers_per_loop) for cross-depth attention.
         `collect`: if a list is passed, each layer's INPUT is appended to it -- that is what a later
         cross-depth pass needs as its kv_sources, so the two are captured and replayed by the same
@@ -278,7 +321,9 @@ class LoopedBlock(nn.Module):
         for i, layer in enumerate(self.layers):
             if collect is not None:
                 collect.append(x)
-            x = layer(x, cos, sin, None if kv_sources is None else kv_sources[i], branch_idx=branch_idx)
+            x = layer(x, cos, sin, None if kv_sources is None else kv_sources[i],
+                      branch_idx=branch_idx,
+                      kv_extra=None if kv_extra_per_layer is None else kv_extra_per_layer[i])
         return x
 
 
@@ -367,14 +412,34 @@ class LoopedTransformer(nn.Module):
         else:
             self.inj_a = self.inj_b = None
 
-        if cfg.depth_gate_mode == "state":
+        if cfg.depth_gate_mode in ("state", "state_norm"):
             # Learned state-dependent depth gating (AttnRes / Depth-Mixture family)
             # Scores each loop state h_t and forms a soft convex mixture before readout.
             # Zero-initialized weights guarantee exact uniform weighting (1/n_loops) at step 0.
+            #
+            # "state"      -- logits = w . h_t on the RAW state. MEASURED BROKEN (§4.22): ||h_t|| grows
+            #                 1.8-4.0x within a forward pass and ~1e3 over training, so the softmax
+            #                 temperature is effectively zero and the gate saturates onto ONE loop
+            #                 (effective loops mixed = 1.01-1.05 of r, 95-98% of tokens at top-w>0.99).
+            #                 It is a hard selector, not a mixture, and cannot express the hypothesis.
+            # "state_norm" -- logits = tau * (w . h_t/||h_t||). Scale-invariant, exactly as the readout
+            #                 is (RMSNorm before the tied head). `tau` is a single learned scalar,
+            #                 init 0 => temperature 1, so the model CHOOSES its own sharpness instead of
+            #                 having it forced to infinity by the state norm. +1 param over "state".
+            #
+            # PREDICTION, written before running (§4.7c's null is a LOWER bound on this, not an upper
+            # one -- a global weighting cannot reach a per-token signal, a learned per-token gate can):
+            # if the per-token depth headroom (0.2008-0.2032 nats, split-half 0.866) is reachable at
+            # all, this is the instrument that reaches it. Falsifier: effective-loops-mixed stays ~1.0
+            # (it saturated anyway, and scale was not the binding constraint), or stays ~r with no CE
+            # gain (it declined to discriminate and this reduces to §4.7c's static-mixture null).
             self.depth_gate_head = nn.Linear(H, 1, bias=False)
             nn.init.zeros_(self.depth_gate_head.weight)
+            self.depth_gate_logtau = (nn.Parameter(torch.zeros(1))
+                                      if cfg.depth_gate_mode == "state_norm" else None)
         else:
             self.depth_gate_head = None
+            self.depth_gate_logtau = None
 
         self.apply(self._init_weights)
         # Re-zero the clock, gate, depth_gate, and LoRA B weights if present, ensuring exact init semantics
@@ -620,6 +685,8 @@ class LoopedTransformer(nn.Module):
 
         log_rms0 = None
         all_h_states = []
+        W = max(1, int(getattr(self.cfg, 'kv_window', 1)))
+        kv_hist = []  # duo-causal: last W-1 loops' per-layer INPUTS, oldest first
         for t in range(n_loops):
             no_grad = k is not None and t < (n_loops - k)
             # nullcontext, NOT torch.enable_grad(): enable_grad() overrides an OUTER no_grad(), so
@@ -639,7 +706,15 @@ class LoopedTransformer(nn.Module):
                             h.float().pow(2).mean(-1, keepdim=True).sqrt().clamp_min(1e-8)).detach()
                     h_in = self._clock(h_in, h, log_rms0)
                 branch_idx = t if self.cfg.cond_mode == "lora_cycle" else None
-                h_new = self.block(h_in, cos, sin, branch_idx=branch_idx)
+                cur_inputs = [] if W > 1 else None
+                extras = ([[past[i] for past in kv_hist] for i in range(len(self.block.layers))]
+                          if (W > 1 and kv_hist) else None)
+                h_new = self.block(h_in, cos, sin, collect=cur_inputs, branch_idx=branch_idx,
+                                   kv_extra_per_layer=extras)
+                if W > 1:
+                    kv_hist.append(cur_inputs)
+                    if len(kv_hist) > W - 1:
+                        kv_hist.pop(0)
                 if self.gate_mlp is not None or self.cfg.fixed_gate is not None:
                     h_new, _g = self._gate(h, h_new, t)
                 h = h_new
@@ -684,7 +759,14 @@ class LoopedTransformer(nn.Module):
 
         if self.depth_gate_head is not None and len(all_h_states) == n_loops:
             H_stack = torch.stack(all_h_states, dim=2)  # [B, T, n_loops, H]
-            gate_logits = self.depth_gate_head(H_stack).squeeze(-1)  # [B, T, n_loops]
+            if self.depth_gate_logtau is not None:
+                # SCALE-INVARIANT gate: score the DIRECTION, not the raw state. The readout is
+                # scale-invariant by construction and this makes the gate match it (§4.22).
+                gate_in = F.normalize(H_stack.float(), dim=-1).to(H_stack.dtype)
+                gate_logits = (self.depth_gate_head(gate_in).squeeze(-1)
+                               * self.depth_gate_logtau.exp())
+            else:
+                gate_logits = self.depth_gate_head(H_stack).squeeze(-1)  # [B, T, n_loops]
             gate_weights = F.softmax(gate_logits, dim=-1)           # [B, T, n_loops]
             h_weighted = (H_stack * gate_weights.unsqueeze(-1)).sum(dim=2)  # [B, T, H]
             logits_per_loop[-1] = self.readout(h_weighted, cos, sin, is_final=True)
