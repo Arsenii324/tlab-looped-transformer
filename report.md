@@ -6129,6 +6129,49 @@ the 90M control**, because the DataSphere checkpoints do not return their tokeni
 (`checkpoints/BROKEN_a1_dense_grid_10M__README.md`). *A dense integer sweep on the annealing pair
 would have to run inside a job, and was not.*
 
+### 4.25c A dense integer grid on the annealing pair — the sparse grid was UNDERSTATING the effect
+
+§4.25b showed a sparse grid loses ~27% of a band's width, and left the residue that the check had only
+been possible on the 90M control, because DataSphere checkpoints return no tokenizer. **That residue is
+now closed by a route that needed no job at all.** `kaggle/main.py` saves its tokenizer beside the
+checkpoint, and the file returned by `tlab-seed-extension` — the job that produced annealing seeds 2
+and 3 — is **byte-identical to `configs/tokenizer.json`** (same md5, 4,096 of 4,096 token-id pairs).
+**So those checkpoints can be evaluated locally**, on an integer grid, with the shipped vocabulary.
+
+*Instrument: every integer depth 12–32, both arms of a pair scored on the identical local validation
+shard with the identical vocabulary, chance guard passed on every curve.*
+
+| arm | best CE | @r | depths within 0.01 of the minimum | end edge |
+|---|---|---|---|---|
+| `kg_dense_s2` (control) | 5.4212 | 12 | 12 … **20** (9 depths) | **20** |
+| `kg_sw90_s2` (annealed) | 5.4562 | 14 | 12 … **30** (19 depths) | **30** |
+| `kg_dense_s3` (control) | 5.2747 | 12 | 12 … **19** (8 depths) | **19** |
+
+**On the sparse grid this same seed-2 pair reads `end 16 → 24`. On the integer grid it reads
+`end 20 → 30`.** The annealed arm holds within 0.01 nats of its optimum over **19 consecutive integer
+depths** against the control's **9** — it is not a two-grid-point artifact, and the sparse grid was
+**understating** the effect rather than manufacturing it.
+
+**This is the strongest form the annealing depth result has taken**, and it is worth being precise
+about what it does and does not add:
+
+- **It resolves the edge.** The objection §4.25b was written against — that any band edge past 16 is
+  resolved to one grid interval — no longer applies to this pair. The edge is now located to **±1
+  loop**, and the two arms differ by **ten integer depths**.
+- **It is consistent with the withdrawn CE claim, which is a check rather than a coincidence.** The
+  annealed arm's best CE is *worse* here (5.4562 vs 5.4212, Δ = +0.0350) — and seed 2 is precisely
+  the seed that reversed the CE claim (+0.0482 in-job). **The dissociation appears again in the same
+  pair: the annealed arm is worse at the ceiling and useful over 2.1× as many depths.**
+- **It does not extend the seed count.** This is seeds 2 and 3 re-evaluated at higher resolution, not
+  new seeds. The band claim remains 5/5 seeds; what changes is that one pair's edge is no longer
+  grid-limited.
+
+*Scope, stated because it differs from every in-job number in this report: this evaluation uses the
+**local** validation shard, while the in-job curves used the shard the Kaggle job packed. Absolute CE
+is therefore not comparable to the in-job values — but **both arms of each pair are scored on the same
+shard with the same vocabulary**, so the paired comparison is valid, which is the only thing claimed.
+Onset is censored at 12 by the sweep range and is not reported.*
+
 ### 4.26 "In-job paired" is batch-identical for every comparison here EXCEPT the annealing ones
 
 Every A/B claim in this report rests on **in-job pairing**: arms in one job share a shard, a
