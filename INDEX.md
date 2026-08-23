@@ -43,7 +43,7 @@ statistic; use `src/plateau.py`, and compare midpoints only across a shared eval
 | `reviewer_answers/00–27` | one file per reply to the external reviewer (**27 files as of 21:58**) | **files are sent at creation time and NOT re-sent after editing — corrections must be NEW numbered files** (learned via `05_RETRACTION_73_percent.md`) |
 | `papers/sources/` | LaTeX of 16 cited papers + `TASK_STATEMENT_ru.txt` | so citations can be checked, not trusted. Exists because I once "corrected" a relayed number from a summarising web fetch and was wrong |
 | `rebuild_review.sh` | regenerates branch `review` as ONE squashed commit | `/code-review` reviews the most recent commit, not the branch range. **Run before any review** |
-| `needs_user/` | one file per item blocked on the user | currently: wandb key rotation. *(The §1 stimulus drafts are moot — §1 was written by the agent.)* |
+| `needs_user/` | **NOT IN THE REPOSITORY.** Author-facing correspondence — rotation reminders, push checklists, the §1 stimulus drafts. Untracked and gitignored on 2026-08-23; the files remain on the author's disk. Nothing in `submission/` ever depended on them |
 | `src/plateau.py` + `test_plateau.py` | the useful-depth band; **replaces argmin everywhere** | 63/82 stored curves have argmin margins below the noise floor |
 | `src/gain_decomp.py` | Δgain = ΔCE@1 − ΔCE_best | separates "depth improved" from "loop 1 got worse"; the 90M norm penalty is 88% the latter |
 | `src/angular_budget.py` | angular path length, fixed-range + **untrained control** | the untrained control refuted my own interpretation of it |
