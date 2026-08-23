@@ -167,3 +167,23 @@ anywhere in report.md**, so there is nothing to flag. Had it been used, the reco
 §4.8/§4.8b would be: our ragged cache is safe *because* the per-depth states are nearly identical in
 the directions attention reads — which is the same dilution (§4.3) that kills depth utility. That
 unifies §4.3 and §4.8 rather than threatening either.
+
+
+## 2603.15619 (MoD-Attention) — OBTAINED 19:10, now VERIFIED FROM SOURCE
+
+Previously declined as a citation because it was not on disk (an external reviewer asserted it was;
+it was not — `papers/sources/` held 19 tarballs and this was not among them). Tarball supplied and
+extracted to `papers/sources/2603.15619`. Everything now quoted in §4.7e / §8 is read from
+`main.tex`, not relayed:
+
+- `:259` depth attention is **same-position** — *"for token t, the query Q_{l-1,t} attends only to
+  the depth keys and values {K_{i,t}, V_{i,t}} from the same token position across layers."*
+  **This is the line that makes §4.7e's rank measurement a prediction about their mechanism.**
+- `:79`, `:165` — +0.2 avg perplexity over 10 validation benchmarks, +2.11% over 10 downstream
+  tasks, **3.7% FLOPs overhead**, at 1.5B.
+- `:80`, `:166` — *"combining MoDA with post-norm yields better performance than using it with
+  pre-norm"*, swept at 24 and 48 layers.
+- `:75`, `:100`, `:133` — motivated by **"information dilution"**, this report's own term (§4.3).
+
+**No number of theirs was quoted while it was off-disk**, which is §6.0 row 22's rule working as
+intended: the earlier reply declined the citation rather than relaying it.

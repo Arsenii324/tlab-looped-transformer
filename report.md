@@ -2850,14 +2850,38 @@ it learns to make them more interchangeable.*
 - **§4.8b** — oracle-depth caching buys −0.0096. Choosing *well* among near-identical options cannot
   matter much.
 
-**And it makes a falsifiable prediction about the mechanism this report did not test.** Same-position
-depth attention — a query attending to its **own** key/value history across depth, which is the
-cheaper published variant and carries the field's positive result — is **predicted null in this
-architecture**, because it attends over exactly the rank-1.6 set measured above. If that is right,
-then **the published gain is a property of *distinct* layers**, and a weight-tied loop cannot have it
-by construction: the same block applied twice produces near-identical keys, and that is not a defect
-of the training run but the definition of weight tying. *Registered here as a prediction, not
-reported as a result — this project has not run that arm.*
+**And it makes a falsifiable prediction about the one depth-mixing mechanism with a published
+positive.** **MoD-Attention (arXiv 2603.15619)** — obtained and verified in `papers/sources/` — does
+*same-position* depth attention, and their formulation is explicit that this is a different object
+from Think-at-Hard's cross-position duo-causal (`main.tex:259`):
+
+> *"attention is performed along the **depth** dimension: for token `t`, the query `Q_{l−1,t}` attends
+> only to the depth keys and values `{K_{i,t}, V_{i,t}}` from the **same** token position across
+> layers."*
+
+**A query attending to its own key history across depth is attending over exactly the rank-1.6 set
+measured above.** So it is **predicted null in this architecture** — and the prediction is sharp
+because their result is not: at 1.5B they report *"average perplexity by 0.2 across 10 validation
+benchmarks and … average performance by 2.11% on 10 downstream tasks, with a negligible 3.7% FLOPs
+computational overhead"* (`main.tex:79`), motivated by *"the information dilution problem"*
+(`main.tex:100`) — **this report's own word for the same phenomenon (§4.3)**.
+
+**If the prediction holds, the reason is structural and it is the sharpest thing §4.7e says: their
+gain is a property of *distinct* layers, and a weight-tied loop cannot have it by construction.**
+MoDA runs on OLMo2 at 24 and 48 **unshared** layers, where each layer's keys are a genuinely different
+function. The same block applied twice produces keys at cosine 0.97. That is not a defect of this
+training run — it is what weight tying *means*, and it is why the depth axis is compressible here
+(§8.0d's LLA connection) and informative there.
+
+**A second, independent reason it may not transfer, from their own ablation:** *"combining MoDA with
+post-norm yields better performance than using it with pre-norm"* (`main.tex:80`), swept at both 24
+and 48 layers. **This model is pre-norm**, and the one intervention here that moves toward bounding
+the residual stream (`state_renorm=True`) is **the single largest negative in the project, −0.744
+nats** (§4.1). So the configuration where depth attention works best is one this report has measured
+as catastrophic in this regime.
+
+*Registered as a prediction, not reported as a result — this project has not run that arm, and
+§4.7e's rank measurement is what would have to be wrong for it to fail.*
 
 > **It also explains the duo-causal interim — and the ORDER matters, so it is stated against
 > myself.** The interim signal (18:52) came **before** this measurement (19:11), so this account is
