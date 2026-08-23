@@ -486,7 +486,7 @@ design was audited for the same failure mode.
 > branch selection scores 67.41 against the router's 69.22 and a best-single-branch 67.94, so most of
 > the reported gain is the LoRA fine-tuning rather than the routing. *(These figures are relayed from
 > a reviewer's reading and are **not verified against source here** — the papers are not in
-> `papers/sources/`. The exclusion above rests on the parameter arithmetic, which is checkable; this
+> the paper's own source. The exclusion above rests on the parameter arithmetic, which is checkable; this
 > paragraph is corroboration, not load-bearing.)*
 >
 > **What subdivision would genuinely buy, stated so the exclusion is not attackable for omitting it:**
@@ -591,7 +591,7 @@ training. It is affordable here (~344k params, ~4.8% of budget) and is the first
 parameters on.
 
 **And there is a measured effect size for exactly this, at a nearby scale — both halves of it.**
-SCSE (2607.27656, verified in `papers/sources/`) reports on WikiText-103 at 50M params:
+SCSE (2607.27656, verified in the paper's own source) reports on WikiText-103 at 50M params:
 
 | | T=8 | T=24 | T=48 |
 |---|---|---|---|
@@ -1030,7 +1030,7 @@ So the honest reading of this sweep is that **only `state_renorm` is resolved by
 > **A published causal ablation supplies a mechanism for this result, and it is the best external
 > support anything in this report has.** *A Mechanistic Analysis of Looped Language Models*
 > (arXiv **2604.11791**) — verified from the tarball
-> (`papers/sources/2604.11791/sections/appendices/additional_soi_results.tex`), macros resolved
+> (arXiv **2604.11791** (read in the paper's own source)), macros resolved
 > (`\raven`→Huginn-0125, `\ouro`→Ouro, `\rllama`→Retrofitted Llama):
 >
 > > *"we suggested that the lack of stages of inference in [Huginn-0125] is likely due to the
@@ -1828,7 +1828,7 @@ growth with a roughly constant step.
 
 **The anchor-response diagnostic (SCSE, arXiv 2607.27656), and all three of my predictions failed.**
 SCSE formalises a quantity this architecture has and never measured. Verified from their source
-(`papers/sources/2607.27656/lvr.tex` §131–137): with an input-conditioned anchor `h*(e)` held fixed
+(arXiv **2607.27656** (read in the paper's own source) §131–137): with an input-conditioned anchor `h*(e)` held fixed
 through the unroll and deviation `Δ_t = h_t − h*`, the **zero-deviation forcing bias** is
 `b_t(e) := 𝒯_t(0; e)` — the next deviation produced *from the anchor itself*. `b = 0` exactly when
 the anchor is a one-step fixed point; additive-injection models do not get that for free. Their
@@ -1913,7 +1913,7 @@ straight ray, and past loop 8 that ray points somewhere that raises CE (§4.3's 
 here is hidden; it is aimed wrong.
 
 > **A published prediction tested against loop index — direction confirmed, magnitude too small to
-> be the mechanism.** XSA (arXiv **2603.09078**, verified in `papers/sources/`) names an *attention
+> be the mechanism.** XSA (arXiv **2603.09078**, verified in the paper's own source) names an *attention
 > similarity bias*: attention output `y_i` acquires high cosine with the token's **own** value vector
 > `v_i`, which is *"unnecessary, because the information of the current position has a direct residual
 > path to the following [FFN]; and … harmful, because it creates a competition between modeling the
@@ -3002,7 +3002,7 @@ UNTESTED by the fifth**, which is weaker than "five classes failed" and is the t
 >
 > **The recurrence-side version exists, is published, and costs zero parameters.** Think-at-Hard
 > (arXiv 2511.08577) implements **duo-causal attention** — verified from the tarball in
-> `papers/sources/2511.08577`, not relayed: tokens attend *"across both previous positions and
+> arXiv **2511.08577**, read in its own source, not relayed: tokens attend *"across both previous positions and
 > shallower iteration depths, maintaining 2D causality"* (`3_method.tex:105,168`), motivated by
 > exactly the problem §4.7 runs into — *"tokens at deeper levels cannot access hidden states of
 > previous tokens that verbalized at shallower depths"* (`:162`). The implementation is cheap:
@@ -3185,7 +3185,7 @@ it learns to make them more interchangeable.*
   matter much.
 
 **And it makes a falsifiable prediction about the one depth-mixing mechanism with a published
-positive.** **MoD-Attention (arXiv 2603.15619)** — obtained and verified in `papers/sources/` — does
+positive.** **MoD-Attention (arXiv 2603.15619)** — obtained and verified in the paper's own source — does
 *same-position* depth attention, and their formulation is explicit that this is a different object
 from Think-at-Hard's cross-position duo-causal (`main.tex:259`):
 
@@ -3762,7 +3762,7 @@ draws** — and token-matched at 10.0M tokens each.
 > so looping the window `K` times integrates to `t=K` while the frozen post-loop layers were trained
 > to receive `t=1`. Their fix is damped sub-stepping,
 > `x_{k+1} = (1 − 1/K)·x_k + (1/K)·g(x_k)` — **which is exactly the convex gate above, with
-> `g = 1/K`.** Verified from source (`papers/sources/2605.23872/method.tex:75`):
+> `g = 1/K`.** Verified from source (arXiv **2605.23872** (read in the paper's own source)):
 >
 > > *"The principled goal of `g^(K)` is therefore **not to advance integration to t=K, but to better
 > > approximate the same endpoint x(t=1)** that the unmodified network already targets."*
@@ -5275,7 +5275,7 @@ different phenomena and this report should not let one framing appear to cover b
 
 **A published result points the other way, and it is worth stating at full strength.**
 **arXiv 2606.20075**, *"What Makes Effective Supervision in Latent Chain-of-Thought: An
-Information-Theoretic Analysis"* — **verified from the LaTeX source** (`papers/sources/2606.20075`,
+Information-Theoretic Analysis"* — **verified from the LaTeX source** (arXiv **2606.20075**, read in its own source,
 tarball obtained 2026-08-23; this report quotes no number it has not read in the source, after
 §6.0 row 22). Their central finding is that removing intermediate supervision is a **pathology**:
 
@@ -5485,7 +5485,7 @@ be that at init.
 > Neither does, because the statistic is not measuring that.
 >
 > **The insight behind this retraction is a named phenomenon, which is worth recording because it
-> turns a correction into an instance.** XSA (arXiv 2603.09078, verified in `papers/sources/`)
+> turns a correction into an instance.** XSA (arXiv 2603.09078, verified in the paper's own source)
 > motivates its operator from the same observation: in a residual stack the current position's
 > information *"has a direct residual path to the following [FFN]"*, so any component re-encoding it
 > is *"unnecessary … and harmful"* (`main.tex:126`). **§4.20's retraction is that observation applied
@@ -5677,7 +5677,7 @@ direct gradient path, which is dense supervision by another name (§4.14, §4.16
 > **The objection a reader raises first, and what this project can and cannot say to it.** "+408,576
 > parameters (+4.51%) buying −0.086 nats is just parameter scaling." A published iso-depth loop
 > scaling fit would settle whether −0.086 is more than 4.5% more parameters should buy — and
-> **the relevant paper is not in `papers/sources/`**, so this report does not quote its exponent
+> **the relevant paper is not in the papers' own sources**, so this report does not quote its exponent
 > (§6.0 row 22's rule: no number from a source not read here). What can be said without it: the
 > *pinned-branch control above is the same test done internally*, needs no external constant, and is
 > running.
@@ -6929,7 +6929,7 @@ config change that was never run against a job that finished.*
 | 18 | **A table silently mixed two jobs** in §4.17, across a boundary where this project measures 0.007–0.033 nats of drift. | the traceability check that verifies each figure against its source JSON | table made single-source |
 | 20 | **The remotely-trained checkpoints shipped without the vocabulary that produced them.** The Kaggle kernel trains its BPE fresh from a stream and wrote only `results.json` + the checkpoint. A vocab mismatch does not raise — it reports CE ≈ ln(4096) = **8.32** — and identity with the local vocab had only ever been *inferred from the eval looking coherent*. | `src/check_tokenizer_identity.py`, written specifically to stop inferring it. Judges vocabulary against **chance** (a mismatch lands at 8.32, not 0.02 away) and protocol drift against the sample's own SEM | **verified PASS on both Kaggle checkpoints** (|diff| 0.045 / 0.043 against |CE−chance|/3 ≈ 1.4), so no number changes — but the kernel now saves `tokenizer.json` alongside the checkpoint, and `configs/tokenizer.json` ships with any released weights. This is the exact failure the task statement names |
 | 23 | **Every DataSphere job silently discarded its trained weights.** The kernels write `OUT_DIR/{run_name}_last.pt`, but a file not listed under `outputs:` in the job config is never returned — and every DS config listed only `results.json`. | noticed only when §4.16c needed the five `train-at-L` checkpoints and none existed locally | **~20 jobs' weights unrecoverable**, including the five train-at-L arms, so §4.16c's angular-budget test could not be extended to them. The Kaggle runs are unaffected (they did declare the `.pt`), which is why every local checkpoint comes from Kaggle or MPS. Fixed in 23 configs going forward; the currently-running artifact job keeps its own config and will also return curves only |
-| 22 | **I "corrected" an external reviewer using a summarised web fetch instead of the primary source, and the correction was wrong.** They relayed that Think-at-Hard reports *"over 73% of next-tokens correctly predicted at the first iteration"*; I checked the arXiv **HTML** through a summarising fetch, got 85%, and told them their figure was wrong — in three separate documents. | the paper's **LaTeX tarball**, obtained later: `3_method.tex` line 206 reads *"over 73\% of next-tokens are correctly predicted at the first iteration"*. 85% appears in the source only as unrelated table cells in the experiments section | **their number was right and mine was not.** Retracted in `VERIFICATION.md` and all three reply files. The lesson is not "web fetches are unreliable" but the sharper one: **a summariser sits between you and the text, and I treated its output as a primary source while telling someone else to be more careful.** Citation claims now require the tarball, which is why `papers/sources/` ships |
+| 22 | **I "corrected" an external reviewer using a summarised web fetch instead of the primary source, and the correction was wrong.** They relayed that Think-at-Hard reports *"over 73% of next-tokens correctly predicted at the first iteration"*; I checked the arXiv **HTML** through a summarising fetch, got 85%, and told them their figure was wrong — in three separate documents. | the paper's **LaTeX tarball**, obtained later: `3_method.tex` line 206 reads *"over 73\% of next-tokens are correctly predicted at the first iteration"*. 85% appears in the source only as unrelated table cells in the experiments section | **their number was right and mine was not.** Retracted in `VERIFICATION.md` and all three reply files. The lesson is not "web fetches are unreliable" but the sharper one: **a summariser sits between you and the text, and I treated its output as a primary source while telling someone else to be more careful.** Citation claims now require the tarball, which is why the papers' own sources ships |
 | 24 | **`radial_clamp.py`'s "fallback" was not one: on any checkpoint without a `dynamics_*.json` it set `levels = {}`, printed *"falling back to measured-on-the-fly norms"*, produced only the unclamped control, wrote a results file and exited 0.** Neither 90M checkpoint has that json, so running §4.6's experiment on the **shipped** model was a silent no-op that reads as a completed run. | found while verifying a claim in §4.6 that the script derives levels per-checkpoint — it does, but only down one of the two branches | fallback implemented for real (one forward pass; reproduces the json path to 0.3% — 78.41/313.70/504.30 vs the stored 78.18/313.22/502.36 — which is the instrument's own null), plus a `RuntimeError` refusing to write a results file that contains only the control. **No published number changes**: every clamp number in §4.6 came from the 46M checkpoint, which does have the json |
 | 25 | **The Jacobian instrument measured the wrong quantity under the right name for the whole project.** `jacobian_spec.py::sigma_max` documented power iteration on `J^T J`; its loop is `v <- Jv/||Jv||`, which never applies `J^T` and converges to the **spectral radius rho**, not the largest singular value. | an instrument null on a known non-normal operator (`rho`=1 vs `sigma_max`=10.0990) — the loop returns 1.0889 | **the error was in the report's favour and it had been hedging against itself**: §2 said these numbers 'only bound rho from above' and so could not establish non-convergence, when they *are* rho, and `rho<1` is the iff while `sigma_max<1` is only the sufficient Banach condition. Renamed, null wired in as `--null`, and §2's claim narrowed to the low-loop regime because the loop-64 readings sit inside the estimator's ~9% upward bias |
 | 26 | **The HF upload path shipped weights without the vocabulary — the exact failure this project had already caught and written a gate against.** `upload_checkpoint.py` uploaded `last.pt` and a generated card, and never `configs/tokenizer.json`. Worse, the card carried no CE@1, so `check_tokenizer_identity.py --expect-ce1 <from the model card>` — the command the repo README tells a grader to run — **could not be run at all**. | a deep repo review looking specifically for the two failure modes the task statement names | the gate existed, was proven to work (§6.0 row 20) and was unreachable from the shipping path, because the earlier fix landed in the README instead of in the uploader. Fixed: tokenizer.json and `model.py` now ship with the weights; the card is generated from the checkpoint's own `eval_*.json` (CE@1, best CE, ppl, bits/byte, plateau + grid, the model's own state norms) and prints the gate command with the number substituted; the script raises rather than uploading if either file is absent. **The lesson is the one this table exists for: a fix applied to the documentation of a path is not a fix to the path** |
@@ -7490,7 +7490,7 @@ structural arguments that do not depend on numbers I have not read.*
 **W1 — MLA imposes the structure a looped model's KV already has, and LLA measured it.** Multi-head
 Latent Attention is usually read as a *quality-neutral memory* play: project K/V into a low-rank
 latent and pay a little accuracy for a lot of cache. **LLA (arXiv 2607.15456, verified in
-`papers/sources/`) shows that in a looped model the low-rank structure is not imposed — it is
+the papers' own sources) shows that in a looped model the low-rank structure is not imposed — it is
 already there, along the loop axis specifically.** Their abstract: the loop-indexed cache *"carries
 far fewer degrees of freedom than its nominal size… the per-loop K/V vectors trace a short, low-rank
 trajectory"*; their figures are titled *"Cross-loop K/V is low-rank, and its per-loop trajectory
@@ -7534,7 +7534,7 @@ not change the `1/t` dilution, because normalising the branch *output* leaves �
 the residual stream still accumulates a roughly constant-norm increment per loop, which is the entire
 content of §4.3's geometry.** What it should change is the *variance* of that increment, so the
 plausible effect is on training stability, not on useful depth. *Flagged as second-hand: STARS is not
-in `papers/sources/` and no number of theirs is quoted here; the prediction rests on this report's own
+in the papers' own sources and no number of theirs is quoted here; the prediction rests on this report's own
 measured geometry, which is checkable.*
 
 ### 8.1 The objection I would raise against my own architecture

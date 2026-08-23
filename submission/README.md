@@ -6,6 +6,7 @@
 | **useful band** | **loops 6–17** — the run of loop counts whose validation CE is within 0.01 nats of this model's best, on a dense every-integer 1..64 sweep |
 | parameters | **9,064,608** (cap 10M) † |
 | training tokens | **89,999,360** (cap 100M) |
+| released weights | **[huggingface.co/Arsen4ikVar/tlab-looped-transformer](https://huggingface.co/Arsen4ikVar/tlab-looped-transformer)** — `model.pt`, its tokenizer, and the architecture file |
 | architecture | Qwen3-style 3-layer block, weight-tied, applied `r` times. No prelude, no coda, no inter-loop norm, additive re-injection, learned `h₀` |
 
 *† Count with `sum(p.numel() for p in model.parameters())`. A `state_dict` sum returns 10,899,616 and

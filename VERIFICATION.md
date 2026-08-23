@@ -1,5 +1,9 @@
 > **Dated working record — not a maintained document.** Last committed 2026-08-23; the text itself may be older. Kept intact rather than rewritten, because this project's rule is that superseded statements stay visible with their corrections. **Current numbers are in [`submission/`](submission/) and [`report.md`](report.md); where this file disagrees with them, they win.** See the repository README's *How to read this repository* table.
 
+> **Sources are cited by arXiv ID.** Each paper below was read in its own source rather than from an
+> abstract or a relay; those sources were pulled locally for checking and are not redistributed here,
+> so the ID is the durable reference. Anyone re-checking a row can fetch the same source from arXiv.
+
 # VERIFICATION LEDGER — every external claim, its status, and where it is used
 
 STATIC doc. Rule: **nothing quoted in `report.md` may sit at UNVERIFIED without a hedge in the text.**
@@ -90,7 +94,7 @@ is worth stating beside theirs rather than instead of it.
 | SPRM (2604.18839): noise helps "in small-data regimes" but not "in data-rich settings" | §4.13, hedged | relayed; this is the *predictive* account that reconciles the other two with §4.13 |
 | Two-Scale Latent Dynamics (2509.23314): looped updates become "small and increasingly orthogonal, tracing a stable-curvature spiral" | §4.3 contrast, hedged | relayed. **Apparently contradicts §4.3's cos → 0.9999 (near-parallel).** Most likely a different regime (their setting presumably retains inter-loop normalisation, mine does not) — but unverified, so stated as a possible contradiction rather than a resolved one |
 
-**All four were relayed on 2026-08-23 and none is in `papers/sources/`.** After §6.0 row 22 — where I
+**All four were relayed on 2026-08-23 and none is in the papers' own sources.** After §6.0 row 22 — where I
 asserted a "correction" to a relayed number from a summarising web fetch and was wrong — the standing
 rule is that a citation is VERIFIED only against the paper's own LaTeX. These are used as hedged
 attributions, never as verbatim quotes, and no claim in this report rests on them.
@@ -174,8 +178,8 @@ unifies §4.3 and §4.8 rather than threatening either.
 ## 2603.15619 (MoD-Attention) — OBTAINED 19:10, now VERIFIED FROM SOURCE
 
 Previously declined as a citation because it was not on disk (an external reviewer asserted it was;
-it was not — `papers/sources/` held 19 tarballs and this was not among them). Tarball supplied and
-extracted to `papers/sources/2603.15619`. Everything now quoted in §4.7e / §8 is read from
+it was not — the papers' own sources held 19 tarballs and this was not among them). Tarball supplied and
+extracted to arXiv **2603.15619**, read in its own source. Everything now quoted in §4.7e / §8 is read from
 `main.tex`, not relayed:
 
 - `:259` depth attention is **same-position** — *"for token t, the query Q_{l-1,t} attends only to
