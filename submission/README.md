@@ -122,6 +122,14 @@ there are mechanisms. The unnormalised depth gate is reported as an instrument f
 result, since it saturates to a hard argmax and cannot express a mixture at all, which is why it is a
 row but not a claim. Where a count appears in this folder it is this one.
 
+### The bracketed tokens
+
+`[POSTHOC-LORA-RANK]`, `[CAPACITY-NOT-DIVERSITY]`, `[XSA-AT-R1]`, `[WITHDRAWN-ANNEAL-CE]` and
+`[RANK-PROJECTION]` are not unfinished markup. Each marks a claim that was **deflated or withdrawn**,
+and `src/check_caveats.py --strict` fails the build if any document states one of those claims'
+numbers without carrying its token — so a caveat cannot survive in one file and be lost in another.
+That check exists because exactly that happened three times in one evening (`FAILURES.md`).
+
 ### Three terms, defined once
 
 - **useful band**: the contiguous run of loop counts whose validation CE is within **0.01 nats** of
@@ -143,18 +151,27 @@ against published numbers, which train on roughly 70× the tokens.
 
 ## Verifying this yourself
 
+> **Start here: the weights are not in this repository.** `.pt` files are not tracked — a clone
+> carries the code, the tokenizer and the eval JSONs, but no checkpoint. **Download the released
+> model from Hugging Face first**, then point the commands below at it:
+>
+> ```bash
+> hf download Arsen4ikVar/tlab-looped-transformer --local-dir /tmp/tlab
+> #   -> model.pt, tokenizer.json, model.py, README.md
+> python src/check_tokenizer_identity.py /tmp/tlab/model.pt --expect-ce1 3.9622 \
+>        --tok /tmp/tlab/tokenizer.json
+> ```
+>
+> **Verify against the *downloaded* copy, not this repo's**, which is the only version of the check
+> that can catch a broken upload.
+
 The released checkpoint ships with **the vocabulary that produced it** — a mismatch would not raise,
 it would silently report CE ≈ ln(4096) = 8.32 and look like a broken model. So the gate judges against
 *chance*, not a fixed tolerance:
 
-```bash
-python src/check_tokenizer_identity.py checkpoints/full_control90_kaggle --expect-ce1 3.9622
-# [gate] vocabulary identity : PASS (|diff|=0.0020 vs |CE-chance|/3=1.4512)
 ```
-
-*(`FAILURES.md` quotes |diff| 0.045 / 0.043 for the same gate — those are the two **remotely-trained
-Kaggle** checkpoints it was written to check. 0.0020 is the **shipped** checkpoint. Same gate, three
-different artifacts; all three PASS against a chance threshold of ≈1.45.)*
+[gate] vocabulary identity : PASS (|diff|=0.0020 vs |CE-chance|/3=1.4512)
+```
 
 ```bash
 python src/test_model.py       # 13 correctness checks, incl. the block vs the real Qwen3 reference (2.4e-07)
@@ -162,7 +179,7 @@ python src/test_plateau.py     # 8 checks on the depth statistic, incl. a delibe
 python src/headline.py check   # verifies every headline number still matches the artifact it came from
 python src/make_inventory.py --check   # verifies the experiment inventory against the stored JSON
 python src/check_caveats.py --strict   # every deflated claim carries its caveat in every file stating it
-python src/check_crossref.py --strict  # every figure quoted in submission/ appears in report.md
+python src/check_crossref.py --strict  # no figure in this folder is absent from ../report.md
 ```
 
 **Do not run `src/train_tokenizer.py` before evaluating a released checkpoint** — it overwrites

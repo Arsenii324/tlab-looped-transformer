@@ -180,7 +180,9 @@ it constrains the next attempt:
    projections manufacture a near-orthogonal key set out of a *collinear* state stream for free, and a
    tied loop has one `W_K` and cannot buy that at any width. **Partial untying — even one unshared
    `W_K` per loop-index bucket — is the cheapest intervention this evidence points at**, and it is
-   untested here (§8 below).
+   since tested — and it did not work: four distinct key projections give rank 8.818/32 at
+   initialisation and **1.74 trained**, so training reproduced the collapse (`report.md` §4.30, n = 1,
+   and that arm failed its own registered gate).
 3. **Any exit gate must be scale-invariant.** The failure in §4 is not exotic: the readout is
    deliberately scale-invariant, ‖h‖ grows ~10³ over training, and a gate on the raw state saturates.
    This cost the project one whole instrument and a section that had to be rewritten as an instrument
