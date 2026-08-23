@@ -1369,6 +1369,29 @@ aligned at `cos → 0.9999`, so motion accumulated from `t` to `T` is `Σ C/s �
 **diverges**. The state travels a fixed angular distance per *doubling* of loop count, indefinitely.
 It still moves 0.18 rad between loops 129 and 384, long after CE has stopped improving.
 
+> **The annealed arm drifts MORE than its own in-job dense control — and the obvious mechanism this
+> suggests does NOT hold.** Matched pair, 2.5M, seed 0, supervision the only difference:
+>
+> | | dense control | annealed (`sw75`) |
+> |---|---|---|
+> | drift constant **C** | 0.1271 | **0.1522** (+20%) |
+> | ρ @ loop 2 | 1.2273 | 1.0801 |
+> | ρ @ loops 8 / 32 | 1.0145 / 1.0013 | 1.0103 / 1.0013 |
+> | plateau midpoint | 11.3 | **17.0** |
+>
+> The tempting reading — *more angular drift means more ground covered, hence a deeper useful band* —
+> would hand §4.18's anchor account a geometric mechanism. **It fails.** Tested across every
+> checkpoint with both quantities, restricted within grid (comparing plateaus across grids is what
+> `src/plateau.py` forbids):
+>
+> - **sparse grid**, ordered by C: `0.1142 → mid 11.3`, `0.1271 → mid 11.3`, `0.1522 → mid 17.0`. Monotone, but n=3 with two ties.
+> - **dense 1..64 grid**, ordered by C: `0.1021 → mid 9.2`, `0.1508 → mid 8.4`, `0.1539 → mid 10.1`. **Non-monotone** — the middle arm breaks it.
+>
+> **So C does not predict band depth**, and the +20% in the matched pair above is a paired observation
+> without a general relation behind it. Stated because C was the natural candidate for linking §4.3's
+> geometry to §4.18's band, and it does not survive its own test. (The dense group also mixes model
+> sizes and budgets, so it is confounded — but a confounded failure is still a failure to establish.)
+
 > **UNTRAINED CONTROL — log-drift is architectural, and this qualifies the claim.** Same config, no
 > training, same batch: **C = 0.3084, log-drift R² 0.9999 against a power law's 0.8426** (trained:
 > C = 0.1549, R² 0.9951 vs 0.8388). **The untrained model does not converge either — it drifts twice
