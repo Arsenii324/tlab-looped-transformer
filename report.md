@@ -442,7 +442,7 @@ mechanisms in the current literature (read from source where marked):
 | per-iteration LayerNorm table `LN^prev_t`, gate biases `β_t`, and `1/T` residual scaling (LoopMTP) | table over t; `T` fixed at train time | **no** — architecturally T-locked |
 | iteration embeddings (Huginn-style) | table over t | **no** |
 | depth-wise LoRA per loop | table over t, and O(T) params | **no** |
-| **loop-CYCLED LoRA branches** (`branch = t mod B`, B = 4) — *added 2026-08-23 after it produced this report's only replicated CE improvement, §4.21* | **`t mod B` is a function of t**, O(B) params, defined for every t | **yes, on the letter — and this row was missing.** The rule as written above lists only the *per-loop* form, which is O(T) and T-locked. A **cyclic** bank is neither: 4 branches serve any depth, and the arm evaluates cleanly to loop 64 having trained at ≤32. **The spirit is arguable and both readings are stated in §4.21**: the benefit is bounded by a fixed four-branch table however wide the block gets, which is the shape the task's own counter-example warns about. At +4.51% of budget (rank 4) it is affordable here and is **not** covered by §3.5's zero-parameter argument |
+| **loop-CYCLED LoRA branches** (`branch = t mod B`, B = 4) — *added 2026-08-23 after it produced this report's only replicated CE improvement — §4.21, where the `rank ≥ 4` restriction is post hoc and ~90% of the gain sits at `r = 1`* | **`t mod B` is a function of t**, O(B) params, defined for every t | **yes, on the letter — and this row was missing.** The rule as written above lists only the *per-loop* form, which is O(T) and T-locked. A **cyclic** bank is neither: 4 branches serve any depth, and the arm evaluates cleanly to loop 64 having trained at ≤32. **The spirit is arguable and both readings are stated in §4.21**: the benefit is bounded by a fixed four-branch table however wide the block gets, which is the shape the task's own counter-example warns about. At +4.51% of budget (rank 4) it is affordable here and is **not** covered by §3.5's zero-parameter argument |
 | **IterAdaLN** (IterMoE, arXiv 2606.04438) | `v_k = MLP_iter(PE(k))` — fixed sinusoidal encoding of the iteration index through a small learnable MLP, fused with a projection of the current token state | **yes** — defined for every k, extrapolates by construction |
 | soft-MTP loop-to-target alignment (LoopMTP) | function of t (the target index) | structurally yes, but see below |
 
@@ -1823,8 +1823,8 @@ here is hidden; it is aimed wrong.
 > of an account in which the bias accumulates over depth and crowds out context modelling: **the
 > trained model is already doing most of the work XSA's operator does.**
 >
-> **This is the third null of this kind in this report and the three do not agree, which is the
-> interesting part.** Training *slows* the logarithmic drift (C 0.308 → 0.155, §4.3), *suppresses*
+> **Untrained controls are now the most-used instrument in this report — at least six of them — and
+> the three that measure DIRECTIONAL quantities disagree, which is the interesting part.** Training *slows* the logarithmic drift (C 0.308 → 0.155, §4.3), *suppresses*
 > the self-attention bias (0.85 → 0.35, here) — and yet **reduces** depth-key diversity (effective
 > rank 2.73 → 1.83, §4.7e). **The one property training makes worse is precisely the one that would
 > let a model use its own depth.**
@@ -2982,9 +2982,21 @@ as catastrophic in this regime.
 > Feeding the block keys from loops `t−2…t−1` hands it keys that are ~0.97
 > cosine-identical to the ones it already has, while **doubling or tripling the number of keys
 > competing in the same softmax**. That dilutes attention mass across near-duplicates rather than
-> adding information — which is a mechanism for a regression, not merely for a null, and it matches
-> what the running arms show so far (§4.7d). Whether it holds is decided by the pre-registered
-> `cos(du_t, du_{t−1})` read, not by this paragraph.
+> adding information — a mechanism that would predict **either** a null **or** a regression, since
+> near-duplicate keys add nothing whether or not they actively crowd anything out.
+>
+> **Corrected 19:30: an earlier version of this sentence said the mechanism "matches what the running
+> arms show so far", citing an interim regression. The completed arms say otherwise.** `dc_w2` is now
+> finished at **both** seeds (7 evals, step 1707, against controls also at step 1707): ΔCE_best
+> **+0.0093 / −0.0115** — sign reversing, both inside the 0.0150 floor, and the band **identical to
+> the digit** (onset 8, end 20, mid 12.6). **That is a null, not a regression.** The interim I cited
+> was the *first* eval at 500k tokens, where §4.12 says loop gain barely exists at all.
+>
+> **This is the 17:50 failure pattern with an interim in the role of the withdrawn number**, and it is
+> recorded rather than quietly edited: a paragraph that correctly labels itself post hoc, and then
+> reaches for data to support itself anyway. What the completed arms support is the weaker half —
+> near-duplicate keys add nothing — and **whether even that holds is decided by the pre-registered
+> `cos(du_t, du_{t−1})` read, not by this paragraph.**
 
 ### 4.7b Why no label-free rule works: the trajectories are nearly identical, the optima are not
 
@@ -4120,8 +4132,9 @@ confirmed the rest:
 
 ### Every band claim in this report is ONE number doing TWO jobs, and decomposing it separates them
 
-`plateau_mid` is the **geometric mean of the band's two edges**, `√(onset × end)`. Verified against
-every midpoint this report prints — nine for nine: `√(8·16)=11.31→11.3`, `√(8·20)=12.65→12.6`,
+`plateau_mid` is the **geometric mean of the band's two edges**, `√(onset × end)`. Verified against every midpoint this report prints. **Thirteen for thirteen** — the nine below plus
+10.1 = √(6·17), 9.2 = √(6·14), 8.4 = √(5·14) and 22.6 = √(16·32), which an independent check found
+sitting outside the first list and which satisfy the identity too: `√(8·16)=11.31→11.3`, `√(8·20)=12.65→12.6`,
 `√(8·24)=13.86→13.9`, `√(8·12)=9.80→9.8`, `√(12·24)=16.97→17.0`, `√(12·32)=19.60→19.6`,
 `√(16·40)=25.30→25.3`, `√(24·48)=33.94→33.9`, `√(32·64)=45.25→45.3`.
 
@@ -4187,6 +4200,7 @@ stored curve:
 | §4.11 | concentrated μ28 vs shallow μ6 (s0 / s1) | +0.0991 / +0.1771 | +0.2582 / +0.2840 | +0.159 / +0.107 | **72% / 62%** | BOTH-WORSEN |
 | §4.13 | σ = 0.15 vs σ = 0 | +0.1826 | +0.1470 | −0.0356 | 45% | BOTH-WORSEN |
 | §4.13 | σ = 0.40 vs σ = 0 | +0.7900 | +0.6653 | −0.1247 | 46% | BOTH-WORSEN |
+| §4.5 | coda-only vs prelude-only *(matched μ_rec = 27)* | +0.3548 | +0.3970 | +0.0422 | **53%** | BOTH-WORSEN |
 
 **§4.9's most-quoted number does not mean what its sentence implies.** That section reports loop gain
 rising **17×** from L=2 to L=32 and reads it as *"training deeper makes the loop matter far more,
@@ -4208,7 +4222,10 @@ half was withdrawn at n=4 anyway. *That is the report's central dissociation sta
 form: the quantity that looks like "the loop matters more" is, almost everywhere here, the shallow end
 getting worse.*
 
-One claim died, and it died before it was written into the report rather than after. That is the
+*(Re-anchored 19:32.)* **Returning to the plateau table above** — the one that re-derived every depth
+claim on the statistic that replaced argmin — **one claim died there, and it died before it was
+written into the report rather than after** (§5's `residual_scale`, an 8→12 "optimum shift" that was
+a 0.0001-nat argmin flip). That is the
 whole return on building the statistic.
 
 **The statistic's own limitation, measured rather than assumed.** A plateau is a set of *evaluated*
@@ -5213,7 +5230,12 @@ base weights stay tied.
 **(1) At rank ≥ 4 the CE improvement replicates across everything varied.** Four arms — two ranks (4,
 8), three platforms (MPS, T4, Kaggle), two seeds, and one of them under a different supervision
 schedule (`sw90`) — all negative. Mean **−0.0857**, sd 0.0292, **95% t-interval [−0.1322, −0.0393],
-which excludes zero.**
+which excludes zero.** That is the same paired t-test this report used to *withdraw* the annealing CE
+claim (§4.17), applied here and passing. Three of the four clear their platform's measured floor
+outright (−0.1011 and −0.0733 against CUDA-dense 0.0150; −0.1172 against the 0.0541 terminal floor);
+the local −0.0514 sits **inside** the MPS floor (0.031–0.068) and is not individually resolvable.
+**This is the only CE claim in this report that survives a multi-platform replication** — subject to
+the restriction the block immediately below shows the claim depends on.
 
 > ### ⚠ THE `rank ≥ 4` RESTRICTION IS POST HOC, AND THE CLAIM DEPENDS ON IT
 >
@@ -5233,11 +5255,17 @@ which excludes zero.**
 > have offered and does not.** Rank 8 (**−0.0733**) sits *inside* rank 4's spread (−0.0514, −0.1011,
 > −0.1172). More rank does not buy more. A monotone rank→effect curve would have made the threshold
 > nearly unarguable; its absence means the honest reading is *"something changes between rank 2 and
-> rank 4, and nothing further changes by rank 8"*, on n = 1 arm at rank 8. That is the same paired t-test this report used to *withdraw* the annealing CE
-claim (§4.17), applied here and passing. Three of the four clear their platform's measured floor
-outright (−0.1011 and −0.0733 against CUDA-dense 0.0150; −0.1172 against the 0.0541 terminal floor);
-the local −0.0514 sits **inside** the MPS floor (0.031–0.068) and is not individually resolvable.
-**This is the only CE claim in this report that survives a multi-platform replication.**
+> rank 4, and nothing further changes by rank 8"*, on **n = 1 arm at rank 8**.
+>
+> **And the control that would separate capacity from branch specialisation has its own confound,
+> which is why there are two of them.** `cond_fixed_branch=0` pins to branch **0** — but branch 0 is
+> the *only* branch that receives gradient at `r = 1` (`0 mod 4 = 0`), and `r = 1` is exactly where
+> 88–95% of the effect lives (§4.21b). So a pin-0 arm recovering the gain is consistent with
+> *"capacity, not diversity"* **and** with *"branch 0 is special because it owns loop 1."* A second
+> job pins to branch **2**, which never trains at `r = 1` — identical parameter count, zero
+> diversity, no specialisation. *Residual confound, stated: the two pins are in different jobs, so
+> comparing them is a difference-of-differences; measured cross-job drift is 0.0074–0.0334 against a
+> ~0.10 effect.*
 
 **(2) The useful band does not move. In any of the five pairs. Not by one grid point.** [8,16]→[8,16],
 [8,20]→[8,20], [8,24]→[8,24] — the arm's plateau is *identical to its own control's* every time,
@@ -6021,7 +6049,17 @@ therefore reproduces and measures the saturation problem the task poses; it does
 > above rather than softening it (§4.21, added 2026-08-23 18:05).** Loop-cycled LoRA branches at rank
 > ≥ 4 improve best CE in **four in-job pairs across three platforms and two seeds** — mean **−0.0857**,
 > 95% t-interval **[−0.1322, −0.0393]**, excluding zero. It is the only CE claim in this report that
-> survives multi-platform replication. **And the useful band is identical to its own control in all
+> survives multi-platform replication.
+>
+> **Both deflations belong here and not only in §4.21, because this is the synthesis section and a
+> reader who stops here would otherwise get the unqualified version.** *(Added 19:31 after an
+> independent read found §8 carrying neither.)* **First: the `rank ≥ 4` restriction is post hoc, and
+> over all five arms the interval covers zero** — mean −0.0498, 95% CI **[−0.1545, +0.0549]** — with
+> no dose–response above the threshold (rank 8 sits inside rank 4's spread). **Second: ~90% of the
+> gain is already present at `r = 1`**, where `branch = 0 mod 4` and the cycling is *logically inert*
+> — so it improves the **block**, not the **looping**.
+>
+> **And the useful band is identical to its own control in all
 > five pairs, including the two where CE improves by over 0.10 nats.** So the corrected form of this
 > report's synthesis is: **eight interventions, one lowers the loss, none widens the useful band** —
 > which is a *stronger* statement of the dissociation than "zero raise the ceiling" was, because it
