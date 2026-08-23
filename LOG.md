@@ -2198,3 +2198,19 @@
   PROBES: 2 alignment bugs found and fixed (see 16:55 entry) -- results held.
   WITHDRAWAL RE-TESTED against the reviewer's proposed paired t-interval: [-0.1478,+0.0558],
     covers zero, SAME verdict. Their premise used the n=2 spread; actual n=4 sd is 4.5x larger.
+2026-08-23 17:15 — 4.20 MAJOR QUALIFICATION + conditioning family closed.
+  Ran the reviewer's proposed pre-test (does per-loop diversity break the degenerate collapse at
+  init?). Scalar gains sigma up to 1.0: cos@64 0.9997, collapsed. LoRA operator diversity with 168
+  tensors randomized: cos@64 1.0000, IDENTICAL to baseline. Neither breaks it -> checked the
+  statistic itself. cos(OUTPUTS)=1.0000 but cos(INCREMENTS)=0.14-0.18; each layer moves the state
+  by only 0.5-3.5% of its norm, so all three outputs share a dominant residual and agree by
+  construction. The collapse is largely ARITHMETIC, not degeneracy.
+  CONSEQUENCE: closes the whole conditioning/branch-diversity family (per-loop gains, lora_cycle,
+  IterAdaLN) without a training run -- they were proposed to fix an artifact. Also retires my own
+  claim to the reviewer that "all layers collapse architecturally" belongs in the spine.
+  SURVIVES: increments decline mildly (0.18->0.14) and increment/state ratio falls 0.035->0.005
+  (= 4.3's dilution restated per-layer).
+  n_loop_eff verified fixed at 24 across ALL checkpoints vs schedule means 18/40 (ratios 1.15x,
+  0.77x). In-job pairs unaffected (both arms share the same wrong init); cross-schedule comparisons
+  carry it as a limitation. 6.0b sentence owed.
+  reviewer_answers/14 written.
