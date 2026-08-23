@@ -2777,3 +2777,42 @@ run.
 control [8,20] -- **narrower**. But the dose-response is **NON-MONOTONE**: W=1 (0), W=2 (+0.0093),
 W=3 (−0.0871). Per sec4.10's own reasoning, non-monotonicity across a swept parameter is the signature
 of noise rather than an effect. **Seed 1 is still running and decides it.** No claim until then.
+
+## 2026-08-23 20:28 — duo-causal COMPLETE at both seeds. W=3 lowers CE, and it is NOT duo-causal doing it.
+
+Both jobs SUCCESS, all eight checkpoints returned.
+
+| arm | s0 | s1 | sign | band (both seeds) |
+|---|---|---|---|---|
+| `dc_w2` | +0.0093 | −0.0115 | **REVERSES → not reported** | [8,20] → [8,20], unmoved |
+| `dc_w3` | **−0.0871** | **−0.0394** | **AGREES**, mean 4.2× floor | [8,20] → **[8,16] NARROWS** |
+| `dg_norm` | −0.0012 | +0.0023 | **REVERSES → null at n=2** | *(excluded: mixture-window, not depth)* |
+
+**GATE 2, the registered PRIMARY read, says the mechanism did not engage.** `cos(du_t, du_{t−1})`:
+
+| | t=8 | t=16 | t=32 | t=46 |
+|---|---|---|---|---|
+| control | 0.9978 | 0.9993 | 0.9998 | 0.9999 |
+| W=3 | 0.9962 | 0.9991 | 0.9998 | 0.9999 |
+
+**Identical by t=32.** Registered 18:51: *"cos unchanged ⇒ the block did not use the history it was
+given."* The registration covered a CE **null** in that case; this is a CE **gain** with the mechanism
+unengaged, and the reading follows the same logic: **the gain is not attributable to duo-causal.**
+
+**The decomposition confirms it independently. 78% (s0) and 101% (s1) of the effect is at `r = 1`** —
+where duo-causal is **provably inert**, because no history exists at loop 1 and the pre-launch gate
+verified loop-1 logits are bit-identical at W>1 (max|diff| = 0.000e+00). A mechanism that cannot act
+at `r = 1` cannot be what produced an effect that is ~90% present there. **W=3 is a training-time
+perturbation that yields a better block**, not a working recurrence-side depth mechanism.
+
+**This is now the fourth independent instance of one pattern in a single evening**, and it is the
+report's central finding stated at full strength:
+
+> **Every intervention in this project that lowers the loss delivers 78–101% of its gain at a SINGLE
+> loop, where its own mechanism is inert or irrelevant. LoRA ~90%. XSA 84%. Duo-causal W=3 78–101%.
+> Not one of them widens the useful band — and duo-causal W=3 NARROWS it, at both seeds.**
+
+**And sec4.7e survives the one test that could have killed it, at two seeds.** `dg_norm` mixes 7.58/8,
+14.96/16, 29.84/32 loops — a genuinely working per-token soft mixture — and gains **−0.0012 / +0.0023**,
+sign reversing. A perfect mixer over things that span 1.6 of 32 dimensions gains nothing, which is
+what the rank collapse predicts.
