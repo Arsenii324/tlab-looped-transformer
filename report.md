@@ -2804,6 +2804,69 @@ UNTESTED by the fifth**, which is weaker than "five classes failed" and is the t
 > scope sentence is the contribution of this subsection and it survives whichever way the new arms
 > come out.**
 
+### 4.7e Why the whole depth-mixing family fails here: a token's depth keys span ~1.6 of 32 dimensions
+
+*Instrument:* `src/depth_key_rank.py`. **Zero training compute** — one forward pass with pre-hooks on
+each `DecoderLayer`, plus an SVD. Prediction and falsifier written into the docstring before running.
+
+Every mixing or selection mechanism this report has tried — static readout mixtures (§4.7c), the
+oracle-depth cache (§4.8b), the learned gate (§4.22), and the duo-causal arms now running — ultimately
+depends on **a token's states at different depths being distinguishable.** §4.3 gave a reason to
+doubt it: attention reads `norm1(h)`, whose *norm* is nearly flat across depth (25.13 → 21.36 over 64
+loops) while ‖h‖ grows 18×. But a flat norm is not collinearity — **direction** is what attention
+sees, and it had never been measured.
+
+Measured now, on the depth-key stream `{K_t}` a single token produces across `r = 32` loops
+(`K = k_norm(k_proj(norm1(h_t)))`, the model's own modules, per layer). **Effective rank** is the
+participation ratio of the singular values, `(Σs)² / Σs²`:
+
+| model | layer 0 | layer 1 | layer 2 | mean pairwise cos (L0/L1/L2) |
+|---|---|---|---|---|
+| **90M control** | **1.83** | **1.58** | **1.52** | 0.911 / 0.972 / 0.973 |
+| 46M no-renorm | 1.73 | 1.61 | 1.52 | 0.949 / 0.968 / 0.971 |
+| **untrained, same config** *(the null)* | 2.73 | 2.61 | 2.45 | 0.800 / 0.812 / 0.823 |
+
+**out of a possible 32.** 84–86% of all depth-key pairs sit above cosine 0.95.
+
+**A token's thirty-two depth keys live in about one and a half dimensions.** Attention over that set
+is a uniform average with extra steps: there is nothing for a query to select *between*. **That is a
+mechanism-level reason the depth-mixing family must fail here, and it is upstream of every individual
+null this report reports.**
+
+**Two things the null adds, and the second is the uncomfortable one.** The collapse is **already
+present at initialisation** (2.45–2.73 of 32), so it is largely **architectural**, not learned — the
+same scope §4.3's log-drift finding carries. And **training makes it worse**: effective rank falls
+2.73 → 1.83 and mean cosine rises 0.80 → 0.91. *The model does not learn to differentiate its depths;
+it learns to make them more interchangeable.*
+
+**This unifies four separate results that were previously four separate nulls:**
+
+- **§4.7c** — no static mixture over depths beats the best single depth. Of course: it is averaging
+  near-duplicates.
+- **§4.8** — a ragged KV cache costs almost nothing (spread 0.0011 at t = 16). That is the *same
+  fact stated as a benefit*: depths are interchangeable, so mixing them is harmless — and useless.
+- **§4.22** — the learned gate saturates onto one loop. There is nothing to discriminate between, so
+  any gate that can express a hard selection will take one.
+- **§4.8b** — oracle-depth caching buys −0.0096. Choosing *well* among near-identical options cannot
+  matter much.
+
+**And it makes a falsifiable prediction about the mechanism this report did not test.** Same-position
+depth attention — a query attending to its **own** key/value history across depth, which is the
+cheaper published variant and carries the field's positive result — is **predicted null in this
+architecture**, because it attends over exactly the rank-1.6 set measured above. If that is right,
+then **the published gain is a property of *distinct* layers**, and a weight-tied loop cannot have it
+by construction: the same block applied twice produces near-identical keys, and that is not a defect
+of the training run but the definition of weight tying. *Registered here as a prediction, not
+reported as a result — this project has not run that arm.*
+
+> **It also predicts the duo-causal interim, which is worth stating because the prediction preceded
+> the explanation.** Feeding the block keys from loops `t−2…t−1` hands it keys that are ~0.97
+> cosine-identical to the ones it already has, while **doubling or tripling the number of keys
+> competing in the same softmax**. That dilutes attention mass across near-duplicates rather than
+> adding information — which is a mechanism for a regression, not merely for a null, and it matches
+> what the running arms show so far (§4.7d). Whether it holds is decided by the pre-registered
+> `cos(du_t, du_{t−1})` read, not by this paragraph.
+
 ### 4.7b Why no label-free rule works: the trajectories are nearly identical, the optima are not
 
 *Instrument:* `src/cumulative_exit.py` on the 524,288-token exit dump. **Zero compute** — a `cumsum`
