@@ -2122,3 +2122,25 @@
   Also: GRPC_DNS_RESOLVER=native is required for every datasphere call (it is in DATASPHERE_NOTES'
      own invocation block; I dropped it and misdiagnosed it as a machine-level network outage —
      curl returned HTTP 404 in 48ms at the same moment).
+
+2026-08-23 13:40 — the reviewer's two hour-long items; one inverted.
+  rho: jacobian_spec.py's `sigma_max` NEVER applied J^T -- it is plain power iteration on J and has
+    been returning the SPECTRAL RADIUS for the whole project. Null on a known non-normal operator
+    (rho=1, sigma_max=10.0990) returns 1.0889 -> rho. Wired in as `--null`. This corrects sec2 in the
+    favourable direction (rho<1 is the iff; sigma_max<1 only sufficient, so the report was hedging
+    against a claim it already had) AND narrows it (loop-64 readings 1.0015/1.0020 are inside the
+    estimator's ~9% upward bias and cannot be distinguished from 1; the decisive readings are loop 2,
+    rho=1.70-2.29).
+  NEW RESULT: rho is scale-invariant to 2% at loop 8 across a 380x range of |h| (1.0467/1.0692/1.0480
+    at |h|@8 = 6640/2334/17.5). And the norm penalty is the ONLY arm that crosses below 1 (0.9953 at
+    32, 0.9915 at 64) -- a mechanism for its narrower plateau, and the only arm inside DEQ's regime.
+  injection ratio: e/h@1 = 3.59e-01 for normpen vs 3.22e-03 control, driven ENTIRELY by |h1| falling
+    107x while |e| is unchanged (1.504 -> 1.573). Pre-registered falsifier did not fire. BUT the
+    mechanism it suggests is REFUTED: cos(h1,e) ~ -0.07 and copy-rate ~0.002 in all three arms, so h1
+    is nearly orthogonal to e. Loop-1 damage (+0.2263, 88% of the normpen loop-gain advantage) stays
+    unexplained with its most natural explanation eliminated.
+  BUG FOUND: radial_clamp.py's "fallback" was a no-op -- levels={} plus a false message, so on any
+    checkpoint without a dynamics json it wrote a results file containing only the unclamped control
+    and exited 0. NEITHER 90M checkpoint has that json. Fixed (real fallback, reproduces the json
+    path to 0.3%) + RuntimeError guard. sec6.0 rows 24 and 25.
+  local anneal after the morning fix: 6 evals, step 912/1220, 1.87M tokens, healthy.
