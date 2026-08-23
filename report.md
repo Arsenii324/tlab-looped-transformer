@@ -422,7 +422,7 @@ nothing here is asserted without a measurement behind it.*
 > | run | what it could change | falsifier, pre-registered |
 > |---|---|---|
 > | ~~`tlab-anneal-scale` (10M, in-job control)~~ | the whole annealing recommendation | **RESOLVED — OUTCOME A.** ΔCE_best **−0.0764** at 10M vs **−0.0710** at 2.5M, ΔCE@1 still **negative** (−0.0092): both endpoints improve at 4× the budget, so annealing does **not** follow the norm penalty into reversal. The pre-registered small-budget falsifier did not fire. *Caveat: the loop-1 margin eroded −0.035 → −0.0092, trending toward outcome B without reaching it.* |
-> | `tlab-deep-full` (μ_rec=40 annealed **sw75 — note: NOT the `sw90` this section recommends**, ~25M tokens, ETA ~17:30) | whether the deep setting survives outside a 2.5M screen | if its plateau midpoint returns near 22 (dense-like) rather than ≥32, the deep half of the table below is withdrawn |
+> | ~~`tlab-deep-full`~~ **LANDED 17:23 — FALSIFIER FIRED** | whether the deep setting survives outside a 2.5M screen | **plateau midpoint came back at 22.6.** The pre-registered trigger was "near 22 (dense-like) rather than ≥32". **The deep half of the table below is withdrawn.** See the block after the table |
 >
 > Two further caveats that will *not* be resolved today: every annealing number rests on **two seeds**
 > at 2.5M tokens and **one** at 10M/25M; and the whole report is one model size (9.06M) and one
@@ -501,6 +501,37 @@ not the same model:
 |---|---|---|---|
 | **lowest perplexity** | `U[4,32]` | dense | **ppl 38.86** at 90M tokens *(protocol-matched local re-score; the kernel's own in-run figure is 37.14 — see §.headline on the ~0.04-nat cross-protocol offset)*, useful band [8,16] |
 | **most useful loops** | `U[32,48]` | annealed *or* constant terminal-only — **this project cannot separate them** (§4.17 retraction) | useful band near **40 loops**; the annealed arm's midpoint is 1.79× its in-job dense control's at **−0.019 nats**, and it is still within 0.01 nats of best at **64 loops, 1.33× beyond anything it trained on** — but its advantage over *constant terminal-only* reverses between seeds |
+
+> ### ⚠ THE DEEP HALF IS WITHDRAWN — `tlab-deep-full` landed 17:23 and its falsifier fired
+>
+> This row claimed a useful band "near **40 loops**" at `U[32,48]`, from a **2.5M-token screen**. The
+> full-budget artifact — **30.0M tokens**, the only ≥32-loop model this project trained, `sw75`,
+> μ_rec = 40 — returns:
+>
+> | | 2.5M screen | **30M full budget** |
+> |---|---|---|
+> | plateau | [32, 64] | **[16, 32]** |
+> | **midpoint** | 45.3 | **22.6** |
+> | onset | 32 | **16** |
+> | mid / μ_rec | 1.13 | **0.57** |
+> | CE_best | 5.4466 @48 | **3.9287 @24** (ppl 50.84, bpb 1.6991) |
+>
+> **The pre-registered falsifier named 22 explicitly** — *"if its plateau midpoint returns near 22
+> (dense-like) rather than ≥32, the deep half of the table below is withdrawn"* — and the measurement
+> came back at **22.6**. Further, `mid/μ_rec = 0.57` lands inside §4.16b's **dense** range
+> (0.50–0.71), not the terminal-only range (0.98–1.09). So at full budget this annealed deep arm
+> behaves like a *dense* arm on the one statistic §4.16b uses to separate them.
+>
+> **What this costs.** The claim that a deep schedule plus annealing puts useful depth "near 40
+> loops" does not survive its own 12× budget increase. It joins the norm penalty (−0.366 → −0.030
+> between budgets) and the annealing CE claim (n=2 → withdrawn at n=4) as the **third** instance in
+> this project of a 2.5M-screen effect failing to survive scale-up — which is now a stated regularity
+> about this subfield rather than an accident (§4.6b).
+>
+> **What survives, and it is the honest headline for "many loops".** This model's useful band still
+> reaches **[16, 32]** with CE still improving out to loop 24 and degrading gracefully to 128 — the
+> deepest genuinely-useful band measured anywhere in this project, and it *is* a model trained with
+> every step at ≥32 loops. It is 22.6, not 45.3.
 
 The brief asks for low perplexity **by exploiting many loops**, and this report's answer is that the
 architecture is the same for both — only the *loss schedule and the loop schedule* change. At
