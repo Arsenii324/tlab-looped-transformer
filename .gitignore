@@ -31,3 +31,9 @@ ds_probe/config.yaml
 # Author-facing correspondence: rotation reminders, push checklists, and the sec1 stimulus
 # drafts. Never part of the submission -- kept locally, not shipped.
 needs_user/
+
+# Third-party paper sources: downloaded for verification, not ours to redistribute.
+papers/sources/
+
+# macOS junk
+.DS_Store

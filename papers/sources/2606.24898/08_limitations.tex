@@ -1,9 +1,0 @@
-% ============================================================================
-\section{Limitations}
-\label{sec:limitations}
-
-Our conclusions are deliberately scoped to the settings studied in this paper. The main controlled evidence comes from 44M- and 129M-parameter looped language models trained on WikiText-103, where inter-loop normalization is removed so that recurrent scale remains active in the recurrent state. Architectures with inter-loop normalization, gating, clipping, or other recurrent-state controls may avoid this failure mode by construction. Appendix~\ref{app:scale14b} reports a separate 1.4B Ouro-scale experiment trained on FineWeb as a scale sanity check, but not as a full controlled ablation.
-
-The proposed mechanism is also local rather than fully global. Our analysis characterizes the immediate cross-entropy signal seen through the readout and explains why recurrent scale can become weakly supervised under scale-invariant readouts. It does not rule out indirect future-loop gradients or fully characterize optimization dynamics at larger scales, longer training horizons, or different data regimes.
-
-Finally, our adaptive-depth evaluations use teacher-forced language-model scoring rather than production autoregressive generation. The resulting perplexity--compute curves provide controlled comparisons across recurrent-depth strategies, but serving behavior may differ under key-value (KV) caching, large-batch inference, or deployment workloads. Exploring these settings, extending the analysis to larger-scale models, and studying additional recurrent-state variables beyond scale are important directions for future work.

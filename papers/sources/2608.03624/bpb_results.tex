@@ -1,8 +1,0 @@
-\section{Detailed Result}
-\label{sec:appendix:multiseed_results}
-
-In this section, we present more detailed results, including a breakdown of the aggregated numbers reported in Table~\ref{tab:main_results}, along with the average and standard deviation (STD) values. All results in this section report the average performance for each configuration across 3 random seeds (unless otherwise noted), together with the corresponding standard deviation.
-
-\input{tables/main_results_bpb}
-Table~\ref{tab:acc_general_results} shows the accuracy for general and QA tasks. Here, \textsc{LoopMTP} not only consistently outperforms the non-looped baseline and LoopFormer (27 out of 28 settings; the exception is Winogrande at $T$=3), but also shows more stable performance, i.e.\ lower STD values. While the STD values for \textsc{LoopMTP} consistently remain in a very low range, LoopFormer's performance suffers from large oscillations (despite its hyperparameters being tuned separately for each loop count): for 3-loop training, one of LoopFormer's runs diverged (which is why the 3-loop LoopFormer results are aggregated over only two runs), and for 7 and 9 loops, one of the runs did not perform very well after training. Tables~\ref{tab:bpb_general_results}--\ref{tab:bpb_code_results} show the BPB values separately for each aggregated benchmark. The same pattern holds: \textsc{LoopMTP} consistently outperforms both the non-looped and LoopFormer baselines.
-

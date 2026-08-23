@@ -1,9 +1,0 @@
-\section*{Limitations}
-
-Our theoretical analysis models the looped block as a shared-weight MLP, abstracting away the multi-head attention mechanism present in Transformers.
-The formal results further assume ReLU activations, whereas our experiments use SwiGLU; the predicted $\Theta(N^2)$ growth and $1/N$ scaling nonetheless hold empirically (Figures~\ref{fig:corr},~\ref{fig:update-cosine}).
-More broadly, the analysis does not account for optimizer state dynamics, normalization variants, or data-dependent feature learning.
-
-On the empirical side, our experiments cover a finite set of model sizes, loop counts, and training budgets.
-Validation on larger models, longer training horizons, and heterogeneous multi-stage looped architectures remains future work.
-In addition, each reported language-modeling result uses a single random seed; multi-seed replicas of the full configuration sweep were not conducted due to computational constraints.

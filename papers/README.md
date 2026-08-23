@@ -1,5 +1,12 @@
 # papers/ — the sources every external claim was verified against
 
+> **`papers/sources/` is not in this repository.** It held ~15 MB of third-party arXiv sources —
+> LaTeX, figures, PDFs — downloaded so external claims could be checked against the papers' own text
+> rather than their abstracts. Those are other people's work and not ours to redistribute, so they are
+> untracked. **What survives is the record of what was checked and what it showed:**
+> `../VERIFICATION.md` names every external claim, its status, and where it is used. Anyone
+> re-checking can pull the same sources from arXiv by the IDs listed there.
+
 Included so a reviewer can check citations rather than trust them. `VERIFICATION.md` marks each claim
 VERIFIED / SECOND-HAND / REFUTED; this directory holds the text those checks were made against.
 
