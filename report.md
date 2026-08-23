@@ -249,6 +249,28 @@ design was audited for the same failure mode.
   per-channel vectors, O(hidden width) — the same scaling class as any bias or norm parameter in a
   standard transformer, not a separate capacity source that could be substituting for the loop doing
   real work.
+
+> **This section answers the objection the task raised and not the one the literature raises, and the
+> difference matters.** Everything above audits for a *fixed-size-table* failure mode, because that is
+> the example the brief gives. The objection a reader of this literature makes first is different:
+> **this model's capacity is dense.** The reused block is a dense attention + dense SwiGLU MLP, and
+> the argument that a looped model buys FLOPs-per-parameter is made *against a dense baseline* —
+> which is not the frontier alternative. If sparse (MoE-style) capacity scales better than dense
+> capacity, then "loop a dense block many times" could be the right answer to the wrong comparison,
+> and every conclusion in §4 would sit in the unfavourable regime without any of them being wrong.
+>
+> **Nothing in this project tests that.** There is no sparse arm, no MoE arm, and no budget to build
+> one — it is recorded in `DECISIONS.md` Q2 as the eighth-ranked threat and was never run. The
+> sharpened form of the objection was relayed from **Sparse Layers (2605.09165)**, which is
+> **not obtainable here** and is therefore logged **SECOND-HAND** with no number quoted from it; the
+> objection above is stated on its own logic so that nothing rests on an unverified relay. (This
+> report has retracted one claim already for treating a summariser as a primary source — §6.0 row 22.)
+>
+> **What can honestly be said:** the *mechanism* this report recommends — supervision annealing — is
+> orthogonal to the dense/sparse axis. It is a schedule on which loop indices receive gradient and
+> would apply unchanged to a sparse block. So the density objection threatens **the architecture's
+> competitiveness**, not **the finding's transferability**, and those are different claims. Only the
+> second is what §3.5 asserts.
 - **The injection adapter**, when `inject_mode=concat`, is a plain `2H→H` linear layer — quadratic in
   width like the rest of the block, not a special-cased shortcut.
 
