@@ -32,9 +32,11 @@ RULES = [
          claim=r"−0\.1251|-0\.1251|−0\.1011|-0\.1011",
          why="a branch pinned to one index (identical params, zero diversity) recovers 82% in-job, "
              "and ~90% of the gain sits at r=1 where cycling is inert. It is a CAPACITY result."),
-    dict(token="[XSA-N1]",
-         claim=r"−0\.2162|-0\.2162|−0\.216\b|-0\.216\b",
-         why="XSA is ONE SEED at 2.5M tokens; 84% of the effect is at r=1."),
+    dict(token="[XSA-AT-R1]",
+         claim=r"−0\.2162|-0\.2162|−0\.216\b|-0\.216\b|−0\.2633|-0\.2633|−0\.2398|-0\.2398",
+         why="XSA replicates at n=2 (-0.2162 / -0.2633) but 84-91% of the effect is at r=1, so it "
+             "improves the BLOCK not the looping -- and its band does not survive seed 1 "
+             "([8,20]->[8,16]), so 'band unmoved' is withdrawn."),
     dict(token="[RANK-PROJECTION]",
          claim=r"31\.8[03]|11\.7×|11\.7x",
          why="most of the untied-vs-tied key-rank gap is per-layer PROJECTION randomness; at the "

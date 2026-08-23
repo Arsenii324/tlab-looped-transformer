@@ -27,7 +27,7 @@ loss-side lever is §5 below. Rows added after this document was first written a
 | gated (diagonal state-space) injection, α = 0.874 | Parcae; *Done Right* | **+0.247** | unmoved |
 | loop-cycled LoRA, rank 2 | MoDr lineage | **+0.094** | unmoved |
 | **loop-cycled LoRA, rank ≥ 4** | MoDr lineage | **−0.094** ⚠ | **unmoved (5 of 5 pairs)** |
-| **exclusive self attention (XSA)** | arXiv 2603.09078 | **−0.216** ⚠ | **unmoved** ([8,16] both) |
+| **exclusive self attention (XSA)** | arXiv 2603.09078 | **−0.216 / −0.263** *(2 seeds)* ⚠ | unmoved (s0); **narrows** [8,20]→[8,16] (s1) |
 | radial clamp (inference-time) | Sharma & Vu | ~0 | *relocates* the optimum; ceiling invariant to 0.006 |
 | convex gate / damped sub-stepping | arXiv 2605.23872 | null | unmoved |
 | ε = λ/(N√L) residual scaling | arXiv 2606.18524 | null | unmoved |
@@ -66,7 +66,7 @@ the angular step is what keeps the damage slow. The scale clock is the same less
 side: it *forced* the trajectory to keep turning and cost **+1.36 nats**, diverging to non-finite by
 loop 39, with the model *taking* the parameter (‖w‖ = 1.34) rather than declining it.
 
-> ### ⚠ The rows that LOWER the loss all carry caveats `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]` `[XSA-N1]`
+> ### ⚠ The rows that LOWER the loss all carry caveats `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]` `[XSA-AT-R1]`
 >
 > *Added 20:03. An earlier version of this table gave both numbers bare. `report.md` §4.21 and the
 > abstract both carry these; this document did not, and a grader may read this **instead of** the
@@ -86,10 +86,12 @@ loop 39, with the model *taking* the parameter (‖w‖ = 1.34) rather than decl
 > 4. It costs **+4.51%** of the parameter budget, so §1's zero-parameter scale argument does not cover
 >    it.
 >
-> **XSA (−0.216, zero parameters):** **one seed, 2.5M tokens**; a second seed is running. **84% of the
-> effect is at `r = 1`** — the same shape. Its outcome was *predicted in advance* from this project's
-> own regularity (CE down, band unmoved), which is why it is reported rather than held back — but this
-> project has withdrawn two claims for exactly the n=1 failure.
+> **XSA (−0.2162 / −0.2633, zero parameters, n = 2):** the **largest positive in the project** and it
+> replicates. **84–91% of the effect is at `r = 1`** — the same shape as everything else here. Its
+> outcome was *predicted in advance* from this project's own regularity (**CE down, band unmoved**):
+> the CE half confirmed twice, **the band half failed at seed 1** and is withdrawn. Holding the second
+> seed before reporting is what caught it — an n=1 version of this row would have shipped a band claim
+> that its own replicate contradicts.
 >
 > **duo-causal W = 3 (−0.087 / −0.039, zero parameters):** the sign agrees at both seeds and the
 > effect is ~4.2× the floor — **but the pre-registered mechanism check FAILED.** `cos(Δu_t, Δu_{t−1})`

@@ -37,12 +37,13 @@ two goals and this architecture does not deliver them together.
    one-parameter model against 0.748 for a convergent power law) — **and it saturates at loop ~8
    anyway.** That is *saturation without convergence*, and it contradicts the premise the brief
    itself advances (that fast convergence is what makes further compute pointless).
-2. **Twelve interventions. Five lower the loss. Not one widens the useful band; two narrow it.**
+2. **Twelve interventions. Five lower the loss. Not one widens the useful band; three of the five
+   *narrow* it** — the norm penalty, duo-causal attention at W = 3, and exclusive self attention.
 3. **Four of those five put 78–101% of their gain at a *single* loop, where their own mechanism is
    provably inert or irrelevant** — loop-cycled LoRA 67–95% `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]`, exclusive self attention
-   84% `[XSA-N1]`, duo-causal attention at W = 3 78–101%, the learned depth gate 96%. **They improve the block,
-   not the looping.** The fifth is the mirror image: the norm penalty wins perplexity (37.52 vs 38.86)
-   by *damaging* loop 1 — 88% of its loop-gain advantage is `ΔCE@1 = +0.2263` — and it narrows the band.
+   84–91% `[XSA-AT-R1]`, duo-causal attention at W = 3 78–101%, the learned depth gate 96%. **They improve the
+   block, not the looping.** The fifth is the mirror image: the norm penalty wins perplexity (37.52 vs
+   38.86) by *damaging* loop 1 — 88% of its loop-gain advantage is `ΔCE@1 = +0.2263`.
 4. **One lever does move the useful band** — *where the loss is applied* (supervision annealing),
    at **4/4 seeds** and **zero added parameters** — but its effect on the *ceiling* was withdrawn at
    n=4 by a criterion registered before the data existed `[WITHDRAWN-ANNEAL-CE]`.

@@ -131,7 +131,7 @@ with slots) and into `report.md` §4.7d / §4.22.
 **A3. Run `python src/check_caveats.py`** before shipping — it greps every reader-facing file for a
 deflated claim's number and flags any file carrying the number without its caveat token. **Currently
 0 missing.** Tokens: `[WITHDRAWN-ANNEAL-CE]` `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]`
-`[XSA-N1]` `[RANK-PROJECTION]`.
+`[XSA-AT-R1]` `[RANK-PROJECTION]`.
 
 ---
 

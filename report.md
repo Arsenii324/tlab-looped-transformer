@@ -52,9 +52,11 @@ against — and 88% of its apparent loop-gain advantage is loop-1 damage.
 
 **Five interventions lower the loss, and four of the five are present at loop 1 in the same shape —
 78–101% of the gain sitting where the mechanism cannot act** (loop-cycled LoRA 67–95%, exclusive self
-attention 84%, duo-causal attention at W = 3 78–101%, the unnormalised depth gate 96%; the fifth, the
-norm penalty, instead wins perplexity by *damaging* loop 1). **The one that replicates across
-platforms is loop-cycled LoRA, and ~90% of it is present at loop 1, where its mechanism is inert.** Loop-cycled LoRA branches improve best CE at rank ≥ 4 across four in-job pairs
+attention 84–91%, duo-causal attention at W = 3 78–101%, the unnormalised depth gate 96%; the fifth,
+the norm penalty, instead wins perplexity by *damaging* loop 1). **The largest of them is exclusive
+self attention — −0.2162 / −0.2633 at two seeds for zero added parameters — and 84–91% of it is at
+loop 1.** **Not one of the twelve widens the useful band, and three of the five that lower the loss
+narrow it.** Loop-cycled LoRA branches improve best CE at rank ≥ 4 across four in-job pairs
 spanning three platforms, two seeds and two supervision schedules (mean **−0.086**, 95% t-interval
 [−0.132, −0.039]) — **though the rank ≥ 4 restriction is post hoc and over all five arms the interval
 covers zero**, and there is no dose–response above the threshold. It is the only CE claim here that
@@ -5725,26 +5727,40 @@ band while cycling preserved it. In-job, **all three arms hold [8,20]**. The nar
 noise, and it had been labelled "an observation, not a result", which is the only reason it cost
 nothing.
 
-### 4.23d Exclusive self attention: the largest zero-parameter gain, at n = 1
+### 4.23d Exclusive self attention: the project's largest positive, replicated — and it narrows the band
 
 XSA (2603.09078) removes each token's own value vector's component from its attention output. In-job,
-one seed, 2.5M tokens:
+**two seeds**, 2.5M tokens:
 
-| arm | CE@1 | best CE | ΔCE_best | band |
-|---|---|---|---|---|
-| `xsa_control_s0` | 5.3858 | 5.2851 | — | [8,16] |
-| `xsa_on_s0` | 5.2032 | **5.0689** | **−0.2162** `[XSA-N1]` | **[8,16]** |
+| arm | CE@1 | best CE | ΔCE@1 | **ΔCE_best** | band | share of gain at r=1 |
+|---|---|---|---|---|---|---|
+| `xsa_control_s0` | 5.3858 | 5.2851 | — | — | [8,16] | — |
+| `xsa_on_s0` | 5.2032 | **5.0689** | −0.1826 | **−0.2162** | [8,16] *(unmoved)* | **84%** |
+| `xsa_control_s1` | 5.5160 | 5.4069 | — | — | [8,20] | — |
+| `xsa_on_s1` | 5.2759 | **5.1436** | −0.2401 | **−0.2633** | **[8,16]** *(narrows)* | **91%** |
 
-**~14× the floor, zero parameters, band identical to the digit, and 84% of the effect at `r = 1`.**
-The same shape as every other loss-lowering arm here.
+**It replicates, and it is the largest loss-lowering effect in this report: mean −0.2398 over two
+seeds** `[XSA-AT-R1]`**, sign agreeing, ~16× the 0.0150 floor, for ZERO added parameters.** Both seeds put the optimum
+at `r = 12`. On the CE axis this is the strongest positive the project has.
 
-**Two predictions were on record and they disagreed, which is the useful part.** At 19:15 the
-prediction from this report's own regularity — *CE down, band unmoved* — was written down: **confirmed.**
-At 19:20 it was **amended** to "near-null on CE too", after an untrained control showed training
-already suppresses the self-attention bias the operator removes (cos 0.85 → 0.35): **refuted.** The bad
-inference is worth naming because it is this project's characteristic error in a fourth costume — *a
-geometric quantity being small **in cosine** says nothing about the **loss value** of removing it.* Two
-different spaces treated as one. §4.20, the §4.7e projection confound and this are the same mistake.
+**And it is still the same dissociation, now with a sharper edge.** **84–91% of the effect is present
+at `r = 1`** — it improves the block. Worse for the brief's question: **the band does not survive the
+second seed.** At seed 0 it was identical to control to the digit; at seed 1 the control reaches
+[8,20] and XSA reaches only [8,16]. **So XSA is the third loss-lowering intervention that costs useful
+depth**, alongside the norm penalty ([6,17] → [6,14]) and duo-causal W = 3 ([8,20] → [8,16] at both
+seeds). *Registered scope: two seeds, one budget, one width. The band difference is one grid interval
+at one seed and is not claimed as an established narrowing — it is enough to withdraw "unmoved".*
+
+> **The 19:15 prediction was half right, and the half it got wrong is recorded here rather than
+> quietly dropped.** Written before the arm ran, from this report's own regularity: *"CE down, band
+> unmoved."* **CE down: confirmed twice.** *Band unmoved:* confirmed at seed 0, **contradicted at seed
+> 1** — which is precisely why an n=1 band claim was not going to be allowed to stand. A 19:20
+> **amendment** to "near-null on CE too" — reasoning that an untrained control showed training already
+> suppresses the self-attention bias XSA removes (cos 0.85 → 0.35) — was **refuted outright** by both
+> seeds. The bad inference is worth naming because it is this project's characteristic error in a
+> fourth costume: *a geometric quantity being small **in cosine** says nothing about the **loss value**
+> of removing it.* Two different spaces treated as one. §4.20, the §4.7e projection confound and this
+> are one mistake wearing three costumes.
 
 ## 5. Methods tested to destruction — what was claimed, what was measured, why it broke
 

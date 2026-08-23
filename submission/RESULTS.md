@@ -44,7 +44,7 @@ states the convention). Two mechanisms were run at two settings each, so this ta
 | 8 | norm penalty λ=0.01 (90M) | **−0.030** *(wins ppl)* ⚠ | **narrows** [6,17]→[6,14] | 0 |
 | 9a | duo-causal attention, **W = 2** | +0.0093 / −0.0115 *(sign reverses, 2 seeds)* | **unmoved, to the digit** | 0 |
 | 9b | **duo-causal attention, W = 3** | **−0.0871 / −0.0394** ⚠ | **narrows** [8,20]→[8,16], both seeds | 0 |
-| 10 | **exclusive self attention (XSA)** | **−0.2162** ⚠ | **unmoved** [8,16] | **0** |
+| 10 | **exclusive self attention (XSA)** | **−0.2162 / −0.2633** *(2 seeds, agreeing)* ⚠ | unmoved (s0); **narrows** [8,20]→[8,16] (s1) | **0** |
 | 11a | per-token depth gate, unnormalised | **−0.2950** ⚠ | *(gate saturates — see below)* | +449 |
 | 11b | per-token depth gate, **scale-invariant** | **−0.0012 / +0.0023** *(sign reverses, 2 seeds)* | *n/a — see §5* | +450 |
 | 12 | **supervision annealing** *(loss-side)* | CE **withdrawn at n=4** `[WITHDRAWN-ANNEAL-CE]` | **band widens 4/4 seeds** | **0** |
@@ -57,7 +57,7 @@ loop, where their own mechanism is provably inert or irrelevant.**
 | loss-lowering arm | ΔCE@1 | ΔCE_best | **share of the gain already present at r = 1** | why the mechanism cannot be acting at r = 1 |
 |---|---|---|---|---|
 | depth gate, unnormalised | −0.2830 | −0.2950 | **96%** | the softmax runs over a **single** state; the mixture *is* that state |
-| exclusive self attention | −0.1826 | −0.2162 | **84%** | *(one seed)* |
+| exclusive self attention | −0.1826 / −0.2401 | −0.2162 / −0.2633 | **84% / 91%** | *(operates on a single token's own value vector; nothing about it needs a second loop)* |
 | loop-cycled LoRA, rank ≥ 4 | — | −0.0936 | **67–95%**, median 88% *(5 arms)* | branch index is `0 mod 4`; cycling is inert — verified max\|diff\| = 0.000e+00 at r=1 |
 | duo-causal attention, W = 3 | −0.0682 / −0.0399 | −0.0871 / −0.0394 | **78% / 101%** | with one loop there is no previous loop's KV to attend to |
 
@@ -66,9 +66,10 @@ way round.** The norm penalty lowers best CE by 0.030 and **wins perplexity outr
 38.86) — but `ΔCE@1 = +0.2263`, so **88% of its apparent loop-gain advantage is loop-1 damage**, and
 its band *narrows*. It buys loop gain by making loop 1 worse rather than by making depth worth more.
 
-**Not one of the twelve widens the useful band. Two narrow it** (norm penalty, duo-causal W = 3). The
-one lever that moves the band outward — supervision annealing, 4/4 seeds, zero parameters — **does not
-lower the loss.**
+**Not one of the twelve widens the useful band. Three of the five loss-lowering arms narrow it** —
+the norm penalty ([6,17]→[6,14]), duo-causal W = 3 ([8,20]→[8,16], both seeds), and XSA
+([8,20]→[8,16] at seed 1, unmoved at seed 0). The one lever that moves the band *outward* —
+supervision annealing, 4/4 seeds, zero parameters — **does not lower the loss.**
 
 *That dissociation is the answer to the brief's sentence: low perplexity and «за счет большого
 количества лупов» come apart under measurement.*
@@ -78,7 +79,10 @@ lower the loss.**
 > **covers zero** — there is no dose–response above the threshold, and a branch pinned to one index
 > (identical params, **zero** diversity) recovers **82%** of the gain in-job. It is a **capacity**
 > result, and it costs **+4.51%** of the parameter budget.
-> **XSA `[XSA-N1]`:** **one seed**, 2.5M tokens; a second seed was running at the time of writing.
+> **XSA `[XSA-AT-R1]`:** **replicated at two seeds** (−0.2162 / −0.2633, mean −0.2398, ~16× the floor,
+> **zero parameters**) — the largest positive in the project. But **84–91% of it is at `r = 1`**, and
+> the "band unmoved" half of the 19:15 prediction **held at seed 0 and failed at seed 1**, so it is
+> withdrawn: XSA joins the arms that *cost* useful depth. Both seeds, one budget (2.5M), one width.
 > **Duo-causal W = 3:** the CE gain is real and agrees in sign at both seeds, **but the registered
 > mechanism check says the mechanism did not engage** — `cos(Δu_t, Δu_{t−1})` is 0.9962/0.9991/0.9998
 > against a control's 0.9978/0.9993/0.9998, i.e. indistinguishable. A CE gain whose mechanism check

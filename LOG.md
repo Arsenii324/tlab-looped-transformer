@@ -2816,3 +2816,39 @@ report's central finding stated at full strength:
 14.96/16, 29.84/32 loops — a genuinely working per-token soft mixture — and gains **−0.0012 / +0.0023**,
 sign reversing. A perfect mixer over things that span 1.6 of 32 dimensions gains nothing, which is
 what the rank collapse predicts.
+
+## 20:39–20:47 — `tlab-xsa-s1` lands: XSA REPLICATES and is the project's largest positive; its band claim is WITHDRAWN
+
+Harvested `bt146dpichvsg0hmo19b` (6 files, 69.2MB, both `.pt` present — the explicit `outputs:` fix
+holds a fifth time). Eval-count parity checked: both arms step 1219, 5 evals.
+
+| arm | CE@1 | best | ΔCE@1 | **ΔCE_best** | band |
+|---|---|---|---|---|---|
+| `xsa_control_s1` | 5.5160 | 5.4069 | — | — | [8,20] |
+| `xsa_on_s1` | 5.2759 | 5.1436 | −0.2401 | **−0.2633** | **[8,16]** |
+
+**Two things, and they point opposite ways.**
+
+1. **It replicates and it is the largest loss-lowering effect in the project** — −0.2162 / −0.2633,
+   mean −0.2398, ~16× the floor, **zero parameters**, both seeds putting the optimum at r=12. The
+   19:15 prediction's CE half is confirmed twice.
+2. **The band half of that prediction FAILED at seed 1 and is withdrawn.** Seed 0: [8,16] → [8,16],
+   identical to the digit. Seed 1: control [8,20] → arm [8,16]. **XSA narrows the band**, joining the
+   norm penalty and duo-causal W=3. So *three of the five loss-lowering interventions cost useful
+   depth*, and the count of arms that widen it is still zero.
+
+**This landed ~20 minutes after I wrote "band unmoved" into `submission/README.md`'s five-sentence
+answer.** Propagated within 8 minutes to: `report.md` §0 abstract + §4.23d (rewritten at n=2),
+`submission/README.md` (both the count sentence and the r=1 list), `RESULTS.md` §2 table + pattern
+table + caveat block, `NEGATIVE_RESULTS.md` §1 row + caveat block.
+
+**The caveat token `[XSA-N1]` is renamed `[XSA-AT-R1]`** across all files and in
+`src/check_caveats.py`: the deflation is no longer "one seed" (it replicated) but "the gain sits at
+r=1, and the band claim did not survive". **The checker caught my own omission** — I rewrote §4.23d
+and dropped the token while still stating −0.2162, and `--strict` flagged report.md. That is the first
+time the enforcement mechanism has caught a live error rather than a historical one.
+
+**Reading:** an n=1 XSA row would have shipped a band claim its own replicate contradicts. This is the
+third time this project has been saved by holding a second seed, and the first where the *positive*
+survived while the *band* claim died — which is the more instructive shape, because the seductive half
+is the one that held.
