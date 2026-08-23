@@ -200,30 +200,26 @@ diversity raises it by **0.01–0.08**. Untied *keys* 31.83/33 **but untied stat
 
 ---
 
-#### D. STILL RUNNING (as of 22:20) — ONE JOB
+#### D. NOTHING IS RUNNING (23:08). Every job has landed and is written up.
 
-**DataSphere `tlab-untie-s0` — `bt1anqsjuulfo4061jrd`, EXECUTING.** §4.28's causal test of §4.7e:
-three in-job arms (tied control · `W_K` in 4 loop-index buckets · 4 buckets + the scale-invariant
-gate). **GATES A/B/C are registered in `RUNS.md` before the data existed** — read them before looking
-at any number. GATE A is a *relative* rank comparison (the job returns no tokenizer, and that is
-recorded as a process failure in `RUNS.md`, not hidden).
+`duocausal-s0/-s1` (§4.23, §4.23b) · `xsa-s1` (§4.23d) · `recmethod-s2` (§4.23e) · `divx-s1` (§4.23c)
+· Kaggle `lora-scaleup` (§4.29) · A1 dense grid (§4.25c) · **`tlab-untie-s0` (§4.30)**.
 
-**Everything else has LANDED and is written up.** `duocausal-s0/-s1` (§4.23, §4.23b) · `xsa-s1`
-(§4.23d) · `recmethod-s2` (§4.23e) · `divx-s1` (§4.23c) · **Kaggle `lora-scaleup` (§4.29)** ·
-**A1 dense-grid on the Kaggle annealing pair (§4.25c)** — the 4th arm may still be finishing locally
-(`/tmp/a1_dense.log`, writes `checkpoints/a1_dense_grid_kaggle_seedext.json`).
+**THE LAST RESULT, and read its gate before its number.** `tlab-untie-s0`'s **registered GATE A
+FAILED**: four distinct `W_K` projections were required to lift trained depth-key rank above ~4 and
+gave **1.73–1.74** against a tied control's **1.66**. **So §4.7e's CAUSAL status is UNDECIDED** — the
+rank explanation still rests on `dg_norm`'s null, a correlation. Do not upgrade it.
+**What the failure did establish:** the same architecture untrained gives **8.818/32** at four
+buckets, so **training collapses 8.818 → 1.74.** The collapse is what the *objective* drives toward,
+not only what a tied architecture is stuck with. GATE C fired as predicted (**102% at r=1**). Untying
+alone is **−0.0128, inside the floor, for +10.0% of the budget**.
 
-**THREE HARVEST TRAPS HIT TONIGHT, ALL CAUGHT — check every one:**
-1. **A grep returned the WRONG job id.** `bt1ps6o5…` is the seed-**0** divx job; seed 1 is
-   `bt1attom37m9m5ahnhj5`. The download looked fine and matched an already-harvested job.
-   **Check `train_cfg.seed` on every download.**
-2. **A DS `ERROR` status was cosmetic.** Discriminate with
-   `grep "Error while processing file" <dir>/log.txt` and check stdout's completion banner.
-3. **A local re-eval of a DS checkpoint gave CE 9.27 — above chance.** DS kernels train their own BPE
-   (NFKC + `unk_token` + 5,000 docs) and **return no `tokenizer.json`**. Local eval of a DS checkpoint
-   is impossible. **Kaggle's tokenizer IS byte-identical to the shipped one**, so Kaggle checkpoints
-   *can* be evaluated locally — that is what made §4.25c possible. `src/chance_guard.py` now enforces
-   this for any script.
+**Three harvest traps hit tonight, all caught:** a grep returned the **wrong job id** (check
+`train_cfg.seed` on every download); a DS **ERROR** was cosmetic (`grep "Error while processing file"
+log.txt`); a local eval of a DS checkpoint gave **CE 9.27** — DS kernels train their own BPE.
+**Fixed for good:** `src/rebuild_ds_tokenizer.py` reproduces that vocabulary
+(`configs/tokenizer_datasphere.json`), verified by `rec_dense_s2` scoring **4.4252** vs chance 8.3178.
+**Every DS checkpoint is now locally evaluable.**
 
 ---
 

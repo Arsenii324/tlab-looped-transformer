@@ -142,7 +142,7 @@ cost — including three claims withdrawn on the final day by their own pre-regi
 > cited. **Nothing here is claimed as the author's own ideation, and the honest version of that is
 > better for this submission than a formulation that could be read either way.**
 
-**The approach was not designed. It was what was left after ten expectations were measured false.**
+**The approach was not designed. It was what was left after eleven expectations were measured false.**
 
 The starting design was the field's: a weight-tied Qwen3 block, looped, with **inter-loop
 normalisation** to keep the state on a sphere — Huginn's own choice, and one supported by a published
@@ -168,6 +168,11 @@ applied, because the useful part of this project is the failures rather than the
 | 8 | The `outputs:` fix protects future jobs (23 configs) | **It was a glob, and there is no globbing.** ~20 checkpoints lost | §6.0 row 34 |
 | 9 | Three targeted propagation passes had cleared the retractions | **12 defects on the first end-to-end read**, three serious, **none reachable by grep** | §6.0 row 33 |
 | 10 | The learned depth gate tests per-token depth mixing | **It saturates to a hard argmax** — it cannot express a mixture at all | §4.22 |
+| 11 | Depth-key rank is a property of the *architecture*, so buying distinct projections buys rank | **Rank starts at 8.818/32 with four projections and trains back to 1.74.** The objective reproduces the collapse the architecture was changed to avoid | §4.30 |
+
+**Row 11 is the last one and it arrived at 23:00 on the final day**, from an arm whose falsifier had
+been registered ninety minutes earlier — which is the shape the whole table has: *the expectation was
+written down first, and the measurement was allowed to contradict it.*
 
 **Rows 3, 5, 6 and 10 are one failure wearing four costumes: a statistic that was never asked what it
 samples.** That is this project's characteristic error, and naming it is what produced the instruments

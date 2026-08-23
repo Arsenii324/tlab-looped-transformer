@@ -11,22 +11,19 @@ Last updated 2026-08-23 18:22.
 
 ## Open — mine
 
+**Nothing is running and nothing is queued.** All seven jobs landed and are written up; all six gates
+are green; everything is pushed to `origin/main`.
+
 | # | task | state |
 |---|---|---|
-| **T26** | **Harvest `tlab-untie-s0`** (`bt1anqsjuulfo4061jrd`, EXECUTING) — §4.28's causal test of §4.7e. GATES A/B/C registered in `RUNS.md` before submission | **running** |
-| **T27** | **Harvest Kaggle `tlab-lora-scaleup`** — the only budget probe of §4.24 | **running** |
-| **T28** | **A1: dense integer sweep 12–32 on the Kaggle annealing pair** — unblocked because Kaggle's saved tokenizer is **byte-identical** to the shipped one; seeds 2/3 checkpoints pulled to `/tmp/kg_seedext/` | **running locally** |
-| T7 | §8 W5 decomposition tables | open |
+| — | final proportion read of `submission/README.md` and `RESULTS.md` §1b | **done 23:05** |
+| — | end-to-end read of the whole `submission/` folder | **done 23:00 — 14 defects, all fixed** |
+| T7 | §8 W5 decomposition tables | open, and **not** worth doing in the time left |
 
-**Closed 21:45–22:00 (the reviewer's five points):** grid-provenance of the 5/5 band claim — **checked,
-no splicing**; cross-job-vocabulary objection — **refuted by md5, and the sharper true fact stated in
-§4.27**; `INDEX.md`'s §1 contradiction — **fixed**; the batch-pairing qualifier — **propagated to
-`NEGATIVE_RESULTS.md` and `METHOD.md`**; A1 — **unblocked and running**.
-
-**Known-and-not-doing, with reasons:** a 90M same-config replicate to measure the floor at full budget
-(~9 h T4); a dense sweep on the *DataSphere* arms (impossible — those jobs return no tokenizer, §4.27);
-a full end-to-end re-read of `report.md` (a targeted read of the new sections was done instead);
-ablations A2, A4–A7 (costed in `SUBMISSION_STATE.md`, unrun).
+**Deliberately not started, with the reason:** LoRA × annealing at 12M (~3.1 h), a budget ladder
+(~2.2 h), a 90M replicate (~9 h), a second width (~1 h). All are costed in `submission/LIMITATIONS.md`
+§7. A run that cannot land before 23:59 cannot be written up honestly, and §6.0 has two rows about
+launching under time pressure — one from tonight.
 
 ## Blocked on the user
 
