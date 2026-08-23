@@ -111,7 +111,7 @@ report is wrong.*
 
 | if you recompute… | you will get… | why |
 |---|---|---|
-| **any DataSphere checkpoint, evaluated locally** | CE ≈ **9.3** — *above* chance (8.3178) | DataSphere kernels train their **own** BPE (NFKC normalizer, `unk_token`, 5,000 docs) and **return no `tokenizer.json`**; `src/train_tokenizer.py` uses no normalizer. **Those checkpoints cannot be evaluated against the shipped vocabulary at all.** Kaggle's tokenizer **is** byte-identical to the shipped one, so Kaggle checkpoints can |
+| **any DataSphere checkpoint, evaluated locally** | CE ≈ **9.3** — *above* chance (8.3178) | DataSphere kernels train their **own** BPE (NFKC normalizer, `unk_token`, 5,000 docs) and **return no `tokenizer.json`**; `src/train_tokenizer.py` uses no normalizer. **Never evaluate a DataSphere checkpoint against `configs/tokenizer.json`.** Kaggle's tokenizer **is** byte-identical to the shipped one, so Kaggle checkpoints can be. **And the DataSphere vocabulary itself now rebuilds locally** — its recipe is deterministic and byte-identical across all four frozen kernels — so use `configs/tokenizer_datasphere.json` (`src/rebuild_ds_tokenizer.py`), against which `rec_dense_s2` scores **CE 4.4252**, not 9.3 |
 | **ρ from `checkpoints/jacobian_spec_results.json`** | **1.2273 / 1.0801**, not **1.6227** | The report's figure is the **90M control**; that JSON holds the **2.5M donor** checkpoints. All are > 1 — only the magnitude is checkpoint-specific |
 | **log-drift vs power-law R² from `angular_convergence.json`** | **0.9885 / 0.8341**, not **0.986 / 0.748** | Same split: report quotes the 90M control, JSON holds 2.5M donors. Log-drift wins on every checkpoint measured |
 | **the cv of oracle depth** | **0.95–1.18**, not 0.798 | 0.798 is the **angular budget at each token's oracle depth**, not the cv of the depth itself. The report mislabelled this until it was caught; the true figure is *larger*, so the argument strengthens |
@@ -142,12 +142,13 @@ arms × 2.5M in 3,429 s; the Kaggle 12M arms took 5,648 s and 6,563 s).*
 
 **The two short runs that would relate arms we already present** — both are the same shape: they
 *connect* existing measurements rather than adding a new mechanism, which is where this project's
-uncertainty actually sits.
+uncertainty actually sits. **One of the two turned out to need no run at all**, which is recorded
+below rather than quietly deleted.
 
 | # | run | cost | what it converts |
 |---|---|---|---|
 | **1** | **Three config-identical controls in ONE job**, 2.5M each | **~58 min** | §4.27's **0.0914 cross-job spread is unexplained**, and it currently bounds every cross-job statement here. The *in-job* floor rests on **two accidental replicates found while auditing something else**. Three deliberate in-job replicates would separate "between-job drift" from "run-to-run noise" — and if the in-job spread is ~0.015 against 0.0914 between jobs, the report's in-job pairing discipline is **quantitatively vindicated** instead of merely asserted |
-| **2** | **One DataSphere control that saves its `tokenizer.json`** | **~20 min** | Every DataSphere arm is currently in its own tokenizer family and its absolute CE is comparable to nothing outside that family (§4.27). **One anchored arm converts all of them**, retroactively, and it is a one-line change to `outputs:` — the same line whose absence cost an artifact tonight |
+| ~~2~~ | ~~**One DataSphere control that saves its `tokenizer.json`**~~ | ~~~20 min~~ | **SOLVED at 22:38 without a run, and this row is kept to show why.** The plan was to spend 20 minutes of GPU anchoring one DataSphere arm so the rest became interpretable. Unnecessary: the kernel's `train_tokenizer()` is **deterministic and byte-identical across all four frozen kernels**, so the vocabulary simply **rebuilds locally** (`src/rebuild_ds_tokenizer.py`). Verified against the thing it had to reproduce — `rec_dense_s2`, whose local evaluation had produced a quarantined CE-9.27 artifact, now scores **CE 4.4252** against chance 8.3178 and its own in-job 4.4907. **Every DataSphere checkpoint in this project is now locally re-evaluable, at zero compute cost.** *The one-line `outputs:` fix is still the right thing for any future job — it removes the need to reconstruct anything* |
 
 **The measurements that would move a conclusion, and why they were not run tonight:**
 
