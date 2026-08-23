@@ -250,7 +250,24 @@ from asking myself questions.*
 | 15 | **`main` is a single initial commit**, so the whole project reads as one 486-file / 139k-line addition | `/ultrareview` refusing it against its 500-file / 8,000-line limits | the squash that fixed one review-scoping bug created its mirror image |
 | 16 | **A review base must be an ANCESTOR of the head, not a sibling off main** — three-dot diff uses the merge base | building a sibling base and getting the same 139k diff back | silent: the branch looked right and scoped nothing | | the user asking whether the sleeps were justified | burned turns; do work between checks instead |
 
-**The meta-pattern, which is the most reusable thing here:** in #10, #11 and §4.3's increment finding,
+| 17 | **I repeated the exact small-n error I had withdrawn two hours earlier.** The token-keyed result (n=1) was written into §3.5 as "the recommendation should be read as token-keyed" — the same failure as the annealing CE claim, on a larger effect, in the same document | an external reviewer asking "what is n?" | **knowing the lesson did not prevent repeating it.** The only thing that caught it was someone outside the work asking a one-line question |
+| 18 | **Seven distinct eval grids exist across the artifacts**, not the two I assumed; `plateau_mid` is grid-conditional with a 17% swing | auditing after surfacing it as a "known unknown" in a reviewer answer | audited clean — every load-bearing comparison shares a grid — but the risk was real and unwritten for the whole project |
+| 19 | **§4.6b's `raw` and `final_only` readout arms train with gradients pinned at the clip 100% of steps** (raw norms 26.1, 85.1) while the `norm` control never clips (0.84) | sampling 3 of 10 unverified findings from a delegated log sweep | the intervention *causes* the clipping, so it cannot be separated by re-running. Those conclusions are about "that readout **under saturating clipping**" |
+| 20 | **`n_loop_eff` is a constant fixed at 24 in every checkpoint** while `depth_init` scales by `1/√(2·n_loop_eff)` and schedules ran at mean depth 18 and 40 | a reviewer suggesting it as a 15-minute check | in-job pairs unaffected (both arms share the wrong constant); cross-schedule comparisons carry it. Now a stated §6.0b limitation |
+| 21 | **Two delegated probes paired oracle-depth labels with the wrong tokens** — depths came from `frozen_eval_set.npz`, tokens were read as sequential `val.bin` slices (frozen starts are 219, 494, 2630…) | checking the method before trusting the output | fixed and re-run; **both conclusions survived — but by luck of statistic** (one was a within-token comparison immune to shuffling), not by design |
+| 22 | **Neither the git push nor the HF upload has ever run, and no git remote is configured** | being asked point-blank about submission status at 18:00 | both are the literal submission targets. `upload_checkpoint.py` was fixed today (it previously shipped weights *without* the tokenizer) and dry-run verified, never executed |
+| 23 | **Nobody had ever generated text from the shipped checkpoint** | a reviewer asking whether anyone had looked | it passes — recognisably English, grammatical, prompt-anchored. The cheapest end-to-end defect check in the project, unrun for the entire session, and the exact failure the task statement warns about |
+| 24 | **§4.20's headline statistic measured layer *outputs*, which share a residual, rather than layer *contributions*** | trying to break the collapse with operator diversity and failing, then asking why | the finding was substantially an artifact. Two forward passes retired an architectural direction that would have cost a training slot and up to 3.8% of the parameter budget |
+
+**Second meta-pattern, added 2026-08-23 17:30 and worth more than the first:** #17, #23 and #24 all
+surfaced because *someone outside the work asked a one-line question* — "what is n?", "has anyone
+looked at what it writes?", "does diversity break it?". None came from introspection, and #17 is the
+sharpest case: I had written the lesson down, withdrawn a claim for violating it, and violated it
+again two hours later on a larger claim. **Writing a lesson down does not install it.** The cheap
+defence is not more self-review; it is keeping a channel open to someone who will ask the obvious
+question.
+
+**The first meta-pattern:** in #10, #11 and §4.3's increment finding,
 **the sampling or scoping rate WAS the result.** A quantity measured at the wrong resolution did not
 look wrong — it looked like a finding. That is the failure this project is most prone to, and the
 check is always cheap: *ask what the instrument samples before believing what it reports.*
