@@ -104,6 +104,13 @@ report, and it is not about looping at all.*
 *That dissociation is the answer to the brief's sentence: low perplexity and «за счет большого
 количества лупов» come apart under measurement.*
 
+> **The band statistic survives its own tolerance being doubled (§4.25).** `plateau.py`'s `tol = 0.01`
+> is *tighter* than the 0.0150 replicate floor, and at the floor **48% of individual arms change a
+> band edge** — but **seven of nine load-bearing paired verdicts are identical**, and the two that
+> flip go from *unmoved* to *narrows*, i.e. against the interventions. *"Not one widens the band" and
+> "annealing widens it" both hold at both tolerances. Absolute edges — including the headline
+> `[6,17]` — are tolerance-dependent and are not claimed across jobs.*
+
 > **The scope condition, stated because it is the strongest objection to the above (§4.24).** **Every
 > one of these paired interventions was measured at 2.5–3.5M tokens** — there is no budget leverage in
 > the data. And loop gain itself **roughly triples** between that regime and the released model's

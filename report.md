@@ -6071,6 +6071,53 @@ depth-band behaviour is uncoupled from loss behaviour.
 four tolerances was not run and would not change the three readings above, which turn on the pairs
 listed.*
 
+### 4.25 The band statistic's own tolerance, nulled against the noise floor
+
+**Every band claim in this report is produced by one instrument with one free parameter, and that
+parameter had never been varied.** `src/plateau.py` calls a depth "useful" if its CE is within
+`tol = 0.01` nats of the curve minimum. **The measured CUDA-dense replicate floor is 0.0150** — so the
+tolerance is *tighter than the noise it is supposed to absorb*, which is the wrong direction. This
+was not raised by any reviewer; it is the kind of thing §5's rule is about, and it had not been
+checked.
+
+**Sensitivity, over all 135 stored arms.** Recomputing every band at `tol = 0.0150` instead of 0.01:
+**70 of 135 arms (52%) keep exactly the same band; 48% move at least one edge.** Taken alone that
+looks fatal for the band axis.
+
+**It is not, because every band claim here is a *paired* delta, and the pairs move together.**
+Re-deriving each load-bearing comparison at both tolerances:
+
+| pair | at `tol = 0.010` (used) | at `tol = 0.0150` (the floor) | verdict |
+|---|---|---|---|
+| annealing `sw90` seed 0 | [8,16] → [8,24] **widens** | [8,20] → [8,24] **widens** | holds |
+| annealing `sw90` seed 1 | [8,16] → [8,24] **widens** | [4,20] → [8,32] **widens** | holds |
+| annealing 10M (`rec_sw90_s2`) | [8,16] → [8,24] **widens** | [8,20] → [8,24] **widens** | holds |
+| duo-causal W = 3, seed 0 | [8,20] → [8,16] narrows | [8,24] → [8,20] narrows | holds |
+| duo-causal W = 3, seed 1 | [8,20] → [8,16] narrows | [8,24] → [8,20] narrows | holds |
+| XSA seed 1 | [8,20] → [8,16] narrows | [8,24] → [8,20] narrows | holds |
+| LoRA pin-2, seed 1 | [8,20] → [8,16] narrows | [8,24] → [8,20] narrows | holds |
+| **XSA seed 0** | [8,16] → [8,16] *unmoved* | [4,20] → [8,20] **narrows** | **flips** |
+| **LoRA cycled, seed 0** | [8,20] → [8,20] *unmoved* | [4,20] → [8,20] **narrows** | **flips** |
+
+**Seven of nine verdicts are identical at a tolerance 50% larger than the one used. The two that flip
+both go from "unmoved" to "narrows" — against the interventions, not in their favour.**
+
+**What this licenses, and what it does not.**
+- **The report's central band claim is robust.** *Not one intervention widens the useful band* holds
+  at both tolerances, and at the floor tolerance the loss-lowering arms look **worse** on the depth
+  axis, not better.
+- **The one positive band claim is robust.** Supervision annealing widens at both tolerances in all
+  three pairs tested, including the 10M pair.
+- **Absolute band edges are not robust and should not be over-read.** A control's onset reads 8 at
+  `tol = 0.01` and 4 at `tol = 0.0150` in two arms. **The headline `[6,17]` is a tolerance-dependent
+  number**, and any comparison of band edges *across* jobs or tolerances is not supported. Every band
+  claim in this report is deliberately a within-pair delta, which is the form that survives.
+
+*Cost: one script over stored curves, no compute. It should have been run when `plateau.py` was
+written, and the reason it was not is that the instrument passed its own eight unit tests — which
+test that it computes the plateau correctly, not that the plateau is stable under its free parameter.
+**A test suite is not a null.***
+
 ## 5. Methods tested to destruction — what was claimed, what was measured, why it broke
 
 > **This section was titled "What didn't work", and that title was costing it.** A *null* says "we
