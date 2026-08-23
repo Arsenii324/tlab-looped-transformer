@@ -2459,6 +2459,34 @@ depth), even though the *total path length* nearly is. §8.2's per-token rate-co
 therefore have to predict a per-token budget, which this section shows is the harder object, not the
 easier one.
 
+### 4.8b The oracle-depth ragged cache — the last place depth heterogeneity could have paid, and it doesn't
+
+§4.7 shows per-token depth headroom is real and unreachable by rules (§4.7) or by static mixture
+(§4.7c). One place remained where heterogeneity might pay *without any rule having to commit*: the
+**KV cache**. §4.8 shows a ragged cache is nearly free, and §4.3 shows keys are near depth-invariant
+while values fall 2× — so if each context token were cached at *its own* oracle depth, attention
+could select the right material per token with no decision rule at all.
+
+Built exactly that (`src/oracle_cache_probe.py`): prefix cache with each token stored at its own
+§4.7 oracle depth, queries run at a fixed depth, against the best uniform-depth cache.
+
+| cache | best CE |
+|---|---|
+| best uniform depth (`k=2`) | **5.4792** |
+| oracle-depth ragged, query @8 | **5.4696** |
+| oracle-depth ragged, query @20 | 5.4796 |
+| oracle-depth ragged, query @32 | 5.5011 |
+
+**Δ = −0.0096 at the best query depth — about 5.5× below the 0.0527 replicate floor, and it reverses
+sign by query depth 24.** The uniform-cache curve is itself almost flat (5.4792 → 5.4801 across
+k=1..32, a 0.0009 spread), which is §4.8's "ragged is nearly free" restated: the cache depth barely
+matters, so choosing it *well* cannot matter much either. **The headroom is not recoverable through
+the cache.**
+
+That closes the last cheap route. Per-token depth demand is real (oracle 0.20 nats, split-half
+0.866) and unreachable by **four** independent instrument classes: label-free rules (§4.7), static
+readout mixtures (§4.7c), the annealed-trajectory variant (§4.7a), and now oracle-depth caching.
+
 ### 4.8a The within-sequence conflict of interest — real in sign, negligible in size
 
 §4.8 asks whether a query at depth `t` tolerates a cache written at depth `k`. **It does not ask a
