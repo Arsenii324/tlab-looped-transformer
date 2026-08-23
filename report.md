@@ -6088,6 +6088,47 @@ depth-band behaviour is uncoupled from loss behaviour.
 four tolerances was not run and would not change the three readings above, which turn on the pairs
 listed.*
 
+### 4.25b Is the band a grid artifact? Two checks, and the answer differs for the two claims
+
+A reviewer's objection: the paired sweep grid is `{…12, 16, 20, 24, 32, 48, 64}`, so **any band edge
+past 16 is resolved to within one grid interval**, and annealing's `end 16 → 24` might be a single
+step of a coarse ruler. Two things settle how much of that bites.
+
+**1. A sparse grid systematically understates the band — measured on the one checkpoint evaluated
+both ways.** The 90M control has a **dense integer** sweep (1..64) *and* can be restricted to the
+sparse grid the paired arms use, so the ruler can be compared against itself:
+
+| grid | tol 0.005 | tol 0.01 | tol 0.02 |
+|---|---|---|---|
+| **dense, 64 depths** | [7,14] w=7 | **[6,17] w=11** | [5,22] w=17 |
+| **sparse, 11 depths** | [8,12] w=4 | [8,16] w=8 | [8,20] w=12 |
+
+**The sparse grid moves the onset later (6 → 8) and the end earlier (17 → 16), losing ~27% of the
+width.** Since **every paired arm uses the same sparse grid**, the *comparisons* are fair — but the
+absolute band values in the paired tables are sparse-grid values and are **not** the same object as
+the headline's dense `[6,17]`. *That is a presentational hazard the report should not have left
+implicit, and §4.15's "grid choice alone moves it 17%" understated it.*
+
+**2. Annealing's `16 → 24` is a two-interval move with a contiguous interior, not one step.** The
+grid between them contains **20**, and `plateau` returns *contiguous* for both arms, so the margins
+can be read directly:
+
+| depth | `rec_dense_s2` margin vs its own min | `rec_sw90_s2` margin |
+|---|---|---|
+| 16 | 0.0059 | **0.0006** |
+| **20** | **0.0142 — outside tol** | **0.0043 — inside** |
+| **24** | **0.0237 — outside** | **0.0095 — inside** |
+| 32 | 0.0444 | 0.0224 |
+
+**The annealed arm is inside tolerance at 20 *and* 24 while the control is outside at both.** So the
+claim does not rest on one grid point flipping: it is **two consecutive depths at which the annealed
+model is still near its optimum and the control is not**, and the margins separate by 3–4× at each.
+
+**What is still not settled**, and it is the honest residue: **the dense check was possible only on
+the 90M control**, because the DataSphere checkpoints do not return their tokenizer
+(`checkpoints/BROKEN_a1_dense_grid_10M__README.md`). *A dense integer sweep on the annealing pair
+would have to run inside a job, and was not.*
+
 ### 4.26 "In-job paired" is batch-identical for every comparison here EXCEPT the annealing ones
 
 Every A/B claim in this report rests on **in-job pairing**: arms in one job share a shard, a
