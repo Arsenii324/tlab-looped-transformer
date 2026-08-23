@@ -103,6 +103,37 @@ deflated claims carry their caveats. A number that is wrong *everywhere* passes 
 
 ---
 
+## 6b. Numbers here that will **not** reproduce from the shipped artifacts, and why
+
+*Read this before recomputing anything. Every row is a trap we walked into ourselves, and each
+divergence is legitimate — but a reviewer who hits one without warning would reasonably conclude the
+report is wrong.*
+
+| if you recompute… | you will get… | why |
+|---|---|---|
+| **any DataSphere checkpoint, evaluated locally** | CE ≈ **9.3** — *above* chance (8.3178) | DataSphere kernels train their **own** BPE (NFKC normalizer, `unk_token`, 5,000 docs) and **return no `tokenizer.json`**; `src/train_tokenizer.py` uses no normalizer. **Those checkpoints cannot be evaluated against the shipped vocabulary at all.** Kaggle's tokenizer **is** byte-identical to the shipped one, so Kaggle checkpoints can |
+| **ρ from `checkpoints/jacobian_spec_results.json`** | **1.2273 / 1.0801**, not **1.6227** | The report's figure is the **90M control**; that JSON holds the **2.5M donor** checkpoints. All are > 1 — only the magnitude is checkpoint-specific |
+| **log-drift vs power-law R² from `angular_convergence.json`** | **0.9885 / 0.8341**, not **0.986 / 0.748** | Same split: report quotes the 90M control, JSON holds 2.5M donors. Log-drift wins on every checkpoint measured |
+| **the cv of oracle depth** | **0.95–1.18**, not 0.798 | 0.798 is the **angular budget at each token's oracle depth**, not the cv of the depth itself. The report mislabelled this until it was caught; the true figure is *larger*, so the argument strengthens |
+| **oracle headroom** | **0.3084**, **0.3083**, or **0.2008 / 0.2032** | Three legitimate quantities — 46M test-split, 46M full-set, and the 2.5M annealed pair. Each is labelled where it is used |
+| **the tail fraction on a 32-loop dump** | **~30.9%**, not 27.9% | 27.9% is *oracle depth > 32* on a **64**-loop sweep. On a 32-loop dump "past 32" is 0% by construction, and 30.9% is *fraction at the cap* — a different quantity |
+| **any band, at a different `plateau` tolerance** | different edges for **65 of 135 arms** | `tol = 0.01` is **tighter than the 0.0150 replicate floor.** §4.25 sweeps it; four of eleven paired verdicts are tolerance-dependent and are marked as such |
+| **absolute CE across two jobs** | up to **0.0914** apart at identical config, seed and step | Real, unexplained cross-job drift (§4.27). **In-job Δ always; absolute CE only within a tokenizer family** — {local, Kaggle} is one family, DataSphere is another |
+
+### Which checkpoint carries which claim
+
+The shipped artifact and the most-measured artifact are **not the same model**, which is stated in
+place throughout but is easier to hold as a table:
+
+| claim family | measured on |
+|---|---|
+| headline CE / ppl / bpb / band [6,17] | **90M control** (`full_control90_kaggle`) — the shipped artifact |
+| trajectory geometry: drift law, readout gain, ρ, radial clamp | **46M** `no_state_renorm` |
+| per-token depth demand, the eight exit rules, ragged KV cache | **46M** `no_state_renorm` |
+| depth-key rank, and the tied-vs-untied contrast | **2.5M** screening checkpoints, plus untrained models |
+| every paired intervention in §4.23 | **2.5–3.5M** in-job pairs |
+| annealing's band result | **2.5M** (seeds 0–3) and **10M** (seed 2) |
+
 ## 7. What we would run next, costed from measured wall-clock
 
 *Costed rather than listed, because "future work" is cheap to write and the numbers are available:

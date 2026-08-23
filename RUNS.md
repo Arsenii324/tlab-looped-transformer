@@ -800,3 +800,16 @@ bucketed rank comes back at or below ~4, GATE A fails and nothing about §4.7e i
 the parameter budget on three extra `W_K` matrices buy anything at all?** On this report's own
 regularity (§4.24) I expect any gain to sit mostly at `r = 1`, i.e. capacity rather than depth — and
 **§4.28 already prices the alternative: at 8 buckets it does not fit under the 10M cap at all.**
+
+**Second procedural amendment to `tlab-untie-s0`, 22:40 — still before any data, and the falsifier is
+unchanged.** The 21:52 amendment said GATE A would have to be a *relative* rank comparison, because
+DataSphere jobs return no tokenizer and a local forward pass would feed the model out-of-distribution
+token ids. **That constraint is gone.** `src/rebuild_ds_tokenizer.py` reproduces the kernel's
+deterministic vocabulary locally, verified by `rec_dense_s2` scoring **CE 4.4252** against chance
+8.3178 (§4.27). So GATE A will be run on **in-distribution** inputs with
+`configs/tokenizer_datasphere.json`.
+
+**What this changes: the measurement gets cleaner. What it does not change: the threshold.** GATE A
+still passes only if the trained bucketed arm's depth-key effective rank exceeds **~4**, and still
+decides nothing if it does not. *Recorded here rather than applied silently, because improving an
+instrument between registration and harvest is exactly when a threshold tends to drift.*
