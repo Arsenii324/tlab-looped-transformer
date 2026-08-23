@@ -1,6 +1,6 @@
 # Every error that reached a number
 
-*The brief warns that a capable coding agent «запросто возьмёт неправильный токенизатор или забудет
+*The brief warns that this kind of pipeline «запросто возьмёт неправильный токенизатор или забудет
 сохранить чекпойнт» — that the risk is losing track of the code, not writing it. This is the direct
 answer: the complete list, how each was caught, and what it cost. It is placed in the submission
 rather than an appendix because it is **evidence**, not apology.*

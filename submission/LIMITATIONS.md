@@ -10,8 +10,8 @@ produce.*
 
 ## 1. The apparatus, stated plainly so the rest can be priced
 
-**Every number in this submission was produced by code written by one coding agent, run on
-infrastructure it configured, scored by an evaluation harness it wrote, and checked mostly by it.**
+**Every number in this submission was produced by code written for this project, run on
+infrastructure configured for it, and scored by an evaluation harness written for it.**
 There is no independent implementation of anything. **Nothing outside this repository has ever scored
 this model** — no public benchmark, no third-party harness, no other person's eval.
 

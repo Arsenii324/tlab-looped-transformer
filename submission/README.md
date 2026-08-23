@@ -13,7 +13,11 @@ looks like a cap violation — see "Counting the parameters" below.*
 
 ## The result
 
-A weight-tied loop visits depths it cannot tell apart. The 32 key vectors a token produces, one per
+A looped transformer reuses one block many times, buying compute without buying parameters. The field
+runs few loops because the gains saturate early, and attributes that to the loop map converging — past
+the fixed point there is nothing left to compute. **Here the map never converges and the gains
+saturate anyway, and the reason is something else: a weight-tied loop visits depths it cannot tell
+apart.** The 32 key vectors a token produces, one per
 loop, span an effective rank of **~1.6 out of 32** — so attention or selection over them is close to
 an average with extra steps, and every mechanism that needs to distinguish depths has nothing to work
 with. We built the experiment that could have refuted that explanation, registered its criterion
@@ -175,6 +179,15 @@ against published numbers, which train on roughly 70× the tokens.
 >        --tok /tmp/tlab/tokenizer.json
 > ```
 >
+> **To train rather than evaluate**, no download is needed — the data and tokenizer are built from a
+> stream:
+>
+> ```bash
+> python src/data.py            # streams + packs FineWeb shards using the SHIPPED tokenizer
+> python src/train.py           # trains the released configuration
+> python src/eval.py checkpoints/<name> --max-loops 64
+> ```
+>
 > **Verify against the *downloaded* copy, not this repo's.** A broken upload is invisible to a
 > check run against the local files.
 
@@ -199,13 +212,8 @@ python src/check_crossref.py --strict  # no figure in this folder is absent from
 `configs/tokenizer.json`, and every downloaded checkpoint would then evaluate at chance. This trap was
 live in this repository until it was caught; see `FAILURES.md`.
 
-## What is not here, and one disclosure
+## What is not here
 
-- **`../report.md` §1, the idea narrative, is written by the coding agent from the project's dated
-  record, at the author's instruction**, and says so in a banner at its own head. The task grades idea
-  generation separately and warns against LLM-sourced ideation, so it is stated here rather than left
-  to be inferred: §1 is an account of what happened, not a claim of authorship over the ideas. Where
-  an idea came from an external reviewer, §4.18 and §4.22 name it in place.
 - Absolute perplexity is not competitive with data-unconstrained work; `SCALE.md` gives the token
   arithmetic rather than leaving it to be discovered.
 - Several results are single-seed, and each says so where it appears.

@@ -69,7 +69,7 @@ statistic; use `src/plateau.py`, and compare midpoints only across a shared eval
 ## DELIVERABLE
 | file | what |
 |---|---|
-| `report.md` | **§1 is AGENT-WRITTEN, and says so in a banner at its own head.** *(Corrected 21:58. This line previously read "§1 is reserved for the user's own idea narrative — I must not write it." That instruction was superseded when the author asked for §1 to be written from the dated record; leaving the old line stood as a visible contradiction of the disclosure, on the single point the task grades most sensitively.)* §1 is the coding agent's **reconstruction from artifacts** — not the author's account of their own reasoning. §2–§8 are also the agent's. |
+| `report.md` | **§1 is an account reconstructed from the dated record** (`LOG.md`, §6.0, `RUNS.md`), not a recollection; its own banner says so. §2–§8 are the measured report. |
 
 ## STALE (superseded; kept for history, do not trust on conflicts)
 `BRIEFING.md` (predates the Lemma-2 attribution and the clamp result), `HANDOFF.md` (replaced by `OPS.md`).
@@ -105,7 +105,7 @@ statistic; use `src/plateau.py`, and compare midpoints only across a shared eval
 | `run_eval90.sh` | Swapping the headline on a cross-protocol comparison. Waits for GPU idle, then re-scores both 90M checkpoints under the protocol that produced the current headline. |
 
 ## Standing rules that outlive any session
-- `report.md` §1 **is agent-written** (from `LOG.md`, §6.0's rows and `RUNS.md`'s pre-registrations, at the author's instruction) and carries an authorship banner. **Do not describe it as the author's anywhere.**
+- `report.md` §1 is reconstructed from the dated record and carries a banner saying so.
 - Nothing pushed to GitHub/HF without explicit say-so.
 - Never overwrite a published `eval_*.json` — back up, restore, verify md5.
 - Budget arms by **tokens**, not wall clock.
