@@ -11,16 +11,14 @@ Last updated 2026-08-23 18:22.
 
 ## Open — mine
 
-| # | task | from | state |
-|---|---|---|---|
-| ~~T17~~ | **DONE 2026-08-23 17:50.** First end-to-end read of `report.md` (5,448 lines). **12 defects found, 3 serious, none findable by grep**: sec3.5 restated both withdrawn claims under their own withdrawal blocks; sec8 carried the cross-job number sec4.17 replaced with one of opposite sign; sec4.2 still said loop gain was "flat" after its own paired correction. All fixed; recorded as sec6.0 row 33 + unknown-known #26 | unknown-known #7 | **CLOSED** |
-| ~~T14/T11/T12~~ | **CLOSED 18:19.** The learned depth gate ran and §4.22 measured *why* it fails: its logits are `w·h_t` on the RAW state, so the softmax saturates to a hard argmax (effective loops mixed **1.0 of r**). It cannot express a mixture. The **scale-invariant** rewrite (`state_norm`) is now launched — see T18 | reviewers x2 | **CLOSED, superseded by T18** |
-| **T18** | **IN FLIGHT — `tlab-duocausal-s0` / `-s1`, launched 18:19 on two T4s.** 4 in-job arms each (control, duo-causal W=2, W=3, scale-invariant gate), 3.5M tok/arm, seeds 0+1. **Read pre-registered in `RUNS.md` 18:19 with four falsifiers, before any data existed.** ETA ~20:30. Harvest: (a) plateau band vs in-job control, (b) `cos(du_t,du_{t−1})` post-hoc on the returned checkpoints — outputs named explicitly, not globbed | the readout-side/recurrence-side gap | **running** |
-| **T19** | **Full-budget replication of the LoRA positive.** §4.21 states plainly that no full-budget LoRA arm exists and that this is the check that decides it — the norm penalty shrank 12× and flipped character between 2.5M and 90M. Kaggle has ~7h quota. **Kaggle is NOT early-stop-safe**, so it must fit end to end | §4.21's own scope caveat | **next action** |
-| T1 | **Read the remaining project `.md`s in full.** Still unread end-to-end: `LOG.md`, `PLAN.md`, `BRIEFING.md`, `RUNS.md`, `STATE_FOR_REVIEWER.md`, `REVIEW_NOTES.md`, `DECISIONS.md`, `METHODS.md`, `INTERVENTIONS.md`, `README.md`, `HANDOFF.md`, 3 paper summaries | "Read all .md's… in full" | **not started.** Read so far: `QUEUE.md`, `INDEX.md`, `OPS.md`, `TASKS.md`, `DATASPHERE_NOTES.md`, **`report.md` end to end (T17)**, reviewer replies 14–18, the task statement |
-| T7 | **§8 writing items**: W1/W2/W4 **DONE 18:25 → §8.0d** (W1 verified from the LLA tarball — their *'K and V follow different trajectories, motivating r_v > r_k'* is §4.3's flat keys / halving values at 1/150th the scale). **W5 still owed**: decomposition tables for the remaining §4 sections that quote loop gain without splitting it | reviewer, logged in QUEUE | **W1/W2/W4 closed; W5 open** |
-| ~~T20~~ | **Fresh-clone dry run — DONE 18:15.** Cloned the ship branch `review` cold (670 files): `test_model.py` ALL PASS (incl. 4 new arm checks), `test_plateau.py` ALL PASS, `headline.py check` consistent after repointing at the 90M control, and `check_tokenizer_identity.py` on the SHIPPED checkpoint **PASS, \|diff\| 0.0020**. **`submission` is 5.5h stale and must not be pushed** | submission gate | **CLOSED** |
-~~T8~~ done, §4.20.
+| # | task | state |
+|---|---|---|
+| **T21** | **Fix the 12 findings from the adversarial read of `submission/`** — full list with quotes in `OPS.md` §0-PRE A1. **Three are HIGH and all three are in `README.md`**: it contradicts itself on the intervention count 21 lines apart, omits XSA (−0.216, zero params) from the five-sentence answer, and carries a superseded LoRA figure with none of its deflations. **Finding 7 misattributes §1 to the author when it is now agent-written** — the costly direction | **NEXT** |
+| **T22** | **`EXPERIMENTS.md` claims 113 arms and is missing six** the folder itself cites (`xsa_on_s0`, `xsa_control_s0`, `dv_lora_r4_s0`, `dv_lora_fixed0_s0`, `pin_lora_b2_s0`, `dc_w2_s0`). Their `results.json` are in `/tmp/ds_*`, not `checkpoints/`. Copy them in, re-run `src/make_inventory.py` | open |
+| **T23** | **Fold tonight's results into `submission/RESULTS.md` §5** (it has slots) and `report.md` §4.7d/§4.22: duo-causal W=2 null, W=3 gain-but-mechanism-inert, `dg_norm` null with a PASSING gate | open |
+| **T24** | **Harvest the four still-running jobs** — `divx-s1`, `xsa-s1`, `recmethod-s2`, Kaggle (~21:52). `./harvest_duocausal.sh` | open |
+| T7 | §8 writing: W5 decomposition tables. W1/W2/W4 done → §8.0d | open |
+| T1 | Read remaining project `.md`s in full | partial |
 
 ## Blocked on the user
 

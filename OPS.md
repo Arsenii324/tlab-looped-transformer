@@ -352,7 +352,7 @@ from both diffs — they remain in the base commit, so a reviewer can still open
 `git tag pre-squash-history` (963fab4) holds the pre-squash linear history; all of its content also
 survives in `review`, verified file-by-file, but the commit-by-commit record lives only on that tag.
 
-### 7b. UNKNOWN KNOWNS — 26 things that were true, visible in my own artifacts, and unwritten
+### 7b. UNKNOWN KNOWNS — 30 things that were true, visible in my own artifacts, and unwritten
 *Kept here rather than in `reviewer_answers/` because by definition these are what a fresh context
 will not think to look for. Every one surfaced when an artifact collided with an action — none came
 from asking myself questions.*
@@ -395,6 +395,18 @@ where the tokenizer fix landed in the README while the shipping path stayed brok
 *claim*, and this project's own rule for claims applies to it: **verify against raw output, not against
 the fact that you made the change.** The cheap discipline is to close a fix only on the artifact —
 the file that came back, the prose that now reads correctly — never on the edit.
+
+| 27 | **A quantity measured in one space read as a claim about another** — §4.20 (`cos→1.0` across layer *outputs*, which share a residual), the projection confound (rank 31.83 across *keys* with independent `W_K`), and the XSA amendment (a *cosine* of 0.35 reasoned about as a *loss* scale) | three instances in one evening, the third after I had fixed the second | **This is a diagnosable failure, not "lessons don't install".** Before a geometric number becomes a claim: *what space is it in, and what space does the claim need?* Would have caught all three |
+| 28 | **Partial arms in live logs produce spectacular fake numbers** — `dc_w3` +1.117, `dv_lora_fixed0` +0.8985, `pin_lora_b2` +0.0426, all from differencing an arm against a control with more evals | checking eval counts, not by the number looking wrong | three near-misses in ninety minutes; **the check is mechanical and the intuition is useless** |
+| 29 | **Removing a noisy safeguard without replacing its function.** `ds_watchdog.sh` was killed at 18:40 for chasing a finished job — correctly on the symptom. By 20:08 three attach logs were frozen while jobs ran on, and I reported a stale step count | noticing a step number unchanged for 36 minutes | results were never at risk (harvest is by job id) but monitoring was silently wrong. **When you remove a safeguard, name the function it served and say what now covers it** |
+| 30 | **Every reader-facing artifact multiplies the surface a caveat must reach.** Four surfaces now (`report.md`, `submission/` ×7, `reviewer_answers/` ×24, `LOG`/`RUNS`/`OPS`); **three of tonight's defects were a deflation living in the document nobody read** | an adversarial read, three times | **Now mechanically enforced**: `src/check_caveats.py` greps each deflated claim's number and flags any file carrying it without its caveat token. Converts "did I propagate it" from memory into a command |
+
+**Third meta-pattern, added 2026-08-23 20:32 — the space-mismatch family.** #27 is the most productive
+entry in this table because it is *diagnosable in advance*, unlike "be more careful". §4.20's collapse,
+the chord-vs-arc reversal, argmin's retirement, the projection confound and the XSA amendment are all
+**a real statistic being read as a claim about a space it does not live in.** The check is one
+question, asked before the number becomes a sentence: *what space is this measured in, and what space
+does my claim need?*
 
 **Second meta-pattern, added 2026-08-23 17:30 and worth more than the first:** #17, #23 and #24 all
 surfaced because *someone outside the work asked a one-line question* — "what is n?", "has anyone
