@@ -22,11 +22,10 @@ column down a source file, never across one.**
 
 ## Coverage — checked mechanically, and it is not perfect
 
-Of the 137 arms, **81 appear in `report.md` by their internal identifier and 119 by their best-CE value; 130 by one or the other.** **7 appear by neither:**
+Of the 140 arms, **85 appear in `report.md` by their internal identifier and 122 by their best-CE value; 134 by one or the other.** **6 appear by neither:**
 
 | arm | best CE | why it is absent, and whether that is a defect |
 |---|---|---|
-| `as_10M_sw90` | 4.3938 | §4.17 reports its **ΔCE_best = −0.0764** against the in-job control, not its absolute |
 | `sc_final_only_s1` | 5.0624 | §4.6b reports its **Δ** (−0.5165), not its absolute |
 | `trainL16_s1` | 4.6202 | §4.9's seed-1 replication reports the **re-zeroed mean curve** and the per-arm shape spread, never the five absolute bests. The conclusion (the collapse fails its pre-registered seed test) is reported; the raw column is not |
 | `trainL2_s1` | 4.4566 | §4.9's seed-1 replication reports the **re-zeroed mean curve** and the per-arm shape spread, never the five absolute bests. The conclusion (the collapse fails its pre-registered seed test) is reported; the raw column is not |
@@ -34,17 +33,11 @@ Of the 137 arms, **81 appear in `report.md` by their internal identifier and 119
 | `trainL4_s1` | 4.4772 | §4.9's seed-1 replication reports the **re-zeroed mean curve** and the per-arm shape spread, never the five absolute bests. The conclusion (the collapse fails its pre-registered seed test) is reported; the raw column is not |
 | `trainL8_s1` | 4.5601 | §4.9's seed-1 replication reports the **re-zeroed mean curve** and the per-arm shape spread, never the five absolute bests. The conclusion (the collapse fails its pre-registered seed test) is reported; the raw column is not |
 
-> **What this table is and is not.** It is the **screening and ablation inventory**, built by
-> `src/make_inventory.py` from job-results files. **The three full-budget runs are not in it** — the
-> 46M previous headline, the 90M control that ships, and the 90M norm-penalty arm are evaluated by
-> `src/eval.py` sweeps rather than job-results files, and are reported in `RESULTS.md` §1. The maximum
-> budget shown below is therefore 40M: a schema boundary, not a missing experiment.
-
 **So there is no unreported *experiment*** — every arm above is a run whose conclusion is reported; what is absent is an *absolute number* where the report quotes a delta or a mean curve instead. This table is where those numbers live.
 
 ## The inventory
 
-Total arms with a final validation curve: **137**
+Total arms with a final validation curve: **140**
 
 | # | arm | source | dev | tokens | loops | k | CE@1 | best CE | @r | band | mid | grid |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -104,84 +97,87 @@ Total arms with a final validation curve: **137**
 | 54 | `pin_lora_b2_s0` | ds_pin2 | cuda | 2.50M | 4-32 | 5 | 5.3348 | **5.2237** | 12 | [8,16] | 11.3 | 11 |
 | 55 | `rec_dense_s2` | ds_rec2 | cuda | 10.00M | 4-32 | 5 | 4.6585 | **4.4907** | 12 | [8,16] | 11.3 | 11 |
 | 56 | `rec_sw90_s2` | ds_rec2 | cuda | 10.00M | 4-32 | 5 | 4.8212 | **4.6025** | 12 | [8,24] | 13.9 | 11 |
-| 57 | `xsa_control_s0` | ds_xsa | cuda | 2.50M | 4-32 | 5 | 5.3858 | **5.2851** | 8 | [8,16] | 11.3 | 11 |
-| 58 | `xsa_on_s0` | ds_xsa | cuda | 2.50M | 4-32 | 5 | 5.2032 | **5.0689** | 12 | [8,16] | 11.3 | 11 |
-| 59 | `xsa_control_s1` | ds_xsa1 | cuda | 2.50M | 4-32 | 5 | 5.5160 | **5.4069** | 12 | [8,20] | 12.6 | 11 |
-| 60 | `xsa_on_s1` | ds_xsa1 | cuda | 2.50M | 4-32 | 5 | 5.2759 | **5.1436** | 12 | [8,16] | 11.3 | 11 |
-| 61 | `expl_0.0` | explore_results | cuda | 6.00M | 4-32 | 5 | 4.9174 | **4.7704** | 8 | [8,16] | 11.3 | 11 |
-| 62 | `expl_0.05` | explore_results | cuda | 6.00M | 4-32 | 5 | 4.9152 | **4.7646** | 8 | [8,16] | 11.3 | 11 |
-| 63 | `expl_0.15` | explore_results | cuda | 6.00M | 4-32 | 5 | 5.0644 | **4.9530** | 8 | [8,16] | 11.3 | 11 |
-| 64 | `expl_0.4` | explore_results | cuda | 6.00M | 4-32 | 5 | 5.5827 | **5.5604** | 8 | [2,32] | 8.0 | 11 |
-| 65 | `gsweep_0.25` | gate_sweep_results | cuda | 6.00M | 4-32 | 5 | 4.8525 | **4.7133** | 8 | [8,16] | 11.3 | 11 |
-| 66 | `gsweep_0.5` | gate_sweep_results | cuda | 6.00M | 4-32 | 5 | 4.9456 | **4.7906** | 8 | [8,16] | 11.3 | 11 |
-| 67 | `gsweep_0.75` | gate_sweep_results | cuda | 6.00M | 4-32 | 5 | 4.8975 | **4.7480** | 8 | [8,16] | 11.3 | 11 |
-| 68 | `gsweep_1.0` | gate_sweep_results | cuda | 6.00M | 4-32 | 5 | 4.9065 | **4.7749** | 8 | [8,16] | 11.3 | 11 |
-| 69 | `gi_additive` | gated_inject_results | mps | 2.50M | 4-32 | 5 | 5.4952 | **5.4000** | 8 | [8,16] | 11.3 | 8 |
-| 70 | `gi_gated` | gated_inject_results | mps | 2.50M | 4-32 | 5 | 5.4733 | **5.3730** | 8 | [8,16] | 11.3 | 8 |
-| 71 | `gi_gated_a874` | gated_inject_results | mps | 2.50M | 4-32 | 5 | 5.7217 | **5.6470** | 8 | [8,16] | 11.3 | 8 |
-| 72 | `kl_k1` | k_ladder_results | cuda | 2.50M | 4-32 | 1 | 5.8430 | **5.5783** | 16 | [12,24] | 17.0 | 11 |
-| 73 | `kl_k2` | k_ladder_results | cuda | 2.50M | 4-32 | 2 | 5.6106 | **5.5081** | 12 | [8,20] | 12.6 | 11 |
-| 74 | `kl_k3` | k_ladder_results | cuda | 2.50M | 4-32 | 3 | 5.4899 | **5.3877** | 12 | [8,20] | 12.6 | 11 |
-| 75 | `kl_k5` | k_ladder_results | cuda | 2.50M | 4-32 | 5 | 5.4690 | **5.3576** | 8 | [8,16] | 11.3 | 11 |
-| 76 | `kl_k8` | k_ladder_results | cuda | 2.50M | 4-32 | 8 | 5.3756 | **5.2819** | 8 | [8,16] | 11.3 | 11 |
-| 77 | `kg_lora_control` | kg_lorascale_results | cuda | 12.00M | 4-32 | 5 | 4.5802 | **4.3895** | 12 | [8,16] | 11.3 | 11 |
-| 78 | `kg_lora_r4` | kg_lorascale_results | cuda | 12.00M | 4-32 | 5 | 4.6077 | **4.3971** | 12 | [8,16] | 11.3 | 11 |
-| 79 | `kg_od_control_s1` | kg_rank8_results | cuda | 2.50M | 4-32 | 5 | 5.5236 | **5.4327** | 12 | [8,20] | 12.6 | 11 |
-| 80 | `kg_od_lora_r8_s1` | kg_rank8_results | cuda | 2.50M | 4-32 | 5 | 5.4536 | **5.3593** | 12 | [8,20] | 12.6 | 11 |
-| 81 | `kg_od_control_sw90` | kg_sw90_results | cuda | 2.50M | 4-32 | 5 | 5.6006 | **5.4821** | 16 | [8,24] | 13.9 | 11 |
-| 82 | `kg_od_lora_r4_sw90` | kg_sw90_results | cuda | 2.50M | 4-32 | 5 | 5.4969 | **5.3649** | 16 | [8,24] | 13.9 | 11 |
-| 83 | `od_control` | operator_diversity_results | mps | 2.50M | 4-32 | 5 | 5.4375 | **5.3391** | 12 | [8,16] | 11.3 | 8 |
-| 84 | `od_depth_gate` | operator_diversity_results | mps | 1.56M | 4-32 | 5 | 5.7398 | **5.6518** | 12 | [8,16] | 11.3 | 8 |
-| 85 | `od_lora_r2` | operator_diversity_results | mps | 2.50M | 4-32 | 5 | 5.5357 | **5.4332** | 12 | [8,16] | 11.3 | 8 |
-| 86 | `od_lora_r4` | operator_diversity_results | mps | 2.50M | 4-32 | 5 | 5.4031 | **5.2877** | 12 | [8,16] | 11.3 | 8 |
-| 87 | `rs_depth_init_s0` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.4481 | **5.3517** | 8 | [8,16] | 11.3 | 8 |
-| 88 | `rs_depth_init_s1` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.5853 | **5.5049** | 8 | [4,16] | 8.0 | 8 |
-| 89 | `rs_lambda1_s0` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.4840 | **5.3743** | 12 | [8,16] | 11.3 | 8 |
-| 90 | `rs_lambda1_s1` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.5336 | **5.4387** | 8 | [8,16] | 11.3 | 8 |
-| 91 | `rs_lambda2_s0` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.4950 | **5.3870** | 12 | [8,16] | 11.3 | 8 |
-| 92 | `rs_lambda2_s1` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.5737 | **5.4906** | 8 | [4,16] | 8.0 | 8 |
-| 93 | `sand_P0R2C1` | sandwich_results | mps | 1.19M | 6-48 | 5 | 5.9537 | **5.9038** | 24 | [8,32] | 16.0 | 8 |
-| 94 | `sand_P0R3C0` | sandwich_results | mps | 1.19M | 4-32 | 5 | 6.0213 | **5.9654** | 12 | [8,24] | 13.9 | 8 |
-| 95 | `sand_P1R1C1` | sandwich_results | mps | 1.19M | 12-96 | 5 | 5.6203 | **5.5926** | 4 | [2,32] | 8.0 | 8 |
-| 96 | `sand_P1R2C0` | sandwich_results | mps | 1.19M | 6-48 | 5 | 5.5886 | **5.5805** | 12 | [1,32] | 5.7 | 8 |
-| 97 | `sc_clock` | scale_clock_results | mps | 0.31M | 4-32 | 5 | 6.8802 | **6.7845** | 8 | [4,16] | 8.0 | 8 |
-| 98 | `sc_clock_sw90` | scale_clock_results | mps | 0.31M | 4-32 | 5 | 7.0758 | **7.0170** | 12 | [4,24] | 9.8 | 8 |
-| 99 | `sc_ctrl` | scale_clock_results | mps | 2.50M | 4-32 | 5 | 5.5129 | **5.4202** | 8 | [8,16] | 11.3 | 8 |
-| 100 | `sc_control_norm_s0` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.4692 | **5.3636** | 12 | [8,16] | 11.3 | 8 |
-| 101 | `sc_control_norm_s1` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.6548 | **5.5789** | 8 | [4,16] | 8.0 | 8 |
-| 102 | `sc_final_only_s0` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.4824 | **5.2654** | 8 | [4,8] | 5.7 | 8 |
-| 103 | `sc_final_only_s1` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.2629 | **5.0624** | 8 | [8,8] | 8.0 | 8 |
-| 104 | `sc_penalty_s0` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.2497 | **4.9975** | 8 | [8,12] | 9.8 | 8 |
-| 105 | `sc_penalty_s1` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.3561 | **5.1165** | 8 | [8,12] | 9.8 | 8 |
-| 106 | `sc_raw_s0` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.5594 | **5.3380** | 8 | [4,8] | 5.7 | 8 |
-| 107 | `sc_raw_s1` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.7419 | **5.5363** | 4 | [4,8] | 5.7 | 8 |
-| 108 | `center` | screening_results | mps | 0.89M | 4-32 | 5 | 6.7899 | **6.7723** | 4 | [4,32] | 11.3 | 8 |
-| 109 | `fixed_loops16` | screening_results | mps | 1.19M | 16-16 | 5 | 6.7003 | **6.6440** | 4 | [4,8] | 5.7 | 8 |
-| 110 | `inject_concat` | screening_results | mps | 0.89M | 4-32 | 5 | 6.7967 | **6.7565** | 2 | [2,32] | 8.0 | 8 |
-| 111 | `inject_none` | screening_results | mps | 0.99M | 4-32 | 5 | 6.9513 | **6.9513** | 1 | [1,32] | 5.7 | 8 |
-| 112 | `no_depth_init` | screening_results | mps | 0.99M | 4-32 | 5 | 6.9190 | **6.9139** | 8 | [1,32] | 5.7 | 8 |
-| 113 | `no_state_renorm` | screening_results | mps | 0.99M | 4-32 | 5 | 6.0805 | **6.0281** | 8 | [4,16] | 8.0 | 8 |
-| 114 | `truncate8` | screening_results | mps | 1.19M | 4-32 | 5 | 6.8291 | **6.7567** | 4 | [4,32] | 11.3 | 8 |
-| 115 | `center_seed1` | second_seed_results | mps | 0.99M | 4-32 | 5 | 6.7519 | **6.7486** | 8 | [1,32] | 5.7 | 8 |
-| 116 | `no_state_renorm_seed1` | second_seed_results | mps | 0.79M | 4-32 | 5 | 6.2782 | **6.2521** | 8 | [4,16] | 8.0 | 8 |
-| 117 | `sd_dense_k5_s0` | supervision_depth_results | mps | 2.50M | 4-32 | 5 | 5.5611 | **5.4527** | 8 | [8,16] | 11.3 | 8 |
-| 118 | `sd_dense_k5_s1` | supervision_depth_results | mps | 2.50M | 4-32 | 5 | 5.5369 | **5.4387** | 8 | [8,16] | 11.3 | 8 |
-| 119 | `sd_terminal_k1_s0` | supervision_depth_results | mps | 2.50M | 4-32 | 1 | 5.7128 | **5.4699** | 16 | [12,24] | 17.0 | 8 |
-| 120 | `sd_terminal_k1_s1` | supervision_depth_results | mps | 2.50M | 4-32 | 1 | 5.7552 | **5.4843** | 16 | [12,24] | 17.0 | 8 |
-| 121 | `sup_concentrated24_32_s0` | supervision_results | mps | 2.50M | 24-32 | 5 | 5.6616 | **5.4584** | 16 | [12,24] | 17.0 | 8 |
-| 122 | `sup_concentrated24_32_s1` | supervision_results | mps | 2.50M | 24-32 | 5 | 5.7089 | **5.5497** | 16 | [12,24] | 17.0 | 8 |
-| 123 | `sup_shallow4_8_s0` | supervision_results | mps | 2.50M | 4-8 | 5 | 5.4034 | **5.3592** | 4 | [2,4] | 2.8 | 8 |
-| 124 | `sup_shallow4_8_s1` | supervision_results | mps | 2.50M | 4-8 | 5 | 5.4249 | **5.3726** | 4 | [4,4] | 4.0 | 8 |
-| 125 | `sup_uniform4_32_s0` | supervision_results | mps | 2.50M | 4-32 | 5 | 5.5699 | **5.4838** | 8 | [4,16] | 8.0 | 8 |
-| 126 | `sup_uniform4_32_s1` | supervision_results | mps | 2.50M | 4-32 | 5 | 5.6001 | **5.5047** | 12 | [8,16] | 11.3 | 8 |
-| 127 | `t1_mu40_term` | term_seed1_mu40_results | cuda | 2.50M | 32-48 | 1 | 6.5690 | **5.4901** | 40 | [40,48] | 43.8 | 13 |
-| 128 | `trainL16` | train_at_L_results | cuda | 10.00M | 16-16 | 5 | 4.6177 | **4.4166** | 8 | [8,8] | 8.0 | 8 |
-| 129 | `trainL2` | train_at_L_results | cuda | 10.00M | 2-2 | 5 | 4.4435 | **4.4229** | 2 | [2,2] | 2.0 | 8 |
-| 130 | `trainL32` | train_at_L_results | cuda | 10.00M | 32-32 | 5 | 4.8377 | **4.4954** | 16 | [16,16] | 16.0 | 8 |
-| 131 | `trainL4` | train_at_L_results | cuda | 10.00M | 4-4 | 5 | 4.4833 | **4.4297** | 4 | [2,4] | 2.8 | 8 |
-| 132 | `trainL8` | train_at_L_results | cuda | 10.00M | 8-8 | 5 | 4.4875 | **4.3727** | 4 | [4,4] | 4.0 | 8 |
-| 133 | `trainL16_s1` | train_at_L_seed1_results | cuda | 10.00M | 16-16 | 5 | 4.8421 | **4.6202** | 8 | [8,16] | 11.3 | 8 |
-| 134 | `trainL2_s1` | train_at_L_seed1_results | cuda | 10.00M | 2-2 | 5 | 4.4832 | **4.4566** | 2 | [2,2] | 2.0 | 8 |
-| 135 | `trainL32_s1` | train_at_L_seed1_results | cuda | 10.00M | 32-32 | 5 | 4.9496 | **4.6055** | 16 | [16,32] | 22.6 | 8 |
-| 136 | `trainL4_s1` | train_at_L_seed1_results | cuda | 10.00M | 4-4 | 5 | 4.5449 | **4.4772** | 4 | [2,4] | 2.8 | 8 |
-| 137 | `trainL8_s1` | train_at_L_seed1_results | cuda | 10.00M | 8-8 | 5 | 4.6951 | **4.5601** | 4 | [4,8] | 5.7 | 8 |
+| 57 | `ut_b4_gate_s0` | ds_untie | cuda | 3.50M | 4-32 | 5 | 5.1754 | **5.0411** | 16 | [12,24] | 17.0 | 11 |
+| 58 | `ut_b4_s0` | ds_untie | cuda | 3.50M | 4-32 | 5 | 5.2129 | **5.0777** | 12 | [8,16] | 11.3 | 11 |
+| 59 | `ut_ctrl_s0` | ds_untie | cuda | 3.50M | 4-32 | 5 | 5.2113 | **5.0905** | 12 | [8,16] | 11.3 | 11 |
+| 60 | `xsa_control_s0` | ds_xsa | cuda | 2.50M | 4-32 | 5 | 5.3858 | **5.2851** | 8 | [8,16] | 11.3 | 11 |
+| 61 | `xsa_on_s0` | ds_xsa | cuda | 2.50M | 4-32 | 5 | 5.2032 | **5.0689** | 12 | [8,16] | 11.3 | 11 |
+| 62 | `xsa_control_s1` | ds_xsa1 | cuda | 2.50M | 4-32 | 5 | 5.5160 | **5.4069** | 12 | [8,20] | 12.6 | 11 |
+| 63 | `xsa_on_s1` | ds_xsa1 | cuda | 2.50M | 4-32 | 5 | 5.2759 | **5.1436** | 12 | [8,16] | 11.3 | 11 |
+| 64 | `expl_0.0` | explore_results | cuda | 6.00M | 4-32 | 5 | 4.9174 | **4.7704** | 8 | [8,16] | 11.3 | 11 |
+| 65 | `expl_0.05` | explore_results | cuda | 6.00M | 4-32 | 5 | 4.9152 | **4.7646** | 8 | [8,16] | 11.3 | 11 |
+| 66 | `expl_0.15` | explore_results | cuda | 6.00M | 4-32 | 5 | 5.0644 | **4.9530** | 8 | [8,16] | 11.3 | 11 |
+| 67 | `expl_0.4` | explore_results | cuda | 6.00M | 4-32 | 5 | 5.5827 | **5.5604** | 8 | [2,32] | 8.0 | 11 |
+| 68 | `gsweep_0.25` | gate_sweep_results | cuda | 6.00M | 4-32 | 5 | 4.8525 | **4.7133** | 8 | [8,16] | 11.3 | 11 |
+| 69 | `gsweep_0.5` | gate_sweep_results | cuda | 6.00M | 4-32 | 5 | 4.9456 | **4.7906** | 8 | [8,16] | 11.3 | 11 |
+| 70 | `gsweep_0.75` | gate_sweep_results | cuda | 6.00M | 4-32 | 5 | 4.8975 | **4.7480** | 8 | [8,16] | 11.3 | 11 |
+| 71 | `gsweep_1.0` | gate_sweep_results | cuda | 6.00M | 4-32 | 5 | 4.9065 | **4.7749** | 8 | [8,16] | 11.3 | 11 |
+| 72 | `gi_additive` | gated_inject_results | mps | 2.50M | 4-32 | 5 | 5.4952 | **5.4000** | 8 | [8,16] | 11.3 | 8 |
+| 73 | `gi_gated` | gated_inject_results | mps | 2.50M | 4-32 | 5 | 5.4733 | **5.3730** | 8 | [8,16] | 11.3 | 8 |
+| 74 | `gi_gated_a874` | gated_inject_results | mps | 2.50M | 4-32 | 5 | 5.7217 | **5.6470** | 8 | [8,16] | 11.3 | 8 |
+| 75 | `kl_k1` | k_ladder_results | cuda | 2.50M | 4-32 | 1 | 5.8430 | **5.5783** | 16 | [12,24] | 17.0 | 11 |
+| 76 | `kl_k2` | k_ladder_results | cuda | 2.50M | 4-32 | 2 | 5.6106 | **5.5081** | 12 | [8,20] | 12.6 | 11 |
+| 77 | `kl_k3` | k_ladder_results | cuda | 2.50M | 4-32 | 3 | 5.4899 | **5.3877** | 12 | [8,20] | 12.6 | 11 |
+| 78 | `kl_k5` | k_ladder_results | cuda | 2.50M | 4-32 | 5 | 5.4690 | **5.3576** | 8 | [8,16] | 11.3 | 11 |
+| 79 | `kl_k8` | k_ladder_results | cuda | 2.50M | 4-32 | 8 | 5.3756 | **5.2819** | 8 | [8,16] | 11.3 | 11 |
+| 80 | `kg_lora_control` | kg_lorascale_results | cuda | 12.00M | 4-32 | 5 | 4.5802 | **4.3895** | 12 | [8,16] | 11.3 | 11 |
+| 81 | `kg_lora_r4` | kg_lorascale_results | cuda | 12.00M | 4-32 | 5 | 4.6077 | **4.3971** | 12 | [8,16] | 11.3 | 11 |
+| 82 | `kg_od_control_s1` | kg_rank8_results | cuda | 2.50M | 4-32 | 5 | 5.5236 | **5.4327** | 12 | [8,20] | 12.6 | 11 |
+| 83 | `kg_od_lora_r8_s1` | kg_rank8_results | cuda | 2.50M | 4-32 | 5 | 5.4536 | **5.3593** | 12 | [8,20] | 12.6 | 11 |
+| 84 | `kg_od_control_sw90` | kg_sw90_results | cuda | 2.50M | 4-32 | 5 | 5.6006 | **5.4821** | 16 | [8,24] | 13.9 | 11 |
+| 85 | `kg_od_lora_r4_sw90` | kg_sw90_results | cuda | 2.50M | 4-32 | 5 | 5.4969 | **5.3649** | 16 | [8,24] | 13.9 | 11 |
+| 86 | `od_control` | operator_diversity_results | mps | 2.50M | 4-32 | 5 | 5.4375 | **5.3391** | 12 | [8,16] | 11.3 | 8 |
+| 87 | `od_depth_gate` | operator_diversity_results | mps | 1.56M | 4-32 | 5 | 5.7398 | **5.6518** | 12 | [8,16] | 11.3 | 8 |
+| 88 | `od_lora_r2` | operator_diversity_results | mps | 2.50M | 4-32 | 5 | 5.5357 | **5.4332** | 12 | [8,16] | 11.3 | 8 |
+| 89 | `od_lora_r4` | operator_diversity_results | mps | 2.50M | 4-32 | 5 | 5.4031 | **5.2877** | 12 | [8,16] | 11.3 | 8 |
+| 90 | `rs_depth_init_s0` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.4481 | **5.3517** | 8 | [8,16] | 11.3 | 8 |
+| 91 | `rs_depth_init_s1` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.5853 | **5.5049** | 8 | [4,16] | 8.0 | 8 |
+| 92 | `rs_lambda1_s0` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.4840 | **5.3743** | 12 | [8,16] | 11.3 | 8 |
+| 93 | `rs_lambda1_s1` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.5336 | **5.4387** | 8 | [8,16] | 11.3 | 8 |
+| 94 | `rs_lambda2_s0` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.4950 | **5.3870** | 12 | [8,16] | 11.3 | 8 |
+| 95 | `rs_lambda2_s1` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.5737 | **5.4906** | 8 | [4,16] | 8.0 | 8 |
+| 96 | `sand_P0R2C1` | sandwich_results | mps | 1.19M | 6-48 | 5 | 5.9537 | **5.9038** | 24 | [8,32] | 16.0 | 8 |
+| 97 | `sand_P0R3C0` | sandwich_results | mps | 1.19M | 4-32 | 5 | 6.0213 | **5.9654** | 12 | [8,24] | 13.9 | 8 |
+| 98 | `sand_P1R1C1` | sandwich_results | mps | 1.19M | 12-96 | 5 | 5.6203 | **5.5926** | 4 | [2,32] | 8.0 | 8 |
+| 99 | `sand_P1R2C0` | sandwich_results | mps | 1.19M | 6-48 | 5 | 5.5886 | **5.5805** | 12 | [1,32] | 5.7 | 8 |
+| 100 | `sc_clock` | scale_clock_results | mps | 0.31M | 4-32 | 5 | 6.8802 | **6.7845** | 8 | [4,16] | 8.0 | 8 |
+| 101 | `sc_clock_sw90` | scale_clock_results | mps | 0.31M | 4-32 | 5 | 7.0758 | **7.0170** | 12 | [4,24] | 9.8 | 8 |
+| 102 | `sc_ctrl` | scale_clock_results | mps | 2.50M | 4-32 | 5 | 5.5129 | **5.4202** | 8 | [8,16] | 11.3 | 8 |
+| 103 | `sc_control_norm_s0` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.4692 | **5.3636** | 12 | [8,16] | 11.3 | 8 |
+| 104 | `sc_control_norm_s1` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.6548 | **5.5789** | 8 | [4,16] | 8.0 | 8 |
+| 105 | `sc_final_only_s0` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.4824 | **5.2654** | 8 | [4,8] | 5.7 | 8 |
+| 106 | `sc_final_only_s1` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.2629 | **5.0624** | 8 | [8,8] | 8.0 | 8 |
+| 107 | `sc_penalty_s0` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.2497 | **4.9975** | 8 | [8,12] | 9.8 | 8 |
+| 108 | `sc_penalty_s1` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.3561 | **5.1165** | 8 | [8,12] | 9.8 | 8 |
+| 109 | `sc_raw_s0` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.5594 | **5.3380** | 8 | [4,8] | 5.7 | 8 |
+| 110 | `sc_raw_s1` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.7419 | **5.5363** | 4 | [4,8] | 5.7 | 8 |
+| 111 | `center` | screening_results | mps | 0.89M | 4-32 | 5 | 6.7899 | **6.7723** | 4 | [4,32] | 11.3 | 8 |
+| 112 | `fixed_loops16` | screening_results | mps | 1.19M | 16-16 | 5 | 6.7003 | **6.6440** | 4 | [4,8] | 5.7 | 8 |
+| 113 | `inject_concat` | screening_results | mps | 0.89M | 4-32 | 5 | 6.7967 | **6.7565** | 2 | [2,32] | 8.0 | 8 |
+| 114 | `inject_none` | screening_results | mps | 0.99M | 4-32 | 5 | 6.9513 | **6.9513** | 1 | [1,32] | 5.7 | 8 |
+| 115 | `no_depth_init` | screening_results | mps | 0.99M | 4-32 | 5 | 6.9190 | **6.9139** | 8 | [1,32] | 5.7 | 8 |
+| 116 | `no_state_renorm` | screening_results | mps | 0.99M | 4-32 | 5 | 6.0805 | **6.0281** | 8 | [4,16] | 8.0 | 8 |
+| 117 | `truncate8` | screening_results | mps | 1.19M | 4-32 | 5 | 6.8291 | **6.7567** | 4 | [4,32] | 11.3 | 8 |
+| 118 | `center_seed1` | second_seed_results | mps | 0.99M | 4-32 | 5 | 6.7519 | **6.7486** | 8 | [1,32] | 5.7 | 8 |
+| 119 | `no_state_renorm_seed1` | second_seed_results | mps | 0.79M | 4-32 | 5 | 6.2782 | **6.2521** | 8 | [4,16] | 8.0 | 8 |
+| 120 | `sd_dense_k5_s0` | supervision_depth_results | mps | 2.50M | 4-32 | 5 | 5.5611 | **5.4527** | 8 | [8,16] | 11.3 | 8 |
+| 121 | `sd_dense_k5_s1` | supervision_depth_results | mps | 2.50M | 4-32 | 5 | 5.5369 | **5.4387** | 8 | [8,16] | 11.3 | 8 |
+| 122 | `sd_terminal_k1_s0` | supervision_depth_results | mps | 2.50M | 4-32 | 1 | 5.7128 | **5.4699** | 16 | [12,24] | 17.0 | 8 |
+| 123 | `sd_terminal_k1_s1` | supervision_depth_results | mps | 2.50M | 4-32 | 1 | 5.7552 | **5.4843** | 16 | [12,24] | 17.0 | 8 |
+| 124 | `sup_concentrated24_32_s0` | supervision_results | mps | 2.50M | 24-32 | 5 | 5.6616 | **5.4584** | 16 | [12,24] | 17.0 | 8 |
+| 125 | `sup_concentrated24_32_s1` | supervision_results | mps | 2.50M | 24-32 | 5 | 5.7089 | **5.5497** | 16 | [12,24] | 17.0 | 8 |
+| 126 | `sup_shallow4_8_s0` | supervision_results | mps | 2.50M | 4-8 | 5 | 5.4034 | **5.3592** | 4 | [2,4] | 2.8 | 8 |
+| 127 | `sup_shallow4_8_s1` | supervision_results | mps | 2.50M | 4-8 | 5 | 5.4249 | **5.3726** | 4 | [4,4] | 4.0 | 8 |
+| 128 | `sup_uniform4_32_s0` | supervision_results | mps | 2.50M | 4-32 | 5 | 5.5699 | **5.4838** | 8 | [4,16] | 8.0 | 8 |
+| 129 | `sup_uniform4_32_s1` | supervision_results | mps | 2.50M | 4-32 | 5 | 5.6001 | **5.5047** | 12 | [8,16] | 11.3 | 8 |
+| 130 | `t1_mu40_term` | term_seed1_mu40_results | cuda | 2.50M | 32-48 | 1 | 6.5690 | **5.4901** | 40 | [40,48] | 43.8 | 13 |
+| 131 | `trainL16` | train_at_L_results | cuda | 10.00M | 16-16 | 5 | 4.6177 | **4.4166** | 8 | [8,8] | 8.0 | 8 |
+| 132 | `trainL2` | train_at_L_results | cuda | 10.00M | 2-2 | 5 | 4.4435 | **4.4229** | 2 | [2,2] | 2.0 | 8 |
+| 133 | `trainL32` | train_at_L_results | cuda | 10.00M | 32-32 | 5 | 4.8377 | **4.4954** | 16 | [16,16] | 16.0 | 8 |
+| 134 | `trainL4` | train_at_L_results | cuda | 10.00M | 4-4 | 5 | 4.4833 | **4.4297** | 4 | [2,4] | 2.8 | 8 |
+| 135 | `trainL8` | train_at_L_results | cuda | 10.00M | 8-8 | 5 | 4.4875 | **4.3727** | 4 | [4,4] | 4.0 | 8 |
+| 136 | `trainL16_s1` | train_at_L_seed1_results | cuda | 10.00M | 16-16 | 5 | 4.8421 | **4.6202** | 8 | [8,16] | 11.3 | 8 |
+| 137 | `trainL2_s1` | train_at_L_seed1_results | cuda | 10.00M | 2-2 | 5 | 4.4832 | **4.4566** | 2 | [2,2] | 2.0 | 8 |
+| 138 | `trainL32_s1` | train_at_L_seed1_results | cuda | 10.00M | 32-32 | 5 | 4.9496 | **4.6055** | 16 | [16,32] | 22.6 | 8 |
+| 139 | `trainL4_s1` | train_at_L_seed1_results | cuda | 10.00M | 4-4 | 5 | 4.5449 | **4.4772** | 4 | [2,4] | 2.8 | 8 |
+| 140 | `trainL8_s1` | train_at_L_seed1_results | cuda | 10.00M | 8-8 | 5 | 4.6951 | **4.5601** | 4 | [4,8] | 5.7 | 8 |

@@ -159,9 +159,14 @@ below rather than quietly deleted.
 | 5 | **One same-config replicate at 90M** | ~9 h | The floor every "×the floor" claim in this report uses is measured at 2.5M and applied at 90M |
 | 6 | **A second width** (e.g. 320 or 640) | ~1 h at 2.5M | §4.7e's mechanism is claimed width-independent and measured at **one width**. §4.28 makes it a dose–response prediction, so a second width is a real test rather than a replication |
 
-**Running as this was written:** `tlab-untie-s0` — the causal test of §4.7e (tied control · `W_K` in 4
-loop-index buckets · buckets + the scale-invariant gate), with GATES A/B/C registered in `RUNS.md`
-before submission and `harvest_untie.sh` written before the data landed.
+**`tlab-untie-s0` landed at 23:00 and its registered GATE A FAILED**, so **the causal test of §4.7e is
+undecided and is reported that way** — the rank explanation still rests on `dg_norm`'s null, which is
+a correlation. *This is a named absence, not a result we are holding back:* four distinct key
+projections were predicted to give rank ~5.7 and gave **1.73** trained, so the high-rank arm the test
+needed does not exist. **The failure was informative anyway** (§4.30: rank is 8.818/32 at
+initialisation and 1.74 after training, which locates the collapse in the objective rather than only
+in the architecture) — but that is a different claim from the one the job was built to decide, and it
+has one seed.
 
 **Nothing else was started.** At the time of writing, a 12M scale test costs ~3.1 h against ~1.5 h
 remaining, and this project's own §6.0 has two rows about launching under time pressure — including

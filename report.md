@@ -6544,6 +6544,77 @@ counted it among the interventions "that lower the loss" is counting a 2.5M-toke
 establish that the effect is zero at scale; it establishes that the like-for-like effect measured at
 2.5M is not reproduced at 12M, which is enough to withdraw the claim as stated.*
 
+### 4.30 The causal test of §4.7e: GATE A FAILED, so the causal claim is undecided — and the failure is the finding
+
+`tlab-untie-s0` landed at 23:00. Its falsifiers were registered in `RUNS.md` at 21:48, before
+submission, and are honoured here rather than reinterpreted.
+
+Three arms, one job, seed 0, 3.5M tokens each, 1,707 steps, 7 evals each, **parity checked before any
+differencing**, chance guard passed:
+
+| arm | params | CE@1 | best CE | @r | band |
+|---|---|---|---|---|---|
+| `ut_ctrl_s0` — tied `W_K` | 9,064,608 | 5.2113 | 5.0905 | 12 | [8,16] |
+| `ut_b4_s0` — `W_K` in 4 buckets | 9,967,776 | 5.2129 | 5.0777 | 12 | [8,16] |
+| `ut_b4_gate_s0` — 4 buckets + scale-invariant gate | 9,968,225 | 5.1754 | **5.0411** | 16 | *(mixture window — excluded)* |
+
+#### GATE A — FAILED. Nothing below decides §4.7e.
+
+**The registered condition was that the trained bucketed arm's depth-key effective rank must exceed
+~4.** §4.28 predicted **5.742** from four distinct projections. Measured on the trained weights, on
+**in-distribution** tokens (`configs/tokenizer_datasphere.json`, §4.27):
+
+| arm | effective rank / 32 |
+|---|---|
+| `ut_ctrl_s0` (tied) | **1.66** |
+| `ut_b4_s0` (4 buckets) | **1.73** |
+| `ut_b4_gate_s0` (4 buckets + gate) | **1.74** |
+
+**Four distinct key projections bought 0.07 of rank, against a predicted 4.1.** GATE A fails, and by
+the registration **the causal status of §4.7e is undecided**: the rank collapse remains supported by
+`dg_norm`'s null, which is a correlation. *That is the honest reading and it is the one registered.*
+
+#### But the failure is not a null result — it locates the collapse in TRAINING, not in the architecture
+
+The pre-flight measured the same architecture **untrained**: `kv_untie_buckets=1` gives **2.729/32**
+and `kv_untie_buckets=4` gives **8.818/32** — a 3.2× diversification, exactly as §4.28's
+random-projection dose–response predicts, on the kernel that then ran. **So the buckets work at
+initialisation and training destroys what they buy: 8.818 → 1.74, a 5× collapse.**
+
+**This sharpens §4.7e rather than confirming or refuting it, and the sharpened version is a stronger
+claim.** §4.7e attributed the collapse to weight tying — one `W_K` applied to a collinear stream —
+and noted that training makes it worse (2.73 → 1.83). **The architecture was then given four
+projections and training collapsed those too.** So:
+
+> **Depth-key collapse is not merely what a tied architecture is stuck with. It is what this training
+> objective drives the representation toward, even when the architecture is given the capacity to
+> avoid it.** Removing the structural cause did not remove the collapse.
+
+*That is a materially different claim from "weight tying causes it", and it is the one the data
+supports.* It also predicts, falsifiably, that **no purely architectural fix in this family will
+work**: §4.28's price list buys rank at initialisation and next-token cross-entropy at 3.5M tokens
+appears to spend it.
+
+#### GATE B — cannot be read as registered, and the reason is GATE A
+
+GATE B asked what the gate contributes **at high rank**. There is no high-rank arm, so the comparison
+it named does not exist. For the record, in this job the gate contributes **ΔCE_best = −0.0367**
+against `dg_norm`'s **−0.0012 / +0.0023** at the same rank — but **both arms sit at rank ~1.7**, so
+this is not a rank contrast and must not be reported as one.
+
+#### GATE C — fires exactly as predicted, and it is the fourth instance tonight
+
+`Δgain = ΔCE@1 − ΔCE_best` puts **102%** of the gate arm's gain at `r = 1`. The prediction registered
+at 21:48 was **67–101%, i.e. capacity rather than depth-mixing**. **Confirmed.**
+
+**And untying alone is not worth its price.** `ut_b4_s0` vs the tied control: **ΔCE_best = −0.0128**,
+*inside* the 0.0150 replicate floor, for **+10.0% of the parameter budget** (+903,168). Three extra
+`W_K` matrices bought nothing measurable.
+
+*Scope: one seed, 3.5M tokens, four buckets, one width. GATE A's failure is a statement about what
+training does to this architecture at this budget, not a proof that no untying schedule could hold
+rank.*
+
 ## 5. Methods tested to destruction — what was claimed, what was measured, why it broke
 
 > **This section was titled "What didn't work", and that title was costing it.** A *null* says "we

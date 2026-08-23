@@ -63,9 +63,12 @@ and it is the best-evidenced thing in it:
 | loop-cycled LoRA (a different operator per depth) | a **capacity** result, not a diversity one; a zero-diversity pin *beats* it; dead at 12M |
 | duo-causal attention (attend to the previous loop's KV) | W=2 null; W=3 lowers CE but its **registered mechanism check failed** |
 | five label-free halting rules + a learned probe + two Q-exit heads | best captures **0.1%** of a real headroom (`EARLY_EXIT.md`) |
+| **untying `W_K` into 4 loop-index buckets** — buying the rank the others lacked | **−0.0128 for +10.0% of the parameter budget**, inside the floor. And it **did not raise the trained rank**: 8.818/32 at initialisation, **1.74 after training** (§4.30) |
 
 **And there is a measured reason rather than seven shrugs: a token's 32 depth keys span an effective
-rank of ~1.6.** There is almost nothing for any mixing or selection mechanism to discriminate
+rank of ~1.6** — and the last arm of the project tried to *buy* that rank architecturally, got it at
+initialisation (8.818/32), and watched training collapse it back to 1.74 (§4.30). **The constraint is
+not only structural; the objective reproduces it.** There is almost nothing for any mixing or selection mechanism to discriminate
 between — and **the one experiment built to overturn that explanation was registered in advance, ran,
 and did not** (`dg_norm`, two seeds). §4.28 turns the mechanism into a priced dose–response: depth-key
 rank is `≈ 1.6 × (number of distinct projections)`, so a weight-tied loop — which has exactly one

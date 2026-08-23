@@ -37,8 +37,13 @@ published positives in the depth-mixture family rather than contradicting them.
    weight tying via **projection asymmetry**: an unshared stack manufactures a near-orthogonal key set
    from a state stream that is *just as collinear* as the tied one (4.36 vs 1.40 of 33), purely
    because each layer owns a `W_K`. **One shared projection cannot buy that at any width**
-   `[RANK-PROJECTION]`. Rank scales as ≈ 1.6 × (number of distinct projections), so the fix is priced
-   and it is not cheap: 4 buckets costs +10.0% of the parameter budget (§4.28).
+   `[RANK-PROJECTION]`. Rank scales as ≈ 1.6 × (number of distinct projections) **at initialisation**,
+   so the architectural fix is priced — 4 buckets, +10.0% of the parameter budget (§4.28). **We bought
+   it, and training spent it.** Given four distinct key projections, rank starts at **8.818/32** and
+   *trains down to 1.74* — against the tied control's 1.66 (§4.30). **So the collapse is not only what
+   a tied architecture is stuck with; it is what this objective drives the representation toward even
+   when the architecture can avoid it.** That predicts, falsifiably, that no purely architectural fix
+   in this family will hold.
 
 3. **We built the experiment that would have refuted that, and registered the criterion before the arm
    existed.** A *scale-invariant* depth gate that **demonstrably mixes** — 7.58/8, 14.96/16, 29.84/32
