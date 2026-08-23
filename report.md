@@ -3951,6 +3951,32 @@ mean +0.0125). So the pre-registered claim holds for `sw90` and fails for `sw75`
 > projected. The better-specified test gives the same verdict, which is the useful outcome: the
 > withdrawal is not an artifact of an over-conservative yardstick.
 >
+> ### THE BAND WIDENS AT ALL FOUR SEEDS — this is what survives, and it is a better result
+>
+> The withdrawal above is about **CE**. Reading the *plateau* at the same four seeds (the statistic
+> §4.15 says to use, grid-matched, all four in-job pairs):
+>
+> | seed | dense mid | `sw90` mid | **Δ band** | ΔCE_best |
+> |---|---|---|---|---|
+> | 0 | 11.3 | 13.9 | **+2.5** | −0.0811 |
+> | 1 | 11.3 | 13.9 | **+2.5** | −0.0609 |
+> | 2 | 11.3 | 13.9 | **+2.5** | **+0.0482** |
+> | 3 | 9.8 | 17.0 | **+7.2** | −0.0902 |
+>
+> **Four for four, never negative, three of them identical to the grid point.** Seed 2 — the seed that
+> *reverses* the CE claim — shows exactly the same +2.5 band shift as the two seeds that support it.
+>
+> **So the honest statement is not "annealing didn't work." It is: annealing relocates the useful
+> band robustly (4/4 seeds) and does not move the ceiling (CE straddles zero at n=4).** That is this
+> report's CE-vs-loop-utility disjointness — documented at §4.5, §4.9, §4.6b, §8 — now demonstrated
+> **on the intervention this report recommends**, at n=4, with the ceiling half withdrawn by a
+> pre-registration written before the data existed.
+>
+> This is the sharper form of the §3.5 recommendation and it is what the section now claims: *if you
+> want the useful band deeper, anneal the supervision; do not expect it to lower the loss.* The task
+> asks for low perplexity **by exploiting many loops**, and these are the two halves of that sentence
+> coming apart under measurement.
+
 > **Both triggers fired.** The four values straddle zero — seed 2 is positive, `sw90` is *worse* than
 > its own dense control there. And the n=4 mean is **−0.0460**, inside the 0.0541 CUDA terminal
 > floor. Under the pre-registration this recommendation is **withdrawn to "not resolved at this
