@@ -3,9 +3,15 @@
 **T-Lab test task submission.** A looped (weight-tied) transformer pretrained from scratch on FineWeb
 next-token prediction.
 
+## ▶ Start here: **[`submission/README.md`](submission/README.md)**
+
+**That one page is the submission.** It carries the headline numbers, the finding and its mechanism,
+what worked, and a link to each of the 8 documents answering a clause of the brief. Everything else
+in this repository is evidence behind it or a dated working record.
+
 | | |
 |---|---|
-| **Read this first** | **[`submission/`](submission/)** — six short documents, one per thing the task asks for |
+| **Read this first** | **[`submission/README.md`](submission/README.md)** — the submission proper; 8 documents, one per clause of the brief |
 | **The full evidence base** | **[`report.md`](report.md)** — 6,700+ lines; evidence, not reading material |
 | **Released weights** | **[Arsen4ikVar/tlab-looped-transformer](https://huggingface.co/Arsen4ikVar/tlab-looped-transformer)** |
 | parameters | **9,064,608** (cap: 10M) |
@@ -16,6 +22,10 @@ next-token prediction.
 
 Perplexity is tokenizer-dependent (this model has its own 4096-token BPE), so **bits/byte is the
 figure comparable across submissions.**
+
+> **If you read one thing, read [`submission/README.md`](submission/README.md).** The sections below
+> describe how the repository is organised and which surfaces are current; they are not the
+> submission.
 
 ## How to read this repository
 
