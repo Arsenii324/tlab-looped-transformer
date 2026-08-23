@@ -665,3 +665,19 @@ much less self-value component left for its operator to remove than the untraine
 - **Near-null on both** ⇒ consistent, and the *reason* is measured rather than assumed.
 - **CE down anyway** ⇒ the original prediction, ninth instance of the dissociation.
 - **Band widens** ⇒ still the most interesting outcome available, unchanged.
+
+### 2026-08-23 19:22 — `dg_norm` is now a JOINT test of §4.7e, registered before it runs (arm 4/4, ETA ~20:30)
+
+§4.7e landed *after* the 18:51 gate and makes the scale-invariant gate sharper than that gate alone.
+**Depth keys span ~1.6 of 32 dimensions**, so even a *working* mixture has almost nothing to
+discriminate between. The registered outcomes are therefore **two-dimensional**, not one:
+
+| effective loops mixed | CE vs in-job control | reading |
+|---|---|---|
+| **< 1.5** | *(uninterpretable)* | selector again; scale was **not** the binding constraint. Second instrument failure, **no CE claim** (18:51 gate) |
+| **≥ 1.5, near r** | **no gain** | **THE POINTED PREDICTION.** Mixing engages and buys nothing ⇒ **§4.7e's rank collapse is the binding constraint**, and this reduces to §4.7c's static-mixture null *with the mechanism identified*. Stronger than either result alone |
+| **≥ 1.5, near r** | **gain > floor** | §4.7e is wrong or incomplete — rank ~1.6 was not the constraint, and the per-token headroom is reachable after all. **The most consequential outcome available tonight** |
+| ≥ 1.5, **CE worse** | — | fourth "model takes the mechanism and gets worse" |
+
+**Registered now because the joint reading is what makes it worth anything**, and adopting it after
+seeing which cell fired would be precisely §6.0 rows 5 and 16.

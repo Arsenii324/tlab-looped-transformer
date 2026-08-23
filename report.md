@@ -5397,13 +5397,23 @@ scale-invariant, and it is the true one.
 
 **Two replicates disagree by 0.32 nats, and this is reported as an instrument problem rather than a
 result.** On the T4 the arm is **−0.2950** against its in-job control; on MPS, at matched step 760, it
-is **+0.0241** — the wrong sign, inside the floor. Configs were verified identical field-by-field
+is **+0.0241** — the wrong sign, inside the floor. *Weakening this claim myself, because the
+comparison is not between two finished arms: the local replicate **stopped at step 760 with 5 evals**
+(OOM on resume, see below) against the control's 9 evals to step 1219, so the disagreement rests on a
+matched-**step** comparison rather than two completed runs.* Configs were verified identical field-by-field
 (batch 8, `supervise_k` 5, `U[4,32]`, seed 0, 2.5M tokens) and the DataSphere kernel's gate code is
 **byte-identical** to `src/model.py:685–690`. What differs is the device and the local chunked
-runner's ~21 optimizer resets (§6.0b). **The measurement that would settle it is the DataSphere
-checkpoint's gate weights, and they are unrecoverable** — the job declared them as a glob and
-DataSphere does not expand globs (§6.0 row 34). *That is this report's output-collection defect
-costing a live scientific question, not just disk.*
+runner's ~21 optimizer resets (§6.0b). **The measurement that would settle *the disagreement* is the DataSphere checkpoint's gate weights,
+and they are unrecoverable** — the job declared them as a glob and DataSphere does not expand globs
+(§6.0 row 34). *That is this report's output-collection defect costing a live scientific question,
+not just disk.*
+
+> **But the central conclusion does NOT depend on those lost weights, and the section should not
+> imply that it does.** The decisive argument is **arithmetic on the published curve**: ΔCE@1 =
+> −0.2830 against ΔCE_best = −0.2950, so **96% of the effect is at `r = 1`**, where a softmax over a
+> single state is inert *by definition* — no checkpoint required. The lost weights cost the
+> *saturation measurement on that particular arm*; the saturation measurement itself was made on the
+> surviving local checkpoint, and the 96% argument stands independently of both.
 
 **A real scale cost, found by an OOM rather than by analysis.** The gate retains all `r` loop states
 with gradient, so activation memory is **O(r)** on top of full BPTT — it **breaks the constant-memory
