@@ -73,7 +73,7 @@ class Config:
     # as a monotone trend rather than a single pairwise A/B (METHODS.md rule 2). Costs 0 params.
     truncate_bptt: int | None = None       # None = full BPTT
     state_renorm: bool = True
-    inject_mode: str = "additive"          # "none" | "additive" | "concat"
+    inject_mode: str = "additive"          # "none" | "additive" | "concat" | "gated" -- see _inject()
     depth_init: bool = True
     residual_scale: float | None = None    # if set, lambda in eps = lambda/(N*sqrt(L)); see below
     scale_clock: bool = False              # feed log||h|| back into the block's input; see _clock()
@@ -267,6 +267,20 @@ class LoopedTransformer(nn.Module):
         else:
             self.adapter = None
 
+        if cfg.inject_mode == "gated":
+            # Diagonal state-space write (see _inject). Two per-channel vectors = 2*H = 896 params.
+            # Initialised so the gated map is numerically the ADDITIVE map at step 0:
+            #   softplus(inj_b) = 1  <=  inj_b = log(e - 1) = 0.5413
+            #   alpha = exp(-delta * exp(inj_a)) -> 1  <=  inj_a very negative
+            # At inj_a = -12, alpha = 0.9999939, so h_in = 0.9999939*h + 1.0*e. The arm therefore
+            # starts as the control and must LEARN to decay, which is the same discipline the scale
+            # clock uses (zero-init) and makes this a strictly-larger hypothesis class rather than a
+            # different model.
+            self.inj_a = nn.Parameter(torch.full((H,), -12.0))
+            self.inj_b = nn.Parameter(torch.full((H,), math.log(math.e - 1.0)))
+        else:
+            self.inj_a = self.inj_b = None
+
         self.apply(self._init_weights)
         if cfg.residual_scale is not None:
             # mutually exclusive with depth_init: both rescale the same two matrices, and stacking
@@ -383,10 +397,45 @@ class LoopedTransformer(nn.Module):
         return h_in * (1.0 + self.clock_w * s.to(h_in.dtype))
 
     def _inject(self, h, e):
+        """How the input re-enters at every loop t > 0. (At t = 0 the state is `h0 + e`
+        unconditionally -- see forward(); none of these modes can change that.)
+
+        `gated` is the diagonal state-space write used by Parcae and by *Looped Transformers Done
+        Right*, and it is the cell §4.1's ablation never tested:
+
+            delta = softplus(inj_b)                    learned per-channel WRITE strength
+            alpha = exp(-delta * exp(inj_a))           learned per-channel CARRY decay, in (0,1)
+            h_in  = alpha * h + delta * e
+
+        WHY IT MATTERS HERE, AND IT IS NOT A FOURTH ARBITRARY OPTION. §4.1 swept the normalisation
+        axis as {hard RMSNorm between loops (`state_renorm=True`), nothing (`False`)} and found the
+        second worth -0.744 nats -- the largest effect in the project. Both reference implementations
+        choose NEITHER: a soft per-channel decay, which bounds the state WITHOUT projecting it onto a
+        sphere. That is the missing third option, and it bears directly on this project's own
+        findings:
+
+          * §4.3 measures ||e||/||h|| = 1.3e-3 falling to 7e-5 -- the re-injected input is drowned.
+            That is a CONSEQUENCE OF PLAIN ADDITION: `e` has fixed magnitude, ||h|| grows without
+            bound, and nothing in `h + e` controls the ratio. Under this form alpha < 1 bounds the
+            state at delta*||e||/(1-alpha), so the write ratio is a learned quantity instead of an
+            accident of how far the state has drifted.
+          * §4.3 also shows the state does not converge -- it drifts logarithmically. A carry decay
+            is the one mechanism on this axis that can stop that without the contraction-to-inertness
+            that `state_renorm=True` produces (§4.3).
+
+        Parameter cost is 2*H = 896 (0.0099%). A projection `W_in` on the write (as in the reference
+        implementations) would add 200,704 more; it is deliberately NOT included, so that any effect
+        measured here is the DECAY MECHANISM rather than 200k extra parameters. The projected variant
+        is untested and is stated as such.
+        """
         if self.cfg.inject_mode == "none":
             return h
         if self.cfg.inject_mode == "additive":
             return h + e
+        if self.cfg.inject_mode == "gated":
+            delta = F.softplus(self.inj_b)
+            alpha = torch.exp(-delta * torch.exp(self.inj_a))
+            return alpha * h + delta * e
         return self.adapter(torch.cat([h, e], dim=-1))  # concat
 
     def readout(self, h, cos=None, sin=None, is_final: bool = True):
