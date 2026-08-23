@@ -76,46 +76,61 @@ result arriving at 04:30.
 
 ## STATUS — full state as of 2026-08-23 **17:30** (rewritten against a second compaction)
 
-### 0-PRE. POST-COMPACTION GUIDE — written 2026-08-23 17:30, read this FIRST
+### 0-PRE. POST-COMPACTION GUIDE — rewritten 2026-08-23 20:16. READ THIS FIRST.
 
-**You are mid-session on the T-Lab looped-transformer submission. Deadline ~23:30 MSK today.**
-Context was just compacted; the sections below are the durable state. Read in this order:
+**Deadline 23:59 MSK today. `submission/` is the deliverable a grader reads; `report.md` is evidence.**
 
-1. **`reviewer_answers/16_WHOLE_STATE.md`** — the single best summary of where the project stands.
-   Self-contained, supersedes replies 00–15 where they disagree, ends with a 9-item self-check.
-2. **This file, §0–§7b** — operational state, retractions, unknown knowns.
-3. **`TASKS.md`** — the short list of open commitments (only ever shrinks).
-4. **`QUEUE.md`** R1–R60 + S1–S11 — the cumulative reviewer ledger. Nothing is dropped from it.
+**Read order:** `submission/README.md` → `reviewer_answers/24` (latest state + what is unchecked) →
+this §0-PRE → `TASKS.md` → `RUNS.md` (job IDs + every pre-registration).
 
-**Three things that will save you from a mistake in the first ten minutes:**
-- **Three claims were withdrawn today.** Annealing's CE advantage (n=2 → withdrawn at n=4),
-  §4.20's degenerate collapse (a shared-residual artifact), and §3.5's deep half (`tlab-deep-full`'s
-  falsifier fired at mid 22.6). **Do not re-assert any of them** — see §4 below. Earlier
-  `reviewer_answers/` files still contain them and are kept as the visible retraction record.
-- **`report.md` HAS now been read end to end — 2026-08-23 17:50, all 5,448 lines, T17 CLOSED.** It
-  found **12 defects, 3 serious, and none of them was reachable by grep**: §3.5 restated *both*
-  withdrawn claims four lines under their own withdrawal blocks, §8 still carried a cross-job number
-  §4.17 had replaced with one of the *opposite sign*, and §4.2 still called loop gain "flat" 120 lines
-  after its own paired re-measurement overturned that. All fixed; recorded as §6.0 row 33 and
-  unknown-known #26. **The transferable lesson: a retraction needs a PROSE pass, not a number pass.**
-  Three targeted number-greps had run and each was believed sufficient.
-- **Neither the git push nor the HF upload has ever run, and no remote is configured.** Both are the
-  user's call, not yours. `upload_checkpoint.py` was fixed today and dry-run verified but never
-  executed. The fresh-clone dry run passed at 11:00 and the tree has changed a lot since — **re-run
-  it before shipping.**
+#### The five things that will cause a mistake in the first ten minutes
 
-**Behavioural notes that were earned the hard way today:**
-- Prefix every DataSphere call with `GRPC_DNS_RESOLVER=native`, or it fails with a DNS error that
-  looks like a network outage and is not.
-- A DataSphere job reporting **ERROR** may have completed fine — stderr from pip/wandb marks the job
-  ERROR. **Read the raw stdout before believing the status.** ⚠ **But stdout+stderr are NOT sufficient,
-  and this rule gave the wrong verdict on 2026-08-23 18:40:** a *failed output upload* also marks a job
-  ERROR while stdout says "ALL DONE" and stderr is clean. **The discriminator is a THIRD log file:
-  `grep "Error while processing file" log.txt`.** This happened THREE times today — most recently `tlab-operator-diversity`, which reported ERROR having completed all three arms ("ALL DONE in 3286.9s") with one HF-Hub warning on stderr.
-- Local Python is **anaconda base**, not `barannikov-work/.venv` (§7).
-- Before writing any fork's or agent's number into the report, **re-measure it**. Two probes handed
-  to me today paired oracle depths with the wrong tokens; both conclusions happened to survive, by
-  luck of statistic rather than design.
+1. **PARTIAL ARMS IN LIVE LOGS PRODUCE SPECTACULAR FAKE NUMBERS.** Seen twice in one hour: `dc_w3`
+   showed **+1.117** and `dv_lora_fixed0` **+0.8985** — both were arms with 1 eval compared against
+   controls with 5–7. **Always check eval counts / step numbers match before differencing.**
+2. **Three claims were withdrawn earlier today and MUST NOT be re-asserted** — annealing's CE
+   advantage (n=4), §4.20's degenerate collapse (shared-residual artifact), §3.5's deep half
+   (`tlab-deep-full` mid 22.6). Plus, added tonight: **§4.7e's 11.7× was corrected to 3.1×** at the
+   representation level (most of the raw gap is per-layer projection randomness).
+3. **DataSphere `outputs:` must name every file EXPLICITLY. Globs return nothing** (§6.0 row 34).
+   Confirmed working twice tonight (70.8 MB and 107 MB returned, all `.pt` present).
+4. **Attaches die silently.** I killed `ds_watchdog.sh` at 18:40 for chasing a finished job and by
+   20:08 three attach logs were frozen while jobs ran on. **Harvest by `download-files --id`, never
+   trust an attach log's step count without checking its mtime.**
+5. Prefix every DataSphere call with `GRPC_DNS_RESOLVER=native`. A DS **ERROR** status can be
+   cosmetic *or* real — the discriminator is `grep "Error while processing file" <logdir>/log.txt`.
+
+#### State as of 20:16
+
+**Submission is LIVE (private; the author will make both public at submission):**
+GitHub `Arsenii324/tlab-looped-transformer` (only `main`, 0 tags, secret-scan clean over 121 commits)
+· HF `Arsen4ikVar/tlab-looped-transformer` (identity gate passes **against the downloaded artifact**,
+|diff| 0.0020 vs chance 8.3178). Push with `git push origin review:main`. **NEVER push `submission`
+branch** (stale + historical wandb key) and **never `--tags`** (1.83 GB of >100MB blobs).
+
+**§1 is WRITTEN** (from the dated record, authorship disclosed in a banner). `submission/` has all
+seven docs; `METHOD.md`/`RESULTS.md` were written at 20:06 — they had not existed while README listed
+them.
+
+**Results landed tonight (all in `LOG.md` with timestamps):**
+- **XSA (arXiv 2603.09078), ZERO params: ΔCE_best −0.2162**, ~14× floor, band [8,16] **unmoved**.
+  84% of the effect at `r = 1`. **n = 1**; `tlab-xsa-s1` running.
+- **Duo-causal W=2: clean null**, both seeds (+0.0093 / −0.0115, sign reverses), band identical.
+- **Capacity vs diversity: ~82% capacity.** In-job: control 5.3765, cycled −0.1251, pinned-branch
+  −0.1031. `§4.21 is a capacity result` on three independent lines.
+- **§4.7e**: depth keys span **~1.6 of 32**; untied *keys* 31.83/33 but untied *states* only 4.36/33 —
+  **the mechanism is that distinct per-layer projections decorrelate a collinear stream for free, and
+  a tied loop has one `W_K`.** Structural, holds at any width.
+
+**Running (harvest `./harvest_duocausal.sh`, IDs in `RUNS.md`):** `tlab-duocausal-s0/-s1` (W=3 then
+**`dg_norm`** ~20:40) · `tlab-divx-s1` (~20:45) · `tlab-xsa-s1` (~20:45) · `tlab-recmethod-s2` (~21:00)
+· Kaggle `tlab-lora-scaleup` (arm 2 from ~20:17, done **~21:52**).
+
+**`dg_norm` is the highest-stakes cell.** Registration at `RUNS.md` 19:22 is **untouched since §4.7e
+gave a reason to expect one branch** — do not amend it. Gate: **effective-loops-mixed ≥ 1.5 BEFORE any
+CE reading**; below that it is a selector and the CE is uninterpretable. **If it gains, check whether
+the gain sits at `r = 1`** — a gate at r=1 mixes one state and is inert, so a gain concentrated there
+means block-not-looping again and does **NOT** refute §4.7e.
 
 ### 0. If you read one thing
 The deliverable is `report.md` (~3,900 lines, 0 placeholders, §1 reserved for the user). The method is
