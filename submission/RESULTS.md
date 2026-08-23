@@ -64,12 +64,12 @@ included because it was cheap and worth testing, and a non-looped model would pl
 
 **And that split is exactly where the finding lives, because the measurement crosses it.** The four
 loop-specific mechanisms that lower the loss **behave like generic block improvements anyway** — they
-deliver 78–101% of their gain at a single loop, where the loop-referring part of each is inert:
+deliver 67–101% of their gain at a single loop, where the loop-referring part of each is inert:
 
 ### The pattern, which is the report's central finding
 
 **Five of the twelve lower the loss *at the budget they were measured at* — and that qualifier turned
-out to matter.** Four of the five deliver 78–101% of that gain at a *single* loop, where their own
+out to matter.** Four of the five deliver 67–101% of that gain at a *single* loop, where their own
 mechanism is provably inert or irrelevant.
 
 > **The one that was tested at 5× the budget did not survive it.** Loop-cycled LoRA gives −0.0733 …

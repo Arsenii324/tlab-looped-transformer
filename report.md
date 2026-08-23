@@ -73,7 +73,7 @@ norm penalty — the single arm whose map actually *converges* (ρ < 1), the reg
 against — and 88% of its apparent loop-gain advantage is loop-1 damage.
 
 **Five interventions lower the loss, and four of the five are present at loop 1 in the same shape —
-78–101% of the gain sitting where the mechanism cannot act** (loop-cycled LoRA 67–95%, exclusive self
+67–101% of the gain sitting where the mechanism cannot act** (loop-cycled LoRA 67–95%, exclusive self
 attention 84–91%, duo-causal attention at W = 3 78–101%, the unnormalised depth gate 96%; the fifth,
 the norm penalty, instead wins perplexity by *damaging* loop 1). **The largest of them is exclusive
 self attention — −0.2162 / −0.2633 at two seeds for zero added parameters — and 84–91% of it is at
@@ -185,7 +185,7 @@ was the one held to a pre-registered falsifier and withdrawn when four seeds dis
 
 **What the project actually answers.** The brief asks for low perplexity *by exploiting many loops*.
 The honest finding is that **those two clauses come apart under measurement**: twelve interventions,
-**five** of which lower the loss — and **four of the five deliver 78–101% of that gain at a single
+**five** of which lower the loss — and **four of the five deliver 67–101% of that gain at a single
 loop, where their own mechanism is provably inert**, so they improve the *block*, not the *looping*.
 The fifth wins perplexity by *damaging* loop 1. **Not one widens the useful band; at `tol = 0.01`
 three of the five narrow it, though that direction does not survive halving the tolerance (§4.25).** One lever moves the band robustly at zero parameter cost — at 5 of 5 seeds, with the same
@@ -5966,7 +5966,7 @@ CE result above there is no longer a case for spending the remaining quota on on
 
 ### 4.24 The scope condition on the central finding, measured rather than assumed
 
-The report's spine is *every loss-lowering intervention delivers 78–101% of its gain at a single
+The report's spine is *every loss-lowering intervention delivers 67–101% of its gain at a single
 loop.* Before that carries any weight it should be asked **at what budgets it was measured**, since
 this project's own regularity is that effects shrink ~12× between screening and full scale. An
 external reviewer suggested the question is answerable retrospectively from stored curves. **It is
@@ -5999,7 +5999,7 @@ across every arm with a recorded token count:
 
 **The loop's own contribution roughly triples between the budget where every intervention was measured
 and the budget of the released model.** That is the threat stated precisely: at 2.5M an intervention
-has ~0.11 nats of loop-specific room to work in, and at 90M it has ~0.30. **"78–101% of the gain is at
+has ~0.11 nats of loop-specific room to work in, and at 90M it has ~0.30. **"67–101% of the gain is at
 r = 1" is measured only in the regime where the denominator is smallest.**
 
 **Both readings are live and I am not picking one.**
@@ -6377,7 +6377,7 @@ the number of distinct projections applied to it.*
 > wall-clock went to verification rather than to a new mechanism, a choice recorded in
 > `directions.md`/`TASKS.md` rather than left implicit. **The prediction is written here anyway so
 > that it is falsifiable by whoever runs it:** on this report's own regularity (every loss-lowering
-> intervention delivering 78–101% of its gain at `r = 1`, §4.24), **I expect the bucketed-`W_K` gate to
+> intervention delivering 67–101% of its gain at `r = 1`, §4.24), **I expect the bucketed-`W_K` gate to
 > lower CE and to do so mostly at `r = 1`, i.e. to buy capacity rather than depth-mixing** — the same
 > shape as LoRA, XSA and duo-causal. *If instead its gain concentrates past `r = 8` and the useful
 > band widens, that is the first genuine depth mechanism in this project and the report's central
@@ -6427,7 +6427,7 @@ counted it among the interventions "that lower the loss" is counting a 2.5M-toke
 > **It does not answer §4.24's question.** The question was whether the *share* of a gain sitting at
 > `r = 1` moves with budget. **At 12M there is no gain to decompose** — the r=1 share computes to 358%,
 > which is meaningless when the denominator is inside the noise floor. **So the budget-invariance of
-> the "78–101% at r = 1" pattern remains untested, and now has no probe at all.**
+> the "67–101% at r = 1" pattern remains untested, and now has no probe at all.**
 >
 > **It answers a larger question instead, and unfavourably for us.** *An effect measured at 2.5M
 > tokens in this project can vanish or reverse by 12M.* That is this report's own 12×-shrinkage
@@ -7033,7 +7033,7 @@ therefore reproduces and measures the saturation problem the task poses; it does
 > (**−0.2162 / −0.2633**, two seeds, **zero parameters** — the largest), duo-causal attention at W = 3
 > (−0.0871 / −0.0394), the unnormalised depth gate (−0.2950), and the norm penalty (−0.030).
 >
-> **Four of the five deliver 78–101% of that gain at a *single* loop, where their own mechanism is
+> **Four of the five deliver 67–101% of that gain at a *single* loop, where their own mechanism is
 > provably inert** — depth gate **96%**, XSA **84–91%**, LoRA **67–95%**, duo-causal W=3 **78–101%**.
 > The fifth, the norm penalty, is the mirror image: it wins perplexity while `ΔCE@1 = +0.2263`, so
 > **88% of its apparent loop-gain advantage is loop-1 damage.**

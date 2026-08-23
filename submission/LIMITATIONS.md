@@ -50,6 +50,12 @@ tokens* — 3.6% of that budget — and §4.24 shows loop gain roughly **triples
 - **The noise floor at full budget is unmeasured.** 0.0150 / 0.0541 come from 2.5M-token replicates
   and every "×the floor" statement in the report inherits them. §4.27 has already shown the *related*
   cross-job figure was understated **2.7×** when it was finally measured deliberately.
+- **That 0.0914 cross-job spread is *unexplained*, which is the worse of the two possibilities.** It
+  is **not** a tokenizer artifact — every DataSphere kernel's `train_tokenizer` is byte-identical
+  (md5 `1dab774d…`), so the three controls share a vocabulary and were config-, seed- and
+  step-identical. **An explained spread would be benign; an unexplained one at 6.1× the in-job floor
+  bounds every cross-job statement in this project.** Candidates named in §4.27 — shard ordering,
+  non-deterministic CUDA kernel selection, allocator differences — and none established.
 
 ## 4. Method
 

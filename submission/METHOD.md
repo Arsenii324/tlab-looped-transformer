@@ -52,7 +52,7 @@ injection at the field's own α, a scale clock, radial clamping, convex gating, 
 scaling, a norm penalty, loop-cycled LoRA, exclusive self attention, duo-causal attention, and a
 per-token depth-mixture gate — plus one lever on the loss schedule. **Five lower the loss; none
 widens the useful band; at `tol = 0.01` three of the five narrow it, a direction that does not
-survive halving the tolerance (§4.25).** And **four of the five deliver 78–101% of that
+survive halving the tolerance (§4.25).** And **four of the five deliver 67–101% of that
 gain at a single loop where their own mechanism is inert**, so they improve the block rather than the
 looping (`RESULTS.md` §2). Elaborating the block was measured and did not pay in the way the brief
 asks for.

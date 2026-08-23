@@ -34,10 +34,12 @@ like-for-like comparison against published numbers.
 
 ## How interventions are counted, once, so every document agrees
 
-**Twelve interventions: eleven mechanisms on the model, one lever on the loss schedule.** Two of the
-eleven were run at two settings each (LoRA at rank 2 and rank ≥ 4; duo-causal attention at W = 2 and
-W = 3), so `RESULTS.md` §2 has more *rows* than there are mechanisms. Where a count appears in this
-folder it is this one.
+**Twelve interventions: eleven mechanisms on the model, one lever on the loss schedule.** **Three** of
+the eleven ran at two settings each — LoRA at rank 2 and rank ≥ 4; duo-causal attention at W = 2 and
+W = 3; the per-token depth gate unnormalised and scale-invariant — so `RESULTS.md` §2 has more *rows*
+than there are mechanisms. **The unnormalised depth gate is reported as an instrument failure rather
+than a result** (it saturates to a hard argmax and cannot express a mixture at all), which is why it
+is a row but not a claim. Where a count appears in this folder it is this one.
 
 ## The answer to the brief, in five sentences
 
@@ -56,7 +58,7 @@ two goals and this architecture does not deliver them together.
    not propagate into depth; one *hurts* at loop 1 and the loop-gain statistic rewards it for that.
    **Both say the same thing: the loop's own contribution is untouched by anything that moves the
    loss.**
-3. **Four of those five put 78–101% of their gain at a *single* loop, where their own mechanism is
+3. **Four of those five put 67–101% of their gain at a *single* loop, where their own mechanism is
    provably inert or irrelevant** — loop-cycled LoRA 67–95% `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]`, exclusive self attention
    84–91% `[XSA-AT-R1]`, duo-causal attention at W = 3 78–101%, the learned depth gate 96%. **They improve the
    block, not the looping.** The fifth is the mirror image: the norm penalty wins perplexity (37.52 vs
@@ -66,9 +68,13 @@ two goals and this architecture does not deliver them together.
    10M tokens (onset 8 → 8, end 16 → 24) — but its effect on the *ceiling* was withdrawn at n=4 by a
    criterion registered before the data existed, and a fifth point at 4× the budget is the worst yet
    (**+0.1119**) `[WITHDRAWN-ANNEAL-CE]`.
-5. **Per-token depth demand is real** (oracle headroom **0.3084 nats** on the 46M checkpoint,
-   split-half reliability 0.866 against a null of 0.0007) **and unreachable by eight rules across five
-   instrument classes — the best captures 0.1%.** We can now say why: **a token's 32 depth keys span
+5. **Per-token depth demand is real — and the evidence is the split-half reliability (0.866 against a
+   null of 0.0007), not the oracle headroom.** *The 0.3084-nat headroom cannot carry the claim by
+   itself: both nulls built to bound it are **mis-specified**, destroying the per-token curves'
+   smoothness (4.6× rougher) and so producing **more** headroom than the real data — 0.3877 and
+   0.4110. What survives a null is that each token's preferred depth is **reproducible**, and that is
+   what an exit rule would need. `EARLY_EXIT.md` §1 and §4.7 state this in place.* The demand is real
+   **and unreachable by eight rules across five instrument classes — the best captures 0.1%.** We can now say why: **a token's 32 depth keys span
    an effective rank of ~1.6.** There is almost nothing for a mixing or selection mechanism to
    discriminate between. **The one test that could have refuted that explanation was run and did not:**
    a *scale-invariant* depth gate (a different arm from the saturating one in sentence 3) that
