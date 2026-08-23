@@ -20,7 +20,6 @@ Last updated 2026-08-23 ~15:05.
 | T5 | **Report scale-clock arm 3** (`sc_clock_sw90`) and write the whole scale-clock negative into the report | reviewer proposal, user asked to test ideas | arm 3 running; arms 1–2 measured (**+1.36 nats, ‖w‖=1.34**) but **not yet in `report.md`** |
 | T6 | **Land the gated-injection result** (fork running) — the third cell on the normalisation axis | my ranked #1, user launched it | fork running |
 | T7 | **§8 writing items still owed**: W1 (MLA × LLA), W2 (LoopMTP aggregation conflict), W4 (STARS Pre-Sandwich), W5 (decomposition tables for remaining §4 sections) | reviewer, logged in QUEUE | not started |
-| T9 | **8 load-bearing scripts still persist nothing** — `cumulative_exit` (§4.7b), `angular_budget` (§4.16c), `grad_spectrum` (§5.1), `oracle_null`, `intraloop_states`, `normpen_compare`, `rate_vs_path`, `qexit`. Their published numbers are reproducible but not *traceable*: verifying one means re-running, which only works while its inputs survive | traceability audit finding #1 | **3 of 11 fixed** (`jacobian_spec`, `gain_decomp`, `exit_rules`); 8 remain |
 | T8 | **Write the degenerate-fixed-point result into the report** (min cross-layer cos → 1.0000 by loop 32) | measured today, reviewer-flagged | measured, **not yet in `report.md`** |
 
 ## Blocked on the user

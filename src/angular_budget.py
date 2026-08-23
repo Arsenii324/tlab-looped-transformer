@@ -141,5 +141,22 @@ def main():
     print("  ratio >1   -> terminal-only buys MORE useful angular computation (a budget intervention)")
 
 
+
+def _persist_stdout(name, text):
+    # PERSIST (traceability audit 2026-08-23): this printed its numbers and saved nothing, so
+    # every claim it supports was reproducible but not traceable -- verifying one meant
+    # re-running it, which only works while its inputs survive.
+    import pathlib as _pl
+    _dst = _pl.Path(__file__).resolve().parents[1] / "checkpoints" / f"{name}_report.txt"
+    _dst.write_text(text)
+    print(f"wrote {_dst}")
+
 if __name__ == "__main__":
-    main()
+    import io as _io, contextlib as _cl
+    _buf = _io.StringIO()
+    with _cl.redirect_stdout(_buf):
+        main()
+    _out = _buf.getvalue()
+    print(_out, end="")
+    _persist_stdout("angular_budget", _out)
+

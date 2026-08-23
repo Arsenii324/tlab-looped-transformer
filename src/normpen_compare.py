@@ -81,5 +81,15 @@ def main(p_ctl, p_pen, floor=0.05):
     return 0
 
 
+
+def _persist_stdout(name, text):
+    # PERSIST (traceability audit 2026-08-23): this printed its numbers and saved nothing, so
+    # every claim it supports was reproducible but not traceable -- verifying one meant
+    # re-running it, which only works while its inputs survive.
+    import pathlib as _pl
+    _dst = _pl.Path(__file__).resolve().parents[1] / "checkpoints" / f"{name}_report.txt"
+    _dst.write_text(text)
+    print(f"wrote {_dst}")
+
 if __name__ == "__main__":
     sys.exit(main(*sys.argv[1:]))

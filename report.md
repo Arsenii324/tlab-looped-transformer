@@ -1343,6 +1343,21 @@ loop 64.** SCSE predicts additive-injection models retain nonzero late-step anch
 quantifies it, and adds what their study could not: **the ratio is scale-invariant** across a 380×
 norm range, so it is a property of the shared map rather than of the regime it runs in.
 
+> **UNTRAINED CONTROL — and this one is LEARNED, unlike the other two geometry findings.**
+>
+> | | ‖b‖ | R@1 | R@8 | R@64 |
+> |---|---|---|---|---|
+> | trained 90M control | **429.06** | 0.9263 | 1.9027 | **2.6962** *(rises)* |
+> | untrained, same config | **1.49** | 1.0181 | 0.7203 | **0.6697** *(falls)* |
+>
+> Training multiplies the forcing bias by **288×** and **reverses the direction of R_t**: untrained,
+> the realized update outgrows the anchor response; trained, the anchor response outgrows the update.
+> The reader's natural objection — *"is this just what a random pre-norm block does?"* — is answered:
+> **no.** That matters because the other two geometry results this report added today go the other
+> way: the degenerate cross-layer collapse (§4.20) and the logarithmic drift (above) are both present
+> at initialisation and are properties of the architecture. **The anchor response is the one that is
+> a property of what was learned**, which is why it is the one that can carry an explanatory claim.
+
 *Not promoted to §3.5.* This is explanation, pre-committed to §4.3 in the instrument's own docstring
 before it ran. *One flag raised and not resolved:* the per-step updates here (466.7 → 171.7 for the
 90M control, against ‖h‖ 466.6 → 12424) give ‖Δh‖/‖h‖ falling roughly as 1/t, whereas this section's

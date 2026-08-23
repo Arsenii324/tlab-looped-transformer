@@ -1,0 +1,15 @@
+tokens=524,288  loops=64
+  best CONSTANT depth      k=  8  CE=3.9378
+  per-token ORACLE         CE=3.6295   headroom=0.3083
+
+  CUMULATIVE-dnorm rule, tau chosen on the calibration half, scored on the held-out half:
+    tau=2.4473   mean depth=39.78   CE=4.0279
+    vs best constant: +0.0901   oracle headroom recovered: -29.2%
+
+  for contrast, the INSTANTANEOUS rule §4.7 tested (halt when dnorm first drops below a threshold):
+    mean depth=1.00  CE=4.1923  vs constant +0.2545  recovered -82.6%
+
+  per-token spread of the total angular distance (is the budget constant across tokens?):
+    mean=2.8635  sd=0.1952  cv=0.068  p10=2.6063  p90=3.1100
+    budget AT each token's oracle depth: mean=1.3680 sd=1.0921 cv=0.798
+    -> cv near 0 would mean one tau suffices; cv near 1 means the budget is per-token
