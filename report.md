@@ -545,6 +545,36 @@ model, and a 10M-token replication is running for exactly this reason.
 > positive — i.e. **damage-driven, outcome B** — which is precisely what is already observed at
 > μ_rec = 40 (ΔCE@1 +0.0749 / +0.1749).
 >
+> ### ✅ RESOLVED 2026-08-23 — the token-keyed rule wins, and by a large margin
+>
+> The discrimination pre-registered above was run (DataSphere `tlab-anchor-tokenkey`, two arms at
+> **10M tokens**, in-job, seed 0). `tk_frac90_10M` switches at 90% of *steps* (9M tokens, deep
+> post-saturation); `tk_tok225_10M` switches at a fixed **2.25M tokens** — the absolute point the
+> 2.5M evidence actually validated, which at a 10M budget is 22.5% of steps.
+>
+> | arm | switch at | CE@1 | **CE_best** | plateau | mid |
+> |---|---|---|---|---|---|
+> | `tk_frac90_10M` (fraction rule) | 9.0M tokens | 4.9412 | 4.6936 @16 | [12,24] | 17.0 |
+> | **`tk_tok225_10M` (token rule)** | **2.25M tokens** | 5.0334 | **4.4727** @16 | [12,24] | 17.0 |
+>
+> **ΔCE_best = −0.2208 in favour of the token-keyed rule — roughly 4× the 0.0541 replicate floor and
+> the largest single effect measured in this project's supervision work.** ΔCE@1 = +0.0923, so this
+> is bought partly with loop-1 damage and is a trade, not a free win; the useful band is **identical**
+> ([12,24], mid 17.0) in both arms, so the token rule buys *ceiling*, not *depth*.
+>
+> **This resolves the section above in the direction it predicted.** The fraction rule was validated
+> at a budget where it switches *before* loop gain emerges, and extrapolating it to 10M put the
+> switch deep post-saturation — and that extrapolation costs 0.22 nats against keying the switch to
+> the absolute token count instead. **§3.5's recommendation should be read as token-keyed: switch when
+> loop gain flattens (~10–15M tokens, §4.12), not at a fixed fraction of steps.** At a 90M budget the
+> two rules differ enormously (81M vs ~10–15M), and this is now measured evidence about which side of
+> that gap to be on rather than an argument.
+>
+> *Scope.* One seed, one budget, one schedule (μ_rec = 18). The switch points differ in *both*
+> absolute tokens and step fraction, so this compares two rules rather than isolating a single
+> variable — which is what the pre-registration asked for, but it means "token-keyed is better" is
+> established against *this* fraction rule at *this* budget, not as a general law.
+
 > **Stated as the honest status: the scale argument in this section defends the *mechanism* (zero
 > parameters, nothing to outgrow) and does NOT defend the *parameterisation*.** The token-keyed form
 > is the version this report would recommend for a larger budget, and it is **untested** — the
