@@ -98,6 +98,14 @@ class Config:
     #   not diversity" with "branch 0 is special because it owns loop 1". A NON-ZERO pin (2 here) is
     #   the clean control: same parameters, zero diversity, and a branch that never trained at r=1.
     depth_gate_mode: str = "none"          # "none" | "state" | "state_norm" -- learned depth gate
+    xsa: bool = False                      # EXCLUSIVE SELF ATTENTION (arXiv 2603.09078, verified in
+    #   papers/sources/): z_i = y_i - (y_i . v_i) v_i / ||v_i||^2 -- remove the component of the
+    #   attention output lying along the token's OWN value vector. Their rationale (main.tex:126):
+    #   that component is "unnecessary, because the information of the current position has a direct
+    #   residual path to the following [FFN]" and "harmful, because it creates a competition between
+    #   modeling the contextual vs point-wise feature". TWO LINES, ZERO PARAMETERS.
+    #   sec4.3 measures their phenomenon rising with LOOP index here (cos(y,v) 0.29->0.36 over loops
+    #   2-64), so the thing XSA removes is present and growing in this regime.
     kv_window: int = 1                     # DUO-CAUSAL attention window. 1 = ordinary self-attention.
     #   W > 1: at loop t every layer attends over the K/V of its own inputs from loops t-W+1..t,
     #   concatenated along the key axis under a token-causal mask replicated across depths. This is
@@ -178,6 +186,7 @@ class Attention(nn.Module):
         self.k_proj = nn.Linear(H, self.n_kv * self.d_h, bias=False)
         self.v_proj = nn.Linear(H, self.n_kv * self.d_h, bias=False)
         self.o_proj = nn.Linear(self.n_h * self.d_h, H, bias=False)
+        self.xsa = cfg.xsa
         self.q_norm = RMSNorm(self.d_h, cfg.rms_norm_eps)
         self.k_norm = RMSNorm(self.d_h, cfg.rms_norm_eps)
 
@@ -226,6 +235,12 @@ class Attention(nn.Module):
             k = k.repeat_interleave(self.groups, dim=1)
             v = v.repeat_interleave(self.groups, dim=1)
             out = F.scaled_dot_product_attention(q, k, v, is_causal=True, scale=self.scale)
+        if self.xsa:
+            # project OUT the token's own value direction, per head (arXiv 2603.09078 eq. 2)
+            vv = v if v.shape[1] == out.shape[1] else v.repeat_interleave(self.groups, dim=1)
+            denom = vv.float().pow(2).sum(-1, keepdim=True).clamp_min(1e-12)
+            coef = (out.float() * vv.float()).sum(-1, keepdim=True) / denom
+            out = (out.float() - coef * vv.float()).to(out.dtype)
         out = out.transpose(1, 2).reshape(B, T, self.n_h * self.d_h)
         o_out = self.o_proj(out)
         if lora is not None:

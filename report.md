@@ -5138,6 +5138,17 @@ be that at init.
 > the collapse were caused by applying the same map repeatedly, either of those should have broken it.
 > Neither does, because the statistic is not measuring that.
 >
+> **The insight behind this retraction is a named phenomenon, which is worth recording because it
+> turns a correction into an instance.** XSA (arXiv 2603.09078, verified in `papers/sources/`)
+> motivates its operator from the same observation: in a residual stack the current position's
+> information *"has a direct residual path to the following [FFN]"*, so any component re-encoding it
+> is *"unnecessary … and harmful"* (`main.tex:126`). **§4.20's retraction is that observation applied
+> to a statistic** — the cross-layer cosine was measuring the shared residual rather than what each
+> layer contributes — and XSA is the same observation applied to an *operator*, removing the
+> attention output's self-value component. Same premise, one used to retract a measurement and one to
+> design a mechanism. *(Connection pointed out by an external reviewer; §4.3 then measured their
+> phenomenon against loop index here, and §5 carries the arm.)*
+>
 > **What survives, and it is narrower than what this section originally claimed.** The *increments*
 > do decline mildly with depth (0.18 → 0.14) and the increment-to-state ratio falls sharply
 > (0.035 → 0.005) — the latter is §4.3's dilution, restated per-layer. What does **not** survive is

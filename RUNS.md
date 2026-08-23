@@ -618,3 +618,32 @@ pin2 driver pins to 2, each self-consistently). Archiving the drivers so a run c
 | `ds_pin2` | pending | `18bc3ef487bc` | `runs_frozen/ds_pin2/` |
 
 Tree SHA at archive time: `b218613`. `src/model.py` at that SHA is the source the last of these was generated from.
+
+## 2026-08-23 19:15 — PRE-REGISTERED: `tlab-xsa-s0`, and the prediction comes from this report's OWN regularity
+
+**Exclusive Self Attention** (arXiv 2603.09078, verified in `papers/sources/`):
+`z_i = y_i − (y_iᵀv_i)·v_i/‖v_i‖²`. **Two lines, ZERO parameters.** Two in-job arms, 2.5M tokens,
+seed 0, gt4.1: `xsa_control_s0` vs `xsa_on_s0`.
+
+**Why it is worth a slot even though the outcome is predicted.** §4.3 measured *their* phenomenon
+here: `cos(y_i, v_i)` rises monotonically with loop index (0.29 → 0.36 across loops 2→64, all three
+layers), so the quantity XSA removes **is present and growing in this regime**. It is also a **third
+axis** the taxonomy did not have — not readout-side, not recurrence-side, but **inside the operator**,
+changing what attention writes.
+
+**THE PREDICTION, from this report's own eight-intervention regularity, registered before the run:**
+> **CE improves; neither band edge moves.** Operator diversity did exactly this (−0.0857 replicated,
+> both edges identical in 5 of 5 pairs, ~90% of the gain at `r = 1`). XSA is another *block*
+> improvement, and §8's dissociation says block improvements do not buy depth.
+
+- **Confirmed (CE down, band unmoved)** ⇒ the **ninth** instance, from a published zero-parameter
+  operator whose outcome was predicted in advance. That makes the dissociation very hard to dismiss.
+- **Violated (band widens)** ⇒ **the most interesting result of the day**, and the first thing in this
+  project to move the band without touching the loss schedule.
+- **CE regresses** ⇒ a fourth "the model takes the mechanism and gets worse", alongside the scale
+  clock, gated injection, and (interim) duo-causal.
+
+**Pre-launch gates.** `xsa=False` is **bit-identical** to the untouched model (max|diff| = 0.000e+00);
+`xsa=True` changes the forward (2.38); parameter count unchanged to the digit (9,064,608 both); and
+the operator is verified against the paper's equation directly — after projection
+**`cos(z, v) = 2.85e-09`** and `max|⟨z,v⟩| = 2.2e-06`, i.e. the self-value direction really is removed.
