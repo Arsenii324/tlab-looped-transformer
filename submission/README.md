@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **validation perplexity** | **38.86** (CE 3.6599) · **bits/byte 1.5829** |
-| **useful band** | **loops 6–17**, on a dense every-integer 1..64 sweep |
+| **useful band** | **loops 6–17** — the run of loop counts whose validation CE is within 0.01 nats of this model's best, on a dense every-integer 1..64 sweep |
 | parameters | **9,064,608** (cap 10M) † |
 | training tokens | **89,999,360** (cap 100M) |
 | architecture | Qwen3-style 3-layer block, weight-tied, applied `r` times. No prelude, no coda, no inter-loop norm, additive re-injection, learned `h₀` |
@@ -14,7 +14,8 @@ looks like a cap violation — see "Counting the parameters" below.*
 ## The result
 
 The trajectory never converges and saturates anyway. The depths a weight-tied loop visits are
-near-indistinguishable — a token's 32 depth keys span an effective rank of **~1.6 out of 32**. We
+near-indistinguishable: the 32 key vectors a token produces, one per loop, span an effective rank of
+**~1.6 out of 32**, so attention over them is close to an average with extra steps. We
 built the experiment that would have refuted that and it held at two seeds. And low perplexity and
 useful depth come apart: twelve interventions, five lower the loss, **not one widens the useful
 band**.
@@ -35,8 +36,10 @@ measured on unshared stacks, rather than contradicting them.
    still accumulating between loops 129 and 384). It saturates at loop ~8 regardless. The drift is
    architectural, since an untrained model of the same shape drifts *faster*.
 
-2. **What binds is that the depths are not distinguishable.** A token's 32 depth keys span an
-   effective rank of **~1.6**, present at initialisation and worse after training. The cause is
+2. **What binds is that the depths are not distinguishable.** A token's **depth keys** — the key
+   vectors it produces at each of the 32 loop depths, which is what any depth-attention or exit rule
+   would have to tell apart — span an effective rank of **~1.6**, present at initialisation and worse
+   after training. The cause is
    projection asymmetry: an unshared stack manufactures a near-orthogonal key set from a state stream
    that is *just as collinear* as the tied one (**4.36** vs **1.40** of 33), because each layer owns a
    `W_K` `[RANK-PROJECTION]`. Measured **flat across hidden 224–896** — 2.73M to 32.58M parameters,
