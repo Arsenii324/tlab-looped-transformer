@@ -401,3 +401,36 @@ copies committed after the fact — so the tracked file is byte-identical to wha
 `WANDB_API_KEY`. §4.7a's inputs (`exitdump_*.npz`, 2 × 278 MB) remain scratchpad-only and are NOT
 recoverable after the session; the derived exit-rule outputs are persisted in
 `checkpoints/exit_rules_annealed_pair.json` so the published numbers stay traceable to an artifact.
+
+---
+
+## 2026-08-23 17:40 — PRE-REGISTERED READ for `od_depth_gate` (arm 4/4, running locally)
+
+Gemini's `depth_gate_mode="state"`: stack all `n_loops` states, score each with `Linear(H,1)`,
+softmax over loops **per token**, mix, and replace the final readout with the mixture.
+**+448 params.** This is the `gate_state` experiment two reviewers independently asked for, and it is
+the only remaining candidate for a *positive* result. Two caveats that change how it must be read,
+recorded before the number exists:
+
+**1. Step 0 is NOT the control.** The head is zero-initialised, so all gate logits are 0 and the
+softmax is **uniform over loops** — i.e. the arm begins at the *uniform mixture*, not at the
+final-loop readout the control uses. So this is not a strictly-larger-hypothesis-class test the way
+the scale clock and gated injection were. §4.7c measured uniform[1,16] at −0.0015 against the best
+single depth, so the starting point is not badly off — but "beats the control" here mixes the gate's
+benefit with the uniform-start offset, and cannot be attributed to the gate alone.
+
+**2. Its eval curve is not a depth curve.** The gate applies whenever the full state stack is
+available, so evaluating at `n_loops = r` mixes over loops `1..r`. **The arm's "plateau" is therefore
+over mixture-window size, not over depth**, and is not directly comparable to every other plateau in
+this report. Compare it to the control on CE; do not put its band in the §4.16b/§4.17 band tables.
+
+**Read, in order:** (a) do the learned gate weights concentrate or stay near uniform — if near
+uniform, the model declined the parameter and it reduces to §4.7c's null; (b) if concentrated, on
+which loop, and is it token-dependent (that is §4.7's unreachable signal becoming reachable, which
+would be the project's first positive on that axis); (c) CE against `od_control`, floor 0.0527;
+(d) **do not** read the plateau as a depth band, per caveat 2.
+
+**Prior, stated honestly:** §4.7c found no *static* mixture helps, and §4.7's headroom is per-token
+while a static mixture is global — so a per-token gate is exactly the instrument that could reach it,
+and E1's null is a *lower* bound on this, not an upper one. But four instrument classes have now
+failed on this headroom, so the base rate is not encouraging.
