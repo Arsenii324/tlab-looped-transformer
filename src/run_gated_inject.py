@@ -70,7 +70,9 @@ def main():
     tok = base_t["total_tokens"]
     cap = tok * 18 * 3 / LAYER_APPS_PER_S * 2.2
 
-    arms = {"gi_additive": "additive", "gi_gated": "gated"}
+    # gi_gated (alpha_init 0.9999939) is KEPT: it is the record that the near-identity init
+    # makes alpha untrainable. gi_gated_a874 is the valid test.
+    arms = {"gi_additive": "additive", "gi_gated": "gated", "gi_gated_a874": "gated"}
     out = ROOT / "checkpoints" / "gated_inject_results.json"
     res = json.loads(out.read_text()) if out.exists() else {}
 
@@ -78,7 +80,10 @@ def main():
         if name in res:
             print(f"{name}: already done, skipping", flush=True)
             continue
-        mcfg = ModelConfig(**{**base_m, "inject_mode": mode})
+        over = {"inject_mode": mode}
+        if name == "gi_gated":
+            over["gate_alpha_init"] = 0.9999939   # the failed near-identity init, on record
+        mcfg = ModelConfig(**{**base_m, **over})
         tcfg = TrainConfig(**{**base_t, "run_name": name})
         steps_per_eval = tcfg.eval_every_tokens // (tcfg.batch_size * tcfg.seq_len)
         assert steps_per_eval <= 200, (

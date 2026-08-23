@@ -77,6 +77,9 @@ class Config:
     depth_init: bool = True
     residual_scale: float | None = None    # if set, lambda in eps = lambda/(N*sqrt(L)); see below
     scale_clock: bool = False              # feed log||h|| back into the block's input; see _clock()
+    gate_alpha_init: float = 0.874         # inject_mode="gated": INITIAL per-channel carry decay.
+    # Swept rather than fixed, following the `fixed_gate` precedent (METHODS.md rule 2), because the
+    # first screen showed this value decides whether the mechanism is testable at all -- see _inject().
     n_loop_eff: int = 24                   # for depth_init scaling; ~ mean of train-time loop sampler
 
 
@@ -269,14 +272,27 @@ class LoopedTransformer(nn.Module):
 
         if cfg.inject_mode == "gated":
             # Diagonal state-space write (see _inject). Two per-channel vectors = 2*H = 896 params.
-            # Initialised so the gated map is numerically the ADDITIVE map at step 0:
             #   softplus(inj_b) = 1  <=  inj_b = log(e - 1) = 0.5413
-            #   alpha = exp(-delta * exp(inj_a)) -> 1  <=  inj_a very negative
-            # At inj_a = -12, alpha = 0.9999939, so h_in = 0.9999939*h + 1.0*e. The arm therefore
-            # starts as the control and must LEARN to decay, which is the same discipline the scale
-            # clock uses (zero-init) and makes this a strictly-larger hypothesis class rather than a
-            # different model.
-            self.inj_a = nn.Parameter(torch.full((H,), -12.0))
+            #   alpha = exp(-delta * exp(inj_a))  =>  inj_a = log(-log(alpha)) at delta = 1
+            #
+            # THE INIT IS NOT COSMETIC, AND THE FIRST SCREEN OF THIS ARM FAILED ON IT. The obvious
+            # choice was to start AT the additive model (alpha -> 1, inj_a = -12) so the arm would be
+            # a strictly-larger hypothesis class. Measured consequence: d(alpha)/d(inj_a) = 6.1e-06
+            # there, against d(delta)/d(inj_b) = 0.63 -- delta is **~103,000x more reachable**. After
+            # 2.5M tokens delta had moved 1.0 -> 1.1137 while alpha moved < 5e-6 and 0/448 channels
+            # fell below 0.99. That run did NOT show the model declining the decay; it showed alpha
+            # was untrainable from that point, so the mechanism was never exercised.
+            #
+            # The trade is unavoidable: any smooth map into (0,1) is flat where it approaches 1, so
+            # "decay off at init" and "decay reachable" cannot both hold. **The decay has to be
+            # initialised ON.** At the default alpha = 0.874 the gradient is only ~5x below delta's
+            # and the model can move alpha in EITHER direction -- which is what lets the run express
+            # a preference, rather than only being able to crawl one way.
+            #   alpha=0.982 -> 35x worse gradient   alpha=0.874 -> 5x   alpha=0.692 -> 2x
+            # Cost: the arm no longer starts at the control, so this is a different model at init and
+            # the comparison is additive-vs-decayed rather than a superset test. Stated, not hidden.
+            a0 = math.log(-math.log(cfg.gate_alpha_init))
+            self.inj_a = nn.Parameter(torch.full((H,), a0))
             self.inj_b = nn.Parameter(torch.full((H,), math.log(math.e - 1.0)))
         else:
             self.inj_a = self.inj_b = None
