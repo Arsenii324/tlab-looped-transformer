@@ -2934,8 +2934,44 @@ it learns to make them more interchangeable.*
 > | **weight-tied** — one block applied 33 times | **2.73 / 33** | **0.8022** |
 > | **untied** — 33 distinct layers, same width | **31.80 / 33** | **−0.0029** |
 >
-> **An untied stack at identical scale has essentially full-rank, near-orthogonal depth keys. The tied
-> loop has 2.7 of 33.** A ratio of **11.7×**, with smallness held fixed by construction.
+> **An untied stack at identical scale has essentially full-rank, near-orthogonal depth *keys*. The
+> tied loop has 2.7 of 33.**
+>
+> ### ⚠ CORRECTED 20:01 — most of that 11.7× is PROJECTION randomness, not representation diversity
+>
+> **The confound, raised against this result within the hour it was written, and it is real.** In an
+> untied stack layer *i* has its **own** `W_K^(i)`, so `K_i = norm(h_i)·W_K^(i)`. If the untied states
+> were *identical at every depth*, 33 independent random projections of one vector are still
+> near-orthogonal in ℝ²²⁴ **by construction** — rank ≈ 33, cos ≈ 0. **The number above is what you get
+> even when the depth stream carries no diversity at all.** This is §4.20's shape again: a statistic
+> that looks like a finding and is substantially arithmetic.
+>
+> **The control holds the projection fixed and measures the states themselves:**
+>
+> | | effective rank | mean pairwise cos |
+> |---|---|---|
+> | tied — states `h_i`, no projection | **1.40 / 33** | +0.8044 |
+> | tied — keys (its one `W_K`) | 2.73 / 33 | +0.8022 |
+> | **untied — states `h_i`, no projection** | **4.36 / 33** | **+0.8815** |
+> | **untied — states through ONE SHARED `W_K`** | **4.36 / 33** | +0.8807 |
+> | untied — keys, own per-layer `W_K` | 31.83 / 33 | +0.0000 |
+>
+> **At the representation level the gap is 3.1×, not 11.7×** — and the untied stack's states are, if
+> anything, *more* cosine-correlated than the tied model's (0.88 vs 0.80). **Both architectures build
+> highly collinear depth streams.** The 31.83 collapses to 4.36 the moment the projection is shared,
+> which is the whole of the confound.
+>
+> **What survives, and it is sharper than what it replaces.** MoD-Attention attends over the **keys the
+> model actually computes**, so key-space rank *is* the right quantity for explaining their positive —
+> and there the 31.83 stands. The corrected mechanism is therefore: **weight tying denies the depth
+> stream the free decorrelation that distinct per-layer projections supply.** An unshared stack does
+> not need diverse *representations* to make depth attention work; its diverse *projections* manufacture
+> a near-orthogonal key set out of a collinear state stream. A tied loop has one `W_K` and cannot.
+>
+> **What does NOT survive unqualified:** the claim that the negative generalises *because untied models
+> build diverse representations*. They do not — 4.36 of 33. The generalisation argument now rests on
+> the projection asymmetry, which is structural and does hold at any width, rather than on a
+> representation gap that is real but small.
 >
 > **So the collapse is weight tying, and three things follow.** (i) §4.7e's negative is **not** a
 > small-model artifact — it is a property of the mechanism this whole report is about, and it

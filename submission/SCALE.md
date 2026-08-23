@@ -111,6 +111,19 @@ tied-vs-untied:
 **11.7×, with smallness held fixed by construction.** An untied stack *at identical scale* has
 essentially full-rank, near-orthogonal depth keys.
 
+> **CORRECTED 20:01 — and the correction changes the mechanism, not the conclusion.** Most of that
+> 11.7× is **projection randomness**, not representation diversity: each untied layer has its own
+> `W_K`, and 33 independent random projections of even an *identical* state are near-orthogonal by
+> construction. Holding the projection fixed, the untied stack's depth **states** have effective rank
+> **4.36 / 33** (cos 0.88) against the tied model's **1.40 / 33** (cos 0.80) — a **3.1×** gap, and both
+> streams are highly collinear.
+>
+> **The scaling conclusion stands, on a better mechanism.** Depth attention reads *keys*, and in an
+> unshared stack those keys really are rank ~32 — because distinct projections **decorrelate a
+> collinear state stream for free.** A weight-tied loop has one `W_K` and cannot buy that at any width.
+> So the negative still generalises, and the reason is now the **projection asymmetry** rather than a
+> representation gap that turns out to be small.
+
 **So the collapse is weight tying, and the negative generalises.** Three consequences for scaling:
 
 1. **A wider block does not fix it.** The same block applied twice produces near-identical keys
