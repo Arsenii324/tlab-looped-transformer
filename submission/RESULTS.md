@@ -1,8 +1,7 @@
 # Results
 
-*Headline figures, every intervention with its effect, and what is still landing. Numbers are
-`src/eval.py` post-hoc sweeps on a shared grid; `src/headline.py check` verifies this file's headline
-against the artifact it came from. Cells still running are marked and dated rather than omitted.*
+*Numbers are `src/eval.py` post-hoc sweeps on a shared grid. `src/headline.py check` verifies this
+file's headline against the artifact it came from.*
 
 ---
 
@@ -20,15 +19,14 @@ against the artifact it came from. Cells still running are marked and dated rath
 figure**, and even that is against FineWeb, not FineWeb-Edu (§2.1).
 
 **Finishing the token budget bought 0.39–0.42 nats. Every architectural intervention bought
-0.002–0.26.** That is the report's most practically useful sentence.
+0.002–0.26.**
 
 **Why the control ships and not the 37.52 arm:** see `METHOD.md` §4 — 88% loop-1 damage, a narrower
 band, the only arm that converges, and an unresolvable clipping confound.
 
-## 1b. What actually stands — the positives, ranked, with what each is worth
+## 1b. What stands: the positives, ranked
 
-*Asked plainly because the rest of this folder is organised around what failed, and a reader is
-entitled to the other list without assembling it themselves.*
+*The rest of this folder is organised around what failed, so here is the other list.*
 
 | # | what worked | size | how well supported | what it is **not** |
 |---|---|---|---|---|
@@ -38,21 +36,20 @@ entitled to the other list without assembling it themselves.*
 | 4 | **Exclusive self attention (XSA)** | **−0.2162 / −0.2633**, two seeds, **zero parameters** | replicates, ~16× the floor | **not about looping.** 84–91% of it is at `r = 1`; it is a generic attention operator a non-looped model would plausibly get too. Its band claim died at the second seed. **Untested at scale** |
 | 5 | **Norm penalty** | wins perplexity outright: **37.52 vs 38.86** | one 90M arm | **not shipped, and the reasons are measured**: `ΔCE@1 = +0.2263` (88% of its loop-gain advantage is loop-1 *damage*), its band narrows, it is the only arm whose map converges, and it carries an unresolvable clipping confound |
 
-**And the one that was a positive this morning and is not one tonight — reported at its new valence
-rather than as a positive with footnotes:** loop-cycled LoRA is **a result that did not survive
-scale.** −0.0936 across five arms and three platforms at 2.5M; **+0.0077 at 12M** in a
-config-identical pair (§4.29). **This project has no replicated CE improvement at scale.**
+One entry moved off this list today. Loop-cycled LoRA did not survive scale: **−0.0936** across five
+arms and three platforms at 2.5M, **+0.0077** at 12M in a config-identical pair (§4.29). **This
+project has no replicated CE improvement at scale.**
 
-**And it is what this section's own reading implies:** a gain sitting 67–95% at `r = 1` is a block
-improvement, and a small block improvement at 3% of the headline budget is the kind of thing more data
-absorbs. *(Offered as a coherent reading — the direction was not registered in advance.)* **Two of the
-five 2.5M arms were never tested at scale in their own form: rank 8, and LoRA combined with annealing
-(−0.1172, the largest of them).**
+That is what this section's own reading implies. A gain sitting 67–95% at `r = 1` is a block
+improvement, and a small block improvement at 3% of the headline budget is the kind of thing more
+data absorbs. The direction was not registered in advance, so it is offered as a coherent reading.
+Two of the five 2.5M arms were never tested at scale in their own form: rank 8, and LoRA combined
+with annealing (**−0.1172**, the largest of them).
 
 ### The depth-mixing family, asked directly: is there any "mixture-over-depths" positive? No.
 
-**Seven mechanisms, and every one is null or explained away.** This is the report's central negative
-and it is the best-evidenced thing in it:
+Eight mechanisms, and every one is null, an instrument failure, or a gain whose own mechanism check
+failed. This is the report's central negative:
 
 | mechanism | result |
 |---|---|
@@ -65,12 +62,12 @@ and it is the best-evidenced thing in it:
 | five label-free halting rules + a learned probe + two Q-exit heads | best captures **0.1%** of a real headroom (`EARLY_EXIT.md`) |
 | **untying `W_K` into 4 loop-index buckets** — buying the rank the others lacked | **−0.0128 for +10.0% of the parameter budget**, inside the floor. And it **did not raise the trained rank**: 8.818/32 at initialisation, **1.74 after training** (§4.30) |
 
-**And there is a measured reason rather than seven shrugs: a token's 32 depth keys span an effective
-rank of ~1.6** — and the last arm of the project tried to *buy* that rank architecturally, got it at
-initialisation (8.818/32), and watched training collapse it back to 1.74 (§4.30). **The constraint is
-not only structural; the objective reproduces it.** There is almost nothing for any mixing or selection mechanism to discriminate
-between — and **the one experiment built to overturn that explanation was registered in advance, ran,
-and did not** (`dg_norm`, two seeds). §4.28 turns the mechanism into a priced dose–response: depth-key
+There is a measured reason behind all eight: a token's 32 depth keys span an effective rank of
+**~1.6**, so there is almost nothing for a mixing or selection mechanism to discriminate between. The
+last arm of the project tried to buy that rank architecturally, got it at initialisation
+(**8.818/32**), and watched training collapse it back to **1.74** (§4.30). The constraint is
+structural *and* the objective reproduces it. The one experiment built to overturn the explanation was
+registered in advance, ran, and did not (`dg_norm`, two seeds). §4.28 turns the mechanism into a priced dose–response: depth-key
 rank is `≈ 1.6 × (number of distinct projections)`, so a weight-tied loop — which has exactly one
 `W_K` — cannot buy it at any width.
 
@@ -102,18 +99,17 @@ states the convention). **Three** mechanisms were run at two settings each, so t
 (§4.25) shows four of eleven paired band verdicts are tolerance-dependent; the two the argument below
 rests on — **annealing widens** and **LoRA leaves the band unmoved** — are robust at 3/3.
 
-### Loop-specific mechanisms vs generic block improvements — the split that makes the claim honest
+### Loop-specific mechanisms vs generic block improvements
 
-**A grader should be able to ask "would a non-looped transformer get the same benefit?" and find the
-answer already in the table.** Eleven of the twelve are **loop-specific by construction** — their
-mechanism refers to loops, depths, or the state between them, and is undefined at `r = 1`. One is
-not: **exclusive self attention is an ordinary attention operator with no loop-dependence at all**,
-included because it was cheap and worth testing, and a non-looped model would plausibly get the same
-−0.24.
+Would a non-looped transformer get the same benefit? Eleven of the twelve are loop-specific by
+construction: their mechanism refers to loops, depths, or the state between them, and is undefined at
+`r = 1`. Exclusive self attention is not. It is an ordinary attention operator with no
+loop-dependence, included because it was cheap to test, and a non-looped model would plausibly get
+the same −0.24.
 
-**And that split is exactly where the finding lives, because the measurement crosses it.** The four
-loop-specific mechanisms that lower the loss **behave like generic block improvements anyway** — they
-deliver 67–101% of their gain at a single loop, where the loop-referring part of each is inert:
+The measurement crosses that split. The four loop-specific mechanisms that lower the loss behave like
+generic block improvements anyway, delivering 67–101% of their gain at a single loop where the
+loop-referring part of each is inert:
 
 ### The pattern, which is the report's central finding
 
@@ -121,8 +117,8 @@ deliver 67–101% of their gain at a single loop, where the loop-referring part 
 out to matter.** Four of the five deliver 67–101% of that gain at a *single* loop, where their own
 mechanism is provably inert or irrelevant.
 
-> **The one that was tested at 5× the budget did not survive it.** Loop-cycled LoRA gives −0.0733 …
-> −0.1251 at 2.5M and **+0.0077 at 12M** — sign reversed, inside the replicate floor (§4.29). It was
+> **The one that was tested at 5× the budget did not survive it.** Loop-cycled LoRA gives −0.0514 …
+> −0.1251 at 2.5M (mean −0.0936 over five arms) and **+0.0077 at 12M** — sign reversed, inside the replicate floor (§4.29). It was
 > the only CE claim here that replicated across three platforms. **This project therefore has no
 > replicated CE improvement at scale**, and every "lowers the loss" in this table should be read as a
 > **2.5–3.5M-token** statement. *The band results are unaffected — the 12M pair is [8,16] for both
@@ -135,10 +131,9 @@ mechanism is provably inert or irrelevant.
 | loop-cycled LoRA, rank ≥ 4 | — | −0.0936 *(2.5M only)* | **67–95%**, median 88% *(5 arms)* | branch index is `0 mod 4`; cycling is inert — verified max\|diff\| = 0.000e+00 at r=1 |
 | duo-causal attention, W = 3 | −0.0682 / −0.0399 | −0.0871 / −0.0394 | **78% / 101%** | with one loop there is no previous loop's KV to attend to |
 
-**The fifth is the mirror image and is worth stating separately, because it fails the brief the other
-way round.** The norm penalty lowers best CE by 0.030 and **wins perplexity outright** (37.52 vs
-38.86) — but `ΔCE@1 = +0.2263`, so **88% of its apparent loop-gain advantage is loop-1 damage**, and
-its band *narrows*. It buys loop gain by making loop 1 worse rather than by making depth worth more.
+The fifth inverts that. The norm penalty lowers best CE by **0.030** and wins perplexity outright
+(**37.52** vs **38.86**), but `ΔCE@1 = +0.2263`, so **88% of its apparent loop-gain advantage is
+loop-1 damage**, and its band narrows. It buys loop gain by making loop 1 worse rather than by making depth worth more.
 
 **Not one of the twelve widens the useful band.** At the tolerance every table here uses
 (`tol = 0.01`) three of the five loss-lowering arms *narrow* it — the norm penalty ([6,17]→[6,14]),
@@ -156,11 +151,10 @@ the loss.**
 > is the claim the dissociation actually needs: **no loss-lowering intervention moves the band
 > consistently, and the one lever that widens it does not lower the loss.**
 
-**So the honest count is sharper than "twelve interventions, five lower the loss", and it is not
-kinder:** *eleven loop-specific mechanisms were tested; not one widens the useful band; the four that
-lower the loss do so **as block improvements**, at a depth where the loop-referring part of each does
-nothing. The twelfth intervention is a generic block operator, it is the largest positive in the
-report, and it is not about looping at all.*
+Stated at the level the evidence supports: eleven loop-specific mechanisms were tested, not one
+widens the useful band, and the four that lower the loss do so as block improvements, at a depth where
+the loop-referring part of each does nothing. The twelfth is a generic block operator; it is the
+largest positive in the report and it is not about looping.
 
 *That dissociation is the answer to the brief's sentence: low perplexity and «за счет большого
 количества лупов» come apart under measurement.*
@@ -183,10 +177,9 @@ report, and it is not about looping at all.*
 > one of these paired interventions was measured at 2.5–3.5M tokens** — there is no budget leverage in
 > the data. And loop gain itself **roughly triples** between that regime and the released model's
 > (median **0.1084** at ≤3M against **0.3023** for the 90M control), so the r=1 share is measured
-> exactly where the loop is worth least. **Both readings are live:** the pattern is budget-invariant
-> (in which case the finding strengthens as loop gain grows around it), or it is a screening-scale
-> artifact. One arm probes it — Kaggle `tlab-lora-scaleup` at 12M/arm — and seed noise on the share is
-> already ±7–12 points at fixed budget, which bounds what that arm can settle.
+> exactly where the loop is worth least. **Both readings remain live.** The one arm that probed it, Kaggle
+> `tlab-lora-scaleup` at 12M/arm, cannot settle it: at 12M there is no gain left to decompose (§4.29).
+> Seed noise on the share is already ±7–12 points at fixed budget.
 
 ### One prediction that fired
 
@@ -198,9 +191,9 @@ band alone, the prediction was **"CE down, band unmoved."**
 **CE down: confirmed at both seeds** (−0.2162, −0.2633; ~16× the floor; zero parameters).
 **Band unmoved: confirmed at seed 0, contradicted at seed 1** — and withdrawn on that basis.
 
-Reported this way because a pattern that generates a correct advance prediction on a *published,
-zero-parameter* operator is worth more than the same pattern restated over arms chosen after the fact
-— and because the half that failed is what an n=1 report would have shipped intact.
+Reported this way because the pattern generated a correct advance prediction on a published,
+zero-parameter operator, and because the half that failed is what an n=1 report would have shipped
+intact.
 
 > **⚠ The caveats belong beside the numbers, not in a footnote.**
 > **LoRA `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]`:** the `rank ≥ 4` restriction is **post hoc** — over all six arms the interval
@@ -214,7 +207,8 @@ zero-parameter* operator is worth more than the same pattern restated over arms 
 > **XSA `[XSA-AT-R1]`:** **replicated at two seeds** (−0.2162 / −0.2633, mean −0.2398, ~16× the floor,
 > **zero parameters**) — the largest positive in the project. But **84–91% of it is at `r = 1`**, and
 > the "band unmoved" half of the 19:15 prediction **held at seed 0 and failed at seed 1**, so it is
-> withdrawn: XSA joins the arms that *cost* useful depth. Both seeds, one budget (2.5M), one width.
+> withdrawn, and the band claim is unresolved: seed 1 narrows, seed 0 widens once the tolerance is
+> halved. Both seeds, one budget (2.5M), one width.
 > **Duo-causal W = 3:** the CE gain is real and agrees in sign at both seeds, **but the registered
 > mechanism check says the mechanism did not engage** — `cos(Δu_t, Δu_{t−1})` is 0.9962/0.9991/0.9998
 > against a control's 0.9978/0.9993/0.9998, i.e. indistinguishable. A CE gain whose mechanism check
@@ -294,7 +288,7 @@ that could have killed it.** *Scope: 2.5M tokens, two seeds, one width.*
 > computation goes. Reporting it as a band would be the project's characteristic error — a statistic
 > read as a claim about a space it does not live in.
 
-### 5.2 The arms this section was written to hold open — four landed, one outstanding
+### 5.2 The arms this section was written to hold open: all five landed
 
 Each had its falsifier registered in `../RUNS.md` before it ran. Landed results are in §2 and in the
 report sections named; nothing here is still a placeholder.
@@ -309,10 +303,8 @@ report sections named; nothing here is still a placeholder.
 
 ## 5.3 What the model actually writes
 
-*Included because `FAILURES.md` records that the sharpest errors in this project were surfaced by
-outside questions, and one of them was simply **"has anyone looked at what it writes?"** — asked after
-a capability verdict had been printed over empty strings. Perplexity alone does not distinguish a
-working small model from a degenerate one.*
+*`FAILURES.md` records that a capability verdict was once printed over empty strings. Perplexity alone
+does not distinguish a working small model from a degenerate one, so here is what it writes.*
 
 Greedy-free sampling, temperature 0.8, `n_loops=10` (the released checkpoint's optimum), seed 0:
 
@@ -327,13 +319,11 @@ Greedy-free sampling, temperature 0.8, `n_loops=10` (the released checkpoint's o
 > **"Water is"** → *"Water is the perfect remodel. It works fine in shape to dry air. Expressed shape
 > is made up of a dirtie, covered with white onions, constructed washing and darkening."*
 
-**Read this as a sanity check, not as a capability claim.** The output is **syntactically well-formed
-English** — agreement, articles, subordinate clauses, plausible noun phrases — and **semantically
-incoherent**. That is exactly what 9.06M parameters trained on 90M tokens should produce, and it is
-the honest characterisation: *the model has learned the shape of the language and not its content.*
-**No claim in this submission depends on generation quality**; every result is teacher-forced
-cross-entropy. This is here so a reader does not have to take "CE 3.66" on faith that something
-non-degenerate is behind it.
+Read this as a sanity check rather than a capability claim. The output is syntactically well-formed
+English (agreement, articles, subordinate clauses, plausible noun phrases) and semantically
+incoherent, which is what 9.06M parameters trained on 90M tokens should produce: the model has learned
+the shape of the language and not its content. **No claim in this submission depends on generation
+quality**; every result is teacher-forced cross-entropy.
 
 ## 6. Verification
 
