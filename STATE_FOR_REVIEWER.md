@@ -1,3 +1,20 @@
+> ### ⚠ 11:12 SNAPSHOT — the headline in here is SUPERSEDED. `report.md` is authoritative.
+>
+> `INDEX.md` points reviewers at this file, so the staleness has to be marked rather than left to be
+> discovered. Written at 11:12, it predates the day's four largest changes:
+>
+> | this file says | current, and where |
+> |---|---|
+> | headline **CE 4.0071 @ loop 8**, 46.0M tokens (ppl 54.99) | **CE 3.6599, ppl 38.86, bpb 1.5829, band [6,17]** on 90.0M tokens — `report.md` §0/§.headline. The 46M run is the *previous* headline |
+> | — | **§3.5's deep half WITHDRAWN** (17:23): `tlab-deep-full` returned plateau mid **22.6** vs a pre-registered trigger of "near 22". The recommended schedule is `U[4,32]` |
+> | — | **Annealing's CE advantage WITHDRAWN at n=4** (seeds 2/3 gave +0.0482 / −0.0902). What survives: the band widens at **4/4 seeds** |
+> | — | **§4.20's degenerate collapse is largely a shared-residual artifact** (cos of *increments* is 0.14–0.18, not 1.0) |
+>
+> Everything else here — the exact model config, the training setup, and §6's self-assessed
+> inefficiencies — is still accurate and is why the file is kept rather than rewritten.
+
+---
+
 # Full state dump for the reviewing agent — 2026-08-22 ~23:30 MSK, ~24h to deadline
 
 Written for an AI reader, not a human. Maximal detail, including things I think are wrong or
