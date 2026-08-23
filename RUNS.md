@@ -333,3 +333,46 @@ already made twice (§6.0). Its useful claim is about the **band**, not about Δ
 **Not relaunching as `sw90`.** ~6h of T4 time is already spent, the remaining window does not fit a
 second deep run, and the band question it answers is genuinely schedule-level rather than
 switch-fraction-level. Recorded as a decision, not an oversight.
+
+---
+
+## 2026-08-23 14:00 — PRE-REGISTERED: the scale clock (`scale_clock`), written before any arm runs
+
+**What changed about the idea before it was implemented.** Proposed by the reviewer as *breaking a
+fixed point* of the induced sphere map `G(u)=F(u)/‖F(u)‖`, on the premise that `u_t → u*`. **That
+premise was tested first and is false** — `src/angular_convergence.py` shows `u` drifts
+logarithmically (log-drift R² 0.986 with one parameter, power law 0.748 with two; 0.18 rad of motion
+still accumulating over loops 129–384). There is no fixed point to break. The intervention is run
+anyway on the surviving, weaker motivation: **the block cannot see `‖h‖`, so it has no way to behave
+differently late than early**, and logarithmic drift means readout-visible progress per loop decays
+as 1/t. Precedent that a *trained* scale coupling can move the path where an inference-time one
+cannot: §4.6's clamp relocates without raising the ceiling, while §4.6b's norm penalty is the only
+arm whose ρ crosses below 1 and whose drift constant falls (C 0.154 → 0.102).
+
+**Implementation.** `h_in *= 1 + w·(log rms(h_t) − log rms(h_1))`, per token, `w` zero-initialised —
+**+448 params (0.0049%), zero extra FLOPs, bit-identical to the current model at step 0** (verified,
+max|diff| = 0.0). A function of state, not a table over `t`, so §3.4-compliant and extrapolates.
+
+**Arms** (local MPS, 2.5M tokens, seed 0, in-job control so the comparison is paired):
+`sc_ctrl` (clock off) · `sc_clock` (clock on) · `sc_clock_sw90` (clock + annealing).
+
+**Read, in this order — geometry first, because CE at 2.5M has already reversed between budgets:**
+
+| rank | quantity | baseline | what confirms the mechanism |
+|---|---|---|---|
+| **1** | drift constant **C** (`angular_convergence.py`) | 0.1539 (90M ctrl) / measure `sc_ctrl` in-job | **C rises** — the block is using the coordinate to keep moving |
+| **1b** | consecutive-step exponent | ≈ −1.0 | moves **away from −1** toward 0 |
+| 2 | learned ‖w‖ | 0 at init | **non-zero** — if it stays ~0 the model declined the clock and every other reading is moot |
+| 3 | plateau midpoint / onset, grid-matched | `sc_ctrl`'s own | extends |
+| 4 | CE_best, ΔCE@1, loop-1 share via `gain_decomp` | `sc_ctrl`'s own | reported, not used to decide |
+
+**Pre-registered falsifier, and it is the informative outcome.** If **C rises and the plateau does
+not extend**, then readout-visible supply was never the binding constraint and demand is — which
+would be the cleanest statement of the supply/demand split in this report, and would justify §3.5's
+supervision-based method on mechanism rather than on measurement alone. **If ‖w‖ ≈ 0**, the model
+declined a strictly-larger hypothesis class and the honest report is "no effect, and the model would
+not even take the parameter."
+
+**Not pre-registering a CE threshold**, deliberately: 448 params against a measured MPS replicate
+floor of 0.031–0.068 nats means any CE difference at 2.5M is unresolvable by construction. This run
+is a geometry experiment.

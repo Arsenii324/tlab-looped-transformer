@@ -76,6 +76,7 @@ class Config:
     inject_mode: str = "additive"          # "none" | "additive" | "concat"
     depth_init: bool = True
     residual_scale: float | None = None    # if set, lambda in eps = lambda/(N*sqrt(L)); see below
+    scale_clock: bool = False              # feed log||h|| back into the block's input; see _clock()
     n_loop_eff: int = 24                   # for depth_init scaling; ~ mean of train-time loop sampler
 
 
@@ -257,6 +258,10 @@ class LoopedTransformer(nn.Module):
         if cfg.fixed_gate is not None:
             assert cfg.convex_gate, "fixed_gate requires convex_gate=True (it sets g, not whether to gate)"
 
+        # Zero-init: the clock is off at step 0 and the model is bit-identical to scale_clock=False
+        # until the optimizer chooses otherwise. A strictly-larger hypothesis class, not a bet.
+        self.clock_w = nn.Parameter(torch.zeros(H)) if cfg.scale_clock else None
+
         if cfg.inject_mode == "concat":
             self.adapter = nn.Linear(2 * H, H, bias=False)
         else:
@@ -342,6 +347,41 @@ class LoopedTransformer(nn.Module):
         g = torch.sigmoid(self.gate_mlp(torch.cat([pe, h_new], dim=-1)))
         return (1.0 - g) * h_prev + g * h_new, g
 
+    def _clock(self, h_in, h, log_rms0):
+        """Multiply the block's input by `1 + w * (log rms(h_t) - log rms(h_1))`, per token.
+
+        THE MOTIVATION, AND IT IS NOT THE ONE THIS STARTED AS. The original proposal was to break a
+        fixed point of the induced sphere map `G(u) = F(u)/||F(u)||`: RMSNorm is scale-invariant and
+        ||e||/||h|| ~ 1e-4, so the block's input is a function of DIRECTION alone, and if `u` settles
+        the loop computes a constant forever. **That premise was tested and is false**
+        (`src/angular_convergence.py`): `u` does not converge, it drifts logarithmically -- aligned
+        steps of size C/t summing to C*ln(T/t), which diverges, R2 0.986 against a power law's 0.748.
+        There is no fixed point here to break, and an intervention sold as breaking one is aimed at
+        nothing.
+
+        What survives the correction is a weaker and more honest motivation. Logarithmic drift means
+        the READOUT-VISIBLE progress per loop vanishes as 1/t even though the trajectory never
+        settles -- that is §4.3's dilution, restated. The block cannot see ||h||, so it has no way to
+        know how deep it is or to behave differently late than early; every loop is handed a
+        direction and nothing else. This gives it the one coordinate normalization throws away.
+
+        Precedent that a TRAINING-TIME scale intervention can move the learned path where an
+        inference-time one cannot: §4.6's radial clamp relocates the optimum without raising the
+        ceiling, while §4.6b's norm penalty -- trained -- is the only arm whose rho crosses below 1
+        and whose drift constant falls (C 0.154 -> 0.102). This is a trained scale coupling, so it is
+        in the second class, not the first.
+
+        Cost: `hidden_size` parameters (448, 0.005% of the block), zero extra FLOPs, and `w` is
+        ZERO-INITIALISED so the model is bit-identical to the current one at step 0 and must learn to
+        use the clock rather than starting coupled. `s` is referenced to the token's OWN loop-1 scale
+        rather than a batch statistic, so it is per-token, batch-independent, and 0 at t=1.
+
+        §3.4 compliance: this is a FUNCTION of the state, not a table over `t`. It is defined at every
+        loop count, extrapolates past the trained range, and has nothing to outgrow -- unlike an
+        iteration embedding or a per-iteration norm table, which §3.4 rejects for that reason."""
+        s = torch.log(h.float().pow(2).mean(-1, keepdim=True).sqrt().clamp_min(1e-8)) - log_rms0
+        return h_in * (1.0 + self.clock_w * s.to(h_in.dtype))
+
     def _inject(self, h, e):
         if self.cfg.inject_mode == "none":
             return h
@@ -414,6 +454,7 @@ class LoopedTransformer(nn.Module):
         logits_per_loop, state_norms, states, state_rms = [], [], [], []
         k = self.cfg.truncate_bptt
 
+        log_rms0 = None
         for t in range(n_loops):
             no_grad = k is not None and t < (n_loops - k)
             # nullcontext, NOT torch.enable_grad(): enable_grad() overrides an OUTER no_grad(), so
@@ -427,6 +468,11 @@ class LoopedTransformer(nn.Module):
             ctx = torch.no_grad() if no_grad else contextlib.nullcontext()
             with ctx:
                 h_in = self._inject(h, e) if t > 0 else h
+                if self.clock_w is not None:
+                    if log_rms0 is None:
+                        log_rms0 = torch.log(
+                            h.float().pow(2).mean(-1, keepdim=True).sqrt().clamp_min(1e-8)).detach()
+                    h_in = self._clock(h_in, h, log_rms0)
                 h_new = self.block(h_in, cos, sin)
                 if self.gate_mlp is not None or self.cfg.fixed_gate is not None:
                     h_new, _g = self._gate(h, h_new, t)
