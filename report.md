@@ -6509,6 +6509,13 @@ counted it among the interventions "that lower the loss" is counting a 2.5M-toke
 > folded into the negative, because §4.17 found annealing and LoRA were the only two things in this
 > project that improved *both* endpoints, and their interaction is exactly the cell nobody has filled.
 
+> **What this cost, recorded because every "future work" price in `submission/LIMITATIONS.md` §7 is
+> derived from it.** The two 12M arms took **5,648 s** and **6,563 s** of Kaggle T4 time; `tlab-divx`
+> ran 3 arms × 2.5M in **3,429 s** of DataSphere T4 time. **That is ≈ 460 s per million tokens per
+> arm**, consistent across both platforms, and it is what makes the remaining questions costable
+> rather than merely listable: a 12M two-arm scale test is ~3.1 h, a three-way in-job replicate at
+> 2.5M is ~58 min, and a 90M same-config replicate is ~9 h.
+
 *Scope: one arm, one seed, one rank, one platform, dense supervision. A single 12M pair does not
 establish that the effect is zero at scale; it establishes that the like-for-like effect measured at
 2.5M is not reproduced at 12M, which is enough to withdraw the claim as stated.*
