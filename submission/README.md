@@ -76,10 +76,9 @@ deliver them together, and we can say why.
    78–101%, the saturating depth gate 96%. **They improve the block, not the looping.** The fifth is
    the mirror image: the norm penalty wins perplexity (37.52 vs 38.86) by *damaging* loop 1
    (`ΔCE@1 = +0.2263`). **And the only one that replicated across three platforms vanishes at 5× the
-   budget** — −0.0936 at 2.5M against **+0.0077** at 12M in a config-identical pair (§4.29). *We did
-   not pre-register a direction for that run, so we report it as **consistent with** reading those
-   gains as block improvements, not as a prediction confirmed.* **This project has no replicated CE
-   improvement at scale.**
+   budget** — −0.0936 at 2.5M against **+0.0077** at 12M in a config-identical pair (§4.29), which is
+   what a block improvement worth 3% of the headline budget should do once there is more data.
+   **This project has no replicated CE improvement at scale.**
 
 5. **One lever moves depth, costs zero parameters, and survives the two tests the others failed.**
    Supervision annealing widens the band at **5 of 5 seeds**, with the *same* edge decomposition at

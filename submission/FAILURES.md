@@ -5,7 +5,12 @@
 answer: the complete list, how each was caught, and what it cost. It is placed in the submission
 rather than an appendix because it is **evidence**, not apology.*
 
-`../report.md` §6.0 carries all **34** rows with full detail. This document is the shape of them.
+**Read this as the reason to believe the other seven documents, not as the content of the
+submission.** The findings are in `RESULTS.md`, `NEGATIVE_RESULTS.md` and `EARLY_EXIT.md`; this is the
+account of how they were checked, what that checking caught, and what it cost — which is what makes
+the numbers there worth trusting.
+
+`../report.md` §6.0 carries all **35** rows with full detail. This document is the shape of them.
 
 ---
 

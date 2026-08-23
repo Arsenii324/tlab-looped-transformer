@@ -38,9 +38,16 @@ entitled to the other list without assembling it themselves.*
 | 4 | **Exclusive self attention (XSA)** | **−0.2162 / −0.2633**, two seeds, **zero parameters** | replicates, ~16× the floor | **not about looping.** 84–91% of it is at `r = 1`; it is a generic attention operator a non-looped model would plausibly get too. Its band claim died at the second seed. **Untested at scale** |
 | 5 | **Norm penalty** | wins perplexity outright: **37.52 vs 38.86** | one 90M arm | **not shipped, and the reasons are measured**: `ΔCE@1 = +0.2263` (88% of its loop-gain advantage is loop-1 *damage*), its band narrows, it is the only arm whose map converges, and it carries an unresolvable clipping confound |
 
-**And the one that was a positive this morning and is not one tonight:** loop-cycled LoRA. −0.0936
-across five arms and three platforms at 2.5M, **+0.0077 at 12M** in a config-identical pair (§4.29).
-**This project has no replicated CE improvement at scale.**
+**And the one that was a positive this morning and is not one tonight — reported at its new valence
+rather than as a positive with footnotes:** loop-cycled LoRA is **a result that did not survive
+scale.** −0.0936 across five arms and three platforms at 2.5M; **+0.0077 at 12M** in a
+config-identical pair (§4.29). **This project has no replicated CE improvement at scale.**
+
+**And it is what this section's own reading implies:** a gain sitting 67–95% at `r = 1` is a block
+improvement, and a small block improvement at 3% of the headline budget is the kind of thing more data
+absorbs. *(Offered as a coherent reading — the direction was not registered in advance.)* **Two of the
+five 2.5M arms were never tested at scale in their own form: rank 8, and LoRA combined with annealing
+(−0.1172, the largest of them).**
 
 ### The depth-mixing family, asked directly: is there any "mixture-over-depths" positive? No.
 

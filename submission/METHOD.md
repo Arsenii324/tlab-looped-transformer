@@ -95,6 +95,11 @@ moved was the band, not the ceiling.
 >
 > **What survives, at 5 of 5 seeds:** the useful band widens — and **the decomposition is identical at
 > 2.5M and at 10M**: **onset 8 → 8 (unchanged), end 16 → 24, midpoint 11.3 → 13.9** (§4.15, §4.23e).
+> **It no longer rests on a coarse grid either.** Re-evaluated on **every integer depth 12–32**, the
+> annealed arms hold within tolerance over **19 and 16 depths against their controls' 9 and 8 — 2.1×
+> and 2.0× the width, at two seeds** — and the sparse grid had been *understating* it, not
+> manufacturing it (§4.25c). **This is the only band claim here that is robust to the plateau
+> tolerance, resolved to ±1 loop, and replicated across seeds.**
 > The model does not improve further, it **degrades later**. That the same two edges move the same way
 > across a 4× budget range is the strongest form this claim has.
 >
