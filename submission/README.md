@@ -1,7 +1,7 @@
 # A looped transformer on FineWeb — submission
 
 **Start here.** `../report.md` is the complete record (6,600+ lines) and is *evidence*, not reading
-material. This folder is the readable submission: seven documents plus this index, each answering one
+material. This folder is the readable submission: eight documents plus this index, each answering one
 thing the task asks for, each linking into the report for the measurement behind it.
 
 ---
@@ -80,7 +80,7 @@ The brief states that *«отсутствие положительного ре�
 хороший результат»*. This submission is largely that: a negative with a measured mechanism, one
 lever that works on the axis it works on, and an explicit account of what was tried and failed.
 
-## The seven documents
+## The eight documents
 
 | file | answers |
 |---|---|
@@ -91,6 +91,7 @@ lever that works on the axis it works on, and an explicit account of what was tr
 | **`NEGATIVE_RESULTS.md`** | every method tested to destruction, with the mechanism for each failure |
 | **`EARLY_EXIT.md`** | *«опционально реализовать ранний выход из лупа»* — it was implemented and measured; the demand is real, eight rules across five classes cannot reach it, and the reason is measured |
 | **`FAILURES.md`** | criterion 2: every error that reached a number, how it was caught, what it cost |
+| **`LIMITATIONS.md`** | **what we do not have** — measurements never made, comparisons never run, choices never screened, and the apparatus stated plainly enough to price the rest |
 
 `../report.md` remains the full evidence base; every document here cites into it by section.
 
