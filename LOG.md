@@ -3019,3 +3019,33 @@ exactly).
 tokens should give. Added to `RESULTS.md` §5.3 as a sanity check with the samples quoted, explicitly
 *not* as a capability claim. **This is the "has anyone looked at what it writes?" question that
 `FAILURES.md` records as decisive, asked of our own artifact before a grader asks it.**
+
+## 21:22–21:36 — A1 attempted, BLOCKED, and the block is worth more than the check would have been
+
+**A1 (my own top-priority unrun check):** re-evaluate the 10M annealing pair on a *dense integer*
+grid, to test whether the band claim's `end 16 → 24` is a real edge or one interval on a grid whose
+only points there are {16, 20, 24}. No training, ~0.3 h, checkpoints already in hand.
+
+**It cannot be run on the returned artifacts.** Two attempts:
+1. My own re-implementation gave CE ≈ 9.4. I assumed my code was wrong (it *was* — I read logits from
+   `forward` instead of `model.readout(states[r-1], …)`, which is what `src/eval.py` does). **Rewrote
+   to call the project's own `perplexity_curve()`** — the one-implementation-per-quantity rule I had
+   written into `SUBMISSION_STATE.md` twenty minutes earlier.
+2. **The project's own eval gives CE ≈ 9.3 too**, and `eval.py`'s above-chance guard fires on all 34
+   depths. So it is the *data*, not the code.
+
+**Cause: every DataSphere job calls `train_tokenizer()` at start-up** (`runs_frozen/*/main.py:982`)
+and packs its own shards. The jobs return `.pt` + `results.json` and **not the vocabulary that
+produced them.** Same class as §6.0 rows 20/26, on a surface nobody had looked at.
+
+**Two consequences, written up as §4.27:**
+- **Within a job everything is sound** — one tokenizer, one shard, one seed. Every ΔCE in
+  §4.21–§4.26 is unaffected.
+- **The quoted cross-job drift band 0.0074–0.0334 is a *within-tokenizer* figure and understates
+  cross-job incomparability ~3×.** Measured: the same control config, same seed, same 1,219 steps, in
+  three jobs → **5.3765 / 5.3052 / 5.2851, spread 0.0914.** `EXPERIMENTS.md`'s header now states
+  "compare down a source file, never across one" as a **hard rule** rather than a tolerance.
+
+**The fix for any future job is one line:** put `tokenizer.json` and the val shard in `outputs:`.
+
+*The dense-grid question stays open and is the top entry in `SUBMISSION_STATE.md`'s ablation queue.*

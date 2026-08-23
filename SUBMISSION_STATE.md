@@ -83,6 +83,8 @@ show "shifted a lot" or "did not".**
 | 3 | **Was the plateau tolerance ever varied?** | **No — set to 0.01 once.** Sweeping it downgraded the narrowing claims and *upgraded* annealing's widening (§4.25) |
 | 4 | **Do "in-job paired" arms really see the same batches?** | **Yes, except annealing pairs** — `k=1` short-circuits the shared rng. Not a bias; a *mechanism* for the variance that got annealing's CE claim withdrawn (§4.26) |
 | 5 | **Is `bytes/token = 3.3358` measured or asserted?** | **Measured, and I reproduced it independently** over 2M val tokens: 3.3358, bits/byte 1.5828 vs published 1.5829. The only externally-comparable number holds |
+| 6 | **Can the returned DataSphere checkpoints be re-evaluated locally?** | **NO.** Every DS job trains its **own** 4096 BPE from a fresh stream and returns weights *without* it. Local eval gives CE ≈ 9.3 against chance 8.3178; `eval.py`'s above-chance guard fires on every depth. **A1 below is unrunnable on these artifacts** (§4.27) |
+| 7 | **Is the "cross-job drift 0.0074–0.0334" figure the right bound across jobs?** | **No — it understates by ~3×.** The same control config, same seed, same 1,219 steps, in three jobs: **5.3765 / 5.3052 / 5.2851, spread 0.0914**, because the vocabularies differ. Every ΔCE here is in-job and unaffected; what is corrected is the licence to compare *absolutes* across jobs (§4.27, `EXPERIMENTS.md` header) |
 
 **Still dark — I would look here next:**
 
@@ -148,7 +150,7 @@ None of these are launched. Costs are T4-hours.
 
 | # | ablation | cost | what it decides | why it is not running |
 |---|---|---|---|---|
-| **A1** | **Dense eval grid 16–32 (every integer) on the annealing pair at 10M** | **~0.3 h**, no training — re-eval of `rec_dense_s2` / `rec_sw90_s2` | Whether `end 16 → 24` is a real edge or one grid interval. **This is the cheapest check on the project's strongest depth claim and I would run it first** | Time; needs only the returned `.pt` files, which we have |
+| **A1** | **Dense eval grid 16–32 (every integer) on the annealing pair at 10M** | ~0.3 h, no training | Whether `end 16 → 24` is a real edge or one grid interval. **Still the cheapest check on the project's strongest depth claim** | **ATTEMPTED 21:25 AND BLOCKED.** The DS job returns weights but not its tokenizer or val shard, and it trains its own BPE — local eval gives CE ≈ 9.3 vs chance 8.3178 (§4.27). **Needs a re-launched job that returns `tokenizer.json`, or a dense grid computed inside the kernel.** One line in `outputs:` |
 | **A2** | Plateau tolerance sweep over **all 135 arms**, not the 7 pairs | ~0 h, pure computation | Whether §4.25's conclusion generalises past the pairs I checked | Partially done tonight |
 | **A3** | **One unshared `W_K` per loop-index bucket** (partial untying), 2 seeds × 2.5M | ~2 h | The single mechanism §4.7e/`SCALE.md` §5 points at: if depth keys collapse because one `W_K` sees a collinear stream, giving 4 buckets their own `W_K` should raise the rank. **Directly tests the report's central mechanism rather than another consequence of it** | Not implemented; ~30 lines in `model.py` |
 | **A4** | Same-config replicate at **90M** (2 seeds) | ~9 h each | Whether the 0.0150 floor transfers to full budget. Every "×the floor" claim depends on it | Cost; would consume the remaining quota |
@@ -156,8 +158,11 @@ None of these are launched. Costs are T4-hours.
 | **A6** | Generation-based eval (not teacher-forced) on the shipped checkpoint | ~0.5 h | Everything in the report is teacher-forced. §4.8's ragged-cache result explicitly bounds a *generating* exiter from below only | Time; sampling tonight was qualitative only |
 | **A7** | `report.md` §4 figure-by-figure re-derivation from stored JSON | ~1 h scripted | Concern #5. Would either clear §4 or find a defect class | Time |
 
-**If I had exactly one more hour of compute: A1.** It is cheap, needs no training, and it is the only
-one that can strengthen *or* dissolve the claim the submission leads with on depth.
+**If I had exactly one more hour of compute: A1, relaunched as a job.** It is cheap and it is the only
+one that can strengthen *or* dissolve the claim the submission leads with on depth — but it must run
+*inside* a DataSphere job (evaluating on that job's own shard) or the job must return its tokenizer,
+because attempting it locally at 21:25 hit the vocabulary gap above. **Add `tokenizer.json` and the
+val shard to `outputs:` on every future job** — that is the generalisable fix and it costs one line.
 
 **If I had one more hour of *my* time and no compute: A7**, then a full read of §4.1–§4.22.
 
