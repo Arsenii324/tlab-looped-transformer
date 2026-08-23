@@ -124,3 +124,41 @@ by me yet.
 zero-init, in-job — genuinely the one thing in this batch that could produce a new positive rather
 than another negative. Deferred for now given the token-budget constraint just communicated; picking
 it back up once that lifts.
+
+## 6. Four more points from that batch, checked for completeness and answered
+
+**Oracle-depth-cache / two-depth-cache — NOT run, and distinct from E1/E3.** One message proposed
+building a prefix KV cache with each token stored at its own §4.7 oracle depth (or concatenating K/V
+from two fixed depths) and comparing against the best uniform-depth cache. That's a different object
+from §4.7c (readout mixing, no cache) and §4.8a (state statistics at one cache depth, no mixed
+cache) — it tests whether the *cache itself* benefits from depth heterogeneity. Checked just now:
+nothing in `report.md` covers it. Genuinely open, uses `src/cross_depth_kv.py` and the existing
+oracle-depth arrays, forward-passes only — a reasonable next item once compute time is worth
+spending on new instruments rather than on writing.
+
+**`tlab-deep-full` harvest timing — not weighed in on until now.** At the time of that message it
+recommended harvesting at 16:30. Checked live: as of 15:45 it is at **step 11,800/19,531 (60%),
+~1294 tok/s**, putting natural completion around **~16:45–17:00**, not far past the 16:30
+suggestion. My call: let it run to completion rather than cancel-harvest early — it is this
+project's only ≥32-loop deep artifact, the withdrawal above makes its own `sw75` config *more*
+interesting to see fully trained rather than less (does the deep, fully-trained arm also show the
+seed-to-seed instability seeds 2/3 just exposed at 2.5M?), and the marginal wait is under an hour.
+Will harvest at completion or ~17:15, whichever comes first.
+
+**The "flagship reframing" — agreed, and it's already how the report is structured.** The
+suggestion was to make §2/§4.3's dynamics result (ρ > 1 at every measured depth, log-drift beating a
+convergent power law at R² 0.986 vs 0.748, the degenerate cross-layer collapse) the report's spine,
+with annealing framed as "an intervention that moves the band" rather than the headline. Given
+today's withdrawal, this is now the *safer* framing regardless of opinion: the dynamics result does
+not depend on any seed count and is unaffected by anything in this reply. It was already positioned
+this way going into today (§2's rebuttal opens on convergence, not on annealing), and the
+withdrawal removes any temptation to lean the other way.
+
+**§1 authorship — no change, stated plainly rather than left implicit.** One message argued the task
+text is a quality warning about LLM-generated ideas, not a prohibition, and offered to structure a
+user-supplied braindump. That reading of the text is fair. The position here has been, and remains:
+§1 is not written by this process. Not because the sentence forbids it, but because the deliverable
+is explicitly graded on the user's own idea-generation, and a section shaped by an LLM — even from
+notes the user supplied — is a different artifact than one the user wrote and then had checked. If
+the user wants help structuring their own draft, that is theirs to ask for directly; it has not been
+asked for in this conversation.
