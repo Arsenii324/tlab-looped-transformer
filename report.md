@@ -1,16 +1,19 @@
 # Making many loops stay useful: a looped transformer pretrained on FineWeb
 
-*T-Lab test task. Code and this report: **[repo URL — to be filled on publication]**. Best
-checkpoint: **[Hugging Face URL — to be filled on publication]**.*
+*T-Lab test task. Code and this report: **https://github.com/Arsenii324/tlab-looped-transformer**.
+Released checkpoint: **https://huggingface.co/Arsen4ikVar/tlab-looped-transformer**.*
 
-> **These two are unfilled on purpose, and the reason belongs in the open rather than behind a
-> bracket.** Nothing in this project has been pushed to GitHub or uploaded to Hugging Face: no git
-> remote is configured, and `src/upload_checkpoint.py` — repaired on 2026-08-23 after it was found
-> shipping weights *without* `configs/tokenizer.json`, which would have made every downloaded
-> checkpoint evaluate at chance ≈ 8.32 (§6.0 rows 20, 26) — has been dry-run verified and **never
-> executed against the network.** Publishing is the author's call, not the agent's, so the links are
-> named as pending rather than invented. **The artifact they will point at is decided in §6.0b / D3
-> and is the 90M control**, whose numbers are the headline table below.
+> **Publication status, stated because an earlier version of this banner said the opposite.** Until
+> 18:43 on 2026-08-23 nothing in this project had been pushed anywhere, and this banner said so. Both
+> targets are now live: the GitHub repository (`main` only, 0 tags, secret-scanned across 121 commits)
+> and the Hugging Face repository (`model.pt`, `tokenizer.json`, `model.py`, a generated card).
+> **`src/upload_checkpoint.py` was repaired first** — it had been shipping weights *without*
+> `configs/tokenizer.json`, which would have made every downloaded checkpoint evaluate at chance
+> ≈ 8.32 (§6.0 rows 20, 26) — **and the identity gate then passed against the DOWNLOADED artifact**,
+> not against the local copy: `|diff| = 0.0020` at loop 1 against a chance level of 8.3178.
+> **Visibility is the author's call**; both repositories are private at the time of writing and go
+> public at submission. **The released artifact is the 90M control** (§6.0b / D3), whose numbers are
+> the headline table below.
 
 ---
 

@@ -5,7 +5,8 @@ next-token prediction.
 
 | | |
 |---|---|
-| **The write-up (the deliverable)** | **[`report.md`](report.md)** |
+| **Read this first** | **[`submission/`](submission/)** — six short documents, one per thing the task asks for |
+| **The full evidence base** | **[`report.md`](report.md)** — 6,700+ lines; evidence, not reading material |
 | **Released weights** | **[Arsen4ikVar/tlab-looped-transformer](https://huggingface.co/Arsen4ikVar/tlab-looped-transformer)** |
 | parameters | **9,064,608** (cap: 10M) |
 | training tokens | **90.0M** (cap: 100M) |
@@ -16,11 +17,31 @@ next-token prediction.
 Perplexity is tokenizer-dependent (this model has its own 4096-token BPE), so **bits/byte is the
 figure comparable across submissions.**
 
-**Start with [`report.md`](report.md).** §0 is an abstract; §3.5 is the final method; §4 is the
-experiment set; **§6.0 is the complete log of every error that reached a number, how each was caught,
-and what it cost** — the task asks for that explicitly and it is in the body, not an appendix.
+## How to read this repository
 
-Design rationale and decision log: `PLAN.md`, `LOG.md`.
+**Two surfaces are current and maintained. Everything else is a dated working record, kept intact.**
+
+| | what it is | trust it? |
+|---|---|---|
+| **`submission/`** | the readable submission — `METHOD`, `RESULTS`, `EXPERIMENTS`, `SCALE`, `NEGATIVE_RESULTS`, `FAILURES`. Start at `submission/README.md` | **yes — current** |
+| **`report.md`** | the complete evidence base. §0 abstract · §3.5 final method · §4 experiments · **§6.0 every error that reached a number, how it was caught, what it cost** (the task asks for this explicitly; it is in the body, not an appendix) | **yes — authoritative** |
+| `LOG.md`, `RUNS.md` | append-only. Every run, its pre-registered falsifier, and its outcome in timestamp order | **yes — as history** |
+| `reviewer_answers/` | 25 numbered replies to an external reviewer, never edited after sending. Corrections get a *new* file, so an early file may state something a later one withdraws | **as dated correspondence** |
+| **everything else** (`PLAN.md`, `BRIEFING.md`, `HANDOFF.md`, `QUEUE.md`, `DECISIONS.md`, `INTERVENTIONS.md`, `STATE_FOR_REVIEWER.md`, `FINAL_ARCHITECTURE.md`, `PROGRESS_REPORT.md`, `HANDOVER_CLAUDE.md`, `METHODS.md`, `VERIFICATION.md`, `REVIEW_NOTES.md`, `subagents/`) | **dated working records from the sessions that produced the work.** They are kept rather than cleaned up — several are *why* the numbers are checkable — but they were written at a point in time and **several predate the day's largest changes.** Some carry the superseded 46.0M-token headline (CE 4.0071 / ppl 54.99) rather than the current one | **no — read as history.** Where one disagrees with `report.md`, `report.md` wins |
+
+**Why they are not rewritten.** This project's own §6.0 lists twelve retracted claims, and the rule it
+adopted is that a superseded statement stays **visible** with its correction rather than being edited
+away. Silently bringing twenty working documents "up to date" would destroy exactly the audit trail
+that makes the retraction record meaningful. The cost is that a reader must know which surface is
+current — which is what this table is for.
+
+**Three commands settle any disagreement between documents:**
+
+```bash
+python src/headline.py check        # every headline number vs the artifact it came from
+python src/make_inventory.py        # regenerates the experiment inventory FROM the stored JSON
+python src/check_caveats.py --strict  # no file states a deflated claim without its caveat
+```
 
 ## Layout
 
@@ -67,7 +88,7 @@ configs/                 tokenizer.json
 ```bash
 # --- evaluating a released checkpoint (the normal path) ---
 python src/data.py                        # uses the SHIPPED configs/tokenizer.json; does not retrain
-python src/test_model.py                  # 9 correctness gates; must pass
+python src/test_model.py                  # 13 correctness gates; must pass
 python src/check_tokenizer_identity.py checkpoints/full_control90_kaggle --expect-ce1 3.9622
 python src/eval.py checkpoints/full_control90_kaggle --max-loops 64
 
