@@ -88,7 +88,7 @@ lever that works on the axis it works on, and an explicit account of what was tr
 | **`NEGATIVE_RESULTS.md`** | every method tested to destruction, with the mechanism for each failure |
 | **`EARLY_EXIT.md`** | *«опционально реализовать ранний выход из лупа»* — it was implemented and measured; the demand is real, eight rules across five classes cannot reach it, and the reason is measured |
 | **`FAILURES.md`** | criterion 2: every error that reached a number, how it was caught, what it cost |
-| **`LIMITATIONS.md`** | **what we do not have** — measurements never made, comparisons never run, choices never screened, and the apparatus stated plainly enough to price the rest |
+| **`LIMITATIONS.md`** | **what we do not have** — measurements never made, comparisons never run, choices never screened; plus **§6b: the numbers that will *not* reproduce from the shipped artifacts and why**, and which checkpoint carries which claim |
 
 `../report.md` remains the full evidence base; every document here cites into it by section.
 
