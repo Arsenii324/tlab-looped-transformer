@@ -1,3 +1,5 @@
+> **Dated working record — not a maintained document.** Last committed 2026-08-23; the text itself may be older. Kept intact rather than rewritten, because this project's rule is that superseded statements stay visible with their corrections. **Current numbers are in [`submission/`](submission/) and [`report.md`](report.md); where this file disagrees with them, they win.** See the repository README's *How to read this repository* table.
+
 # §4.12's "loop gain emerges with tokens" — the LR confound, tested and EXCLUDED
 
 **From:** fork worker. **Status:** finding is safe; §4.12 can be strengthened, not corrected.

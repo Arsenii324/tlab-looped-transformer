@@ -1,3 +1,5 @@
+> **Dated working record — not a maintained document.** Last committed 2026-08-23; the text itself may be older. Kept intact rather than rewritten, because this project's rule is that superseded statements stay visible with their corrections. **Current numbers are in [`submission/`](submission/) and [`report.md`](report.md); where this file disagrees with them, they win.** See the repository README's *How to read this repository* table.
+
 # DECISIONS.md — every choice, with its provenance
 
 For an AI reader. No prose padding. Written 2026-08-23 in response to a reviewer's request for a

@@ -1,3 +1,5 @@
+> **Dated working record — not a maintained document.** Last committed 2026-08-23; the text itself may be older. Kept intact rather than rewritten, because this project's rule is that superseded statements stay visible with their corrections. **Current numbers are in [`submission/`](submission/) and [`report.md`](report.md); where this file disagrees with them, they win.** See the repository README's *How to read this repository* table.
+
 # HANDOFF — read this first if resuming this project cold
 
 Written 2026-08-16 12:12 MSK, right before a context compaction, so a fresh session (or a

@@ -1,3 +1,5 @@
+> **Dated working record — not a maintained document.** Last committed 2026-08-23; the text itself may be older. Kept intact rather than rewritten, because this project's rule is that superseded statements stay visible with their corrections. **Current numbers are in [`submission/`](submission/) and [`report.md`](report.md); where this file disagrees with them, they win.** See the repository README's *How to read this repository* table.
+
 # QUEUE — every open item from every review, with status. Nothing is dropped from this file.
 
 Status: TODO / RUNNING / DONE / WONTFIX(reason). Append new items; never delete. WORKING doc.
