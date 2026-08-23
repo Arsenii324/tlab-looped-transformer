@@ -19,6 +19,13 @@ CE near chance and looks like a broken model rather than a broken setup.**
 **4.4907**, `rec_sw90_s2` best **4.6025**). In-job paired comparisons are valid. Only *cross-job local
 re-evaluation* of these checkpoints is impossible.
 
+**RESOLVED 22:38 — the DataSphere vocabulary rebuilds locally.** `src/rebuild_ds_tokenizer.py`
+reproduces the kernel's deterministic tokenizer recipe; `rec_dense_s2` then scores **CE 4.4252**
+against chance 8.3178 (`src/verify_ds_tokenizer.py`). **These checkpoints are evaluable after all** —
+against `configs/tokenizer_datasphere.json`, never against `configs/tokenizer.json`. This artifact
+stays quarantined because it was produced with the wrong vocabulary, not because the task is
+impossible.
+
 **Consequence for the open queue:** the denser-eval-grid check on annealing's `end 16 → 24` **cannot
 be run locally on these checkpoints.** It needs either the DataSphere job's tokenizer or a re-run of
 the eval inside a DataSphere job. Recorded rather than silently dropped.

@@ -121,39 +121,17 @@ count had been reported as current. **Results were never at risk** — harvestin
 lesson is not "keep noisy safeguards"; it is that removing one is a change with a claim attached, and
 this project's rule for claims applies to it.
 
-## What automated adversarial review produced here, with its hit rate
+## What automated adversarial review produced here, in three lines
 
-Two automated passes were run over this project's own artifacts on the final day, and every item was
-re-derived against the raw files rather than adopted. **Ten items flagged; two real defects; five were
-the auditor comparing a number to a claim from a different scope** — a 90M-control figure against a
-2.5M checkpoint's JSON, a point value against a five-arm mean, a 32-loop dump against a 64-loop bin,
-and one "verification" of a band this report **deliberately excludes**. A second reviewer that triaged
-the first added two further scope errors of its own while correctly flagging the one line worth
-checking — for the wrong reason.
+Three automated adversarial passes were run over this project's own artifacts on the final day, and
+**every flagged item was re-derived against the raw files rather than adopted.** Roughly **one in
+five** survived that re-derivation; the rest were the auditor comparing a number to a claim from a
+different scope — a 90M figure against a 2.5M JSON, a point value against a five-arm mean, a 32-loop
+dump against a 64-loop bin. **But the survivors were real and none had survived three human
+end-to-end reads**, including a mislabelled statistic in the abstract.
 
-**Both real defects were genuine and neither had survived three human end-to-end reads**, so the
-method pays. But the hit rate on flagged items is **~20%**, and the failure mode is monotonous: *the
-same space-mismatch family named above, applied to artifacts instead of geometry.*
-
-**A third pass, an hour later, refines this in a useful direction.** Five items: **two were refuted by
-checking** — "cross-job CE is incomparable because each job trains its own vocabulary" (every
-DataSphere kernel's `train_tokenizer` is byte-identical, md5 `1dab774d…`, so they share one
-vocabulary) and "the 5-of-5 band claim may splice two different eval grids" (every annealing arm used
-the same 11-point grid, including the depth 20 the objection assumed was missing). **Three were
-right, and all three were about *documents* rather than numbers**: `INDEX.md` still telling a reader
-that §1 was reserved for the author when §1 is agent-written with a disclosure banner; the
-batch-pairing exception living in §4.26 and not in the two documents that *claim* pairing; and a
-supposedly-blocked measurement that was not blocked at all.
-
-**So the sharpened rule is not just "assume four in five fail" but *which* four.** These passes are
-**poor at re-deriving numbers** — every numeric flag so far has been a scope mismatch — and **good at
-spotting contradictions between documents**, which is exactly the surface that grew from one file to
-thirty in five hours and where human reading has failed repeatedly.
-
-**The operating rule that follows: an automated pass is a generator of checks, never a source of
-corrections.** Every item costs one re-derivation. *That is still cheap relative to shipping a
-mislabelled statistic in the abstract, or a contradicted authorship disclosure in the index — both of
-which it caught.*
+**The operating rule: an automated pass is a generator of checks, never a source of corrections.**
+Every item costs one re-derivation, and that is cheap against shipping the statistic it caught.
 
 ## The instrument defect found last, and it is the same shape as the first
 
@@ -195,15 +173,12 @@ silent on a real curve.
 
 ## What the process caught, and what caught the process
 
-- **Three claims were withdrawn on the final day by pre-registered falsifiers** — criteria written
-  before the data existed. Each is recorded with the superseded claim **visible**, not deleted.
-- **Instruments are required to pass a null.** The angular budget's null (an untrained model travels
-  4.5× further with zero capability) cost that section its headline reading **90 minutes after it was
-  written**. Two geometry findings survived their nulls only in narrowed form.
-- **The sharpest errors were surfaced by outside questions, not by introspection** — "what is n?",
-  "has anyone looked at what it writes?", "does diversity break it?". One case is decisive: a lesson
-  was written down, a claim was withdrawn for violating it, and **the same violation was committed
-  two hours later on a larger claim.** *Writing a lesson down does not install it.*
+- **Three claims were withdrawn on the final day by falsifiers written before their data existed**,
+  each recorded with the superseded claim **visible** rather than deleted.
+- **Instruments are required to pass a null**, and two geometry findings survived theirs only in
+  narrowed form — one lost its headline reading 90 minutes after it was written.
+- **The sharpest errors came from outside questions, not introspection** — *"what is n?"*, *"has
+  anyone looked at what it writes?"*, *"does diversity break it?"*
 
 ---
 

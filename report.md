@@ -6355,6 +6355,29 @@ not enough to attribute it.*
 >
 > **The rule this yields, replacing the vaguer one:** *in-job Δ always; absolute CE only within a
 > tokenizer family — {local, Kaggle} is one family, DataSphere is another.*
+>
+> ### And the DataSphere family is no longer unreachable — the vocabulary rebuilds locally (22:38)
+>
+> Earlier tonight this section, §6.0 row 35 and the quarantine note all said DataSphere checkpoints
+> **"cannot be evaluated locally at all."** **That was wrong, and the fix needed no job and no quota.**
+> The kernel's `train_tokenizer()` is deterministic — the first 5,000 documents of a fixed
+> non-shuffled stream, NFKC, `BPE(unk_token="<unk>")`, vocab 4,096 — and byte-identical across all
+> four frozen kernels. So it can simply be **rebuilt here**: `src/rebuild_ds_tokenizer.py` writes
+> `configs/tokenizer_datasphere.json` (265,079 bytes against the shipped 264,580 — different, as the
+> differing procedure requires).
+>
+> **Verified against the thing it had to reproduce, not against itself.** `rec_dense_s2` — the
+> checkpoint whose local evaluation produced the quarantined CE-9.27 artifact — now scores
+> **CE 4.4252 at r = 12** on a val shard packed with the rebuilt vocabulary, against a chance level of
+> **8.3178** and its own in-job reference of **4.4907** (a different shard, hence the 0.066 gap).
+> `src/verify_ds_tokenizer.py` reproduces it.
+>
+> **What this changes:** every DataSphere checkpoint in this project — the duo-causal arms, `dg_norm`,
+> the XSA and diversity arms, `recmethod`, and `tlab-untie-s0` when it lands — **is now locally
+> evaluable**, so a reader can re-derive their curves rather than take the in-job JSON on trust. *What
+> it does not change: the DS vocabulary is still not the shipped one, so absolute CE remains
+> incomparable across the two families, and every claim in this report continues to rest on in-job
+> Δ.*
 
 > **A related hazard found in the same check, with no result affected.** `dv_lora_r4_s0`'s stored
 > `model_cfg` carries `cond_fixed_branch=False`. In the **frozen kernel that actually ran it**
