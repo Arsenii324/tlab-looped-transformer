@@ -44,12 +44,21 @@ gain at a single loop where their own mechanism is inert**, so they improve the 
 looping (`RESULTS.md` §2). Elaborating the block was measured and did not pay in the way the brief
 asks for.
 
-## 2. The training recipe, which is where the report's positive results live
+## 2. The training recipe, and exactly what it is recommended *on*
 
 - **Loop schedule:** every step samples `r ~ U[4,32]` (μ_rec = 18).
 - **Supervision:** loss on a sparse subset of loops (`k = 5`) for most of training, then **terminal
   loop only for the final ~10% of steps** — *supervision annealing*, `supervise_switch_frac = 0.90`.
 - **Zero added parameters.** It is a schedule on which loop indices receive gradient.
+
+> **The recommendation in one qualified sentence, placed here rather than after the argument for it.**
+> **Anneal if you want the useful depth band deeper. Do not expect it to lower the loss.** The band
+> half holds at **5 of 5 seeds** with the same edge decomposition at 2.5M and at 10M tokens; **the
+> ceiling half was withdrawn at n = 4 and a fifth point at 4× the budget made it worse** (+0.1119,
+> §4.23e). **And the released weights are the *dense* control, not this recipe** — §4 below says why,
+> and that choice is now evidenced at the recipe's own budget rather than inherited from launch order.
+> *This is a recommendation about where depth stays useful. It is not a recommendation for lowest
+> perplexity, and at 10M in-job it costs 0.11 nats.*
 
 **Why the loss schedule rather than the dynamics.** Three independent interventions on how the state
 *traverses* — inference-time radial clamping (§4.6), a learned convex gate plus a fixed-`g` sweep

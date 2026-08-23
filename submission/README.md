@@ -39,6 +39,11 @@ two goals and this architecture does not deliver them together.
    itself advances (that fast convergence is what makes further compute pointless).
 2. **Twelve interventions. Five lower the loss. Not one widens the useful band; three of the five
    *narrow* it** — the norm penalty, duo-causal attention at W = 3, and exclusive self attention.
+   **That "five" is not a softening of an earlier "two" — it is the dissociation appearing five times
+   independently, in two opposite directions.** Four interventions help at loop 1 and the help does
+   not propagate into depth; one *hurts* at loop 1 and the loop-gain statistic rewards it for that.
+   **Both say the same thing: the loop's own contribution is untouched by anything that moves the
+   loss.**
 3. **Four of those five put 78–101% of their gain at a *single* loop, where their own mechanism is
    provably inert or irrelevant** — loop-cycled LoRA 67–95% `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]`, exclusive self attention
    84–91% `[XSA-AT-R1]`, duo-causal attention at W = 3 78–101%, the learned depth gate 96%. **They improve the
