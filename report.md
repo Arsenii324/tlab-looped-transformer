@@ -3936,6 +3936,61 @@ confirmed the rest:
 | §4.1 | inject_none, no_depth_init | 1, 8 | **[1,32] both**, gain 0.000/0.005 | **sharpened** — both depth-inert; `no_state_renorm` [4,16] is the only screening arm with a real basin, and it also wins CE |
 | §5 | residual_scale λ=1,2 | 12 vs 8 | **[8,16] all three arms** | **killed** — the apparent 8→12 shift is a 0.0001-nat argmin flip |
 
+### Every band claim in this report is ONE number doing TWO jobs, and decomposing it separates them
+
+`plateau_mid` is the **geometric mean of the band's two edges**, `√(onset × end)`. Verified against
+every midpoint this report prints — nine for nine: `√(8·16)=11.31→11.3`, `√(8·20)=12.65→12.6`,
+`√(8·24)=13.86→13.9`, `√(8·12)=9.80→9.8`, `√(12·24)=16.97→17.0`, `√(12·32)=19.60→19.6`,
+`√(16·40)=25.30→25.3`, `√(24·48)=33.94→33.9`, `√(32·64)=45.25→45.3`.
+
+So a moving midpoint can mean either of two independent things, and the report has never said which:
+
+- **onset** — the first depth within tolerance of best. *How far the model keeps **improving**.*
+- **end** — the last depth still within tolerance. *How long before degradation exceeds tolerance —
+  i.e. how long **dilution keeps protecting it** (§4.3, §4.6).*
+
+**Decomposed from the tuples already stored, the two live claims turn out to move different axes:**
+
+| comparison | onset | end | midpoint | ΔCE_best |
+|---|---|---|---|---|
+| μ=18 dense → `sw90`, **seed 0** | **8 → 8** *(unchanged)* | 16 → **24** | 11.3 → 13.9 | −0.0811 |
+| μ=18 dense → `sw90`, **seed 1** | **8 → 8** *(unchanged)* | 16 → **24** | 11.3 → 13.9 | −0.0609 |
+| μ=18 dense → `sw75`, seeds 0/1 | 8 → 12 | 16 → 24 | 11.3 → 17.0 | −0.0656 / +0.0906 |
+| **μ=40** dense → `sw90` | **16 → 24** *(×1.5)* | 40 → 48 *(×1.2)* | 25.3 → 33.9 | −0.0264 |
+| **μ=40** dense → `sw75` | **16 → 32** *(×2.0)* | 40 → 64 *(×1.6)* | 25.3 → 45.3 | −0.0192 |
+| operator diversity, T4 | **8 → 8** | **20 → 20** | 12.6 → 12.6 | −0.1011 |
+| operator diversity, Kaggle `sw90` | **8 → 8** | **24 → 24** | 13.9 → 13.9 | −0.1172 |
+| **90M control → norm penalty** *(dense 1..64)* | **6 → 6** *(unchanged)* | **17 → 14** *(EARLIER)* | 10.1 → 9.2 | −0.0349 |
+
+**Three things fall out that the midpoint alone concealed.**
+
+**(1) The surviving positive is, at its best-replicated schedule, purely an *end* effect.** At μ=18 —
+where annealing is measured at four seeds and where the band claim rests — **onset does not move at
+all.** The model does not keep improving further; it **degrades later**. That is still the task's
+sentence (more loops stay usable), but it is a different claim from "it exploits depth better", and
+only the decomposition tells them apart. At μ=40 the emphasis **inverts**: onset moves ×1.5–2.0 while
+end moves ×1.2–1.6. *Same intervention, different schedule, different axis* — invisible in
+`11.3 → 13.9` versus `25.3 → 33.9`.
+
+**(2) Operator diversity moves neither edge, in either job, while CE improves by up to 0.117.** Both
+edges identical to the digit. That is §4.21's dissociation stated precisely rather than as "the band
+is unmoved", and it composes with §4.21b: ~90% of the gain is at `r = 1`, Δgain is inside every
+floor, and now **neither band edge moves**. Four independent statements, one conclusion.
+
+**(3) A free consistency check on this report's central mechanism, and it passes.** The norm penalty
+is the **only arm whose map converges** (ρ = 0.9953 / 0.9915 at loops 32/64, §4.3). Its band goes
+[6,17] → [6,14]: **onset unchanged, end earlier.** The dilution account predicts exactly that —
+convergence removes the slow `1/t` drift that keeps post-optimum damage small, so the tolerated depth
+should shorten while the onset, which is about improvement rather than protection, should not move.
+**It was already in the headline table as "narrows", and the decomposition is what makes it a
+prediction that fired rather than a description.**
+
+**What this changes about how the report should be read.** Every band claim above is now stated as
+`(onset, end)` rather than a midpoint, because the midpoint cannot distinguish "improves further"
+from "degrades later" and this project has interventions that do each separately. *Raised by an
+external reviewer, who noticed the geometric-mean identity before I did; it cost no compute, since
+the tuples were already stored.*
+
 **And the loop-gain counterpart of that table, which was owed and is worse news than the depth one.**
 `src/gain_decomp.py` already covers 11 paired comparisons; the sections that quote a *loop-gain*
 number without splitting it were §4.5, §4.9, §4.11 and §4.13. Decomposed now, from each arm's own
