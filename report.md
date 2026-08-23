@@ -499,7 +499,7 @@ not the same model:
 
 | target | schedule | supervision | result |
 |---|---|---|---|
-| **lowest perplexity** | `U[4,32]` | dense | **ppl 37.14** at 90M tokens, useful band [8,16] |
+| **lowest perplexity** | `U[4,32]` | dense | **ppl 38.86** at 90M tokens *(protocol-matched local re-score; the kernel's own in-run figure is 37.14 — see §.headline on the ~0.04-nat cross-protocol offset)*, useful band [8,16] |
 | **most useful loops** | `U[32,48]` | annealed *or* constant terminal-only — **this project cannot separate them** (§4.17 retraction) | useful band near **40 loops**; the annealed arm's midpoint is 1.79× its in-job dense control's at **−0.019 nats**, and it is still within 0.01 nats of best at **64 loops, 1.33× beyond anything it trained on** — but its advantage over *constant terminal-only* reverses between seeds |
 
 The brief asks for low perplexity **by exploiting many loops**, and this report's answer is that the
@@ -4691,7 +4691,7 @@ Bits/byte, which is the only one of the three metrics that survives a change of 
 |---|---|---|---|---|
 | headline (§4.2) | 46.0M | 4.0071 | **1.7330** | 54.99 |
 | 90M control | 90.0M | 3.6146 | **1.5633** | 37.14 |
-| 90M + norm penalty | 90.0M | 3.5845 | **1.5503** | 36.04 |
+| 90M + norm penalty | 90.0M | 3.5845 | **1.5503** | 36.03 |
 
 **Sanity check nobody had run until 2026-08-23 17:50: what does the shipped model actually write?**
 Every number in this report is a cross-entropy. The task statement warns specifically that agents
