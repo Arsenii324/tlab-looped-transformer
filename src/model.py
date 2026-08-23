@@ -97,6 +97,10 @@ class Config:
     #   arm, and loop 1 is where 88-95% of the effect lives -- so pinning to 0 confounds "capacity,
     #   not diversity" with "branch 0 is special because it owns loop 1". A NON-ZERO pin (2 here) is
     #   the clean control: same parameters, zero diversity, and a branch that never trained at r=1.
+    kv_untie_buckets: int = 1               # >1: give W_K this many DISTINCT matrices, assigned by
+    #   loop index (t % nb). Bucket 0 reuses the shared k_proj, so the added cost is exactly
+    #   (nb-1)*layers_per_loop*H*(n_kv*d_h). Ported from the frozen `tlab-untie-s0` kernel so its
+    #   checkpoints load here; nb=1 is bit-identical to the unpatched path (test_model.py check).
     depth_gate_mode: str = "none"          # "none" | "state" | "state_norm" -- learned depth gate
     xsa: bool = False                      # EXCLUSIVE SELF ATTENTION (arXiv 2603.09078, verified in
     #   papers/sources/): z_i = y_i - (y_i . v_i) v_i / ||v_i||^2 -- remove the component of the
@@ -189,8 +193,12 @@ class Attention(nn.Module):
         self.xsa = cfg.xsa
         self.q_norm = RMSNorm(self.d_h, cfg.rms_norm_eps)
         self.k_norm = RMSNorm(self.d_h, cfg.rms_norm_eps)
+        nb = max(1, int(getattr(cfg, "kv_untie_buckets", 1)))
+        self.k_buckets = nb
+        self.k_proj_extra = (nn.ModuleList(nn.Linear(H, self.n_kv * self.d_h, bias=False)
+                                           for _ in range(nb - 1)) if nb > 1 else None)
 
-    def forward(self, x, cos, sin, kv_source=None, lora=None, kv_extra=None):
+    def forward(self, x, cos, sin, kv_source=None, lora=None, kv_extra=None, bucket=None):
         """`kv_source`, when given, supplies keys and values while `x` still supplies queries. This
         is the one hook needed to ask what an early-exit KV cache costs: under teacher forcing every
         position is processed at every depth, so "the context exited at depth k while this token is
@@ -199,7 +207,11 @@ class Attention(nn.Module):
         B, T, _ = x.shape
         kv = x if kv_source is None else kv_source
         q_raw = self.q_proj(x)
-        k_raw = self.k_proj(kv)
+        kp = self.k_proj
+        if self.k_proj_extra is not None and bucket is not None:
+            b = bucket % self.k_buckets
+            kp = self.k_proj if b == 0 else self.k_proj_extra[b - 1]
+        k_raw = kp(kv)
         v_raw = self.v_proj(kv)
         if lora is not None:
             q_raw = q_raw + F.linear(F.linear(x, lora.q_A), lora.q_B)
@@ -216,7 +228,7 @@ class Attention(nn.Module):
             # depth-invariant, which is what makes the extra keys addressable at all.
             ks, vs = [], []
             for e in kv_extra:
-                ek_raw, ev_raw = self.k_proj(e), self.v_proj(e)
+                ek_raw, ev_raw = kp(e), self.v_proj(e)
                 if lora is not None:
                     ek_raw = ek_raw + F.linear(F.linear(e, lora.k_A), lora.k_B)
                     ev_raw = ev_raw + F.linear(F.linear(e, lora.v_A), lora.v_B)
@@ -317,14 +329,15 @@ class DecoderLayer(nn.Module):
         else:
             self.lora_branches = None
 
-    def forward(self, x, cos, sin, kv_source=None, branch_idx: int | None = None, kv_extra=None):
+    def forward(self, x, cos, sin, kv_source=None, branch_idx: int | None = None, kv_extra=None,
+                bucket=None):
         # kv_source is normed by THIS layer's norm1, matching how it would have been normed on the
         # pass that produced it -- norm1 is the same module either way, so a depth-k cache entry is
         # the same tensor it would have been at depth k.
         kv = None if kv_source is None else self.norm1(kv_source)
         lora = self.lora_branches[branch_idx % len(self.lora_branches)] if (self.lora_branches is not None and branch_idx is not None) else None
         xe = None if not kv_extra else [self.norm1(e) for e in kv_extra]
-        x = x + self.attn(self.norm1(x), cos, sin, kv, lora=lora, kv_extra=xe)
+        x = x + self.attn(self.norm1(x), cos, sin, kv, lora=lora, kv_extra=xe, bucket=bucket)
         x = x + self.mlp(self.norm2(x), lora=lora)
         return x
 
@@ -339,7 +352,7 @@ class LoopedBlock(nn.Module):
         self.layers = nn.ModuleList(DecoderLayer(cfg) for _ in range(cfg.layers_per_loop))
 
     def forward(self, x, cos, sin, kv_sources=None, collect=None, branch_idx: int | None = None,
-                kv_extra_per_layer=None):
+                kv_extra_per_layer=None, bucket=None):
         """`kv_sources`: per-layer KV inputs (list, len == layers_per_loop) for cross-depth attention.
         `collect`: if a list is passed, each layer's INPUT is appended to it -- that is what a later
         cross-depth pass needs as its kv_sources, so the two are captured and replayed by the same
@@ -348,7 +361,7 @@ class LoopedBlock(nn.Module):
             if collect is not None:
                 collect.append(x)
             x = layer(x, cos, sin, None if kv_sources is None else kv_sources[i],
-                      branch_idx=branch_idx,
+                      branch_idx=branch_idx, bucket=bucket,
                       kv_extra=None if kv_extra_per_layer is None else kv_extra_per_layer[i])
         return x
 
@@ -748,6 +761,7 @@ class LoopedTransformer(nn.Module):
                 extras = ([[past[i] for past in kv_hist] for i in range(len(self.block.layers))]
                           if (W > 1 and kv_hist) else None)
                 h_new = self.block(h_in, cos, sin, collect=cur_inputs, branch_idx=branch_idx,
+                                   bucket=t,
                                    kv_extra_per_layer=extras)
                 if W > 1:
                     kv_hist.append(cur_inputs)
