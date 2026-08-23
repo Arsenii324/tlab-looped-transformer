@@ -161,9 +161,23 @@ with N≈3 jobs the arithmetic is different — 218s × 3 ≈ 11 min saved. Judg
 | SUCCESS | yes | yes |
 
 **The operational consequence, and it is the important one:** you cannot peek at a running job's
-files. To harvest a long job early you must **cancel it** — cancelling is the harvest mechanism, not
-a loss. `attach` streams stdout live but only from the moment you attach (and its poller dies on the
-documented `auth.py` AssertionError), so it shows you progress, never history.
+**files**. To harvest a long job's *outputs* early you must **cancel it** — cancelling is the harvest
+mechanism, not a loss.
+
+> **CORRECTED 2026-08-23 14:00 — "you cannot peek at a running job" was too strong, and I had been
+> repeating it as if it covered everything.** `attach` works, and it is the difference between
+> watching a 6-hour job and guessing at it. Tested live on `tlab-deep-full` mid-run:
+>
+> ```
+> timeout 75 env GRPC_DNS_RESOLVER=native datasphere project job attach --id <job-id>
+> 2026-08-23 13:41:05 - [11292.5s]  step 7100/19531 loss=4.3160 n_loops=46 gnorm=0.50 1296 tok/s
+> ```
+>
+> **One line was enough** to get progress (36%), throughput (1296 tok/s), loss, and an ETA — with no
+> cancellation and no cost. What you genuinely cannot get is **history from before you attached**,
+> and **files** while it runs. Practical notes: wrap it in `timeout` (attach blocks indefinitely),
+> expect to re-attach (its poller dies on the documented `auth.py` AssertionError), and grep for your
+> job's own log prefix because gRPC fork-handler noise interleaves with real output.
 
 Tested with a purpose-built job (`ds_killtest`) that heartbeats to stdout and rewrites a results
 file every 3s, cancelled mid-compute: `download-files --with-logs` returned `stdout.log` **and**
@@ -206,3 +220,31 @@ TORCH_PREINSTALLED_OK skipping pip
 ```
 **2 seconds instead of ~150s of pip install.** The image's torch passes the `cuda.is_available()`
 gate, so the pinned install never runs. Use this for every job.
+
+## wandb: the mechanism works, but 25 of 26 job dirs never used it
+
+Audited 2026-08-23 after I asserted — wrongly, and the user pushed back — that "every DS job ran with
+zero live logging". One did.
+
+| | count |
+|---|---|
+| `ds_*` dirs with wandb in `requirements.txt` **and** imported in `main.py` | **1** (`ds_probe`) |
+| dirs carrying `export WANDB_API_KEY="$WANDB_API_KEY"` in `cmd` and nothing else | 15 |
+| dirs with neither | 10 |
+| `kaggle/main.py` | none |
+
+**The `export` line in those 15 configs is a no-op.** `cmd` runs on the *remote* node, where
+`$WANDB_API_KEY` is unset, so it expands to empty — and nothing in those `main.py` files imports
+wandb, so it would not have mattered anyway. It was copied from `ds_probe` without the two parts that
+make it work.
+
+**`ds_probe` shows the mechanism that does work**: a top-level `WANDB_API_KEY:` mapping in
+`config.yaml`, which DataSphere passes into the job environment. Its docstring says why it exists —
+*"the local `datasphere job attach` stream died 13 times today... metrics that land server-side in
+wandb do not depend on a local process staying alive at all."* That reasoning is still right even
+now that `attach` is known to work, because attach needs a live local process and wandb does not.
+
+**And that mapping is exactly how the API key leaked.** It held the real key inline in a tracked
+file — the 18-config / 18-commit leak in §6.0. It now reads `REDACTED_SET_VIA_ENV`.
+**Rule: generate any job dir that carries a key into the scratchpad and launch from there. Never
+into the repo.**
