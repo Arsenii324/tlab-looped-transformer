@@ -297,3 +297,39 @@ the 2.5M magnitude. Under the **token** rule it should be **weaker at 10M than a
 of 10M puts the switch at 7.5M — later in absolute terms but still inside the build phase.
 Read alongside the A/B/C outcome registered at 11:55; these are orthogonal questions (that one asks
 *which endpoints move*, this one asks *whether the fraction parameterisation transfers*).
+
+---
+
+## 2026-08-23 13:30 — PRE-REGISTERED READ for `tlab-deep-full`, written before it lands
+
+**Why this is being written now.** The job's own description records its config: **`sw75`, μ_rec=40**.
+Both of those are, as of today, the settings where annealing is measured to be *damage-driven*:
+
+- **Switch fraction.** §3.5 was narrowed today from "~10–25% of steps" to **`sw90` specifically**,
+  because the four-pair decomposition shows `sw75` is damage-driven at seed 0 (ΔCE_best −0.0656,
+  ΔCE@1 **+0.0185**) and **worse on CE_best outright** at seed 1 (**+0.0906**). Only `sw90` improves
+  the ceiling with loop 1 undamaged, at both seeds.
+- **Schedule.** At μ_rec=40 both annealed arms are damage-driven against their in-job dense control
+  (ΔCE@1 +0.0749 / +0.1749), and both ΔCE_best values sit *inside* the 0.0541 CUDA terminal replicate
+  floor — so at that schedule the ceiling gain is not resolvable while the loop-1 damage is.
+
+**So this artifact is the weaker variant at the harder schedule.** That was not known when it was
+launched (the switch-fraction decomposition was run today, ~6h after submission). Stating it now so
+the harvest is not read more favourably than the design supports.
+
+**How to read it when it lands — committed in advance:**
+
+| outcome | reading |
+|---|---|
+| plateau midpoint **≥32** and CE_best beats the dense reference | the deep half of §3.5's table stands. Still report ΔCE@1 alongside; a deep band bought with loop-1 damage is a trade, not a win |
+| plateau midpoint **≥32** but CE_best within the replicate floor | **the expected outcome given the above.** Report as *band relocation without a resolvable ceiling gain* — consistent with every other rate-intervention in §4.6/§4.10/§5.0, and NOT as evidence annealing wins at depth |
+| plateau midpoint returns near **22** (dense-like) | the deep half of §3.5 is **withdrawn**, as registered at 10:29 |
+| job returns curves only *(certain — its config predates the `outputs:` fix)* | no weights, so no exit-rule or angular follow-up on it; §4.7a's matched pair already covers the exit question at 2.5M |
+
+**What it cannot settle.** It is one seed with no in-job dense control at the same budget — the
+comparison would be against a *different* run, which is the unpaired-comparison error this report has
+already made twice (§6.0). Its useful claim is about the **band**, not about ΔCE against anything.
+
+**Not relaunching as `sw90`.** ~6h of T4 time is already spent, the remaining window does not fit a
+second deep run, and the band question it answers is genuinely schedule-level rather than
+switch-fraction-level. Recorded as a decision, not an oversight.
