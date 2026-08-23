@@ -836,35 +836,6 @@ runs having completed their own cosine):
 | 0.99M → 14.6M | 2.70 | 1.6247 | **0.603** |
 | 14.6M → 46.0M | 1.15 | 0.4492 | **0.392** |
 
-> ### The token-scaling constant now has a second anchor, and it does NOT flatten — it steepens
->
-> **This constant is the number I would least like a grader to check, and until now it had no error
-> bar.** `0.398 nats/e-fold` is used to correct token-mismatched arms (§4.1's seed-spread correction),
-> to price the unspent 8% of the budget (§2.1), and to argue what closing to Chinchilla would buy
-> (§6.0a) — and it was fitted from **one** budget pair. A second protocol-matched pair now exists.
-> All three checkpoints below are scored by `src/eval.py` on the **same dense every-integer 1..64
-> grid**, so this is a within-protocol comparison:
->
-> | interval | e-folds | Δ best CE | **nats per e-fold** |
-> |---|---|---|---|
-> | 0.99M → 14.60M | 2.70 | 1.6247 | **0.603** |
-> | 14.60M → 46.0M *(the fitted pair)* | 1.1476 | 0.4571 | **0.398** |
-> | **46.0M → 90.0M** *(new)* | 0.6712 | 0.3472 | **0.517** |
->
-> **The high-token slope is not monotone**, which a simple loss-vs-log-token picture does not predict:
-> it falls 0.603 → 0.398 and then **rises to 0.517**. So the honest form of this constant is a
-> **range, 0.398–0.517 (midpoint 0.458, ±13%)**, not a point, and `0.398` is the *low* end — it has
-> been **understating** the value of tokens at the budgets this report actually runs at.
->
-> **Which conclusions move, checked rather than asserted.** None flips. §4.1's screening corrections
-> use the *local* 0.603 rate, not this one, so they are untouched. Re-pricing at 0.517 instead of
-> 0.398: the unspent 8% of budget goes 0.03 → **0.043 nats**; closing to D/N ≈ 20 goes 0.28 →
-> **0.36 nats** (≈0.15 bpb of the 0.49 bpb Parameter Golf gap rather than 0.12); §4.1's corrected seed
-> spread moves from 0.050 to ~0.058. Every one of those is a small quantitative shift inside an
-> argument whose sign does not depend on it. **The one claim that gets *stronger* is §8's**: "46M → 90M
-> is worth ~0.25–0.31 nats" was predicted from 0.398 and the measured answer is **0.347**, so
-> finishing the token budget beat its own forecast — as §8 already notes, now with the mechanism.
-
 **The low-token slope is 1.54× the high-token one**, which is the expected shape of a loss-vs-log-token
 curve and confirms that the 0.398 figure used elsewhere in this report (measured over 14.6M→46.0M,
 and matching the 0.392 in-training figure to within instrument noise) **understates corrections at
