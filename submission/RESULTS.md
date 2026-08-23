@@ -25,6 +25,45 @@ figure**, and even that is against FineWeb, not FineWeb-Edu (§2.1).
 **Why the control ships and not the 37.52 arm:** see `METHOD.md` §4 — 88% loop-1 damage, a narrower
 band, the only arm that converges, and an unresolvable clipping confound.
 
+## 1b. What actually stands — the positives, ranked, with what each is worth
+
+*Asked plainly because the rest of this folder is organised around what failed, and a reader is
+entitled to the other list without assembling it themselves.*
+
+| # | what worked | size | how well supported | what it is **not** |
+|---|---|---|---|---|
+| 1 | **Removing inter-loop normalisation** | **≈ −0.68 nats** token-corrected — *the largest effect in the project* | replicated; the normalised variant provably contracts to a fixed point by loop ~16 and never accrues loop gain at all (§4.1, §4.3, §4.12) | not novel — it is a *removal*. The field's default was wrong here, and that is the finding |
+| 2 | **Finishing the token budget** | **0.39–0.42 nats** (46M → 90M) | same platform, same shard, same protocol | not an idea. It is the sentence a practitioner should take away: **every architectural intervention here is worth 0.002–0.26; the data is worth 0.40** |
+| 3 | **Supervision annealing — the useful-depth band** | band **widens at 5/5 seeds**; on a dense integer grid `end 20 → 30` against the control's `20` | **the best-supported result here.** Identical edge decomposition at 2.5M *and* 10M; survives halving the plateau tolerance; the sparse grid was *understating* it (§4.23e, §4.25, §4.25c). **Zero added parameters** | **not a loss improvement.** Its CE half is withdrawn at n=4 and a fifth point at 4× budget is +0.1119. It buys *where depth stays useful*, not *how good the model gets* |
+| 4 | **Exclusive self attention (XSA)** | **−0.2162 / −0.2633**, two seeds, **zero parameters** | replicates, ~16× the floor | **not about looping.** 84–91% of it is at `r = 1`; it is a generic attention operator a non-looped model would plausibly get too. Its band claim died at the second seed. **Untested at scale** |
+| 5 | **Norm penalty** | wins perplexity outright: **37.52 vs 38.86** | one 90M arm | **not shipped, and the reasons are measured**: `ΔCE@1 = +0.2263` (88% of its loop-gain advantage is loop-1 *damage*), its band narrows, it is the only arm whose map converges, and it carries an unresolvable clipping confound |
+
+**And the one that was a positive this morning and is not one tonight:** loop-cycled LoRA. −0.0936
+across five arms and three platforms at 2.5M, **+0.0077 at 12M** in a config-identical pair (§4.29).
+**This project has no replicated CE improvement at scale.**
+
+### The depth-mixing family, asked directly: is there any "mixture-over-depths" positive? No.
+
+**Seven mechanisms, and every one is null or explained away.** This is the report's central negative
+and it is the best-evidenced thing in it:
+
+| mechanism | result |
+|---|---|
+| static readout mixture over depths (raw and normalised) | best **−0.0023** against a 0.0527 floor — null |
+| learned per-token depth gate, unnormalised | **instrument failure** — saturates to a hard argmax, mixes 1.01–1.05 of `r` |
+| **scale-invariant depth gate** (`dg_norm`) | **genuinely mixes** — 7.58/8, 14.96/16, 29.84/32 — and gains **−0.0012 / +0.0023**. Null at two seeds |
+| oracle-depth ragged KV cache | **−0.0096**, reverses sign by query depth 24 — null |
+| loop-cycled LoRA (a different operator per depth) | a **capacity** result, not a diversity one; a zero-diversity pin *beats* it; dead at 12M |
+| duo-causal attention (attend to the previous loop's KV) | W=2 null; W=3 lowers CE but its **registered mechanism check failed** |
+| five label-free halting rules + a learned probe + two Q-exit heads | best captures **0.1%** of a real headroom (`EARLY_EXIT.md`) |
+
+**And there is a measured reason rather than seven shrugs: a token's 32 depth keys span an effective
+rank of ~1.6.** There is almost nothing for any mixing or selection mechanism to discriminate
+between — and **the one experiment built to overturn that explanation was registered in advance, ran,
+and did not** (`dg_norm`, two seeds). §4.28 turns the mechanism into a priced dose–response: depth-key
+rank is `≈ 1.6 × (number of distinct projections)`, so a weight-tied loop — which has exactly one
+`W_K` — cannot buy it at any width.
+
 ## 2. Every intervention, and the pattern across them
 
 **Twelve interventions: eleven mechanisms on the model, one lever on the loss schedule** (`README.md`
