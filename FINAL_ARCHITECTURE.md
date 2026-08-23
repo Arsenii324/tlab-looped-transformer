@@ -1,3 +1,27 @@
+# ⚠ STALE — written 15:40, and the project moved after it. `report.md` is authoritative.
+
+**Do not read this as the current state.** It is kept, not deleted, because this project's rule is
+retraction-with-the-superseded-claim-visible. But it was written **before** three things it does not
+know about, and its own preamble ("if something is not in this document, treat it as something we are
+not doing") is exactly the sentence that makes it dangerous to leave unmarked:
+
+1. **§3.5's DEEP HALF WAS WITHDRAWN at 17:23.** This document's table still says the useful band is
+   *"near 40 loops"* at `U[32,48]` (line ~165). The full-budget artifact `tlab-deep-full` (30.0M
+   tokens) returned plateau midpoint **22.6** against a pre-registered trigger of "near 22", and
+   `mid/μ_rec = 0.57` sits in the **dense** range, not terminal-only. **The recommended schedule is
+   `U[4,32]`, not `U[32,48]`.**
+2. **Operator diversity became this project's first replicated CE positive** (§4.21): loop-cycled
+   LoRA at rank ≥ 4, four in-job pairs across three platforms and two seeds, mean −0.0857, 95%
+   t-interval excluding zero — **and the useful band does not move in any of the five pairs.**
+3. **The learned depth gate was measured unable to express its own hypothesis** (§4.22): its logits
+   are `w·h_t` on the raw state, so the softmax saturates to a hard argmax (effective loops mixed
+   **1.0 of r**). The per-token headroom is therefore **untested** by that instrument, not refuted.
+
+**Read `report.md` §0 (abstract), §3.5 (the method) and §6.0 (all 34 errors) instead.**
+This file is retained as the 15:40 snapshot only.
+
+---
+
 # The final architecture — state as of 2026-08-23 ~15:40
 
 **One-off report.** Written because the task asks for it directly and the answer was scattered across
