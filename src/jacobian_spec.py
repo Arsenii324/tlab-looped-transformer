@@ -107,6 +107,7 @@ def main():
         null_check(); return
     want = [int(x) for x in args.loops.split(",")]
     val = np.memmap(ROOT / "data" / "val.bin", dtype=np.uint16, mode="r")
+    all_out = {}
     for cp in args.checkpoints:
         cp = pathlib.Path(cp)
         model, cfg, ck = load_checkpoint(cp / "last.pt" if cp.is_dir() else cp, "cpu")
@@ -125,10 +126,20 @@ def main():
                 h = model.block(h_in, cos, sin)
                 if model.loop_norm is not None:
                     h = model.loop_norm(h)
+        all_out[cp.name] = dict(state_renorm=cfg.state_renorm, rho={str(t): out[t] for t in want},
+                                seeded=True, iters=12)
         print(f"{cp.name:32} state_renorm={cfg.state_renorm}")
         for t in want:
             print(f"    loop {t:>3}: rho = {out[t]:.4f}  "
                   f"{'CONTRACTS' if out[t] < 1 else 'does NOT contract'}")
+
+    # PERSIST. This printed its numbers and saved nothing -- reproducible but not traceable:
+    # verifying a published figure meant re-running, which only works while the inputs survive.
+    # (Traceability audit, 2026-08-23: 11 load-bearing scripts had this defect.)
+    import json as _json
+    _dst = ROOT / "checkpoints" / "jacobian_spec_results.json"
+    _dst.write_text(_json.dumps(all_out, indent=2))
+    print(f"\nwrote {_dst}")
 
 
 if __name__ == "__main__":

@@ -135,6 +135,15 @@ def main():
         print("  predictable from these signals. That is the finding: an exiter would need a signal")
         print("  these four do not carry, not merely a better threshold.")
 
+    # PERSIST. This printed its numbers and saved nothing -- reproducible but not traceable:
+    # verifying a published figure meant re-running, which only works while the inputs survive.
+    # (Traceability audit, 2026-08-23: 11 load-bearing scripts had this defect.)
+    import json as _json, pathlib as _pl
+    _dst = (_pl.Path(__file__).resolve().parents[1] / "checkpoints" /
+            f"exit_rules_{_pl.Path(args.dump).stem}.json")
+    _dst.write_text(_json.dumps(results, indent=2, default=str))
+    print(f"\nwrote {_dst}")
+
 
 if __name__ == "__main__":
     main()

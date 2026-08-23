@@ -1,0 +1,90 @@
+[
+  {
+    "label": "90M: norm penalty vs control",
+    "dCE_best": -0.030114412307739258,
+    "dCE_at1": 0.22629666328430176,
+    "dgain": 0.256411075592041,
+    "cls": "DAMAGE-DRIVEN",
+    "share_from_loop1": 88.25541672168158
+  },
+  {
+    "label": "mu18 s0: anneal sw90 vs in-job dense",
+    "dCE_best": -0.08109301328659058,
+    "dCE_at1": -0.04158210754394531,
+    "dgain": 0.039510905742645264,
+    "cls": "BOTH-IMPROVE",
+    "share_from_loop1": 33.896121122543725
+  },
+  {
+    "label": "mu18 s0: anneal sw75 vs in-job dense",
+    "dCE_best": -0.06558758020401001,
+    "dCE_at1": 0.01846545934677124,
+    "dgain": 0.08405303955078125,
+    "cls": "DEPTH-DRIVEN",
+    "share_from_loop1": 21.968818076608876
+  },
+  {
+    "label": "mu18 s1: anneal sw90 vs in-job dense",
+    "dCE_best": -0.06093651056289673,
+    "dCE_at1": -0.027728617191314697,
+    "dgain": 0.03320789337158203,
+    "cls": "BOTH-IMPROVE",
+    "share_from_loop1": 31.273419317886948
+  },
+  {
+    "label": "mu18 s1: anneal sw75 vs in-job dense",
+    "dCE_best": 0.09058398008346558,
+    "dCE_at1": 0.2628856301307678,
+    "dgain": 0.17230165004730225,
+    "cls": "BOTH-WORSEN",
+    "share_from_loop1": 74.37290859925305
+  },
+  {
+    "label": "mu18: terminal vs dense",
+    "dCE_best": 0.1912097930908203,
+    "dCE_at1": 0.3463040590286255,
+    "dgain": 0.15509426593780518,
+    "cls": "BOTH-WORSEN",
+    "share_from_loop1": 64.4270017717925
+  },
+  {
+    "label": "mu32: terminal vs dense",
+    "dCE_best": 0.07026153802871704,
+    "dCE_at1": 0.7173913717269897,
+    "dgain": 0.6471298336982727,
+    "cls": "BOTH-WORSEN",
+    "share_from_loop1": 91.07963201068998
+  },
+  {
+    "label": "mu40: terminal vs dense",
+    "dCE_best": 0.18805056810379028,
+    "dCE_at1": 1.019099473953247,
+    "dgain": 0.8310489058494568,
+    "cls": "BOTH-WORSEN",
+    "share_from_loop1": 84.42193914988863
+  },
+  {
+    "label": "2.5M: raw readout vs norm",
+    "dCE_best": -0.025623321533203125,
+    "dCE_at1": 0.090181191762289,
+    "dgain": 0.11580451329549213,
+    "cls": "DAMAGE-DRIVEN",
+    "share_from_loop1": 77.8736417052922
+  },
+  {
+    "label": "2.5M: final-only vs norm",
+    "dCE_best": -0.09816869099934866,
+    "dCE_at1": 0.013199408849080996,
+    "dgain": 0.11136809984842966,
+    "cls": "DEPTH-DRIVEN",
+    "share_from_loop1": 11.852055361495074
+  },
+  {
+    "label": "2.5M: norm penalty vs norm",
+    "dCE_best": -0.3661514918009443,
+    "dCE_at1": -0.21953845024108887,
+    "dgain": 0.14661304155985544,
+    "cls": "BOTH-IMPROVE",
+    "share_from_loop1": 37.48373234405539
+  }
+]

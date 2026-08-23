@@ -1,0 +1,10 @@
+{
+  "threshold(entropy)": "5.4549026",
+  "bucket(entropy)": "5.44042",
+  "threshold(margin)": "5.4544134",
+  "bucket(margin)": "5.440445",
+  "threshold(dnorm)": "5.487625",
+  "bucket(dnorm)": "5.4401464",
+  "threshold(kl)": "5.498837",
+  "bucket(kl)": "5.44023"
+}

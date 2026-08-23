@@ -89,3 +89,12 @@ if __name__ == "__main__":
     show(rows)
     print("\nDAMAGE-DRIVEN rows raise loop gain by degrading loop 1. Any claim resting on their gain"
           "\nincrease needs restating; BOTH-IMPROVE rows widen the gap on merit.")
+
+    # PERSIST. This script printed its numbers and saved nothing, so every claim it
+    # supports was reproducible-but-not-traceable: verifying one meant re-running it,
+    # which is only possible while its inputs survive. It classifies every arm in sec3.5 and sec4.6b.
+    import json as _json, pathlib as _pl
+    _dst = _pl.Path(__file__).resolve().parents[1] / "checkpoints" / "gain_decomp_results.json"
+    _dst.write_text(_json.dumps(rows, indent=2, default=str))
+    print(f"\nwrote {_dst}")
+

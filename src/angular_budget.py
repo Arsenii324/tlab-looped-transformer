@@ -133,7 +133,10 @@ def main():
             print(f"  seed {s}: at own k*  B {dn['B']:.4f} -> {tm['B']:.4f}  ratio={tm['B']/dn['B']:.3f}"
                   f"   |  FIXED range 1..{dn['k_used'] and a.fixed_range}  "
                   f"B {dn['B_fixed']:.4f} -> {tm['B_fixed']:.4f}  ratio={tm['B_fixed']/dn['B_fixed']:.3f}")
-    print("\n  ratio ~1.0 -> terminal-only spends the SAME budget more slowly (a rate intervention,")
+    print("\n  [RETRACTED VERDICTS -- kept only so old logs remain readable. The chord/arc")
+    print("   correction (report.md sec4.16c (c)) reversed the sign: chord 1.20, arc 0.80.")
+    print("   Do not read a mechanism off this ratio without saying which sampling it used.]")
+    print("  ratio ~1.0 -> terminal-only spends the SAME budget more slowly (a rate intervention,")
     print("               same category as the clamp / gate / residual-scaling nulls)")
     print("  ratio >1   -> terminal-only buys MORE useful angular computation (a budget intervention)")
 
