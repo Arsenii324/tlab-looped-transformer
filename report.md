@@ -3060,6 +3060,32 @@ inside noise and should not be read as terminal-only being *better or worse* on 
 
 ### 4.15 The noise floor, measured from two accidental replicates — fixed seed does *not* give replicates
 
+> **A same-config MPS replicate floor, n=3, measured 2026-08-23 — the gap this section admits is now
+> partly closed for the local dense configuration.** Three runs turned out to be config-identical
+> without being intended as replicates: `sd_dense_k5_s0`, `sc_ctrl` (the scale-clock control) and
+> `gi_additive` (the gated-injection control). Verified field-by-field — the only differences are keys
+> *absent* from the older checkpoint (`supervise_k_final`, `supervise_switch_frac`, `scale_clock`),
+> and each defaults to exactly the value the others carry (`None`, `0.75`, `False`). No differing
+> value on any shared key. Separate invocations, so the only source of variation is MPS
+> non-determinism.
+>
+> | run | CE@1 | CE_best |
+> |---|---|---|
+> | `gi_additive` | 5.4952 | 5.4000 |
+> | `sc_ctrl` | 5.5129 | 5.4202 |
+> | `sd_dense_k5_s0` | 5.5611 | 5.4527 |
+>
+> Pairwise |ΔCE_best|: **0.0202 / 0.0326 / 0.0527**; range **0.0527**, sd **0.0266**.
+>
+> **This CONFIRMS the accidental-replicate estimates rather than tightening them** — 0.031 and 0.068
+> bracket this range. And it has one immediate consequence: §4.7a's local annealed pair measured
+> ΔCE_best = **−0.0514** against `sd_dense_k5_s0`, which is **inside** a same-config replicate range
+> that reaches 0.0527. That section already called it "inside the floor"; it now says so on the
+> strength of a same-config n=3 measurement rather than a floor borrowed from different arms.
+>
+> **Still not measured: the floor for an *annealed* arm**, which is what the paragraph below is about.
+> Three dense replicates do not supply it.
+
 > **Which floor applies to an *annealed* arm is NOT established here, and the report has used both.**
 > The replicates below give a floor for a **dense** arm (0.0150) and for a **terminal-only** arm
 > (0.0541) — a 3.6× difference. An annealed arm is dense for 90% of training and terminal for 10%,
