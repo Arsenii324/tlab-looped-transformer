@@ -286,7 +286,18 @@ def run(model_cfg: ModelConfig, train_cfg: TrainConfig, log_path: pathlib.Path |
                   " ".join(f"r{r}={v:.4f}" for r, v in curve.items()), flush=True)
             history.append(dict(step=step, tokens=tokens_seen, val_curve=curve,
                                  train_loss_mean=loss.item(), grad_norm=gnorm.item(),
-                                 state_norm_first=state_norms[0], state_norm_last=state_norms[-1]))
+                                 state_norm_first=state_norms[0], state_norm_last=state_norms[-1],
+                                 # CLAUDE.md's logging rule asks for per-loop state norm on EVERY
+                                 # run, and forward() already computes the whole list -- only the
+                                 # first and last were being persisted and the rest discarded. This
+                                 # compounded the lost-checkpoint failure (§6.0 row 23): DataSphere
+                                 # DID return results.json from all ~20 jobs, so per-loop
+                                 # diagnostics written here would have survived for every run whose
+                                 # weights did not. Costs n_loops floats per eval.
+                                 state_norms=list(state_norms),
+                                 n_loops=n_loops,
+                                 supervise_k_eff=_k_eff,
+                                 per_loop_train_ce=[[i, v] for i, v in per_loop_losses]))
             if log_path:
                 log_path.write_text(json.dumps(history, indent=2))
             save_ckpt(step, tokens_seen)

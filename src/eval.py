@@ -82,6 +82,19 @@ def perplexity_curve(model, val: np.memmap, max_loops: int, seq_len: int, n_batc
             entropy_sum[r] += ent * x.numel() / seq_len  # weight by number of positions summed
         n_tok += x.numel()
     ce = {r: v / n_tok for r, v in ce_sum.items()}
+    # The clamp keeps exp() from overflowing, but a CE of 20 is not a result -- chance for this
+    # vocabulary is ln(4096) = 8.3178, so anything materially above it means a broken forward pass,
+    # a vocabulary mismatch, or a degenerate checkpoint. Silently reporting e^20 hands back a number
+    # where an exception belongs, which is the opposite of what train.py's degenerate-step guard
+    # does. Flag it loudly and keep the clamp for the values that are merely bad.
+    _chance = math.log(model.cfg.vocab_size)
+    _broken = {r: v for r, v in ce.items() if v > _chance + 0.5}
+    if _broken:
+        print(f"  ⚠ CE ABOVE CHANCE ({_chance:.4f}) at loops {sorted(_broken)}: "
+              f"{ {r: round(v, 4) for r, v in sorted(_broken.items())[:8]} } -- this is not a "
+              f"quality result, it is a broken vocabulary or a broken forward pass. Check the "
+              f"tokenizer with src/check_tokenizer_identity.py before reading anything below.",
+              flush=True)
     ppl = {r: float(np.exp(min(v, 20))) for r, v in ce.items()}
     ent = {r: v / (n_batches * batch_size) for r, v in entropy_sum.items()}
     return ce, ppl, ent
@@ -92,7 +105,21 @@ def contraction_estimate(model, val: np.memmap, seq_len: int, max_loops: int, de
                           noise_scale: float = 1.0, seed: int = 0):
     """Two forwards of the SAME batch, one with h0 perturbed by noise_scale, tracked via the model's
     own per-loop state norms is not enough (that gives each trajectory's own norm, not their
-    distance) -- so this re-implements the loop manually to log ||h_clean - h_noisy|| per loop."""
+    distance) -- so this re-implements the loop manually to log ||h_clean - h_noisy|| per loop.
+
+    THE DUPLICATION IS NOT ACTUALLY NECESSARY and the justification above is wrong: `forward()`
+    accepts both `h0_noise=` and `return_states=`, so two calls give both trajectories' states
+    through the REAL loop and the distances are a subtraction away. It is left in place because it
+    works and is what every published contraction number here was measured with (CLAUDE.md sec 3:
+    do not refactor analysis code that works). What is added is the guard the duplication needs --
+    `rollout` below omits the convex-gate branch that `forward()` applies, so on a gated checkpoint
+    it would silently measure a DIFFERENT dynamical system than the model is. No gated checkpoint
+    has ever been run through it; this makes sure none silently is."""
+    if model.gate_mlp is not None or model.cfg.fixed_gate is not None:
+        raise NotImplementedError(
+            "contraction_estimate re-implements the loop and does not apply the convex gate, so on "
+            "this checkpoint it would measure a different map than the model computes. Use "
+            "forward(..., h0_noise=..., return_states=True) twice and difference the states.")
     rng = np.random.default_rng(seed)
     ix = rng.integers(0, len(val) - seq_len - 1, size=8)
     x = torch.from_numpy(np.stack([val[i:i + seq_len] for i in ix]).astype(np.int64)).to(device)
@@ -128,6 +155,8 @@ def contraction_estimate(model, val: np.memmap, seq_len: int, max_loops: int, de
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("checkpoint", type=str)
+    ap.add_argument("--force", action="store_true",
+                    help="allow overwriting a wider stored sweep with a narrower one")
     ap.add_argument("--max-loops", type=int, default=64)
     ap.add_argument("--val", type=str, default=str(ROOT / "data" / "val.bin"))
     ap.add_argument("--n-batches", type=int, default=20)
@@ -178,6 +207,19 @@ def main():
                model_cfg=dataclasses.asdict(cfg), val_ce=ce, val_ppl=ppl, val_bits_per_byte=bpb,
                pred_entropy=ent, contraction_dist=dist, contraction_ratio=ratios, best_loop=best_r)
     out_path = ckpt_path.parent / f"eval_{ckpt_path.parent.name}.json"
+    # Refuse to replace a WIDER sweep with a narrower one. This path is fixed per checkpoint, so a
+    # quick `--max-loops 8 --n-batches 2` smoke run silently destroyed the dense 1..64 curve that
+    # the model card and §.headline's plateau [6,17] are both read from -- recovered only because
+    # the file happened to be tracked in git. The artifact is load-bearing; overwriting it is a
+    # deliberate act and now has to be spelled.
+    if out_path.exists() and not args.force:
+        prev = json.loads(out_path.read_text()).get("val_ce", {})
+        if len(prev) > len(out["val_ce"]):
+            raise SystemExit(
+                f"REFUSING to overwrite {out_path}: it holds a {len(prev)}-loop sweep and this run "
+                f"produced only {len(out['val_ce'])}. That would replace a full curve with a "
+                f"partial one at the same path. Re-run with --max-loops {max(int(k) for k in prev)} "
+                f"to regenerate it properly, or pass --force if narrowing is what you intend.")
     out_path.write_text(json.dumps(out, indent=2))
     print(f"\nwrote {out_path}")
 
