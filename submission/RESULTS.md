@@ -34,7 +34,7 @@ entitled to the other list without assembling it themselves.*
 |---|---|---|---|---|
 | 1 | **Removing inter-loop normalisation** | **≈ −0.68 nats** token-corrected — *the largest effect in the project* | replicated; the normalised variant provably contracts to a fixed point by loop ~16 and never accrues loop gain at all (§4.1, §4.3, §4.12) | not novel — it is a *removal*. The field's default was wrong here, and that is the finding |
 | 2 | **Finishing the token budget** | **0.39–0.42 nats** (46M → 90M) | same platform, same shard, same protocol | not an idea. It is the sentence a practitioner should take away: **every architectural intervention here is worth 0.002–0.26; the data is worth 0.40** |
-| 3 | **Supervision annealing — the useful band** | band **widens at 5/5 seeds**; on a dense integer grid `end 20 → 30` against the control's `20` | **the best-supported result here.** Identical edge decomposition at 2.5M *and* 10M; survives halving the plateau tolerance; the sparse grid was *understating* it (§4.23e, §4.25, §4.25c). **Zero added parameters** | **not a loss improvement.** Its CE half is withdrawn at n=4 and a fifth point at 4× budget is +0.1119. It buys *where depth stays useful*, not *how good the model gets* |
+| 3 | **Supervision annealing — the useful band** | band **widens at 5/5 seeds**; on a dense integer grid `end 20 → 30` against the control's `20` | **the best-supported result here.** Identical edge decomposition at 2.5M *and* 10M; survives halving the plateau tolerance; the sparse grid was *understating* it (§4.23e, §4.25, §4.25c). **Zero added parameters** | **not a loss improvement.** Its CE half is withdrawn at n=4; two further points at 4× budget (−0.0764, +0.1119) leave the six-point mean at −0.0247, inside the floor. It buys *where depth stays useful*, not *how good the model gets* |
 | 4 | **Exclusive self attention (XSA)** | **−0.2162 / −0.2633**, two seeds, **zero parameters** | replicates, ~16× the floor | **not about looping.** 84–91% of it is at `r = 1`; it is a generic attention operator a non-looped model would plausibly get too. Its band claim died at the second seed. **Untested at scale** |
 | 5 | **Norm penalty** | wins perplexity outright: **37.52 vs 38.86** | one 90M arm | **not shipped, and the reasons are measured**: `ΔCE@1 = +0.2263` (88% of its loop-gain advantage is loop-1 *damage*), its band narrows, it is the only arm whose map converges, and it carries an unresolvable clipping confound |
 
@@ -74,7 +74,7 @@ rank is `≈ 1.6 × (number of distinct projections)`, so a weight-tied loop —
 ## 2. Every intervention, and the pattern across them
 
 **Twelve interventions: eleven mechanisms on the model, one lever on the loss schedule** (`README.md`
-states the convention). Two mechanisms were run at two settings each, so this table has thirteen rows.
+states the convention). **Three** mechanisms were run at two settings each, so this table has fifteen rows.
 ΔCE_best is against each arm's **own in-job control**; negative = better.
 
 | # | intervention | ΔCE_best | band | params |
@@ -239,7 +239,7 @@ zero-parameter* operator is worth more than the same pattern restated over arms 
 ## 4. Per-token depth demand: real, large, and unreachable — with a measured reason
 
 Oracle headroom **0.3084 nats** on the 46M checkpoint, split-half reliability **0.866** against a null
-of **0.0007**; **27.9%** of tokens want depth > 32. **Nine rules across five instrument classes fail
+of **0.0007**; **27.9%** of tokens want depth > 32. **Eight rules across five instrument classes fail
 to capture more than 0.1%.** *(A separate, smaller figure — **0.2008–0.2032** — appears in §4.7a and is
 a different model: the matched dense/annealed 2.5M pair. Same quantity, different checkpoint; the two
 are not comparable and the report labels them as such.)* **Full case: `EARLY_EXIT.md`.**
@@ -302,7 +302,7 @@ report sections named; nothing here is still a placeholder.
 | `tlab-xsa-s1` | second seed for the −0.216 | **LANDED.** −0.2633; CE replicates, **band claim withdrawn** |
 | `tlab-recmethod-s2` | the recommended configuration's own weights | **LANDED.** Band 5/5 at 4× budget; CE +0.1119. §4.23e |
 | `tlab-duocausal-s0/-s1` | duo-causal W=2/3 and the scale-invariant depth gate | **LANDED.** §4.23, §4.23b |
-| Kaggle `tlab-lora-scaleup` | does the LoRA positive survive ~5× budget (12M/arm) — **the only budget probe of the r=1 pattern (§4.24)** | running, ETA ~21:52 |
+| Kaggle `tlab-lora-scaleup` | does the LoRA positive survive ~5× budget (12M/arm) — the only budget probe of the r=1 pattern (§4.24) | **LANDED. +0.0077 at 12M — it does not (§4.29).** |
 
 ## 5.3 What the model actually writes
 

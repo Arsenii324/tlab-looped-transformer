@@ -17,7 +17,7 @@ not of the model.
 > missing, and a reader of this document alone would have got a scale argument for a claim whose main
 > half no longer stands.* Supervision annealing's **CE advantage over dense supervision was withdrawn
 > at n = 4** by a criterion registered before the data existed: seeds 2 and 3 gave **+0.0482** and
-> −0.0902, the four-seed mean (−0.0460) sits inside the 0.0541 floor — **a fifth point at 4× the budget has since added +0.1119, taking the mean to −0.0144** — and the paired t-interval
+> −0.0902, the four-seed mean (−0.0460) sits inside the 0.0541 floor — **two further points at 4× the budget, −0.0764 and +0.1119, take the six-point mean to −0.0247, still inside it** — and the paired t-interval
 > **[−0.1478, +0.0558] covers zero.** **What survives is the depth half** — the useful band widens at
 > **5 of 5 seeds**, with the *same* edge decomposition (onset 8 → 8, end 16 → 24) at **2.5M and at
 > 10M tokens**, including at the seeds that reverse the CE claim. A fifth CE point at 4× the budget
@@ -85,7 +85,7 @@ gradient, and it would apply unchanged to a sparse block. Only the second is wha
 ## 4. What scaling would actually buy, measured rather than assumed
 
 **Finishing the token budget dominates every architectural intervention measured here.** 46M → 90M
-tokens bought **0.39–0.42 nats**; every mechanism in this report is worth 0.002–0.19.
+tokens bought **0.39–0.42 nats**; every mechanism in this report is worth 0.002–0.26.
 
 The scaling constant has two anchors and should be quoted as a **range, 0.40–0.52 nats/e-fold**, not
 a point. The lower anchor crosses a device *and* a validation-shard boundary; the cleaner pair
@@ -113,7 +113,7 @@ negative reaches.
 
 **Measured. Both models untrained, identical hidden size, heads, head_dim and initialisation, 33
 depths each** — so training quality cannot explain the difference and the *only* variable is
-tied-vs-untied. **The table carries four rows rather than two, because the two-row version was
+tied-vs-untied. **The table carries five rows rather than two, because the two-row version was
 measured first and was substantially a confound** `[RANK-PROJECTION]`:
 
 | what is measured | effective rank | mean pairwise cos |

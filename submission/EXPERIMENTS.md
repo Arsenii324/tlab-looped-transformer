@@ -34,6 +34,12 @@ Of the 137 arms, **81 appear in `report.md` by their internal identifier and 119
 | `trainL4_s1` | 4.4772 | §4.9's seed-1 replication reports the **re-zeroed mean curve** and the per-arm shape spread, never the five absolute bests. The conclusion (the collapse fails its pre-registered seed test) is reported; the raw column is not |
 | `trainL8_s1` | 4.5601 | §4.9's seed-1 replication reports the **re-zeroed mean curve** and the per-arm shape spread, never the five absolute bests. The conclusion (the collapse fails its pre-registered seed test) is reported; the raw column is not |
 
+> **What this table is and is not.** It is the **screening and ablation inventory**, built by
+> `src/make_inventory.py` from job-results files. **The three full-budget runs are not in it** — the
+> 46M previous headline, the 90M control that ships, and the 90M norm-penalty arm are evaluated by
+> `src/eval.py` sweeps rather than job-results files, and are reported in `RESULTS.md` §1. The maximum
+> budget shown below is therefore 40M: a schema boundary, not a missing experiment.
+
 **So there is no unreported *experiment*** — every arm above is a run whose conclusion is reported; what is absent is an *absolute number* where the report quotes a delta or a mean curve instead. This table is where those numbers live.
 
 ## The inventory

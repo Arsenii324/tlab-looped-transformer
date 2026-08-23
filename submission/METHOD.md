@@ -67,7 +67,7 @@ asks for.
 > **The recommendation in one qualified sentence, placed here rather than after the argument for it.**
 > **Anneal if you want the useful band deeper. Do not expect it to lower the loss.** The band
 > half holds at **5 of 5 seeds** with the same edge decomposition at 2.5M and at 10M tokens; **the
-> ceiling half was withdrawn at n = 4 and a fifth point at 4× the budget made it worse** (+0.1119,
+> ceiling half was withdrawn at n = 4 and two further points at 4× the budget did not rescue it** (+0.1119 and −0.0764,
 > §4.23e). **And the released weights are the *dense* control, not this recipe** — §4 below says why,
 > and that choice is now evidenced at the recipe's own budget rather than inherited from launch order.
 > *This is a recommendation about where depth stays useful. It is not a recommendation for lowest
@@ -88,9 +88,9 @@ moved was the band, not the ceiling.
 
 > ### ⚠ What annealing does and does not do — the CE half is WITHDRAWN `[WITHDRAWN-ANNEAL-CE]`
 >
-> **Withdrawn at n = 4** by a criterion registered before the data existed, and **a fifth point at 4×
-> the budget has since made it worse**: ΔCE_best is −0.0811 / −0.0609 / **+0.0482** / −0.0902 /
-> **+0.1119**, the last at **10M tokens** in-job (§4.23e). Mean **−0.0144**, inside the 0.0541 floor,
+> **Withdrawn at n = 4** by a criterion registered before the data existed, and **two further points at
+> 4× the budget have not rescued it**: ΔCE_best is −0.0811 / −0.0609 / **+0.0482** / −0.0902 / **−0.0764** / **+0.1119**, the last two at **10M tokens** in-job
+> (`tlab-anneal-scale` §4.17 and `tlab-recmethod-s2` §4.23e). Mean **−0.0247**, inside the 0.0541 floor,
 > spread −0.09 to +0.11.
 >
 > **What survives, at 5 of 5 seeds:** the useful band widens — and **the decomposition is identical at
@@ -143,7 +143,8 @@ and the tied vocabulary's share *shrinks* as the block widens.
 **Stated rather than left to be discovered:** the annealing schedule was established *after* the
 full-budget runs launched, so **no 90M checkpoint of the annealed recipe exists**. The recommended
 configuration now has weights of its own at **10M** (`rec_sw90_s2_last.pt`, §4.23e), and that run is
-also the recipe's first direct test at its own budget. **It confirms both halves of the
+one of **two** direct tests at the recipe's own budget — the other is `tlab-anneal-scale`,
+also 10M and in-job (§4.17), which went the *other* way at −0.0764. **It confirms both halves of the
 recommendation, including the unflattering one:** the band widens exactly as at 2.5M (onset 8 → 8,
 end 16 → 24), and CE is **0.1119 nats worse** than its in-job dense control. **So the choice to ship
 the dense control is now evidenced, not merely inherited from launch order** — and there is no case

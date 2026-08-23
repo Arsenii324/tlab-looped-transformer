@@ -95,8 +95,8 @@ rank 2 it reverses sign. The control that isolates diversity from capacity is ru
 of training, terminal-only for the last ~10% — **relocates the band at 5 of 5 seeds** at **zero
 parameter cost**, and the edge decomposition is *identical* at 2.5M and at 10M tokens: **onset 8 → 8
 unchanged, end 16 → 24.** Its effect on the *ceiling* was withdrawn at n=4 by a criterion
-pre-registered before the data existed, and a fifth point at 4× the budget is the **worst** yet
-(+0.1119). So the two halves of "low perplexity **by exploiting
+pre-registered before the data existed, and two further points at 4× the budget (−0.0764, +0.1119)
+leave the six-point mean at **−0.0247**, inside the floor. So the two halves of "low perplexity **by exploiting
 many loops**" come apart under measurement, and that dissociation — documented five separate ways — is
 this report's most-replicated finding.
 
@@ -712,7 +712,7 @@ sparse subset of loops for most of training and to the final loop only for the l
 | **no inter-loop norm** (`state_renorm=False`) | RMSNorm between loops | **≈ −0.68 nats token-corrected** (−0.744 nominal, before §4.1's token-ratio correction), the largest single effect in the project; the normalised variant contracts and goes inert (§4.3) |
 | **no prelude/coda** | the sandwich every reference implementation uses | at a fixed 10M budget a prelude buys 0.355 nats *and makes the model depth-inert over the entire swept range* [1,96] (§4.5). It wins the metric by removing the reason to iterate |
 | **deep loop schedule** | `U[4,32]`, or a fixed small `r` | useful depth is ≈ a fixed fraction of trained depth (§4.11, §4.16b): dense 0.57–0.71·μ_rec, terminal-only 0.98–1.09·μ_rec, across three schedules and two devices |
-| **supervision annealing** | dense supervision throughout; or constant terminal-only | ⚠ **CE advantage over dense WITHDRAWN at n=4** (2 of 4 seeds negative, mean −0.0460 inside the 0.0541 floor — see the block below; **a fifth point at 10M tokens, +0.1119, has since taken the mean to −0.0144**, §4.23e); still widens the useful band at every seed checked, and still beats constant terminal-only on the *depth-vs-CE* comparison (§4.17) — that half does not depend on the withdrawn number. *Measured at μ_rec = 18; at the μ_rec = 40 schedule this method actually specifies, the comparison against dense is a trade — see the block below* |
+| **supervision annealing** | dense supervision throughout; or constant terminal-only | ⚠ **CE advantage over dense WITHDRAWN at n=4** (2 of 4 seeds negative, mean −0.0460 inside the 0.0541 floor — see the block below; **two further 10M points, −0.0764 and +0.1119, take the six-point mean to −0.0247**, §4.17/§4.23e); still widens the useful band at every seed checked, and still beats constant terminal-only on the *depth-vs-CE* comparison (§4.17) — that half does not depend on the withdrawn number. *Measured at μ_rec = 18; at the μ_rec = 40 schedule this method actually specifies, the comparison against dense is a trade — see the block below* |
 
 **Why the loss schedule is the part that matters, and why the dynamics are not.** Three independent
 interventions on how the state *traverses* — inference-time radial clamping (§4.6), a learned convex
@@ -4972,8 +4972,9 @@ mean +0.0125). So the pre-registered claim holds for `sw90` and fails for `sw75`
 > that, so comparing a paired quantity to an unpaired floor is too conservative. Their proposed
 > replacement: a t-interval on the four paired differences, withdraw if it covers zero. **Run:**
 > mean −0.0460, sd **0.0640**, SE 0.0320, 95% t-interval **[−0.1478, +0.0558]** — covers zero,
-> *(and a fifth seed at 4× the budget has since added **+0.1119**, taking the mean to **−0.0144**;
-> §4.23e. The withdrawal below was decided at n=4 and the fifth point only strengthens it.)*
+> *(and two further 10M-token points have since been added — `as_10M_sw90` at **−0.0764** (§4.17) and
+> `rec_sw90_s2` at **+0.1119** (§4.23e) — taking the six-point mean to **−0.0247**, still inside the
+> floor. The withdrawal below was decided at n=4 and neither later point overturns it.)*
 > **withdraw**. Their argument assumed the seed-to-seed spread was ~0.0143 (the n=2 value); the actual
 > n=4 sd is **4.5× larger**, so the effect sits **1.44 SE** from zero rather than the ~10 SE they
 > projected. The better-specified test gives the same verdict, which is the useful outcome: the
@@ -5006,7 +5007,7 @@ mean +0.0125). So the pre-registered claim holds for `sw90` and fails for `sw75`
 > coming apart under measurement.
 
 > **Both triggers fired.** The four values straddle zero — seed 2 is positive, `sw90` is *worse* than
-> its own dense control there. And the n=4 mean is **−0.0460** (n=5: **−0.0144**), inside the 0.0541 CUDA terminal
+> its own dense control there. And the n=4 mean is **−0.0460** (n=6: **−0.0247**), inside the 0.0541 CUDA terminal
 > floor. Under the pre-registration this recommendation is **withdrawn to "not resolved at this
 > budget."** What survives: `sw90` still beats `sw75` on the seed-stability question raised earlier in
 > this section (`sw75` was already worse-or-reversed at 2 of 2 seeds; `sw90` is negative at 3 of 4)
@@ -5949,7 +5950,7 @@ thing every time: *the model does not improve further, it degrades later.*
 
 **2. The CE claim, already withdrawn at n = 4, gets its worst point yet.** ΔCE_best = **+0.1119** —
 annealing is 0.11 nats *worse* than its own in-job dense control at the recipe's own budget. The five
-ΔCE_best values are now **−0.0811 / −0.0609 / +0.0482 / −0.0902 / +0.1119**, mean **−0.0144**,
+ΔCE_best values are now −0.0811 / −0.0609 / **+0.0482** / −0.0902 / **−0.0764** / **+0.1119**, mean **−0.0247**,
 comfortably inside the 0.0541 terminal-only floor, with the spread now running from −0.09 to +0.11.
 `[WITHDRAWN-ANNEAL-CE]` **The withdrawal was correct and this is the strongest evidence for it.**
 

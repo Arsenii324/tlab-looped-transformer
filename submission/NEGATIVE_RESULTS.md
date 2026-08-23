@@ -24,10 +24,10 @@ the loss move no band edge outward, and four of the five deliver most of their g
 
 ---
 
-## 1. The model-side family — eleven mechanisms, thirteen settings, and not one widens the band
+## 1. The model-side family — eleven mechanisms, fourteen settings, and not one widens the band
 
 *Counting convention in `README.md`: **twelve interventions = eleven mechanisms on the model plus
-one lever on the loss schedule**; LoRA and duo-causal attention were each run at two settings. The
+one lever on the loss schedule**; LoRA, duo-causal attention and the per-token depth gate were each run at two settings. The
 loss-side lever is §5 below. Rows added after this document was first written are marked ✚.*
 
 | intervention | source | ΔCE | effect on the useful band |

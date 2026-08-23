@@ -124,7 +124,7 @@ is a row but not a claim. Where a count appears in this folder it is this one.
   *plateau*. **Every band figure is a `tol = 0.01` statement** unless marked otherwise, and §4.25
   sweeps that tolerance.
 - **replicate floor** — run-to-run variation between *same-config* arms, measured per device and per
-  configuration: **0.0150** (CUDA, dense supervision) and **0.0541** (CUDA, terminal-only). Where this
+  configuration: **0.0150** (CUDA, dense supervision), **0.0541** (CUDA, terminal-only) and **0.0527** (MPS, n = 3; MPS run-to-run spread is 0.031–0.068). Where this
   folder says "inside the floor", it means smaller than that. *Both were measured at 2.5M tokens and
   are applied to 90M claims; `LIMITATIONS.md` §3 says so.*
 - **loop gain** — `CE@1 − CE_best` for one model: how much the looping is worth to it. Distinct from

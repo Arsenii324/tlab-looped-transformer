@@ -172,8 +172,7 @@ a reader who expects the ragged-cache failure will otherwise assume it was simpl
 Stated as engineering consequences rather than as further nulls, since the negative is only useful if
 it constrains the next attempt:
 
-1. **Do not spend the parameter budget on the exit head.** Eight rules including two learned heads and
-   a PALBERT-form Q-exit all land within 0.02 nats of a constant. The signal is not in the readout, in
+1. **Do not spend the parameter budget on the exit head.** Not one of eight rules — including two learned heads and a PALBERT-form Q-exit — beats a constant, and the three that come closest do so by *imitating* it (within 0.02 nats, at essentially the constant's own depth). The signal is not in the readout, in
    the state-update magnitude, or in successive-output agreement. **A better head reads a
    representation that does not distinguish the depths.**
 2. **Fix the representation first, and the lever is weight tying, not width.** The depth keys collapse
