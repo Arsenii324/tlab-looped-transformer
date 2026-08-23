@@ -6,8 +6,8 @@ mechanism**, which the brief rates explicitly as a good result. This document is
 the demand is real, that eight rules across five instrument classes cannot reach it, why, and what the
 one test built to overturn that explanation returned.*
 
-**The short version.** Per-token depth demand in this model is large (**0.3083 nats** of oracle
-headroom), reliable (split-half **+0.866** against a null of **+0.0007**), and **unreachable**: the
+**The short version.** Per-token depth demand in this model is large (**0.3084 nats** of oracle
+headroom on the calibration/test split; 0.3083 on the full set), reliable (split-half **+0.866** against a null of **+0.0007**), and **unreachable**: the
 best of eight exit rules captures **0.1%** of it. The reason is measured, not assumed — **the depths a
 rule would have to tell apart span an effective rank of ~1.6 out of 32.** There is almost nothing to
 discriminate between.
