@@ -177,10 +177,10 @@ the full 6M-token validation shard — an earlier draft of this line said "3.45 
 | MLP intermediate size | 1344 (SwiGLU, ratio 3.0) |
 | layers per loop | 3 |
 | vocabulary | 4096 (custom byte-level BPE, trained on FineWeb) |
-| **total parameters** | **9,065,056** |
+| **total parameters** | **9,064,608** |
 | — of which in the reused block | 7,228,704 (79.7%) |
 | — of which in the vocab embedding (tied) | 1,835,008 (20.2%) |
-| — h0, loop_norm, final_norm | 1,344 |
+| — h0, final_norm | 896 | <!-- loop_norm NOT allocated: shipped/recommended config is state_renorm=False -->
 
 "Layers per loop" is not a simplification — the task's own framing is "the same block *of several
 layers*" applied repeatedly, so the reused unit is three full decoder layers, not one.
@@ -374,7 +374,7 @@ nothing here is asserted without a measurement behind it.*
 > | run | what it could change | falsifier, pre-registered |
 > |---|---|---|
 > | ~~`tlab-anneal-scale` (10M, in-job control)~~ | the whole annealing recommendation | **RESOLVED — OUTCOME A.** ΔCE_best **−0.0764** at 10M vs **−0.0710** at 2.5M, ΔCE@1 still **negative** (−0.0092): both endpoints improve at 4× the budget, so annealing does **not** follow the norm penalty into reversal. The pre-registered small-budget falsifier did not fire. *Caveat: the loop-1 margin eroded −0.035 → −0.0092, trending toward outcome B without reaching it.* |
-> | `tlab-deep-full` (μ_rec=40 annealed, ~25M tokens, ETA ~17:30) | whether the deep setting survives outside a 2.5M screen | if its plateau midpoint returns near 22 (dense-like) rather than ≥32, the deep half of the table below is withdrawn |
+> | `tlab-deep-full` (μ_rec=40 annealed **sw75 — note: NOT the `sw90` this section recommends**, ~25M tokens, ETA ~17:30) | whether the deep setting survives outside a 2.5M screen | if its plateau midpoint returns near 22 (dense-like) rather than ≥32, the deep half of the table below is withdrawn |
 >
 > Two further caveats that will *not* be resolved today: every annealing number rests on **two seeds**
 > at 2.5M tokens and **one** at 10M/25M; and the whole report is one model size (9.06M) and one
@@ -429,7 +429,7 @@ sparse subset of loops for most of training and to the final loop only for the l
 | **no inter-loop norm** (`state_renorm=False`) | RMSNorm between loops | −0.744 nats, the largest single effect in the project (§4.1); the normalised variant contracts and goes inert (§4.3) |
 | **no prelude/coda** | the sandwich every reference implementation uses | at a fixed 10M budget a prelude buys 0.355 nats *and makes the model depth-inert over the entire swept range* [1,96] (§4.5). It wins the metric by removing the reason to iterate |
 | **deep loop schedule** | `U[4,32]`, or a fixed small `r` | useful depth is ≈ a fixed fraction of trained depth (§4.11, §4.16b): dense 0.50–0.71·μ_rec, terminal-only 0.98–1.09·μ_rec, across three schedules and two devices |
-| **supervision annealing** | dense supervision throughout; or constant terminal-only | beats an **in-job** dense control on CE at both seeds (−0.081, −0.061) *while* widening the useful band and raising loop gain (§4.17); constant terminal-only reaches a **shallower** band at **6× the CE cost** at μ_rec=40 (§4.16b) |
+| **supervision annealing** | dense supervision throughout; or constant terminal-only | beats an **in-job** dense control on CE at both seeds (−0.081, −0.061) *while* widening the useful band and raising loop gain (§4.17); constant terminal-only costs **+0.1393 nats** against the *same in-job* dense control (5.4658) while annealing *gains* 0.0192–0.0264, and their band depths are **statistically tied across two seeds** (42.2 vs 41.5) — so annealing's advantage over constant terminal-only is on **CE, not depth** (§4.17). *Measured at μ_rec = 18; at the μ_rec = 40 schedule this method actually specifies, the comparison against dense is a trade — see the block below* |
 
 **Why the loss schedule is the part that matters, and why the dynamics are not.** Three independent
 interventions on how the state *traverses* — inference-time radial clamping (§4.6), a learned convex
@@ -530,8 +530,10 @@ argument rather than a list:**
 > ~1.0; annealing dense→terminal exceeds both, reaching a band that runs to 64 loops (§4.11, §4.14,
 > §4.16, §4.16b, §4.17). Three independent interventions on how the state *traverses* — inference-time
 > radial clamping (§4.6), convex gating (§4.10), and `ε=λ/(N√L)` residual scaling (§5.0) — relocate the
-> optimum **without raising the ceiling**, and the map never contracts at any depth
-> (σ_max = 1.7019 → 1.0015 over loops 2→64, §4.3), so **saturation here is not convergence.**
+> optimum **without raising the ceiling**, and the map does not contract in the regime where the loops do work
+> (**ρ**, not σ_max — §6.0 row 25: **1.7019 at loop 2**, far outside the estimator's ~9% upward
+> bias; the loop-64 reading of 1.0015 is *inside* it and is not distinguishable from 1, §4.3), so
+> **saturation here is not convergence.**
 
 Which sections support which half: §4.1–§4.3 establish the apparent ceiling and identify its geometry;
 §4.6, §4.10 and §5.0 are the three traversal nulls; §4.9, §4.11, §4.14, §4.16, §4.16b and §4.17 are
@@ -1103,15 +1105,29 @@ imprecise; it was measuring the wrong space.
 **Re-measured in the space the readout can see** (`src/state_dynamics.py`, on the 46.0M-token Kaggle
 checkpoint; `u_t = h_t/‖h_t‖` is the unit state, the only thing `readout()` responds to):
 
-| loop | ‖h‖ | ‖Δh‖/‖h‖ | ‖u_clean−u_noisy‖ | cos(clean,noisy) | ‖u_t−u_{t−1}‖ | cos(du_t,du_{t−1}) | val CE |
-|---|---|---|---|---|---|---|---|
-| 1  | 1655  | 1.585 | 1.328 | 0.117 | — | — | 4.2580 |
-| 2  | 2600  | 1.434 | 1.261 | 0.203 | 0.2671 | — | 4.0946 |
-| 4  | 4160  | 1.343 | 1.159 | 0.324 | 0.0711 | 0.9674 | 4.0266 |
-| 8  | 6630  | 1.255 | 1.105 | 0.385 | 0.0249 | 0.9958 | **4.0071** |
-| 16 | 10633 | 1.198 | 1.085 | 0.407 | 0.0105 | 0.9990 | 4.0212 |
-| 32 | 17513 | 1.198 | 1.088 | 0.404 | 0.0051 | 0.9998 | 4.0682 |
-| 64 | 30097 | 1.256 | 1.098 | 0.394 | 0.0026 | 0.9999 | 4.1579 |
+| loop | ‖h‖ | **rel. perturbation** ‖h_c−h_n‖/‖h‖ | **per-loop step** ‖h_t−h_{t−1}‖/‖h_{t−1}‖ | ‖u_clean−u_noisy‖ | cos(clean,noisy) | ‖u_t−u_{t−1}‖ | cos(du_t,du_{t−1}) | val CE |
+|---|---|---|---|---|---|---|---|---|
+| 1  | 1655  | 1.585 | — | 1.328 | 0.117 | — | — | 4.2580 |
+| 2  | 2600  | 1.434 | — | 1.261 | 0.203 | 0.2671 | — | 4.0946 |
+| 4  | 4160  | 1.343 | 0.3477 | 1.159 | 0.324 | 0.0711 | 0.9674 | 4.0266 |
+| 8  | 6630  | 1.255 | 0.1134 | 1.105 | 0.385 | 0.0249 | 0.9958 | **4.0071** |
+| 16 | 10633 | 1.198 | 0.0498 | 1.085 | 0.407 | 0.0105 | 0.9990 | 4.0212 |
+| 32 | 17513 | 1.198 | 0.0250 | 1.088 | 0.404 | 0.0051 | 0.9998 | 4.0682 |
+| 64 | 30097 | 1.256 | 0.0133 | 1.098 | 0.394 | 0.0026 | 0.9999 | 4.1579 |
+
+> **Column 3 was previously headed `‖Δh‖/‖h‖`, and that label was wrong in a way that inverted its
+> meaning.** It is `pert_rel` — the separation between the *clean and h₀-perturbed* trajectories,
+> relative to the state norm — verified against `dynamics_*.json` to four decimals (1.5848, 1.2554,
+> 1.1976…). "Δh" reads naturally as the per-loop increment, and there is a separate series that means
+> exactly that (`step_rel`, now column 4). They differ by a factor of **94** at loop 64: 1.256 against
+> **0.0133**. A reader taking the old header at face value would conclude the state moves 126% of its
+> own norm every loop; it moves 1.3%.
+>
+> **Column 4 is also the better evidence for this section's own thesis.** The per-loop step falls
+> 0.3477 → 0.0133 over loops 4→64 — very close to `1/t` — which *is* the dilution claim, measured in
+> h-space, and it is consistent with the anchor-response numbers below (constant forcing bias, decaying
+> realized update). Found while trying to reconcile those two measurements; the reconciliation is that
+> one of them was never the quantity its header claimed.
 
 > **Does this transfer to the shipped 90M artifact? The shape does; the absolute numbers do not.**
 > Asked by the reviewer, and it was a fair challenge — the table above is the 46M model, and §3.5
@@ -1214,15 +1230,15 @@ finite perturbation aligned with it would read "no contraction" from a map that 
 everywhere. So the definition was measured directly, by power iteration with finite-difference JVPs
 at the actual trajectory points, ε scaled to the local state norm (`src/jacobian_spec.py`):
 
-| loop | `no_state_renorm` σ_max | `center` σ_max |
+| loop | `no_state_renorm` **ρ** | `center` **ρ** |
 |---|---|---|
 | 2 | **1.7019** | 0.8230 |
 | 8 | **1.0471** | 0.8163 |
 | 32 | **1.0047** | 0.8223 |
 | 64 | **1.0015** | 0.8040 |
 
-**The claim survives on the strict definition** — `σ_max > 1` at every loop for the winning config,
-`< 1` uniformly for `center`. But the precise form is worth correcting: σ_max **decays monotonically
+**The claim survives on the strict definition** — `ρ > 1` at every loop for the winning config,
+`< 1` uniformly for `center` (**ρ**, not σ_max; see the correction block below). But the precise form is worth correcting: σ_max **decays monotonically
 toward 1 from above** (1.70 → 1.0015), so the map is not "expanding" in any useful sense either — it
 is **asymptotically neutral**. That is more accurate than the superseded reading's "expanding map",
 and it fits the geometry exactly: a neutral map with a persistent drift is what produces linear ‖h‖
@@ -1353,7 +1369,7 @@ to converge to, because the remaining path from any loop is unbounded.
 > intervention motivated as "break the fixed point" is aimed at something that is not there.
 
 *Reproducibility, because it bounds how much the numbers carry.* An independent implementation
-(different power-iteration details and ε) reproduced the qualitative conclusion exactly — σ_max > 1
+(different power-iteration details and ε) reproduced the qualitative conclusion exactly — ρ > 1
 at every loop for `no_state_renorm`, < 1 for `center`, same monotone decay — and agreed closely on
 `no_state_renorm` (1.047 / 1.006 / 1.0015 at loops 8/32/64) while giving a lower magnitude for
 `center` (≈0.49–0.56 against 0.80–0.82 here). **Sign and ordering are robust across implementations;
@@ -2951,6 +2967,17 @@ inside noise and should not be read as terminal-only being *better or worse* on 
 
 ### 4.15 The noise floor, measured from two accidental replicates — fixed seed does *not* give replicates
 
+> **Which floor applies to an *annealed* arm is NOT established here, and the report has used both.**
+> The replicates below give a floor for a **dense** arm (0.0150) and for a **terminal-only** arm
+> (0.0541) — a 3.6× difference. An annealed arm is dense for 90% of training and terminal for 10%,
+> and no replicate of that configuration exists. This is not academic: §3.5's μ_rec=40 block judges
+> ΔCE_best against **0.0541** (where the result is unfavourable) while §8 described the μ_rec=18
+> result as "4–5× the measured floor", which is **0.0150** (where it is favourable). Both are now
+> stated explicitly at both sites rather than one each. **The honest position is that annealing's
+> −0.0710 mean is 4.7× the dense floor and 1.3× the terminal floor, and this project did not measure
+> the floor of the arm it actually ran.** The missing run is two same-config `sw90` replicates; it
+> was never launched.
+
 *Instrument:* `src/argmin_audit.py`, `src/plateau.py`, and a 30-step determinism probe. **Zero new
 training compute** — this section is entirely re-analysis of runs already stored.
 
@@ -3212,7 +3239,7 @@ is. The μ=56 failure also cost its paired dense control, because the sweep died
 which the kernel gained a per-arm OOM guard, and the μ=44 failure was then recorded in 94 seconds
 instead of killing a job.
 
-### 4.16c The angular budget: terminal-only buys *more* useful computation, not a slower spend
+### 4.16c The angular budget: supervision changes the trajectory's geometry, but not in the direction I first measured
 
 *Instrument:* `src/angular_budget.py` on the §4.14 checkpoints, both seeds. **Zero training** — one
 forward pass per checkpoint with the same per-loop state hook that produced §4.3.
@@ -3384,8 +3411,9 @@ is a configuration choice, not a measurement limit.
 > would be wrong for this section to imply otherwise. What is claimed here is narrower and is the
 > measurement, not the recipe: that the **useful-depth plateau** moves by a reproducible factor, that
 > supervision density is a **threshold at k=1 rather than a dial** (§4.16), that the effect is
-> **order-dependent** (`an_rev50`), that it **raises the angular budget ~1.4×** rather than slowing
-> traversal (§4.16c), and that its "both endpoints improve" property is **schedule-specific**. Those
+> **order-dependent** (`an_rev50`), that it **changes the trajectory's geometry in a way
+> rate-interventions do not — with the direction unresolved, since chord and arc sampling disagree in
+> sign** (§4.16c), and that its "both endpoints improve" property is **schedule-specific**. Those
 > are properties of the mechanism, measured against in-job controls at two seeds; the mechanism itself
 > may well have been used before in other settings. It is included because it follows mechanically from two measurements in §4.14 and §4.16 and
 > was cheap to test, and it is labelled here so the idea-generation credit the task grades separately
@@ -4327,7 +4355,8 @@ absolute CE and loop gain moved independently, so a lower CE is not evidence the
 That remains true as stated — but §4.17 found the first configuration where the two move *together*:
 annealing supervision density — dense throughout, then terminal-only for the final **10%** of steps —
 produced a model that beat its **in-job** dense control on CE at **both seeds tested** (−0.0811 and
-−0.0609, mean −0.0710, each 4–5× the measured floor) while simultaneously widening the useful-depth
+−0.0609, mean −0.0710 — **4–5× the CUDA *dense* replicate floor of 0.0150, but only 1.1–1.5× the
+CUDA *terminal* floor of 0.0541**) while simultaneously widening the useful-depth
 band (plateau midpoint 11.3 → 13.9, identical at both seeds) and raising loop gain ~35%. The
 `an_rev50` control makes the mechanism specific rather than mysterious: the same exposure to k = 1
 placed at the *start* of training produces no depth effect at all and the worst loss in the series,

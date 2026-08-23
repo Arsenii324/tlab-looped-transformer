@@ -1,4 +1,12 @@
-"""Does terminal-only supervision buy a larger angular BUDGET, or only a slower RATE?
+"""CHORD, not arc -- read this first.
+
+This file samples the state ONCE PER LOOP, so `B = sum ||u_t - u_(t-1)||` is a CHORD sum, not a
+path length. Sampling the same trajectory at LAYER resolution (3x per loop) reverses the sign of
+the dense-vs-terminal comparison: chord gives 1.20, arc gives 0.80 (report.md sec4.16c
+correction (c)). Neither is "the angular budget" without saying which. Any interpretive verdict
+printed below predates that correction and should not be quoted.
+
+Does terminal-only supervision buy a larger angular BUDGET, or only a slower RATE?
 
 This is a two-way discrimination on the report's central positive claim, and it needs no training.
 
