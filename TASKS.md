@@ -13,6 +13,8 @@ Last updated 2026-08-23 ~15:05.
 
 | # | task | from | state |
 |---|---|---|---|
+| T16 | **Cross-series plateau-grid audit** (Q9 unknown known): screening arms use an 8-point eval grid, 2026-08-23 DS arms use an 11-point grid. `plateau_mid` is NOT comparable between series and both appear in `report.md`. Audit whether any cross-series midpoint comparison actually occurs | self, 18:00 | **top of stack** |
+| T17 | **End-to-end read of `report.md`** — never done, and two retractions have landed since. Largest outstanding risk on the graded artifact | unknown-known #7 | not started |
 | T14 | **Learned depth gate** (`gate_scalar` +32 / `gate_state` +14,336) — restored as the best remaining candidate for a positive after correcting the 'E1 is E2's upper bound' error (E1 is a LOWER bound; a global weighting cannot reach a per-token signal) | reviewers x2 | **not launched**, local GPU busy with od arms |
 | ~~T11~~ | **Gemini's `tlab-operator-diversity` DS job errored on `ModuleNotFoundError: tokenizers`** — its `cmd` installs it but `system.log` shows the install never ran. Local run produced only `od_control`. **Decide: relaunch or drop.** Note `lora_cycle` costs +408,576 params (4.51%) and is a fixed per-branch table — if it wins, §3.5's zero-param scale argument does not cover it | Gemini session, 16:23 | **not relaunched** |
 | ~~T12~~ | **`od_lora_r2`/`od_lora_r4`/`od_depth_gate` arms never completed** — the learned depth gate (+448 params) is the one the reviewers twice called the only remaining chance at a positive | Gemini + reviewers | local GPU is free |

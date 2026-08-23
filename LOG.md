@@ -2239,3 +2239,24 @@
   README now points there first and lists what is superseded.
   od_lora_r2 landed: +0.0941 CE, band unmoved -- empirically confirms 4.20's retraction (the arm was
   built to fix an artifact).
+2026-08-23 18:00 — twelve reviewer questions answered (reviewer_answers/17). Highlights:
+  Q1 CAUGHT A REAL ERROR: token-keyed result is n=1 and 3.5 stated it as a RECOMMENDATION -- the
+    same small-n failure withdrawn 6h earlier, repeated within 2h on a larger effect. Downgraded to
+    an explicit "LEAD, NOT A RECOMMENDATION" block naming the repetition. Measured seed spread on
+    this class of paired difference is sd=0.0640; -0.2208 is 3.4x that, hence a strong lead, still 1 draw.
+  Q4 GENERATION RUN (never done before): recognisably English, grammatical, prompt-anchored, greedy
+    repetition as expected. No tokenizer/decoder defect. Into 6.0a.
+  Q5 SAMPLED 3 of agy job B's 10: Finding 3 CONFIRMED and it is a live confound -- raw/final_only
+    readout arms clip 100% of steps (raw gnorms 26/85) while the norm control never clips (0.84).
+    The intervention CAUSES the clipping, so 4.6b's readout conclusions are "that readout under
+    saturating clipping". Written into 4.6b. Finding 10 confirmed but already known.
+  Q6 CITATION AUDIT (substitute for the agy job that never ran): 26 real citations, 15 verifiable
+    from tarball, 11 not on disk and ALL 11 already flagged second-hand within +/-6 lines.
+    Think-at-Hard's 73% RE-VERIFIED verbatim (3_method.tex:206), closing 6.0 row 22.
+  Q7 NEITHER PUSH NOR HF UPLOAD HAS EVER RUN. No git remote configured. Fresh-clone dry run passed
+    at 11:00 but the tree changed since -- must re-run before shipping.
+  Q9 UNKNOWN KNOWN SURFACED: the screening series uses an 8-point eval grid, today's DS series uses
+    an 11-point grid. Within-experiment comparisons safe; plateau_mid is NOT comparable between the
+    two series, and both appear in the report. Cross-series midpoint audit is now top of the stack.
+  Q10 most likely failure mode: the report reads as a methodology audit rather than an answer to the
+    brief; its most defensible claim is a negative and sec1 is empty.
