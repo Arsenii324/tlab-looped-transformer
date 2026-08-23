@@ -15,11 +15,11 @@ Last updated 2026-08-23 ~15:05.
 |---|---|---|---|
 | T10 | **WITHDRAWN headline: sw90's CE advantage over dense did not survive n=4** (seed 2 reversed: +0.0482; n=4 mean -0.0460 inside the 0.0541 floor). Fixed at the headline table + sec3.5's primary claim. **~13 other mentions of '-0.0811, -0.0609 / both seeds' elsewhere in report.md are now stale** and need the same correction propagated | Kaggle tlab-seed-extension, harvested 15:37 | **2 of ~15 locations fixed**; rest owed |
 | T1 | **Read the remaining project `.md`s in full.** Still unread end-to-end: `LOG.md` (2098), `PLAN.md` (246), `BRIEFING.md` (366), `RUNS.md` (299+), `STATE_FOR_REVIEWER.md` (259), `REVIEW_NOTES.md` (188), `DECISIONS.md`, `METHODS.md`, `INTERVENTIONS.md`, `README.md`, `HANDOFF.md`, and the 3 paper-summary `.md`s | "Read all .md's that you expect to have in context, in full" | **not started.** I read `QUEUE.md`, `DATASPHERE_NOTES.md`, the task statement, `anthropic-prompting.md`, `compute-yandex-datasphere.md` + the `.py` files I touched |
-| T2 | **Harvest `tlab-deep-full`** and fill §4.17's deep half | standing | EXECUTING, step 8100/19531. Read against the pre-registration in `RUNS.md` 13:30 — it is **sw75**, which §3.5 narrowed away from |
+| T2 | **Harvest `tlab-deep-full`** and fill §4.17's deep half | standing | EXECUTING, step 11800/19531 (60%) as of 15:45; plan is to let it finish (~16:45-17:00) rather than early-harvest, see reviewer_answers/13 sec6. Read against the pre-registration in `RUNS.md` 13:30 — it is **sw75**, which §3.5 narrowed away from |
 | T3 | **Harvest `tlab-anchor-tokenkey`** — §4.18's falsifier (sw90 at k=5/3/2) + token-vs-fraction at 10M | "we should still not be dropping testing ideas" | EXECUTING |
-| T4 | **Harvest Kaggle `tlab-seed-extension`** — (sw90 − dense) at seeds 2,3 → n=4 paired estimates | "Do you not want to start any local and/or Kaggle runs?" | pushed |
+~~T4~~ Kaggle `tlab-seed-extension` harvested 15:37 -> n=4 result WITHDRAWS the headline (see T10).
 | T7 | **§8 writing items still owed**: W1 (MLA × LLA), W2 (LoopMTP aggregation conflict), W4 (STARS Pre-Sandwich), W5 (decomposition tables for remaining §4 sections) | reviewer, logged in QUEUE | not started |
-| T8 | **Write the degenerate-fixed-point result into the report** (min cross-layer cos → 1.0000 by loop 32) | measured today, reviewer-flagged | measured, **not yet in `report.md`** |
+~~T8~~ done, §4.20.
 
 ## Blocked on the user
 
