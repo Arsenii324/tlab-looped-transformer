@@ -148,3 +148,36 @@ several numbers did.**
 - **Diversity's ~0.044 is at the edge of the design's resolution**, cross-job, one seed.
 - **Everything tonight is 2.5–3.5M tokens** against this project's own 12×-shrinkage regularity. The
   Kaggle 12M arm is the only scale check and it is one arm, one seed.
+
+---
+
+## 8. The steer on the plan this produces, and where it has been propagated
+
+**This result changes the plan, not just the report**, so the change is stated rather than left
+implicit.
+
+**(a) One queued ablation is now unnecessary and is dequeued.** The independent pass had proposed
+running the rank probe on a *larger weight-tied checkpoint* to decide tying-vs-smallness — a download,
+an architecture port, and a confounded comparison (a larger model differs in more than size). **Holding
+scale fixed and varying tying answers it outright**, costs one forward pass, and confounds nothing.
+Dequeued with the reason recorded, not silently dropped.
+
+**(b) `dg_norm`'s joint test gets sharper, and its registration is unchanged.** If depth keys are
+rank-1.6 *because of tying*, then a **working** scale-invariant gate should find nothing to
+discriminate between — that is now the prediction with a mechanism behind it rather than an
+extrapolation from one model. The 19:22 registration already covers both cells and is **not** amended:
+a gain still means §4.7e is wrong, and the bar for that is unchanged.
+
+**(c) The report's spine acquires a second load-bearing claim.** It was *saturation without
+convergence*. It is now that **plus**: *weight tying buys parameter efficiency and pays for it in depth
+distinguishability, measured at 11.7× against an untied stack at identical scale.* The second is
+arguably more useful to a reader, because it says something about the architecture class rather than
+about this checkpoint — and unlike most of this report, **it needs no seeds and no training.**
+
+**(d) Propagated to:** `submission/SCALE.md` §5, which previously read *"the scale question this
+project cannot answer"* and proposed the larger-checkpoint route — now rewritten with the measurement
+and the three scaling consequences; `report.md` §4.7e; `LOG.md`; and this file.
+
+*Editing a sent reply is against this project's own rule — replies are numbered and corrections get a
+new file — and it is done here once, by explicit exception, because the steer belongs beside the
+result that caused it rather than in a document you would have to read afterwards.*

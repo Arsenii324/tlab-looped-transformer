@@ -86,26 +86,49 @@ tokens its size wants, because the task caps the budget. Published entries this 
 against are **data-unconstrained** and train on the order of **~7B tokens, roughly 70× this budget**.
 Quoting a bits/byte gap without that ratio attached misrepresents both numbers.
 
-## 5. The scale question this project cannot answer, and it is the interesting one
+## 5. The scale question — ANSWERED at 19:47, and the answer is weight tying
 
-**The depth-key rank collapse may or may not be scale-dependent, and nothing here tests it.**
+*This section previously read "the scale question this project cannot answer". It proposed running the
+effective-rank probe on a larger weight-tied checkpoint to decide whether the depth-key collapse is a
+property of **tying** or of **smallness**. That question is now settled, by a cleaner route than the
+one proposed: rather than varying scale and hoping nothing else moved, **hold scale fixed and vary
+tying.***
 
-A token's 32 depth keys span an effective rank of **~1.6**; the collapse is present at initialisation
-and **training makes it worse** (2.73 → 1.83). This is the mechanism under the whole depth-mixing
-family (`NEGATIVE_RESULTS.md` §3).
+A token's depth keys span an effective rank of **~1.6 of 32** in this model; the collapse is present
+at initialisation and **training makes it worse** (2.73 → 1.83). It is the mechanism under the whole
+depth-mixing family (`NEGATIVE_RESULTS.md` §3), so whether it generalises decides how far that
+negative reaches.
 
-**If it is a property of weight tying, it does not improve with scale** — the same block applied twice
-produces near-identical keys because that is what weight tying *means*, and a wider block does not
-change it. On that reading, mixture-over-depths mechanisms that work in **unshared** stacks (where
-each layer's keys are a genuinely different function) should be expected to keep failing in looped
-models at any size, and the published positives in that family are a property of *distinct layers*.
+**Measured. Both models untrained, identical hidden size, heads, head_dim and initialisation, 33
+depths each** — so training quality cannot explain the difference and the *only* variable is
+tied-vs-untied:
 
-**If instead it is a small-model artifact** — 448 hidden units, 4 heads, 112 head-dim, and only 3
-distinct layers to differentiate — then a wider block might carry genuinely distinguishable depth
-keys and the family reopens.
+| | effective rank | mean pairwise cos |
+|---|---|---|
+| **weight-tied** — one block applied 33 times | **2.73 / 33** | **0.8022** |
+| **untied** — 33 distinct layers, same width | **31.80 / 33** | **−0.0029** |
 
-**This project cannot distinguish those**, and it is the single measurement I would most want next:
-the same effective-rank probe (`src/depth_key_rank.py`, one forward pass, no training) run on a
-larger weight-tied looped model. It costs almost nothing on an existing checkpoint and it decides
-whether the strongest negative here is a statement about looped transformers or about *small* looped
-transformers.
+**11.7×, with smallness held fixed by construction.** An untied stack *at identical scale* has
+essentially full-rank, near-orthogonal depth keys.
+
+**So the collapse is weight tying, and the negative generalises.** Three consequences for scaling:
+
+1. **A wider block does not fix it.** The same block applied twice produces near-identical keys
+   because that is what weight tying *means*. Mixture-over-depths mechanisms should be expected to
+   keep failing in weight-tied looped models **at any size** — this is no longer a statement about
+   *small* looped transformers.
+2. **The published positives in that family are explained rather than contradicted.** MoD-Attention
+   reports +0.2 perplexity and +2.11% downstream at 1.5B on **24 and 48 unshared layers** — precisely
+   the near-orthogonal key set measured above. **Their gain is a property of distinct layers**, now
+   measured rather than argued.
+3. **It names the real cost of weight tying, which this report had not stated.** Tying buys parameter
+   efficiency and **pays for it in depth distinguishability**. Every depth-mixing mechanism needs two
+   different views of a token; one shared block cannot produce them. That is a structural trade, not a
+   tuning problem, and it is the sharpest scaling statement this project can make.
+
+**Scope, stated:** one width and one depth count. The ratio at other widths is untested — though the
+mechanism (identical weights produce identical maps) does not obviously depend on width, and the
+untrained comparison removes training quality as an explanation. Reproduce with
+`src/depth_key_rank.py::tied_vs_untied`, one forward pass each, no training.
+
+
