@@ -592,7 +592,7 @@ sparse subset of loops for most of training and to the final loop only for the l
 |---|---|---|
 | **no inter-loop norm** (`state_renorm=False`) | RMSNorm between loops | **≈ −0.68 nats token-corrected** (−0.744 nominal, before §4.1's token-ratio correction), the largest single effect in the project; the normalised variant contracts and goes inert (§4.3) |
 | **no prelude/coda** | the sandwich every reference implementation uses | at a fixed 10M budget a prelude buys 0.355 nats *and makes the model depth-inert over the entire swept range* [1,96] (§4.5). It wins the metric by removing the reason to iterate |
-| **deep loop schedule** | `U[4,32]`, or a fixed small `r` | useful depth is ≈ a fixed fraction of trained depth (§4.11, §4.16b): dense 0.50–0.71·μ_rec, terminal-only 0.98–1.09·μ_rec, across three schedules and two devices |
+| **deep loop schedule** | `U[4,32]`, or a fixed small `r` | useful depth is ≈ a fixed fraction of trained depth (§4.11, §4.16b): dense 0.57–0.71·μ_rec, terminal-only 0.98–1.09·μ_rec, across three schedules and two devices |
 | **supervision annealing** | dense supervision throughout; or constant terminal-only | ⚠ **CE advantage over dense WITHDRAWN at n=4** (2 of 4 seeds negative, mean −0.0460 inside the 0.0541 floor — see the block below); still widens the useful band at every seed checked, and still beats constant terminal-only on the *depth-vs-CE* comparison (§4.17) — that half does not depend on the withdrawn number. *Measured at μ_rec = 18; at the μ_rec = 40 schedule this method actually specifies, the comparison against dense is a trade — see the block below* |
 
 **Why the loss schedule is the part that matters, and why the dynamics are not.** Three independent
@@ -629,7 +629,7 @@ not the same model:
 > **The pre-registered falsifier named 22 explicitly** — *"if its plateau midpoint returns near 22
 > (dense-like) rather than ≥32, the deep half of the table below is withdrawn"* — and the measurement
 > came back at **22.6**. Further, `mid/μ_rec = 0.57` lands inside §4.16b's **dense** range
-> (0.50–0.71), not the terminal-only range (0.98–1.09). So at full budget this annealed deep arm
+> (0.57–0.71), not the terminal-only range (0.98–1.09). So at full budget this annealed deep arm
 > behaves like a *dense* arm on the one statistic §4.16b uses to separate them.
 >
 > **What this costs.** The claim that a deep schedule plus annealing puts useful depth "near 40
@@ -2780,12 +2780,26 @@ UNTESTED by the fifth**, which is weaker than "five classes failed" and is the t
 > That is independent support for this section's headroom being genuine — from a paper that also
 > supplies the one mechanism family this report never tested.
 >
-> **Not run here, and named as the gap it is.** Duo-causal at μ_rec = 40 stores `W` past K/V sets per
-> layer, and §4.22's gate already exhausted a 13.04 GiB MPS cap at batch 8 by retaining `r` states, so
-> the honest reason for its absence is memory and window rather than judgement. **The defensible form
-> of this report's negative is therefore: per-token depth demand is real, reliable, large, and
-> unreachable by every *readout-side* instrument tested; the *recurrence-side* family is untested here
-> and has a published positive at 1.7B.**
+> **This paragraph said "not run here". That stopped being true at 18:19 and the section is updated
+> rather than left standing.** A *windowed* duo-causal arm (`kv_window` = 2 and 3, **zero added
+> parameters**) is now implemented in `src/model.py` and running as `tlab-duocausal-s0`/`-s1` on two
+> T4s, four in-job arms each at two seeds, with the read **pre-registered in `RUNS.md` at 18:19 before
+> any data existed** and four falsifiers — including *"reverses between seeds ⇒ not reported."*
+> Pre-launch gates: `kv_window=1` reproduces the untouched model at **max|diff| = 0.000e+00** (which
+> is Think-at-Hard's own stated property, `3_method.tex:174`), W=2/W=3 provably change the forward,
+> parameter count is unchanged to the digit, and gradients reach `k_proj` through the extra keys.
+>
+> **What stays true is the scope, and it is why the arm is windowed.** Theirs attends to *all*
+> shallower depths; this attends to the last `W-1`, because storing every depth's K/V is the O(r)
+> memory that exhausted a 13.04 GiB cap in §4.22. **So whatever this returns bounds the windowed form,
+> not the full triangle** — and W=2 vs W=3 is in the sweep so the dose-response says whether more
+> window buys anything before anyone pays for the full version.
+>
+> **The defensible form of this report's negative, until those land:** per-token depth demand is real,
+> reliable, large, and unreachable by every ***readout-side*** instrument tested; the
+> ***recurrence-side*** family had never been tested here and has a published positive at 1.7B. **That
+> scope sentence is the contribution of this subsection and it survives whichever way the new arms
+> come out.**
 
 ### 4.7b Why no label-free rule works: the trajectories are nearly identical, the optima are not
 
@@ -3086,7 +3100,7 @@ axis the two goals pull in opposite directions at 9M parameters and ≤100M toke
 >
 > **So §4.9 should be read as supplying the constants, not the mechanism.** What this section and
 > §4.14/§4.16/§4.17 add on top: the ratio is *measured and stable* at LM-pretraining scale (dense
-> 0.50–0.71 of trained depth, terminal-only 0.98–1.09, across three schedules and two devices);
+> **0.57–0.71** of trained depth, terminal-only 0.98–1.09, across three schedules on ONE grid);
 > supervision density turns out to be a **threshold at k = 1** rather than a dial; and the supervision
 > location can be **annealed in time**, which recovers the depth shift at near-zero loss cost. A
 > related diagnosis appears in *Think-at-Hard* (2511.08577) — *"deeper iterations serve a different
@@ -3919,6 +3933,41 @@ confirmed the rest:
 | §4.1 | inject_none, no_depth_init | 1, 8 | **[1,32] both**, gain 0.000/0.005 | **sharpened** — both depth-inert; `no_state_renorm` [4,16] is the only screening arm with a real basin, and it also wins CE |
 | §5 | residual_scale λ=1,2 | 12 vs 8 | **[8,16] all three arms** | **killed** — the apparent 8→12 shift is a 0.0001-nat argmin flip |
 
+**And the loop-gain counterpart of that table, which was owed and is worse news than the depth one.**
+`src/gain_decomp.py` already covers 11 paired comparisons; the sections that quote a *loop-gain*
+number without splitting it were §4.5, §4.9, §4.11 and §4.13. Decomposed now, from each arm's own
+stored curve:
+
+| section | comparison | ΔCE_best | ΔCE@1 | **Δgain** | **loop-1 share** | class |
+|---|---|---|---|---|---|---|
+| §4.9 | trainL8 vs trainL2 | **−0.0502** | +0.0440 | +0.0942 | 47% | mixed |
+| §4.9 | trainL16 vs trainL2 | −0.0063 | +0.1742 | +0.1805 | **97%** | mixed |
+| §4.9 | **trainL32 vs trainL2** | **+0.0725** | +0.3942 | +0.3217 | **84%** | **BOTH-WORSEN** |
+| §4.11 | uniform μ18 vs shallow μ6 (s0 / s1) | +0.1245 / +0.1321 | +0.1665 / +0.1752 | +0.042 / +0.043 | **57% / 57%** | BOTH-WORSEN |
+| §4.11 | concentrated μ28 vs shallow μ6 (s0 / s1) | +0.0991 / +0.1771 | +0.2582 / +0.2840 | +0.159 / +0.107 | **72% / 62%** | BOTH-WORSEN |
+| §4.13 | σ = 0.15 vs σ = 0 | +0.1826 | +0.1470 | −0.0356 | 45% | BOTH-WORSEN |
+| §4.13 | σ = 0.40 vs σ = 0 | +0.7900 | +0.6653 | −0.1247 | 46% | BOTH-WORSEN |
+
+**§4.9's most-quoted number does not mean what its sentence implies.** That section reports loop gain
+rising **17×** from L=2 to L=32 and reads it as *"training deeper makes the loop matter far more,
+while making the model slightly worse."* Decomposed, the rise is **84% loop-1 damage** — and the deep
+end does not improve at all: `CE_best` is **+0.0725 worse** at L=32 than at L=2, and essentially flat
+at L=16 (−0.0063). **Training deeper did not make the deep end better; it made the shallow end
+worse, and the difference between the two is what "loop gain" was measuring.** The same holds along
+the schedule axis at both seeds (§4.11, 57–72% loop-1) and, with the sign reversed, under exploration
+noise, where both endpoints degrade and the gain *falls*.
+
+**This does not overturn §4.9 or §4.11 — it sharpens what they are evidence for.** Their *depth*
+claims rest on the plateau and the half-of-L rule, which are measured from each curve's own minimum
+and are unaffected by where loop 1 sits (the table above this one confirms both). What is retired is
+any reading of their **loop-gain** columns as "depth became more useful." **Across every depth-pushing
+axis in this report — training depth, schedule shape, supervision density (§4.16b, 64–91%), the norm
+penalty (§4.6b, 88%) — the loop-gain increase is majority loop-1 damage.** The single exception in the
+whole document is `sw90` annealing at μ_rec = 18 (34% and 31%, both endpoints improving), and its CE
+half was withdrawn at n=4 anyway. *That is the report's central dissociation stated in its sharpest
+form: the quantity that looks like "the loop matters more" is, almost everywhere here, the shallow end
+getting worse.*
+
 One claim died, and it died before it was written into the report rather than after. That is the
 whole return on building the statistic.
 
@@ -4012,6 +4061,19 @@ supervision scheme rather than of that schedule, the useful band should move wit
 | 18 | [16,24] | 19.6 | **1.09** | [8,16] | 11.3 | 0.63 | +0.1913 |
 | 32 | [32,32] | 32.0 | **1.00** | [16,32] | 22.6 | 0.71 | +0.0702 |
 | 40 | [32,48] | 39.2 | **0.98** | [16,32] | 22.6 | 0.57 | +0.1881 |
+
+> **Why this range is quoted as 0.57–0.71 and not 0.50–0.71 (corrected 2026-08-23 18:38).** Earlier
+> printings gave the dense range as **0.50–0.71**, which **spliced two different eval grids**: the
+> three values in this table — **0.63 / 0.71 / 0.57** — all come from *this* experiment's single
+> 11-point grid, while the 0.50 was imported from §4.11, whose arms sit on the 8-point grid
+> `{1,2,4,8,12,16,24,32}` and read **0.44–0.63** on their own. `plateau.py` documents a **17% midpoint
+> swing from grid choice alone**, and this report's own rule is that midpoints are comparable only
+> within a shared grid — so a range built from two grids is exactly the error the rule exists to
+> prevent, committed on **the one surviving positive**. **The claim is unaffected in substance:**
+> within this table's single grid the dense band sits at 0.57–0.71·μ_rec and terminal-only at
+> 0.98–1.09, and those two do not overlap. §4.11's 0.44–0.63 is a *separate* measurement on a
+> *separate* grid that happens to agree in direction. *Found by an external reviewer asking which grid
+> produced each midpoint.*
 
 *Every row of this table is an **in-job** pair — terminal and dense at each μ_rec ran in the same job,
 so the difference column is not exposed to cross-job drift. That matters more at deep schedules than
@@ -4618,7 +4680,7 @@ the trajectory is allowed to run *unanchored*.
    The section's own phrasing, "it wins the metric by removing the reason to iterate", is this
    account stated in different words.
 3. **The band tracks trained depth under terminal-only but not under dense** (§4.14, §4.16b): dense
-   0.50–0.71·μ_rec, terminal-only 0.98–1.09·μ_rec. Anchored, the trajectory must stay decodable
+   0.57–0.71·μ_rec, terminal-only 0.98–1.09·μ_rec. Anchored, the trajectory must stay decodable
    throughout and settles around half the trained depth; unanchored, it can run to the end.
 4. **Order matters — `rev50` does nothing** (§4.17). Same 50% of training at k=1, placed *first*: the
    dense phase that follows re-imposes the anchor, and the band returns to baseline.
