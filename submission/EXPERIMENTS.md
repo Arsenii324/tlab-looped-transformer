@@ -22,7 +22,7 @@ column down a source file, never across one.**
 
 ## Coverage — checked mechanically, and it is not perfect
 
-Of the 135 arms, **79 appear in `report.md` by their internal identifier and 117 by their best-CE value; 128 by one or the other.** **7 appear by neither:**
+Of the 137 arms, **81 appear in `report.md` by their internal identifier and 119 by their best-CE value; 130 by one or the other.** **7 appear by neither:**
 
 | arm | best CE | why it is absent, and whether that is a defect |
 |---|---|---|
@@ -38,7 +38,7 @@ Of the 135 arms, **79 appear in `report.md` by their internal identifier and 117
 
 ## The inventory
 
-Total arms with a final validation curve: **135**
+Total arms with a final validation curve: **137**
 
 | # | arm | source | dev | tokens | loops | k | CE@1 | best CE | @r | band | mid | grid |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -118,62 +118,64 @@ Total arms with a final validation curve: **135**
 | 74 | `kl_k3` | k_ladder_results | cuda | 2.50M | 4-32 | 3 | 5.4899 | **5.3877** | 12 | [8,20] | 12.6 | 11 |
 | 75 | `kl_k5` | k_ladder_results | cuda | 2.50M | 4-32 | 5 | 5.4690 | **5.3576** | 8 | [8,16] | 11.3 | 11 |
 | 76 | `kl_k8` | k_ladder_results | cuda | 2.50M | 4-32 | 8 | 5.3756 | **5.2819** | 8 | [8,16] | 11.3 | 11 |
-| 77 | `kg_od_control_s1` | kg_rank8_results | cuda | 2.50M | 4-32 | 5 | 5.5236 | **5.4327** | 12 | [8,20] | 12.6 | 11 |
-| 78 | `kg_od_lora_r8_s1` | kg_rank8_results | cuda | 2.50M | 4-32 | 5 | 5.4536 | **5.3593** | 12 | [8,20] | 12.6 | 11 |
-| 79 | `kg_od_control_sw90` | kg_sw90_results | cuda | 2.50M | 4-32 | 5 | 5.6006 | **5.4821** | 16 | [8,24] | 13.9 | 11 |
-| 80 | `kg_od_lora_r4_sw90` | kg_sw90_results | cuda | 2.50M | 4-32 | 5 | 5.4969 | **5.3649** | 16 | [8,24] | 13.9 | 11 |
-| 81 | `od_control` | operator_diversity_results | mps | 2.50M | 4-32 | 5 | 5.4375 | **5.3391** | 12 | [8,16] | 11.3 | 8 |
-| 82 | `od_depth_gate` | operator_diversity_results | mps | 1.56M | 4-32 | 5 | 5.7398 | **5.6518** | 12 | [8,16] | 11.3 | 8 |
-| 83 | `od_lora_r2` | operator_diversity_results | mps | 2.50M | 4-32 | 5 | 5.5357 | **5.4332** | 12 | [8,16] | 11.3 | 8 |
-| 84 | `od_lora_r4` | operator_diversity_results | mps | 2.50M | 4-32 | 5 | 5.4031 | **5.2877** | 12 | [8,16] | 11.3 | 8 |
-| 85 | `rs_depth_init_s0` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.4481 | **5.3517** | 8 | [8,16] | 11.3 | 8 |
-| 86 | `rs_depth_init_s1` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.5853 | **5.5049** | 8 | [4,16] | 8.0 | 8 |
-| 87 | `rs_lambda1_s0` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.4840 | **5.3743** | 12 | [8,16] | 11.3 | 8 |
-| 88 | `rs_lambda1_s1` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.5336 | **5.4387** | 8 | [8,16] | 11.3 | 8 |
-| 89 | `rs_lambda2_s0` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.4950 | **5.3870** | 12 | [8,16] | 11.3 | 8 |
-| 90 | `rs_lambda2_s1` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.5737 | **5.4906** | 8 | [4,16] | 8.0 | 8 |
-| 91 | `sand_P0R2C1` | sandwich_results | mps | 1.19M | 6-48 | 5 | 5.9537 | **5.9038** | 24 | [8,32] | 16.0 | 8 |
-| 92 | `sand_P0R3C0` | sandwich_results | mps | 1.19M | 4-32 | 5 | 6.0213 | **5.9654** | 12 | [8,24] | 13.9 | 8 |
-| 93 | `sand_P1R1C1` | sandwich_results | mps | 1.19M | 12-96 | 5 | 5.6203 | **5.5926** | 4 | [2,32] | 8.0 | 8 |
-| 94 | `sand_P1R2C0` | sandwich_results | mps | 1.19M | 6-48 | 5 | 5.5886 | **5.5805** | 12 | [1,32] | 5.7 | 8 |
-| 95 | `sc_clock` | scale_clock_results | mps | 0.31M | 4-32 | 5 | 6.8802 | **6.7845** | 8 | [4,16] | 8.0 | 8 |
-| 96 | `sc_clock_sw90` | scale_clock_results | mps | 0.31M | 4-32 | 5 | 7.0758 | **7.0170** | 12 | [4,24] | 9.8 | 8 |
-| 97 | `sc_ctrl` | scale_clock_results | mps | 2.50M | 4-32 | 5 | 5.5129 | **5.4202** | 8 | [8,16] | 11.3 | 8 |
-| 98 | `sc_control_norm_s0` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.4692 | **5.3636** | 12 | [8,16] | 11.3 | 8 |
-| 99 | `sc_control_norm_s1` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.6548 | **5.5789** | 8 | [4,16] | 8.0 | 8 |
-| 100 | `sc_final_only_s0` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.4824 | **5.2654** | 8 | [4,8] | 5.7 | 8 |
-| 101 | `sc_final_only_s1` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.2629 | **5.0624** | 8 | [8,8] | 8.0 | 8 |
-| 102 | `sc_penalty_s0` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.2497 | **4.9975** | 8 | [8,12] | 9.8 | 8 |
-| 103 | `sc_penalty_s1` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.3561 | **5.1165** | 8 | [8,12] | 9.8 | 8 |
-| 104 | `sc_raw_s0` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.5594 | **5.3380** | 8 | [4,8] | 5.7 | 8 |
-| 105 | `sc_raw_s1` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.7419 | **5.5363** | 4 | [4,8] | 5.7 | 8 |
-| 106 | `center` | screening_results | mps | 0.89M | 4-32 | 5 | 6.7899 | **6.7723** | 4 | [4,32] | 11.3 | 8 |
-| 107 | `fixed_loops16` | screening_results | mps | 1.19M | 16-16 | 5 | 6.7003 | **6.6440** | 4 | [4,8] | 5.7 | 8 |
-| 108 | `inject_concat` | screening_results | mps | 0.89M | 4-32 | 5 | 6.7967 | **6.7565** | 2 | [2,32] | 8.0 | 8 |
-| 109 | `inject_none` | screening_results | mps | 0.99M | 4-32 | 5 | 6.9513 | **6.9513** | 1 | [1,32] | 5.7 | 8 |
-| 110 | `no_depth_init` | screening_results | mps | 0.99M | 4-32 | 5 | 6.9190 | **6.9139** | 8 | [1,32] | 5.7 | 8 |
-| 111 | `no_state_renorm` | screening_results | mps | 0.99M | 4-32 | 5 | 6.0805 | **6.0281** | 8 | [4,16] | 8.0 | 8 |
-| 112 | `truncate8` | screening_results | mps | 1.19M | 4-32 | 5 | 6.8291 | **6.7567** | 4 | [4,32] | 11.3 | 8 |
-| 113 | `center_seed1` | second_seed_results | mps | 0.99M | 4-32 | 5 | 6.7519 | **6.7486** | 8 | [1,32] | 5.7 | 8 |
-| 114 | `no_state_renorm_seed1` | second_seed_results | mps | 0.79M | 4-32 | 5 | 6.2782 | **6.2521** | 8 | [4,16] | 8.0 | 8 |
-| 115 | `sd_dense_k5_s0` | supervision_depth_results | mps | 2.50M | 4-32 | 5 | 5.5611 | **5.4527** | 8 | [8,16] | 11.3 | 8 |
-| 116 | `sd_dense_k5_s1` | supervision_depth_results | mps | 2.50M | 4-32 | 5 | 5.5369 | **5.4387** | 8 | [8,16] | 11.3 | 8 |
-| 117 | `sd_terminal_k1_s0` | supervision_depth_results | mps | 2.50M | 4-32 | 1 | 5.7128 | **5.4699** | 16 | [12,24] | 17.0 | 8 |
-| 118 | `sd_terminal_k1_s1` | supervision_depth_results | mps | 2.50M | 4-32 | 1 | 5.7552 | **5.4843** | 16 | [12,24] | 17.0 | 8 |
-| 119 | `sup_concentrated24_32_s0` | supervision_results | mps | 2.50M | 24-32 | 5 | 5.6616 | **5.4584** | 16 | [12,24] | 17.0 | 8 |
-| 120 | `sup_concentrated24_32_s1` | supervision_results | mps | 2.50M | 24-32 | 5 | 5.7089 | **5.5497** | 16 | [12,24] | 17.0 | 8 |
-| 121 | `sup_shallow4_8_s0` | supervision_results | mps | 2.50M | 4-8 | 5 | 5.4034 | **5.3592** | 4 | [2,4] | 2.8 | 8 |
-| 122 | `sup_shallow4_8_s1` | supervision_results | mps | 2.50M | 4-8 | 5 | 5.4249 | **5.3726** | 4 | [4,4] | 4.0 | 8 |
-| 123 | `sup_uniform4_32_s0` | supervision_results | mps | 2.50M | 4-32 | 5 | 5.5699 | **5.4838** | 8 | [4,16] | 8.0 | 8 |
-| 124 | `sup_uniform4_32_s1` | supervision_results | mps | 2.50M | 4-32 | 5 | 5.6001 | **5.5047** | 12 | [8,16] | 11.3 | 8 |
-| 125 | `t1_mu40_term` | term_seed1_mu40_results | cuda | 2.50M | 32-48 | 1 | 6.5690 | **5.4901** | 40 | [40,48] | 43.8 | 13 |
-| 126 | `trainL16` | train_at_L_results | cuda | 10.00M | 16-16 | 5 | 4.6177 | **4.4166** | 8 | [8,8] | 8.0 | 8 |
-| 127 | `trainL2` | train_at_L_results | cuda | 10.00M | 2-2 | 5 | 4.4435 | **4.4229** | 2 | [2,2] | 2.0 | 8 |
-| 128 | `trainL32` | train_at_L_results | cuda | 10.00M | 32-32 | 5 | 4.8377 | **4.4954** | 16 | [16,16] | 16.0 | 8 |
-| 129 | `trainL4` | train_at_L_results | cuda | 10.00M | 4-4 | 5 | 4.4833 | **4.4297** | 4 | [2,4] | 2.8 | 8 |
-| 130 | `trainL8` | train_at_L_results | cuda | 10.00M | 8-8 | 5 | 4.4875 | **4.3727** | 4 | [4,4] | 4.0 | 8 |
-| 131 | `trainL16_s1` | train_at_L_seed1_results | cuda | 10.00M | 16-16 | 5 | 4.8421 | **4.6202** | 8 | [8,16] | 11.3 | 8 |
-| 132 | `trainL2_s1` | train_at_L_seed1_results | cuda | 10.00M | 2-2 | 5 | 4.4832 | **4.4566** | 2 | [2,2] | 2.0 | 8 |
-| 133 | `trainL32_s1` | train_at_L_seed1_results | cuda | 10.00M | 32-32 | 5 | 4.9496 | **4.6055** | 16 | [16,32] | 22.6 | 8 |
-| 134 | `trainL4_s1` | train_at_L_seed1_results | cuda | 10.00M | 4-4 | 5 | 4.5449 | **4.4772** | 4 | [2,4] | 2.8 | 8 |
-| 135 | `trainL8_s1` | train_at_L_seed1_results | cuda | 10.00M | 8-8 | 5 | 4.6951 | **4.5601** | 4 | [4,8] | 5.7 | 8 |
+| 77 | `kg_lora_control` | kg_lorascale_results | cuda | 12.00M | 4-32 | 5 | 4.5802 | **4.3895** | 12 | [8,16] | 11.3 | 11 |
+| 78 | `kg_lora_r4` | kg_lorascale_results | cuda | 12.00M | 4-32 | 5 | 4.6077 | **4.3971** | 12 | [8,16] | 11.3 | 11 |
+| 79 | `kg_od_control_s1` | kg_rank8_results | cuda | 2.50M | 4-32 | 5 | 5.5236 | **5.4327** | 12 | [8,20] | 12.6 | 11 |
+| 80 | `kg_od_lora_r8_s1` | kg_rank8_results | cuda | 2.50M | 4-32 | 5 | 5.4536 | **5.3593** | 12 | [8,20] | 12.6 | 11 |
+| 81 | `kg_od_control_sw90` | kg_sw90_results | cuda | 2.50M | 4-32 | 5 | 5.6006 | **5.4821** | 16 | [8,24] | 13.9 | 11 |
+| 82 | `kg_od_lora_r4_sw90` | kg_sw90_results | cuda | 2.50M | 4-32 | 5 | 5.4969 | **5.3649** | 16 | [8,24] | 13.9 | 11 |
+| 83 | `od_control` | operator_diversity_results | mps | 2.50M | 4-32 | 5 | 5.4375 | **5.3391** | 12 | [8,16] | 11.3 | 8 |
+| 84 | `od_depth_gate` | operator_diversity_results | mps | 1.56M | 4-32 | 5 | 5.7398 | **5.6518** | 12 | [8,16] | 11.3 | 8 |
+| 85 | `od_lora_r2` | operator_diversity_results | mps | 2.50M | 4-32 | 5 | 5.5357 | **5.4332** | 12 | [8,16] | 11.3 | 8 |
+| 86 | `od_lora_r4` | operator_diversity_results | mps | 2.50M | 4-32 | 5 | 5.4031 | **5.2877** | 12 | [8,16] | 11.3 | 8 |
+| 87 | `rs_depth_init_s0` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.4481 | **5.3517** | 8 | [8,16] | 11.3 | 8 |
+| 88 | `rs_depth_init_s1` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.5853 | **5.5049** | 8 | [4,16] | 8.0 | 8 |
+| 89 | `rs_lambda1_s0` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.4840 | **5.3743** | 12 | [8,16] | 11.3 | 8 |
+| 90 | `rs_lambda1_s1` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.5336 | **5.4387** | 8 | [8,16] | 11.3 | 8 |
+| 91 | `rs_lambda2_s0` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.4950 | **5.3870** | 12 | [8,16] | 11.3 | 8 |
+| 92 | `rs_lambda2_s1` | residual_scale_results | mps | 2.50M | 4-32 | 5 | 5.5737 | **5.4906** | 8 | [4,16] | 8.0 | 8 |
+| 93 | `sand_P0R2C1` | sandwich_results | mps | 1.19M | 6-48 | 5 | 5.9537 | **5.9038** | 24 | [8,32] | 16.0 | 8 |
+| 94 | `sand_P0R3C0` | sandwich_results | mps | 1.19M | 4-32 | 5 | 6.0213 | **5.9654** | 12 | [8,24] | 13.9 | 8 |
+| 95 | `sand_P1R1C1` | sandwich_results | mps | 1.19M | 12-96 | 5 | 5.6203 | **5.5926** | 4 | [2,32] | 8.0 | 8 |
+| 96 | `sand_P1R2C0` | sandwich_results | mps | 1.19M | 6-48 | 5 | 5.5886 | **5.5805** | 12 | [1,32] | 5.7 | 8 |
+| 97 | `sc_clock` | scale_clock_results | mps | 0.31M | 4-32 | 5 | 6.8802 | **6.7845** | 8 | [4,16] | 8.0 | 8 |
+| 98 | `sc_clock_sw90` | scale_clock_results | mps | 0.31M | 4-32 | 5 | 7.0758 | **7.0170** | 12 | [4,24] | 9.8 | 8 |
+| 99 | `sc_ctrl` | scale_clock_results | mps | 2.50M | 4-32 | 5 | 5.5129 | **5.4202** | 8 | [8,16] | 11.3 | 8 |
+| 100 | `sc_control_norm_s0` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.4692 | **5.3636** | 12 | [8,16] | 11.3 | 8 |
+| 101 | `sc_control_norm_s1` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.6548 | **5.5789** | 8 | [4,16] | 8.0 | 8 |
+| 102 | `sc_final_only_s0` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.4824 | **5.2654** | 8 | [4,8] | 5.7 | 8 |
+| 103 | `sc_final_only_s1` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.2629 | **5.0624** | 8 | [8,8] | 8.0 | 8 |
+| 104 | `sc_penalty_s0` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.2497 | **4.9975** | 8 | [8,12] | 9.8 | 8 |
+| 105 | `sc_penalty_s1` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.3561 | **5.1165** | 8 | [8,12] | 9.8 | 8 |
+| 106 | `sc_raw_s0` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.5594 | **5.3380** | 8 | [4,8] | 5.7 | 8 |
+| 107 | `sc_raw_s1` | scale_control_results | mps | 2.50M | 4-32 | 5 | 5.7419 | **5.5363** | 4 | [4,8] | 5.7 | 8 |
+| 108 | `center` | screening_results | mps | 0.89M | 4-32 | 5 | 6.7899 | **6.7723** | 4 | [4,32] | 11.3 | 8 |
+| 109 | `fixed_loops16` | screening_results | mps | 1.19M | 16-16 | 5 | 6.7003 | **6.6440** | 4 | [4,8] | 5.7 | 8 |
+| 110 | `inject_concat` | screening_results | mps | 0.89M | 4-32 | 5 | 6.7967 | **6.7565** | 2 | [2,32] | 8.0 | 8 |
+| 111 | `inject_none` | screening_results | mps | 0.99M | 4-32 | 5 | 6.9513 | **6.9513** | 1 | [1,32] | 5.7 | 8 |
+| 112 | `no_depth_init` | screening_results | mps | 0.99M | 4-32 | 5 | 6.9190 | **6.9139** | 8 | [1,32] | 5.7 | 8 |
+| 113 | `no_state_renorm` | screening_results | mps | 0.99M | 4-32 | 5 | 6.0805 | **6.0281** | 8 | [4,16] | 8.0 | 8 |
+| 114 | `truncate8` | screening_results | mps | 1.19M | 4-32 | 5 | 6.8291 | **6.7567** | 4 | [4,32] | 11.3 | 8 |
+| 115 | `center_seed1` | second_seed_results | mps | 0.99M | 4-32 | 5 | 6.7519 | **6.7486** | 8 | [1,32] | 5.7 | 8 |
+| 116 | `no_state_renorm_seed1` | second_seed_results | mps | 0.79M | 4-32 | 5 | 6.2782 | **6.2521** | 8 | [4,16] | 8.0 | 8 |
+| 117 | `sd_dense_k5_s0` | supervision_depth_results | mps | 2.50M | 4-32 | 5 | 5.5611 | **5.4527** | 8 | [8,16] | 11.3 | 8 |
+| 118 | `sd_dense_k5_s1` | supervision_depth_results | mps | 2.50M | 4-32 | 5 | 5.5369 | **5.4387** | 8 | [8,16] | 11.3 | 8 |
+| 119 | `sd_terminal_k1_s0` | supervision_depth_results | mps | 2.50M | 4-32 | 1 | 5.7128 | **5.4699** | 16 | [12,24] | 17.0 | 8 |
+| 120 | `sd_terminal_k1_s1` | supervision_depth_results | mps | 2.50M | 4-32 | 1 | 5.7552 | **5.4843** | 16 | [12,24] | 17.0 | 8 |
+| 121 | `sup_concentrated24_32_s0` | supervision_results | mps | 2.50M | 24-32 | 5 | 5.6616 | **5.4584** | 16 | [12,24] | 17.0 | 8 |
+| 122 | `sup_concentrated24_32_s1` | supervision_results | mps | 2.50M | 24-32 | 5 | 5.7089 | **5.5497** | 16 | [12,24] | 17.0 | 8 |
+| 123 | `sup_shallow4_8_s0` | supervision_results | mps | 2.50M | 4-8 | 5 | 5.4034 | **5.3592** | 4 | [2,4] | 2.8 | 8 |
+| 124 | `sup_shallow4_8_s1` | supervision_results | mps | 2.50M | 4-8 | 5 | 5.4249 | **5.3726** | 4 | [4,4] | 4.0 | 8 |
+| 125 | `sup_uniform4_32_s0` | supervision_results | mps | 2.50M | 4-32 | 5 | 5.5699 | **5.4838** | 8 | [4,16] | 8.0 | 8 |
+| 126 | `sup_uniform4_32_s1` | supervision_results | mps | 2.50M | 4-32 | 5 | 5.6001 | **5.5047** | 12 | [8,16] | 11.3 | 8 |
+| 127 | `t1_mu40_term` | term_seed1_mu40_results | cuda | 2.50M | 32-48 | 1 | 6.5690 | **5.4901** | 40 | [40,48] | 43.8 | 13 |
+| 128 | `trainL16` | train_at_L_results | cuda | 10.00M | 16-16 | 5 | 4.6177 | **4.4166** | 8 | [8,8] | 8.0 | 8 |
+| 129 | `trainL2` | train_at_L_results | cuda | 10.00M | 2-2 | 5 | 4.4435 | **4.4229** | 2 | [2,2] | 2.0 | 8 |
+| 130 | `trainL32` | train_at_L_results | cuda | 10.00M | 32-32 | 5 | 4.8377 | **4.4954** | 16 | [16,16] | 16.0 | 8 |
+| 131 | `trainL4` | train_at_L_results | cuda | 10.00M | 4-4 | 5 | 4.4833 | **4.4297** | 4 | [2,4] | 2.8 | 8 |
+| 132 | `trainL8` | train_at_L_results | cuda | 10.00M | 8-8 | 5 | 4.4875 | **4.3727** | 4 | [4,4] | 4.0 | 8 |
+| 133 | `trainL16_s1` | train_at_L_seed1_results | cuda | 10.00M | 16-16 | 5 | 4.8421 | **4.6202** | 8 | [8,16] | 11.3 | 8 |
+| 134 | `trainL2_s1` | train_at_L_seed1_results | cuda | 10.00M | 2-2 | 5 | 4.4832 | **4.4566** | 2 | [2,2] | 2.0 | 8 |
+| 135 | `trainL32_s1` | train_at_L_seed1_results | cuda | 10.00M | 32-32 | 5 | 4.9496 | **4.6055** | 16 | [16,32] | 22.6 | 8 |
+| 136 | `trainL4_s1` | train_at_L_seed1_results | cuda | 10.00M | 4-4 | 5 | 4.5449 | **4.4772** | 4 | [2,4] | 2.8 | 8 |
+| 137 | `trainL8_s1` | train_at_L_seed1_results | cuda | 10.00M | 8-8 | 5 | 4.6951 | **4.5601** | 4 | [4,8] | 5.7 | 8 |

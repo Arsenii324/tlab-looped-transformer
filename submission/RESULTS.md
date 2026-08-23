@@ -37,7 +37,7 @@ states the convention). Two mechanisms were run at two settings each, so this ta
 | 2 | scale clock | **+1.36** *(non-finite by loop 39)* | onset 8→4 | +448 |
 | 3 | gated (diagonal state-space) injection, α = 0.874 | **+0.247** | unmoved | +896 |
 | 4a | loop-cycled LoRA, **rank 2** | **+0.094** | unmoved | +204k |
-| 4b | **loop-cycled LoRA, rank ≥ 4** | **−0.0936** ⚠ *(in-job pairs range −0.0261 … −0.1251)* | **unmoved (5 of 5)** | +409k (+4.51%) |
+| 4b | **loop-cycled LoRA, rank ≥ 4** | **−0.0936** at 2.5M ⚠ — **+0.0077 at 12M** (§4.29) | **unmoved (6 of 6)** | +409k (+4.51%) |
 | 5 | radial clamp | ~0 *(ceiling invariant to 0.006)* | relocates | 0 |
 | 6 | convex gate / fixed-`g` sweep | null | unmoved | +66k |
 | 7 | ε = λ/(N√L) residual scaling | null *(its "shift" was a 0.0001-nat argmin flip)* | unmoved | 0 |
@@ -68,14 +68,22 @@ deliver 78–101% of their gain at a single loop, where the loop-referring part 
 
 ### The pattern, which is the report's central finding
 
-**Five of the twelve lower the loss. Four of the five deliver 78–101% of that gain at a *single*
-loop, where their own mechanism is provably inert or irrelevant.**
+**Five of the twelve lower the loss *at the budget they were measured at* — and that qualifier turned
+out to matter.** Four of the five deliver 78–101% of that gain at a *single* loop, where their own
+mechanism is provably inert or irrelevant.
+
+> **The one that was tested at 5× the budget did not survive it.** Loop-cycled LoRA gives −0.0733 …
+> −0.1251 at 2.5M and **+0.0077 at 12M** — sign reversed, inside the replicate floor (§4.29). It was
+> the only CE claim here that replicated across three platforms. **This project therefore has no
+> replicated CE improvement at scale**, and every "lowers the loss" in this table should be read as a
+> **2.5–3.5M-token** statement. *The band results are unaffected — the 12M pair is [8,16] for both
+> arms, unmoved, as at every smaller budget.*
 
 | loss-lowering arm | ΔCE@1 | ΔCE_best | **share of the gain already present at r = 1** | why the mechanism cannot be acting at r = 1 |
 |---|---|---|---|---|
 | depth gate, unnormalised | −0.2830 | −0.2950 | **96%** | the softmax runs over a **single** state; the mixture *is* that state |
 | exclusive self attention | −0.1826 / −0.2401 | −0.2162 / −0.2633 | **84% / 91%** | *(operates on a single token's own value vector; nothing about it needs a second loop)* |
-| loop-cycled LoRA, rank ≥ 4 | — | −0.0936 | **67–95%**, median 88% *(5 arms)* | branch index is `0 mod 4`; cycling is inert — verified max\|diff\| = 0.000e+00 at r=1 |
+| loop-cycled LoRA, rank ≥ 4 | — | −0.0936 *(2.5M only)* | **67–95%**, median 88% *(5 arms)* | branch index is `0 mod 4`; cycling is inert — verified max\|diff\| = 0.000e+00 at r=1 |
 | duo-causal attention, W = 3 | −0.0682 / −0.0399 | −0.0871 / −0.0394 | **78% / 101%** | with one loop there is no previous loop's KV to attend to |
 
 **The fifth is the mirror image and is worth stating separately, because it fails the brief the other

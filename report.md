@@ -6386,6 +6386,64 @@ the number of distinct projections applied to it.*
 *Scope: one checkpoint, one layer, random projections rather than trained ones — a trained `W_K` could
 in principle be less decorrelating than a random one, which would make these numbers an upper bound.*
 
+### 4.29 The LoRA positive does not survive 5× the budget — the §4.24 probe, and it answers unfavourably
+
+§4.24 stated the scope condition on this report's central pattern: **every paired loss-lowering arm
+sits at 2.5–3.5M tokens**, while loop gain roughly triples by 90M. One arm was running to probe it —
+Kaggle `tlab-lora-scaleup`, **12.0M tokens per arm, ~5× the screening budget.** It has landed.
+
+*In-job paired, seed 0, 5,858 steps, 11 evals per arm, configs identical but for `cond_mode`
+(verified field-by-field), no errors in the raw log, both curves passing the chance guard.*
+
+| arm | params | CE@1 | best CE | @r | band |
+|---|---|---|---|---|---|
+| `kg_lora_control` | 9,064,608 | 4.5802 | **4.3895** | 12 | [8,16] |
+| `kg_lora_r4` | 9,473,184 | 4.6077 | **4.3971** | 12 | [8,16] |
+
+**ΔCE_best = +0.0077. The LoRA arm is *worse* than its control, and the difference is inside the
+0.0150 replicate floor.**
+
+**Against the screening-scale measurements this is a sign reversal and a collapse in magnitude.** At
+2.5M the same intervention gave **−0.0733, −0.1011, −0.1172, −0.1251** across platforms — the basis for
+the `rank ≥ 4` mean of −0.0936 that §4.21 called *"the only CE claim in this report that survives
+multi-platform replication."* **It does not survive a 5× budget increase.** `[POSTHOC-LORA-RANK]`
+
+**So loop-cycled LoRA now carries five independent deflations and one reversal:**
+
+1. the `rank ≥ 4` restriction is **post hoc**, and over all arms the interval **covers zero**;
+2. there is **no dose–response** above the threshold;
+3. **67–95%** of the gain sits at `r = 1`, where the cycling is *logically inert*;
+4. a branch **pinned to one index** — identical parameters, zero diversity — **beats** the cycled arm
+   at seed 1 (§4.23c);
+5. the cycled arm's own effect ranges **−0.0261 … −0.1251** across two in-job pairs at one budget;
+6. **and at 12M tokens it is +0.0077.**
+
+**The honest statement is that this project has no replicated CE improvement at scale.** §4.21's
+positive should be read as *a screening-scale effect that does not persist*, and every summary that
+counted it among the interventions "that lower the loss" is counting a 2.5M-token result.
+
+> **What this probe does and does NOT settle, stated carefully because it is tempting to over-read.**
+>
+> **It does not answer §4.24's question.** The question was whether the *share* of a gain sitting at
+> `r = 1` moves with budget. **At 12M there is no gain to decompose** — the r=1 share computes to 358%,
+> which is meaningless when the denominator is inside the noise floor. **So the budget-invariance of
+> the "78–101% at r = 1" pattern remains untested, and now has no probe at all.**
+>
+> **It answers a larger question instead, and unfavourably for us.** *An effect measured at 2.5M
+> tokens in this project can vanish or reverse by 12M.* That is this report's own 12×-shrinkage
+> regularity confirmed on the one arm where it was directly tested — and it applies to **every
+> intervention in §4.23**, all of which are 2.5–3.5M measurements. **The central pattern's individual
+> instances are now known to be fragile to budget even where the pattern itself is not tested.**
+>
+> **What is unaffected:** the band results (the band is [8,16] for both arms here, unmoved, exactly as
+> at every smaller budget), §4.7e's rank mechanism (measured on representations, not on a CE delta),
+> and supervision annealing's band widening (which replicates at 5/5 seeds across a **4× budget
+> range**, §4.23e — the one depth claim that has been tested across budgets and held).
+
+*Scope: one arm, one seed, one rank, one platform. A single 12M pair does not establish that the
+effect is zero at scale; it establishes that the effect measured at 2.5M is not reproduced at 12M,
+which is enough to withdraw the claim as stated.*
+
 ## 5. Methods tested to destruction — what was claimed, what was measured, why it broke
 
 > **This section was titled "What didn't work", and that title was costing it.** A *null* says "we

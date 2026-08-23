@@ -36,7 +36,7 @@ loss-side lever is §5 below. Rows added after this document was first written a
 | scale clock (feed `log‖h‖` back into conditioning) | reviewer proposal | **+1.36** | state non-finite by loop 39 |
 | gated (diagonal state-space) injection, α = 0.874 | Parcae; *Done Right* | **+0.247** | unmoved |
 | loop-cycled LoRA, rank 2 | MoDr lineage | **+0.094** | unmoved |
-| **loop-cycled LoRA, rank ≥ 4** | MoDr lineage | **−0.094** ⚠ | **unmoved (5 of 5 pairs)** |
+| **loop-cycled LoRA, rank ≥ 4** | MoDr lineage | −0.094 at 2.5M; **+0.008 at 12M** ⚠ | **unmoved (6 of 6 pairs)** |
 | **exclusive self attention (XSA)** | arXiv 2603.09078 | **−0.216 / −0.263** *(2 seeds)* ⚠ | seeds **disagree** — unresolved (§4.25) |
 | radial clamp (inference-time) | Sharma & Vu | ~0 | *relocates* the optimum; ceiling invariant to 0.006 |
 | convex gate / damped sub-stepping | arXiv 2605.23872 | null | unmoved |
@@ -84,6 +84,9 @@ loop 39, with the model *taking* the parameter (‖w‖ = 1.34) rather than decl
 > document and not the one being read.*
 >
 > **loop-cycled LoRA (−0.094, n=5 at rank ≥ 4):**
+> 0. **It does not survive 5× the budget.** −0.0733…−0.1251 at 2.5M against **+0.0077 at 12M**,
+>    in-job, sign reversed and inside the floor (§4.29). This was the only CE claim in the report that
+>    replicated across three platforms.
 > 1. **The `rank ≥ 4` restriction is post hoc.** Over all six arms the 95% interval **covers zero**
 >    ([−0.148, +0.023]); rank 2 is **+0.094**, i.e. worse. There is **no dose–response** above the
 >    threshold — rank 8 sits inside rank 4's spread.

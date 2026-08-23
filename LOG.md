@@ -3062,3 +3062,34 @@ with nothing, here is what now covers each:**
 - **arXiv watcher:** a new paper appearing 2.5 h before the deadline is not actionable — nothing could
   be read, implemented and measured in the time left.
 - **Kaggle `tlab-lora-scaleup`:** polled directly from here.
+
+## 22:06–22:15 — Kaggle `tlab-lora-scaleup` lands: the LoRA positive DOES NOT SURVIVE 5× the budget
+
+| arm | params | CE@1 | best | band |
+|---|---|---|---|---|
+| `kg_lora_control` | 9,064,608 | 4.5802 | **4.3895** @r12 | [8,16] |
+| `kg_lora_r4` | 9,473,184 | 4.6077 | **4.3971** @r12 | [8,16] |
+
+**ΔCE_best = +0.0077** — the arm is *worse*, and inside the 0.0150 floor. In-job, seed 0, **12.0M
+tokens/arm**, 5,858 steps, 11 evals each, configs identical but `cond_mode`, chance guard passed, zero
+errors in the raw log.
+
+**At 2.5M the same intervention gave −0.0733 / −0.1011 / −0.1172 / −0.1251.** §4.21 called it *"the
+only CE claim in this report that survives multi-platform replication."* **It does not survive a 5×
+budget increase.** Written up as §4.29 with the sixth deflation added to the five it already carried.
+
+**What it does NOT settle, and this is the honest part:** §4.24 asked whether the *share* of a gain
+sitting at `r = 1` moves with budget. **At 12M there is no gain to decompose** — the share computes to
+358%, meaningless with the denominator inside noise. **So the budget-invariance of the central pattern
+is still untested and now has no probe at all.**
+
+**What it does settle, and it is larger:** an effect measured at 2.5M in this project can vanish or
+reverse by 12M. Every arm in §4.23 is a 2.5–3.5M measurement. **The pattern's individual instances are
+fragile to budget even where the pattern itself is untested.**
+
+**Unaffected:** the band (12M pair is [8,16] both, unmoved as at every smaller budget), §4.7e's rank
+mechanism (representations, not a CE delta), and annealing's band widening — the one depth claim
+tested across a 4× budget range that held.
+
+Propagated to `RESULTS.md` (row 4b, the pattern block, the "five lower the loss" framing),
+`README.md` §2, `NEGATIVE_RESULTS.md` (new deflation 0), and `LIMITATIONS.md` §4b.

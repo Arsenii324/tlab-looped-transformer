@@ -64,6 +64,21 @@ tokens* — 3.6% of that budget — and §4.24 shows loop gain roughly **triples
   case: set once, never varied, and **tighter than the noise floor it exists to absorb**; sweeping it
   withdrew three claims (§4.25).
 
+## 4b. The one thing we did test across budgets, and it failed
+
+**This is not an absence — it is a measurement, and it belongs here because it prices everything
+above.** The only intervention in this project tested at more than one budget is loop-cycled LoRA:
+**−0.0936 at 2.5M tokens across five arms and three platforms, +0.0077 at 12M tokens in-job**
+(§4.29). `[POSTHOC-LORA-RANK]` *(that −0.0936 already rested on a post-hoc rank restriction whose
+all-arms interval covers zero, with no dose–response above the threshold — the scale failure is the
+sixth deflation, not the first.)* Sign reversed, magnitude inside the replicate floor.
+
+**So when this submission says an intervention "lowers the loss", that is a 2.5–3.5M-token statement,
+and the one time it was checked at 5× it did not hold.** We have **no replicated CE improvement at
+scale.** *The band results are the exception and are stated as such: supervision annealing's widening
+reproduces with an identical edge decomposition at 2.5M and 10M, which is the only depth claim here
+that has been tested across budgets and held.*
+
 ## 5. The two readings of our retraction record, and we cannot separate them
 
 **Twelve claims were retracted in this project, three on the final day by their own pre-registered
