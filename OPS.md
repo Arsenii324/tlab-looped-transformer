@@ -74,7 +74,7 @@ result arriving at 04:30.
 - Analyze on arrival; never let a result sit unread while compute continues.
 - Kaggle: do not launch again unless something fails and quota clearly permits.
 
-## STATUS — full state as of 2026-08-23 13:45 (written against context compaction)
+## STATUS — full state as of 2026-08-23 **17:30** (rewritten against a second compaction)
 
 ### 0-PRE. POST-COMPACTION GUIDE — written 2026-08-23 17:30, read this FIRST
 
@@ -155,20 +155,33 @@ deep loop schedule, and **supervision annealing** — dense, then terminal-only 
   the **final phase** sets the band.
 - **§4.16b**: terminal-only's useful depth tracks μ_rec (1.09/1.00/0.98 at μ=18/32/40).
 
-### 4. RETRACTIONS made today — do not re-assert these
-1. **§4.17's "annealing exceeds both endpoints" at μ_rec=40** — reverses on BOTH axes at seed 1
-   (annealed mid 45.3→39.2, terminal 39.2→43.8). Pre-registered falsifier fired.
-2. **§4.16c's "terminal-only buys more useful angular computation"** — the untrained control has
-   **B = 1.99 vs trained 0.44**, so B is path length, not computation. Also the ratio is **1.2×**
-   (fixed range), not 1.4× (which confounded budget with a later k*).
-3. **My "Think-at-Hard says 85% not 73%" correction to the reviewer** — the v3 LaTeX says **73%**;
-   I had trusted a summarising web fetch over the source. → `reviewer_answers/05`.
-4. **§4.9's "spread below the noise floor"** — apples-to-oranges (re-zeroed spread vs raw noise); the
-   seed-1 test then FAILED its pre-registered rule, narrowing it to a reproducible *average* relation.
-5. **§4.9's "the report's most robust finding"** (gain-vs-CE trade) — pooled ρ = **−0.081** over 43
-   arms with strata disagreeing in sign. It is a within-axis effect only.
-6. **"the optimum doubles" (2×)** → **1.50×** on the plateau statistic.
-7. **My prediction that the terminal CE penalty shrinks with depth** — non-monotone (0.191/0.070/0.188).
+### 4. RETRACTIONS / WITHDRAWALS — do not re-assert any of these
+
+**Three landed today after 13:45, all by pre-registered criteria that were written before the data
+existed. Each is recorded in `report.md` with the superseded claim visible, not deleted.**
+
+1. **Annealing's CE advantage over dense — WITHDRAWN at n=4.** Was −0.0811/−0.0609 at seeds 0/1.
+   Seeds 2/3 gave **+0.0482** and −0.0902; n=4 mean −0.0460, sd 0.0640, t-interval
+   [−0.1478, +0.0558] covers zero. **What SURVIVES: the band widens at 4/4 seeds** (+2.5/+2.5/+2.5/+7.2),
+   including at seed 2 which reverses the CE claim. The claim is now "relocates the band, does not
+   move the ceiling."
+2. **§4.20's degenerate cross-layer collapse — largely a SHARED-RESIDUAL ARTIFACT.** cos(outputs)
+   → 1.0000 is real but cos(**increments**) is 0.14–0.18; each layer moves the state by 0.5–3.5% of
+   its norm so all outputs share a dominant residual. Confirmed by per-loop scalar diversity (σ≤1.0)
+   and per-loop LoRA operator diversity (168 tensors randomized) both leaving cos@64 unchanged.
+   **This closed the whole conditioning/branch-diversity family without a training run.**
+3. **§3.5's deep half — WITHDRAWN.** `tlab-deep-full` (30M tokens, the only ≥32-loop artifact)
+   returned plateau mid **22.6** against a pre-registered trigger of "near 22"; mid/μ_rec = 0.57 is
+   in §4.16b's *dense* range, not terminal-only. The 2.5M screen had said mid 45.3.
+   **Survives: band [16,32], CE improving to loop 24, graceful to 128 — the deepest useful band here.**
+
+**Earlier retractions still standing** (see `report.md` §6.0, 32 rows): §4.4's untrainability claim;
+`B`-as-useful-computation; "terminal-only buys more budget"; the strong t/L collapse; the 1.4×
+angular budget; `sigma_max`→ρ mislabel; ρ=1.7019 false precision (seeded value 1.6227).
+
+**One thing NOT withdrawn but downgraded:** token-keyed annealing beats fraction-keyed by −0.2208 —
+**this is n=1** and §3.5 states it as a **lead, not a recommendation**. Measured seed spread on this
+class of paired difference is sd=0.0640.
 
 ### 5. Instruments built today (all in `src/`, all with the null that validates them)
 `plateau.py` (+`test_plateau.py`, 8 checks) · `argmin_audit.py` (63/82 curves have unresolvable
