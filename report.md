@@ -4142,6 +4142,34 @@ compatible — a tether that keeps a manifold from drifting is also a tether tha
 travelling — and the agreement that *this is the operative variable* is stronger evidence than either
 result alone.
 
+**THE FALSIFIER WAS RUN, AND THE ACCOUNT DOES NOT CLEANLY SURVIVE IT.** The sharpest prediction
+above was that the band depends on how long the trajectory runs *unanchored*, and **not** on how
+densely it was anchored during the dense phase. So `sw90` at `k = 5`, `3`, `2` — same switch point,
+same unanchored duration, different dense-phase density — should give the same band. DataSphere
+`tlab-anchor-tokenkey`, in-job, 2.5M tokens, seed 0:
+
+| arm | CE@1 | CE_best | plateau | **mid** | onset |
+|---|---|---|---|---|---|
+| `ak_dense_k5` (control) | 5.4710 | 5.3736 @8 | [8,16] | 11.3 | 8 |
+| `ak_sw90_k5` | 5.4493 | **5.2945** @16 | [12,24] | **17.0** | 12 |
+| `ak_sw90_k3` | 5.5718 | 5.4060 @16 | [12,24] | **17.0** | 12 |
+| `ak_sw90_k2` | 5.5427 | 5.3367 @20 | [12,32] | **19.6** | 12 |
+
+**Two of three agree exactly and the third does not.** `k=5` and `k=3` both give [12,24], mid 17.0 —
+the account's prediction, and a real effect against the dense control's 11.3. `k=2` extends to
+[12,32], mid 19.6. **Onset is 12 in all three**, so the *shallow* edge of the band is invariant to
+density exactly as predicted; only the deep edge moves.
+
+**The honest reading is that the account is right about onset and wrong as stated about the band.**
+A spread of 2.6 on one grid point, from a single seed, is not a large violation — but the prediction
+was equality, and equality failed in the direction that says density matters in its own right. Two
+readings remain live and this project cannot separate them here: either (a) `k=2` is genuinely
+different because two supervised loops is close to the `k=1` threshold §4.16 identifies, so the
+"dense phase" is barely dense; or (b) it is single-seed noise on the deep edge, which §4.17 already
+shows is the less stable end. **§4.18 is therefore downgraded from "unifies five results" to
+"unifies five results on the shallow edge, with the deep edge density-dependent and unexplained."**
+The falsifier did its job; the framing is narrower than when it was written.
+
 **What would falsify it, and what has not been run.** (a) A *fixed* `g` convex-gate arm that bounds
 ‖h‖ without touching supervision should leave the band where dense puts it — §4.10 finds the gate
 null, which is consistent but was not run as an anchor test. (b) The account predicts the band should

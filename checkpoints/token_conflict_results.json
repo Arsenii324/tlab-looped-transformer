@@ -1,0 +1,19 @@
+{
+  "query_depth": 20,
+  "n_sequences": 128,
+  "cos_fidelity": {
+    "shallow": 0.942421036661921,
+    "mid": 0.9959731410758025,
+    "deep": 0.9982764280848959
+  },
+  "norm_ratio_depth20_vs_oracle": {
+    "shallow": 3.4015315150237324,
+    "mid": 1.456639373870123,
+    "deep": 0.760885309607352
+  },
+  "token_counts": {
+    "shallow": 16931,
+    "mid": 2940,
+    "deep": 12897
+  }
+}
