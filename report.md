@@ -2840,14 +2840,35 @@ UNTESTED by the fifth**, which is weaker than "five classes failed" and is the t
 > That is independent support for this section's headroom being genuine — from a paper that also
 > supplies the one mechanism family this report never tested.
 >
-> **This paragraph said "not run here". That stopped being true at 18:19 and the section is updated
-> rather than left standing.** A *windowed* duo-causal arm (`kv_window` = 2 and 3, **zero added
+> **This paragraph said "not run here". That stopped being true at 18:19, and the W=2 half has since
+> COMPLETED — see the result box below.** A *windowed* duo-causal arm (`kv_window` = 2 and 3, **zero added
 > parameters**) is now implemented in `src/model.py` and running as `tlab-duocausal-s0`/`-s1` on two
 > T4s, four in-job arms each at two seeds, with the read **pre-registered in `RUNS.md` at 18:19 before
 > any data existed** and four falsifiers — including *"reverses between seeds ⇒ not reported."*
 > Pre-launch gates: `kv_window=1` reproduces the untouched model at **max|diff| = 0.000e+00** (which
 > is Think-at-Hard's own stated property, `3_method.tex:174`), W=2/W=3 provably change the forward,
 > parameter count is unchanged to the digit, and gradients reach `k_proj` through the extra keys.
+>
+> ### RESULT — `kv_window = 2` is complete at both seeds and is a clean null
+>
+> | seed | ΔCE_best | ΔCE@1 | onset | end | midpoint |
+> |---|---|---|---|---|---|
+> | 0 | **+0.0093** | +0.0226 | 8 → 8 | 20 → 20 | 12.6 → 12.6 |
+> | 1 | **−0.0115** | −0.0221 | 8 → 8 | 20 → 20 | 12.6 → 12.6 |
+>
+> Seven evals each, step 1707, against in-job controls also at step 1707. **The sign reverses between
+> seeds, both magnitudes sit inside the 0.0150 CUDA-dense floor, and the band is identical to the
+> digit at both seeds.** The pre-registered falsifier — *"any effect that appears at one seed and
+> reverses at the other ⇒ not reported as a result"* — fires.
+>
+> **What this does NOT yet settle, per the 19:02 gate:** read (b), `cos(du_t, du_{t−1})`, needs the
+> returned checkpoints. **A CE null without the cosine is a null on a mechanism that may not have
+> engaged** — which is a different finding from a null on the hypothesis, and only the second would be
+> worth anything. `kv_window = 3`, the dose-response half, is still running.
+>
+> *A trap avoided and worth recording: the `dc_w3` arms sit in the same logs with 1 and 0 evals. Read
+> naively against a completed control they show a fake +1.117 / +1.271 "catastrophe". Excluded by
+> checking eval counts, not by noticing the number looked wrong.*
 >
 > **What stays true is the scope, and it is why the arm is windowed.** Theirs attends to *all*
 > shallower depths; this attends to the last `W-1`, because storing every depth's K/V is the O(r)
