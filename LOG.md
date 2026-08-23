@@ -2171,3 +2171,15 @@
   succeeds on its own mechanism test (||h|| growth 6.2x->1.17x) and costs +0.2470 CE, ~4.7x floor.
   agy jobs A/B returned (unverified by me); C never ran (syntax error, not relaunched). Learned
   depth gate NOT launched -- deferred per user's token-budget note. reviewer_answers/13 written.
+2026-08-23 16:55 — anchor-tokenkey harvested (ERROR status was cosmetic; all 6 arms done, 10714s).
+  4.18 FALSIFIER partial-fail: onset 12 invariant across k=5/3/2 (predicted), band mid 17.0/17.0/19.6
+  (predicted equality, got spread 2.6 driven by k=2) -> 4.18 downgraded to shallow-edge-only, two
+  readings left live. TOKEN-KEYED RESOLVED at 10M: token rule -0.2208 vs fraction rule, ~4x floor,
+  largest supervision effect in the project; band identical so it buys ceiling not depth; +0.0923
+  at loop 1 so it is a trade. 3.5 now recommends token-keyed on measured evidence.
+  Gemini (Antigravity) added 2 probes + lora_cycle/depth_gate code. BUG FOUND in both probes: oracle
+  depths from the frozen eval set were paired with sequential val.bin slices (frozen starts are
+  219,494,2630... not 0,256,512). Fixed, re-run, both conclusions held -- conflict probe was immune
+  because it is within-token; cache probe held too. Logged as 6.0 row 32. Results written as 4.8b
+  (oracle cache null, -0.0096, 5.5x below floor) and a 4.8a extension (shallow-oracle tokens at
+  cos 0.9424 / 3.40x norm vs their own oracle state -- radial displacement, no demonstrated cost).
