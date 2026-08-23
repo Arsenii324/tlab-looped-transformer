@@ -1,0 +1,12 @@
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=0.70\textwidth]{figures/correlation.pdf}
+  \caption{\textbf{Weight sharing induces persistent cross-step correlations.}
+  Pairwise cosine similarity between block-level increments $\delta_i = h_i - h_{i-1}$, comparing a non-shared deep stack (panel~a; $64$ independent copies of a 12-layer block, effective depth $12{\times}64$) with a looped network (panel~b; $L{=}12$, $N{=}64$, $d{=}768$).
+  Both configurations have the same effective depth; the only difference is whether block weights are shared.
+  Both measured without residual scaling, after 10 training steps.
+  In the non-shared case, off-diagonal correlations are negligible (range $[-0.037,0.034]$).
+  In the looped case, the shared weights produce dense positive alignment (range $[0.027,0.995]$), consistent with $\Theta(N^2)$ accumulation (Theorem~\ref{thm:alpha1}).}
+  \label{fig:corr}
+\vspace{-0.3cm}
+\end{figure*}

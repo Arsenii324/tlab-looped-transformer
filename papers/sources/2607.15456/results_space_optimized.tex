@@ -1,0 +1,480 @@
+% Tables and figures for the Looped Latent Attention TMLR submission.
+% This file is intentionally source-only and contains no author-identifying information.
+
+\newcommand{\TableTier}{%
+\begin{table}[H]
+  \centering\footnotesize
+  \caption{\textbf{GSM8K accuracy-compression Pareto for Ouro-1.4B.} Six cold-start LLA codecs are trained with the same recipe and evaluated with the cached reconstruction decoder. Each multiplier is the exact KV-cache compression ratio $\rho$ (Eq.~\eqref{eq:ratio}). The plateau from $4.0\times$ to $2.67\times$ breaks sharply at $2.0\times$.}
+  \label{tab:tier4}
+  \begin{tabular}{lccc}
+    \toprule
+    Model & $(r_k,r_v)$ & GSM8K strict $\uparrow$ & codec train KL $\downarrow$ \\
+    \midrule
+    teacher & n/a & 0.820 & n/a \\
+    LLA $4.00\times$  & $(96,160)$  & 0.590 & 0.0160 \\
+    LLA $3.20\times$  & $(120,200)$ & 0.575 & 0.0153 \\
+    LLA $2.67\times$  & $(144,240)$ & 0.575 & 0.0157 \\
+    LLA $2.00\times$  & $(192,320)$ & \textbf{0.750} & 0.0155 \\
+    LLA $1.60\times$  & $(240,400)$ & 0.755 & 0.0070 \\
+    LLA $1.33\times$  & $(288,480)$ & \textbf{0.795} & 0.0035 \\
+    \bottomrule
+  \end{tabular}
+\end{table}%
+}
+
+\newcommand{\TableBroadSuite}{%
+\begin{table}[H]
+  \centering\footnotesize
+  \caption{\textbf{Quality against the Ouro-1.4B teacher across the broad suite.} GSM8K is 5-shot strict EM; HumanEval and MBPP use EvalPlus pass@1 (base/plus); BBH and MMLU-Pro use exact match. MATH-500 uses reliable final-answer extraction and symbolic verification. Light compression matches the teacher across tasks, while heavier compression is task-dependent.}
+  \label{tab:broadsuite}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lcccccc}
+    \toprule
+    Model & GSM8K & HumanEval b/p & MBPP b/p & MATH-500 & BBH & MMLU-Pro \\
+    \midrule
+    Ouro teacher $(1\times)$ & 0.794 & 0.707 / 0.671 & 0.720 / 0.595 & 0.74 & 0.708 & 0.481 \\
+    LLA $1.33\times$ & 0.795 & 0.756 / 0.713 & 0.725 / 0.606 & 0.70 & 0.705 & 0.467 \\
+    LLA $1.60\times$ & 0.755 & 0.726 / 0.689 & 0.733 / 0.624 & 0.67 & 0.695 & 0.475 \\
+    LLA $2.00\times$ & 0.750 & 0.744 / 0.695 & 0.733 / 0.603 & 0.63 & 0.677 & 0.469 \\
+    LLA $2.67\times$ & 0.575 & 0.543 / 0.488 & 0.672 / 0.566 & 0.54 & 0.578 & 0.402 \\
+    LLA $3.20\times$ & 0.575 & 0.591 / 0.537 & 0.646 / 0.537 & 0.72 & 0.495 & 0.399 \\
+    LLA $4.00\times$ & 0.590 & 0.610 / 0.561 & 0.616 / 0.513 & 0.52 & 0.527 & 0.416 \\
+    \bottomrule
+  \end{tabular}}
+\end{table}%
+}
+
+\newcommand{\FigureBroadSuite}{%
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.8\linewidth]{figures/broadsuite.pdf}
+  \caption{\textbf{Broad-suite quality against the Ouro-1.4B teacher as KV-cache compression increases.} Effects are task-dependent: code (HumanEval/MBPP) and MMLU-Pro stay at or above the teacher through $4\times$, while the reasoning
+  tasks degrade - only gently within the light-compression region ($\le 2\times$, shaded) for GSM8K and BBH, but throughout for the more sensitive MATH-500, and sharply beyond $2\times$ for GSM8K and BBH. GSM8K is 5-shot strict EM HumanEval/MBPP are EvalPlus pass@1 (base); MATH-500 uses symbolic final-answer verification; BBH and MMLU-Pro use exact match. Full numbers are in Table~\ref{tab:broadsuite}.}
+  \label{fig:broadsuite}
+\end{figure}%
+}
+
+
+\newcommand{\TableIsoCache}{%
+\begin{table}[H]
+  \centering\footnotesize
+  \caption{\textbf{Iso-cache comparison across compression axes.}}
+  \label{tab:isocache}
+  \vspace{0.5em}
+  \begin{tabular}{llcccc}
+    \toprule
+    Method & $\rho$ & train-KL $\downarrow$ & GSM8K $\uparrow$ & MC-avg $\uparrow$ & MMLU $\uparrow$ \\
+    \midrule
+    teacher & $1\times$ & n/a & 0.794 & 0.646 & 0.682 \\
+    \midrule
+    final-loop reuse & $4\times$ & n/a & 0.000 & 0.443 & 0.537 \\
+    \rowcolor{llahl} LLA (loop) & $4\times$ & \textbf{0.059} & \textbf{0.800} & 0.640 & \textbf{0.672} \\
+    mla\_head (head) & $4\times$ & 0.122 & 0.522 & 0.585 & 0.657 \\
+    cla (layer) & $4\times$ & 0.267 & 0.660 & 0.597 & 0.666 \\
+    kv\_quant (precision) & $4\times$ & n/a & 0.702 & \textbf{0.645} & 0.672 \\
+    \midrule
+    \rowcolor{llahl} LLA (loop) & $5.33\times$ & 0.062 & 0.752 & \textbf{0.640} & \textbf{0.674} \\
+    mla\_head & $5.33\times$ & 0.123 & 0.180 & 0.576 & 0.640 \\
+    LLA-2D (loop$\times$head) & $5.33\times$ & 0.078 & \textbf{0.760} & 0.628 & \textbf{0.674} \\
+    kv\_quant (precision) & $5.33\times$ & n/a & 0.122 & 0.621 & 0.607 \\
+    \midrule
+    \rowcolor{llahl} LLA (loop) & $21.33\times$ & 0.128 & \textbf{0.740} & 0.622 & 0.668 \\
+    mla\_head & $21.33\times$ & 0.128 & 0.680 & 0.613 & 0.633 \\
+    LLA-2D (loop$\times$head) & $21.33\times$ & \textbf{0.097} & 0.723 & \textbf{0.624} & \textbf{0.670} \\
+    \bottomrule
+  \end{tabular}
+\end{table}%
+}
+
+\newcommand{\TableScale}{%
+\begin{table}[H]
+  \centering\footnotesize
+  \caption{\textbf{Scale generalization on Ouro-2.6B-Thinking.} GSM8K is evaluated with the cached reconstruction decoder, while train-KL is decoder-independent. LLA remains near-lossless across $4$ to $10.67\times$, while the head and layer baselines lose substantially more accuracy.}
+  \label{tab:scale}
+  \begin{tabular}{lcccc}
+    \toprule
+    $\rho$ & LLA (loop) & mla\_head & LLA-2D & kv\_quant \\
+    \midrule
+    \multicolumn{5}{c}{GSM8K EM $\uparrow$; teacher $\approx 0.83$} \\
+    $4\times$ & \textbf{0.834} & 0.585 & 0.66 & 0.814 \\
+    $5.33\times$ & \textbf{0.817} & 0.772 & 0.74 & 0.351 \\
+    $10.67\times$ & \textbf{0.821} & 0.775 & 0.82 & n/a \\
+    \midrule
+    \multicolumn{5}{c}{train-KL $\downarrow$} \\
+    $4\times$ & \textbf{0.057} & 0.150 & 0.192 & n/a \\
+    $5.33\times$ & \textbf{0.056} & 0.155 & 0.165 & n/a \\
+    $10.67\times$ & \textbf{0.070} & 0.121 & 0.110 & n/a \\
+    \bottomrule
+  \end{tabular}
+\end{table}%
+}
+
+\newcommand{\TableOnPolicy}{%
+\begin{table}[H]
+  \centering\footnotesize
+  \caption{\textbf{On-policy distillation across the rank Pareto.} MATH-500 is scored by reliable final-answer extraction plus symbolic verification (teacher $0.74$). On-policy training improves long-generation stability at every ratio and gives the largest gains at $3.2$ to $5.33\times$. ``no-ans'' denotes no extractable final answer.}
+  \label{tab:onpolicy}
+  \begin{tabular}{lccccc}
+    \toprule
+    $\rho$ & off-policy & on-policy & $\Delta$ & off no-ans & on no-ans \\
+    \midrule
+    teacher $(1\times)$ & 0.740 & n/a & n/a & 0.020 & n/a \\
+    $3.2\times$ & 0.460 & \textbf{0.700} & $+0.24$ & 0.21 & 0.06 \\
+    $4\times$ & 0.430 & \textbf{0.660} & $+0.23$ & 0.15 & 0.03 \\
+    $5.33\times$ & 0.530 & \textbf{0.690} & $+0.16$ & 0.12 & 0.03 \\
+    $10.67\times$ & 0.650 & \textbf{0.690} & $+0.04$ & 0.09 & 0.07 \\
+    $21.33\times$ & \textbf{0.660} & 0.620 & $-0.04$ & 0.11 & 0.05 \\
+    \bottomrule
+  \end{tabular}
+\end{table}%
+}
+
+\newcommand{\TableAblations}{%
+\begin{table}[H]
+  \centering\footnotesize
+  \caption{\textbf{Design-choice ablations.} Held-out teacher-forced KL for a $4\times$ codec after a matched 300-step conversion. The reference is SVD initialization, split ranks $r_k/r_v=96/160$ and attention-output matching.}
+  \label{tab:ablations}
+  \begin{tabular}{llc}
+    \toprule
+    Ablation & Variant & held-out KL $\downarrow$ \\
+    \midrule
+    init prior & SVD (ours) & \textbf{0.105} \\
+    init prior & $t=1$ SVD & 0.128 \\
+    init prior & random & 0.771 \\
+    \midrule
+    rank split & $r_k<r_v$ $(96/160)$ & \textbf{0.105} \\
+    rank split & shared rank $(128/128)$ & 0.129 \\
+    \midrule
+    loss & KL $+\lambda_{\rm attn}=0.5$ & \textbf{0.105} \\
+    loss & KL only & 0.110 \\
+    \bottomrule
+  \end{tabular}
+\end{table}%
+}
+
+\newcommand{\TableHuginn}{%
+\begin{table}[H]
+  \centering\footnotesize
+  \caption{\textbf{LLA on Huginn-3.5B with $R=32$ recurrence steps.} Decoder-independent fidelity is measured against the uncompressed model on held-out text. A training-free SVD codec is near-lossless to $32\times$, and short KL distillation recovers the $64$ to $128\times$ range. MC-avg is a broad downstream loglikelihood suite.}
+  \label{tab:huginn}
+  \begin{tabular}{lcccccc}
+    \toprule
+    $\rho$ & $r_k/r_v$ & SVD KL $\downarrow$ & SVD top-1 & distill KL $\downarrow$ & best top-1 & MC-avg \\
+    \midrule
+    teacher & n/a & n/a & n/a & n/a & n/a & 0.523 \\
+    $16\times$ & $128/256$ & 0.005 & 0.970 & n/a & 0.970 & 0.523 \\
+    $32\times$ & $64/128$ & 0.010 & 0.954 & n/a & 0.954 & 0.525 \\
+    $64\times$ & $32/64$ & 0.197 & 0.799 & 0.145 & 0.834 & 0.486 \\
+    $128\times$ & $16/32$ & 0.763 & 0.620 & 0.177 & 0.812 & 0.473 \\
+    \bottomrule
+  \end{tabular}
+\end{table}%
+}
+
+\newcommand{\TableMemory}{%
+\begin{table}[H]
+  \centering\footnotesize
+  \caption{\textbf{Memory, capacity and latency.} LLA reduces cached scalars exactly by $\rho$. At fixed VRAM and context length 4096, measured maximum batch follows the expected capacity gain. The full-memory fast path caches reconstructed K/V and is fast, while the latent-store capacity path realizes the memory saving and is reconstruction-compute-bound in the current implementation. Combining $21.3\times$ with token eviction reduces the 1M-context 1.4B cache further to $36$~MiB. ``n/a'' marks an operating point not characterized for that path rather than a missing measurement. The fast path is profiled at its intended $4\times$ point (it caches full K/V and does not realize the memory saving at higher $\rho$), the capacity path at $21.3\times$, and the 2.6B capacity test was run to $4\times$.}
+  \label{tab:memory}
+  \resizebox{0.85\textwidth}{!}{%
+  \begin{tabular}{lccc}
+    \toprule
+    Quantity & teacher & LLA $4\times$ & LLA $21.3\times$ \\
+    \midrule
+    KV / token, 1.4B / 2.6B & 768 / 1536 KiB & 192 / 384 KiB & 36 / 72 KiB \\
+    KV at 1M context, 1.4B & 768 GiB & 192 GiB & 36 GiB \\
+    max batch at 4k, 1.4B & 32 & 128 & 768 \\
+    max batch at 4k, 2.6B & 16 & 64 & n/a \\
+    decode latency, fast path & 63.6 ms/tok & 74.1 ms/tok & n/a \\
+    peak decode throughput, capacity path & 748 tok/s & n/a & 108 tok/s \\
+    \bottomrule
+  \end{tabular}}
+\end{table}%
+}
+
+\newcommand{\TableEvict}{%
+\begin{table}[H]
+  \centering\footnotesize
+  \caption{\textbf{LLA composes with token eviction at no extra quality cost.} GSM8K
+  (5-shot, strict EM) under StreamingLLM/H2O-style eviction to a $260$-token
+  budget (sink $4$ + window $256$). The $\sim$1k-token 5-shot prompts are $\sim$74\%
+  evicted, so the sequence-axis cost is real (both rows fall from $\approx0.79$ without
+  eviction; teacher/LLA-$4\times$ no-eviction reference in Table~\ref{tab:isocache}).
+  Eviction on a near-lossless 8-bit codec isolates the sequence axis, and LLA-$4\times$ adds
+  the recurrence axis on top. The two remain close, confirming that the axes are orthogonal.
+  LLA reconstructs the \emph{kept} tokens accurately and adds little beyond eviction's own cost.
+  Cache size composes exactly (Table~\ref{tab:memory}). LLA-$21.3\times$ $+$ eviction caps
+  the 1M-context 1.4B cache at $36$~MiB.}
+  \label{tab:evict}
+  \begin{tabular}{lc}
+    \toprule
+    Method ($260$-token eviction budget) & GSM8K strict $\uparrow$ \\
+    \midrule
+    eviction alone (kv\_quant-8, sequence axis) & 0.510 \\
+    LLA $4\times$ $+$ eviction (loop $\times$ sequence) & 0.520 \\
+    \bottomrule
+  \end{tabular}
+\end{table}%
+}
+
+
+\newcommand{\FigurePasskey}{%
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_passkey.pdf}
+  \caption{\textbf{Passkey retrieval under KV-cache compression.} \emph{Left:} exact
+  retrieval for Ouro-1.4B over the (compression ratio $\times$ context length) grid
+  ($15$ trials/cell; every cell is a measured run, full numbers in
+  Table~\ref{tab:passkey}). The black staircase is the empirical
+  reliable-retrieval frontier (the $\ge 0.9$ iso-retrieval contour through measured cells).
+  \emph{Right:} retrieval vs.\ length for the 1.4B model at $10.67/14.2/15.5\times$ and the
+  2.6B model at $10.67\times$, exposing both degradation regimes and the model-size effect in
+  one view.}
+  \label{fig:passkey}
+\end{figure}%
+}
+
+
+
+
+\newcommand{\TablePasskey}{%
+\begin{table}[H]
+  \centering\footnotesize
+  \caption{\textbf{Long-context passkey retrieval under LLA compression (Ouro-1.4B).}
+  Exact-match retrieval of a 5-digit key hidden at a random depth in filler context.
+  The uncompressed teacher retrieves perfectly to $64$k. LLA is near-lossless for retrieval
+  through $5.33\times$ across the whole range, with only the $4\times$, $64$k cell dipping
+  to $0.87$. The $10.67\times$ point is the knee (perfect to $16$k, degrading at
+  $32$ to $64$k), while $21.33\times$ loses the exact token identity a key requires.
+  LLA rows use the capacity/latent cached decoder, whose two-pass prefill reaches $64$k
+  via streamed layer-wise reconstruction (Sec.~\ref{sec:systems}).}
+  \label{tab:passkey}
+  \begin{tabular}{rccccc}
+    \toprule
+    context & teacher & LLA $4\times$ & LLA $5.33\times$ & LLA $10.67\times$ & LLA $21.33\times$ \\
+    \midrule
+    2{,}048  & 1.00 & 1.00 & 1.00 & 1.00 & 0.00 \\
+    4{,}096  & 1.00 & 1.00 & 1.00 & 1.00 & 0.00 \\
+    8{,}192  & 1.00 & 1.00 & 1.00 & 1.00 & 0.20 \\
+    16{,}384 & 1.00 & 1.00 & 1.00 & 1.00 & 0.07 \\
+    32{,}768 & 1.00 & 1.00 & 1.00 & 0.80 & 0.20 \\
+    65{,}536 & 1.00 & 0.87 & 1.00 & 0.73 & 0.00 \\
+    \bottomrule
+  \end{tabular}
+\end{table}%
+}
+
+
+\newcommand{\TableScaleMC}{%
+\begin{table}[H]
+  \centering\scriptsize
+  \caption{\textbf{Ouro-2.6B-Thinking: full commonsense and knowledge suite.} All tasks are 0-shot loglikelihood accuracy and decoder-independent. Per-head LLA is near-lossless at every budget and remains several points above the head and layer baselines and the LLA-2D variant.}
+  \label{tab:scale_mc}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llccccccccc}
+    \toprule
+    Method & $\rho$ & ARC-e & ARC-c & HSwag & WGr & C-QA & MMLU & PIQA & OBQA & Avg \\
+    \midrule
+    teacher & $1\times$ & 0.833 & 0.541 & 0.568 & 0.684 & 0.752 & 0.750 & 0.785 & 0.310 & 0.653 \\
+    \rowcolor{llahl} LLA & $4\times$ & 0.818 & 0.521 & 0.557 & 0.676 & 0.754 & 0.749 & 0.782 & 0.302 & 0.645 \\
+    \rowcolor{llahl} LLA & $5.33\times$ & 0.818 & 0.526 & 0.557 & 0.691 & 0.746 & 0.748 & 0.783 & 0.300 & 0.646 \\
+    \rowcolor{llahl} LLA & $10.67\times$ & 0.813 & 0.526 & 0.552 & 0.676 & 0.741 & 0.745 & 0.780 & 0.288 & 0.640 \\
+    mla\_head & $4\times$ & 0.733 & 0.460 & 0.494 & 0.681 & 0.723 & 0.740 & 0.729 & 0.234 & 0.599 \\
+    mla\_head & $5.33\times$ & 0.751 & 0.474 & 0.504 & 0.660 & 0.731 & 0.747 & 0.739 & 0.244 & 0.606 \\
+    mla\_head & $10.67\times$ & 0.730 & 0.461 & 0.498 & 0.668 & 0.726 & 0.747 & 0.725 & 0.256 & 0.601 \\
+    LLA-2D & $4\times$ & 0.738 & 0.463 & 0.513 & 0.661 & 0.753 & 0.741 & 0.742 & 0.242 & 0.607 \\
+    LLA-2D & $5.33\times$ & 0.753 & 0.477 & 0.520 & 0.664 & 0.740 & 0.740 & 0.760 & 0.236 & 0.611 \\
+    LLA-2D & $10.67\times$ & 0.786 & 0.512 & 0.539 & 0.672 & 0.745 & 0.742 & 0.761 & 0.294 & 0.631 \\
+    cla & $4\times$ & 0.756 & 0.484 & 0.518 & 0.676 & 0.647 & 0.725 & 0.750 & 0.260 & 0.602 \\
+    cla & $6\times$ & 0.769 & 0.493 & 0.505 & 0.672 & 0.640 & 0.692 & 0.739 & 0.254 & 0.596 \\
+    cla & $12\times$ & 0.732 & 0.468 & 0.484 & 0.669 & 0.595 & 0.684 & 0.717 & 0.250 & 0.575 \\
+    kv\_quant & $4\times$ & 0.832 & 0.530 & 0.565 & 0.677 & 0.738 & 0.747 & 0.782 & 0.292 & 0.645 \\
+    kv\_quant & $5.33\times$ & 0.816 & 0.519 & 0.550 & 0.663 & 0.712 & 0.719 & 0.777 & 0.292 & 0.631 \\
+    \bottomrule
+  \end{tabular}}
+\end{table}%
+}
+
+\newcommand{\FigureParetoOne}{%
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.93\textwidth]{figures/fig_pareto_1p4b_tight.png}
+  \caption{\textbf{Ouro-1.4B performance versus KV-cache compression.} Each panel plots an evaluation metric against compression for per-head LLA, the LLA-2D (loop$\times$head) variant, and the head, layer and precision baselines. The dashed line is the uncompressed teacher. LLA tracks the teacher most closely across the suite, while precision quantization collapses on GSM8K past moderate compression.}
+  \label{fig:pareto1p4b}
+\end{figure}%
+}
+
+\newcommand{\FigureParetoTwoSix}{%
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.93\textwidth]{figures/fig_pareto_26b_tight.png}
+  \caption{\textbf{Ouro-2.6B-Thinking performance versus KV-cache compression.} The layout matches Fig.~\ref{fig:pareto1p4b}. The loop-axis codec remains closest to the teacher on train-KL, GSM8K and the commonsense/knowledge suite. The precision baseline cannot reach the largest ratios without collapse.}
+  \label{fig:pareto26b}
+\end{figure}%
+}
+
+\newcommand{\FigureLoopRank}{%
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig_why_struct_1x4.png}
+  \caption{\textbf{Cross-loop K/V is low-rank, and its per-loop trajectory stabilizes.} Left two panels: the loop axis has much lower normalized effective rank than the head or layer axes, and a single direction carries a large fraction of the energy. Right two panels: K and V move toward the final loop while the step-to-step change shrinks, and V converges more slowly than K, motivating $r_v>r_k$.}
+  \label{fig:whyloops}
+\end{figure}%
+}
+
+\newcommand{\FigureTrajectory}{%
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig_why_trajectory_clean_tight.png}
+  \caption{\textbf{Loop trajectories are low-rank, not collapsed.} In frozen Ouro-1.4B, cross-loop K/V cosines increase toward the final loop, and one direction captures most but not all cross-loop variance. The PCA view shows short, consistent paths rather than a single shared endpoint.}
+  \label{fig:whytraj}
+\end{figure}%
+}
+
+\newcommand{\FigureHuginn}{%
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.72\textwidth]{figures/fig_why_huginn_clean_tight.png}
+  \caption{\textbf{The recurrence-axis mechanism transfers to Huginn-3.5B.} These are the same two convergence diagnostics as the right two panels of Fig.~\ref{fig:whyloops}, now applied to a different family. Huginn has up to 32 recurrence steps and a different looped-LM architecture, yet the pattern is unchanged. Successive steps converge toward a fixed point, each step refines less, and V converges more slowly than K. Reproducing the identical diagnostic at 32 steps, far beyond Ouro's 4, is stronger evidence for this mechanism.}
+  \label{fig:whyhuginn}
+\end{figure}%
+}
+
+\newcommand{\FigureAblationInit}{%
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.6\textwidth]{figures/fig_ablation_init_tight.png}
+  \caption{\textbf{SVD initialization dominates random initialization.} Held-out KL for the $4\times$ codec falls quickly from the SVD teacher prior. A random codec does not match SVD initialization within the same conversion budget.}
+  \label{fig:ablinit}
+\end{figure}%
+}
+
+\newcommand{\FigureOnPolicy}{%
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.88\textwidth]{figures/fig_onpolicy_pareto_revised.png}
+  \caption{\textbf{On-policy distillation stabilizes the long-generation Pareto.} On reliably scored MATH-500, self-rollout distillation raises the low-compression points and reduces no-answer generations throughout the Pareto. Hollow markers show independent re-evaluations with bootstrap 95\% confidence intervals.}
+  \label{fig:onpolicy}
+\end{figure}%
+}
+
+\newcommand{\FigureExposure}{%
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.88\textwidth]{figures/fig_exposure_length_revised.png}
+  \caption{\textbf{Off-policy failure compounds with generation length.} At $3.2\times$, the uncompressed teacher (gray) sets the reference. Accuracy declines gently with length from problem difficulty, and non-termination stays low. On-policy distillation (red) tracks the teacher closely at every length, whereas the off-policy codec (blue) loses accuracy as responses grow longer and its no-answer rate spikes in the longest bin. The gap between off-policy and the teacher is the exposure-bias failure that on-policy training removes.}
+  \label{fig:exposure}
+\end{figure}%
+}
+
+\newcommand{\FigureCapacity}{%
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.93\textwidth]{figures/fig_capacity_clean_tight.png}
+  \caption{\textbf{The latent cache gives an exact memory reduction and measured serving capacity.} Left: cache memory scales linearly with context and is divided by the compression ratio. Right: at fixed VRAM and context length 4096, maximum batch size follows the ideal $\rho$ scaling in measured capacity tests.}
+  \label{fig:capacity}
+\end{figure}%
+}
+
+\newcommand{\FigureTrajectoryTwoSix}{%
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{figures/fig_why_trajectory_26b_clean_tight.png}
+  \caption{\textbf{Cross-loop K/V stabilization on Ouro-2.6B-Thinking.} The 2.6B model reproduces the same pattern as Ouro-1.4B. K/V stabilizes across loops, one direction dominates but does not explain all variance, and the value cache has higher cross-loop variance than the key cache.}
+  \label{fig:whytraj26b}
+\end{figure}%
+}
+
+\newcommand{\AppendixExpDetails}{%
+\section{Experimental details}
+\label{app:expdetails}
+
+\paragraph{Models.} All experiments use frozen, publicly released looped/recurrent-depth
+Transformers. \textbf{Ouro-1.4B} (the main teacher): $D=24$ weight-tied layers, $H=16$
+attention heads of width $d_{\rm head}=128$, run at $T=4$ recurrence steps. \textbf{Ouro-2.6B-Thinking}:
+deeper Ouro variant, also $T=4$, used for the scale study. \textbf{Huginn-3.5B}: a different
+recurrent-depth family, evaluated at $R=32$ recurrence steps for the family-transfer study.
+The teacher weights are never updated; only the K/V codec is trained.
+
+\paragraph{LLA codec and conversion.} For each layer, head and axis (K, V) we collect the
+teacher's pre-RoPE per-loop activations on a fixed calibration set of $255$ prompts and
+initialize $W_{\rm down}$ from the top-$r$ right singular vectors of the stacked-loop matrix
+(loop slices give the initial $W_{{\rm up},t}$). The SVD-initialized codec is then fine-tuned
+with the teacher frozen using \texttt{train\_rmla.py}: objective = forward KL(teacher $\Vert$
+swapped) $+\;\lambda_{\rm attn}\!=\!0.5$ per-loop attention-output matching (Eq.~\ref{eq:loss});
+$3000$ steps ($300$ for the design ablations of Table~\ref{tab:ablations}), batch size $8$,
+sequence length $512$, AdamW, learning rate $1\mathrm{e}{-3}$ with $100$-step warmup and cosine
+decay to $5\%$, held-out KL evaluated every $200$ steps ($n=32$). We select the
+\emph{best-KL} checkpoint (not the final step); a codec whose final-step KL exceeds its best is
+reported at its best checkpoint. Ranks $(r_k,r_v)$ per compression $\rho$ are listed in
+Table~\ref{tab:tier4}; we use $r_v>r_k$ throughout (V converges more slowly, Sec.~\ref{sec:structure}).
+\textbf{LLA-2D} shares the same recipe but stores one latent per token and layer, reconstructing
+all $H$ heads from it. RoPE is applied \emph{after} reconstruction (the rotary phase is shared
+across loops for a token), so no decoupled-RoPE branch is needed for the content path.
+
+\paragraph{Matched-axis baselines.} All learned baselines use the identical conversion recipe
+above; only the codec architecture changes. \emph{mla\_head}: per-loop MLA (head-axis latent,
+no cross-loop sharing). \emph{cla}: cross-layer K/V sharing over $s\in\{4,6,12,24\}$ adjacent
+layers. \emph{kv\_quant}: inference-only low-bit K/V quantization at $\{2,3,4,8\}$ bits (no codec
+training, hence no train-KL, and it cannot exceed $\sim$8$\times$). \emph{final-loop reuse}: a
+zero-parameter control that caches only the last loop's K/V and reuses it for all loops.
+
+\paragraph{Evaluation suite and protocols.} \textbf{GSM8K}: 5-shot at 1.4B and 2-shot at 2.6B,
+strict-match EM, \texttt{max\_gen\_toks}=256. The 1.4B teacher is scored on the full $1319$-item
+test set; the iso-cache and broad-suite codecs use a $100$-item subset with the faithful re-forward
+decoder, while the tier4 cold-start sweep (Table~\ref{tab:tier4}) uses a $200$-item subset with the
+earlier streaming reconstruction decoder and a $100$-item teacher reference. At 2.6B, scored with the
+faithful decoder, the teacher and the per-head and head-axis arms use the full $1319$ items and the
+\lla{}-2D arms use a $100$-item subset. \textbf{MATH-500}: 4-shot, \texttt{max\_gen\_toks}=2048,
+batch 1, faithful decoder, scored by \texttt{math\_verify} symbolic equivalence; teacher on all
+$500$ items, codecs on $200$. \textbf{BBH}: 3-shot, \texttt{max\_gen\_toks}=1024, batch 1, exact
+match, faithful decoder; teacher $25$ items/sub-task ($675$ docs) and codecs $5$/sub-task ($135$
+docs, identical items across arms). \textbf{HumanEval}/\textbf{MBPP}: EvalPlus pass@1 (base/plus)
+on the full sets ($164$/$378$). \textbf{MMLU-Pro}: exact match on the full set. The
+commonsense/knowledge MC suite (\textbf{ARC-e/c, HellaSwag, PIQA, WinoGrande, OpenBookQA,
+CommonsenseQA, MMLU}) is 0-shot loglikelihood accuracy on the full sets and is decoder-independent.
+Within each table the codec and baseline arms are scored on identical items; the teacher reference
+is scored on the full set where the two differ.
+Passkey (Table~\ref{tab:passkey}) hides a 5-digit key at a random depth in filler context, $15$
+trials/cell ($5$ keys $\times$ $3$ depths), scored by exact retrieval; contexts $2$k to $64$k.
+``train-KL'' is the held-out teacher-forced KL of the codec and is decoder-independent.
+
+\paragraph{Decoding and caching.} Two decoders are used. The \emph{cached reconstruction decoder}
+is two-pass: pass~1 captures the teacher's pre-RoPE per-loop K/V, the codec reconstructs them,
+and pass~2 re-forwards forcing the reconstruction so the model's own RoPE and cache store the
+post-RoPE reconstruction. This matches the training objective and is used for the iso-cache, broad-suite, 2.6B and MATH-500/BBH numbers; the tier4 cold-start sweep used an earlier streaming reconstruction decoder. The \emph{capacity /
+latent-store decoder} caches only the latent and reconstructs on read, realizing the $\rho\times$
+memory saving; its two-pass prefill is streamed layer-by-layer so long prompts (to $64$k) fit in
+memory. Two serving regimes (Sec.~\ref{sec:systems}): a full-memory \emph{fast path} (caches
+reconstructed full K/V, teacher-latency, no memory saving) and a \emph{capacity path} (stores
+latents, reconstruction-compute-bound). On-policy refinement samples the codec's own rollouts
+(temperature sampling, no reward/correctness filtering) and minimizes the frozen teacher's
+per-token KL to those visited states with a stop-gradient through sampling.
+
+\paragraph{Hardware and precision.} Codecs are trained and evaluated in bfloat16. Serving-capacity
+and latency measurements (Table~\ref{tab:memory}) are on a single H200 at context length $4096$;
+generative evaluations use B200 GPUs (183~GB) with per-process memory fraction $0.99$
+for the long-context and 2.6B runs.
+
+\paragraph{Broad-suite accuracy relative to the teacher.}
+Table~\ref{tab:retention} restates the broad suite (Table~\ref{tab:broadsuite}) as compressed$/$teacher ratios, putting every task on one scale so the task-dependence of compression is directly comparable.
+\begin{table}[H]
+  \centering\footnotesize
+  \caption{\textbf{Broad-suite accuracy relative to the Ouro-1.4B teacher} (compressed$/$teacher, computed from Table~\ref{tab:broadsuite}). A value of $1.00$ matches the teacher. The common scale makes the task-dependence explicit. Code (HumanEval, MBPP) and MMLU-Pro retain the most under compression, while GSM8K and BBH degrade fastest.}
+  \label{tab:retention}
+  \begin{tabular}{lcccccccc}
+    \toprule
+    Model & GSM8K & HE b & HE p & MBPP b & MBPP p & MATH-500 & BBH & MMLU-Pro \\
+    \midrule
+    Ouro teacher $(1\times)$ & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 \\
+    \midrule
+    LLA $1.33\times$ & 1.00 & 1.07 & 1.06 & 1.01 & 1.02 & 0.95 & 1.00 & 0.97 \\
+    LLA $1.60\times$ & 0.95 & 1.03 & 1.03 & 1.02 & 1.05 & 0.91 & 0.98 & 0.99 \\
+    LLA $2.00\times$ & 0.94 & 1.05 & 1.04 & 1.02 & 1.01 & 0.85 & 0.96 & 0.98 \\
+    LLA $2.67\times$ & 0.72 & 0.77 & 0.73 & 0.93 & 0.95 & 0.73 & 0.82 & 0.84 \\
+    LLA $3.20\times$ & 0.72 & 0.84 & 0.80 & 0.90 & 0.90 & 0.97 & 0.70 & 0.83 \\
+    LLA $4.00\times$ & 0.74 & 0.86 & 0.84 & 0.86 & 0.86 & 0.70 & 0.74 & 0.86 \\
+    \bottomrule
+  \end{tabular}
+\end{table}%
+}

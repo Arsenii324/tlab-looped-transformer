@@ -1,0 +1,17 @@
+\begin{table*}[t]
+\centering
+\small
+\newcommand{\newscriptspace}{\makebox[\widthof{0}]{}}
+%\setlength{\tabcolsep}{1.5pt}
+\caption{Comparison of the total training time and GPU memory usage of \LRM across different datasets and settings. ``General'' denotes the general reward model from Section~\ref{sec:generalist_reward_modeling}.}
+\begin{tabular}{lccccc}
+\toprule
+                       & 
+                       \textbf{GSM8K}&\textbf{SVAMP} & \textbf{CommonsenseQA}  & \textbf{MBPP} & \textbf{General}
+\\ \midrule 
+Total Training Time (h)&\newscriptspace0.85&\newscriptspace4.19&\newscriptspace1.05&\newscriptspace0.92&\newscriptspace6.12\\
+GPU Memory Usage (GB)&10.39&10.40&10.39&10.40&10.39\\
+\bottomrule
+\end{tabular}
+\label{tab:training_efficiency_analysis}
+\end{table*}

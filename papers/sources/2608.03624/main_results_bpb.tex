@@ -1,0 +1,170 @@
+\definecolor{lightblue}{RGB}{220,230,255}
+\definecolor{lightgray}{RGB}{240,240,240}
+
+
+        
+        
+
+
+
+\begin{table*}[t]
+    \centering
+    \setlength{\tabcolsep}{4.5pt}
+    \resizebox{0.85\linewidth}{!}{
+    \begin{tabular}{
+        l |
+        c c c c c c c c
+        }
+    \toprule
+        & \multicolumn{8}{c}{\textit{General \& QA Tasks (Accuracy $\uparrow$)}}
+        \\
+        \cmidrule(lr){2-9}
+        Model
+        & ARC-C & ARC-E & HS & WG & SIQA & PIQA & LB & \textit{Avg}
+        \\ \midrule
+        \textbf{Non-looped} & 31.60$_{1.16}$ & 59.90$_{0.54}$ & 38.48$_{0.04}$ & 50.96$_{0.27}$ & 44.85$_{0.27}$ & 65.98$_{0.24}$ & 32.16$_{0.89}$ & 46.28$_{0.28}$
+        \\ \midrule
+        
+        \textbf{\textit{LoopFormer$^*$}}
+        \\
+        \quad Loops=3$^\dagger$ & 32.04$_{0.81}$ & 58.69$_{2.04}$ & 38.61$_{2.56}$ & 50.24$_{0.67}$ & 44.19$_{1.97}$ & 66.00$_{0.98}$ & 30.98$_{3.29}$ & 45.82$_{1.76}$\\
+        \quad Loops=5 & 35.24$_{1.40}$ & 59.65$_{0.98}$ & 41.61$_{0.86}$ & 52.35$_{0.84}$ & 45.87$_{0.23}$ & 65.29$_{0.56}$ & 35.13$_{0.62}$ & 47.88$_{0.49}$\\ 
+        \quad Loops=7 & 30.01$_{3.44}$ & 46.49$_{14.34}$ & 34.37$_{7.30}$ & 51.43$_{1.55}$ & 42.39$_{3.66}$ & 60.52$_{7.25}$ & 20.84$_{15.24}$ & 40.86$_{7.48}$\\ 
+        \quad Loops=9 & 32.17$_{3.20}$ & 49.97$_{16.38}$ & 36.50$_{7.66}$ & 50.86$_{1.68}$ & 42.94$_{3.98}$ & 60.97$_{7.96}$ & 23.73$_{16.78}$ & 42.45$_{8.22}$\\ \midrule
+        
+        \rowcolor{lightgray} \textit{\textbf{\textsc{LoopMTP}}\small(ours)\normalsize} &&&&&&&&\\
+        \rowcolor{lightgray} \quad Loops=3 & 35.49$_{1.24}$ & 62.28$_{0.93}$ & 42.60$_{0.32}$ & 50.07$_{0.71}$ & 46.37$_{0.81}$ & 67.17$_{0.13}$ & 35.48$_{1.08}$ & 48.49$_{0.08}$\\
+        \rowcolor{lightgray} \quad Loops=5 & 35.32$_{1.79}$ & 63.38$_{0.72}$ & 44.35$_{0.35}$ & 52.54$_{0.46}$ & 46.88$_{0.59}$ & 67.52$_{0.24}$ & 36.79$_{1.09}$ & 49.54$_{0.36}$\\
+        \rowcolor{lightgray} \quad Loops=7 & 35.10$_{0.89}$ & \textbf{64.07$_{0.69}$} & \textbf{44.78$_{0.29}$} & \textbf{52.99$_{0.83}$} & \underline{46.95}$_{0.51}$ & \textbf{67.97$_{0.85}$} & 36.39$_{1.44}$ & \underline{49.75}$_{0.31}$\\
+        \rowcolor{lightgray} \quad Loops=9 & \textbf{36.01$_{0.39}$} & \underline{63.71}$_{0.53}$ & \underline{44.64}$_{0.16}$ & \underline{52.70}$_{0.35}$ & \textbf{47.78$_{0.16}$} & \underline{67.86}$_{0.33}$ & \textbf{37.47$_{1.46}$} & \textbf{50.02$_{0.16}$}\\
+    \bottomrule
+    \end{tabular}
+    }
+    \caption{\textbf{Accuracy results on general and QA tasks, with multi-seed standard deviations.}
+    $^*$ for LoopFormer \cite{jeddi2026loopformer}, stable training required a separate grid search over learning rate, weight decay, and warmup ratio at each loop count. $^\dagger$ indicates runs whose reported averages are over two random seeds, as one of the three runs diverged.}
+    \label{tab:acc_general_results}
+\end{table*}
+
+
+
+
+\begin{table*}[t]
+    \centering
+    \setlength{\tabcolsep}{4.5pt}
+    \resizebox{\linewidth}{!}{
+    \begin{tabular}{
+        l |
+        c c c c c c c c
+        }
+    \toprule
+        & \multicolumn{8}{c}{\textit{General \& QA Tasks (BPB $\downarrow$)}}
+        \\
+        \cmidrule(lr){2-9}
+        Model
+        & ARC-C & ARC-E & HS & WG & SIQA & PIQA & LB & \textit{Avg}
+        \\ \midrule
+        \textbf{Non-looped} & 0.8842$_{0.0008}$ & 1.1489$_{0.0030}$ & 0.8280$_{0.0106}$ & 0.7493$_{0.0065}$ & 0.9543$_{0.0110}$ & 1.2262$_{0.0020}$ & 1.1723$_{0.0061}$ & 0.9948$_{0.0045}$
+        \\ \midrule
+        
+        \textbf{\textit{LoopFormer$^*$}}
+        \\
+        \quad Loops=3$^\dagger$ & 0.9017$_{0.0199}$ & 1.1625$_{0.0211}$ & 0.8637$_{0.0665}$ & 0.7815$_{0.0688}$ & 0.9782$_{0.0587}$ & 1.2500$_{0.0262}$ & 1.2109$_{0.0274}$ & 1.0212$_{0.0412}$\\
+        \quad Loops=5 & 0.8771$_{0.0049}$ & 1.1494$_{0.0125}$ & 0.7895$_{0.0113}$ & 0.7134$_{0.0120}$ & 0.9086$_{0.0134}$ & 1.2196$_{0.0043}$ & 1.1655$_{0.0124}$ & 0.9747$_{0.0083}$\\ 
+        \quad Loops=7 & 1.3658$_{0.6304}$ & 1.6384$_{0.6571}$ & 1.6467$_{1.0783}$ & 1.2893$_{0.7270}$ & 1.4615$_{0.6869}$ & 1.6241$_{0.5363}$ & 1.5720$_{0.5020}$ & 1.5140$_{0.6882}$\\ 
+        \quad Loops=9 & 1.3005$_{0.6070}$ & 1.5730$_{0.6345}$ & 1.5596$_{1.1166}$ & 1.2559$_{0.8001}$ & 1.3973$_{0.7121}$ & 1.5852$_{0.5335}$ & 1.5168$_{0.4966}$ & 1.4555$_{0.7000}$\\ \midrule
+        
+        \rowcolor{lightgray} \textit{\textbf{\textsc{LoopMTP}}\small(ours)\normalsize} &&&&&&&&\\
+        \rowcolor{lightgray} \quad Loops=3 & 0.8600$_{0.0004}$ & 1.1155$_{0.0057}$ & 0.7768$_{0.0171}$ & 0.6885$_{0.0018}$ & 0.8943$_{0.0058}$ & 1.2005$_{0.0085}$ & 1.1431$_{0.0051}$ & 0.9541$_{0.0013}$\\
+        \rowcolor{lightgray} \quad Loops=5 & 0.8551$_{0.0024}$ & 1.1129$_{0.0050}$ & 0.7492$_{0.0064}$ & 0.6666$_{0.0028}$ & \textbf{0.8721$_{0.0077}$} & \textbf{1.1913$_{0.0119}$} & 1.1421$_{0.0046}$ & 0.9413$_{0.0033}$\\
+        \rowcolor{lightgray} \quad Loops=7 & \textbf{0.8515$_{0.0033}$} & \underline{1.1121}$_{0.0030}$ & \underline{0.7473}$_{0.0142}$ & \textbf{0.6626}$_{0.0019}$ & \underline{0.8730}$_{0.0036}$ & \underline{1.1965}$_{0.0025}$ & \textbf{1.1151$_{0.0102}$} & \underline{0.9369}$_{0.0022}$\\
+        \rowcolor{lightgray} \quad Loops=9 & \underline{0.8526}$_{0.0022}$ & \textbf{1.1086$_{0.0068}$} & \textbf{0.7359$_{0.0220}$} & \underline{0.6649}$_{0.0070}$ & 0.8756$_{0.0027}$ & 1.1980$_{0.0152}$ & \underline{1.1204}$_{0.0107}$ & \textbf{0.9366$_{0.0050}$}\\
+    \bottomrule
+    \end{tabular}
+    }
+    \caption{\textbf{BPB results on general and QA tasks, with multi-seed standard deviations.}
+    $^*$ for LoopFormer \cite{jeddi2026loopformer}, stable training required a separate grid search over learning rate, weight decay, and warmup ratio at each loop count. $^\dagger$ indicates runs whose reported averages are over two random seeds, as one of the three runs diverged.}
+    \label{tab:bpb_general_results}
+\end{table*}
+
+
+\begin{table*}[t]
+    \centering
+    \setlength{\tabcolsep}{4.5pt}
+    \resizebox{\linewidth}{!}{
+    \begin{tabular}{
+        l |
+        c c c c c c c c
+        }
+    \toprule
+        & \multicolumn{8}{c}{\textit{Math \& Reasoning Tasks (BPB $\downarrow$)}}
+        \\
+        \cmidrule(lr){2-9}
+        Model
+        & algebra & \makecell{counting \&\\probability} & geometry & \makecell{intermediate\\algebra} & \makecell{number\\theory} & prealgebra & precalculus & \textit{Avg}
+        \\ \midrule
+        \textbf{Non-looped} & 0.7015$_{0.0029}$ & 0.6839$_{0.0023}$ & 0.7696$_{0.0032}$ & 0.7321$_{0.0047}$ & 0.7661$_{0.0009}$ & 0.6696$_{0.0019}$ & 0.6572$_{0.0028}$ & 0.7114$_{0.0024}$
+        \\ \midrule
+        
+        \textbf{\textit{LoopFormer$^*$}}
+        \\
+        \quad Loops=3$^\dagger$ & 0.7260$_{0.0442}$ & 0.7014$_{0.0391}$ & 0.7963$_{0.0472}$ & 0.7579$_{0.0445}$ & 0.7889$_{0.0384}$ & 0.6901$_{0.0382}$ & 0.6801$_{0.0433}$ & 0.7344$_{0.0421}$\\
+        \quad Loops=5 & 0.6789$_{0.0133}$ & 0.6604$_{0.0113}$ & 0.7543$_{0.0095}$ & 0.7053$_{0.0116}$ & 0.7461$_{0.0127}$ & 0.6490$_{0.0129}$ & 0.6348$_{0.0108}$ & 0.6898$_{0.0116}$\\ 
+        \quad Loops=7 & 1.7655$_{1.4466}$ & 1.5079$_{1.1230}$ & 1.8546$_{1.4597}$ & 1.8537$_{1.5247}$ & 1.7187$_{1.2894}$ & 1.5966$_{1.2564}$ & 1.7844$_{1.5343}$ & 1.7259$_{1.3763}$\\ 
+        \quad Loops=9 & 1.6296$_{1.3613}$ & 1.4130$_{1.0741}$ & 1.7195$_{1.3811}$ & 1.7134$_{1.4341}$ & 1.6130$_{1.2377}$ & 1.4812$_{1.1884}$ & 1.6545$_{1.4508}$ & 1.6034$_{1.3039}$\\ \midrule
+        
+        \rowcolor{lightgray} \textit{\textbf{\textsc{LoopMTP}}\small(ours)\normalsize} &&&&&&&&\\
+        \rowcolor{lightgray} \quad Loops=3 & 0.6526$_{0.0020}$ & 0.6442$_{0.0034}$ & 0.7302$_{0.0029}$ & 0.6833$_{0.0032}$ & 0.7240$_{0.0016}$ & 0.6289$_{0.0019}$ & 0.6138$_{0.0031}$ & 0.6681$_{0.0022}$\\
+        \rowcolor{lightgray} \quad Loops=5 & \textbf{0.6410$_{0.0022}$} & 0.6331$_{0.0010}$ & 0.7190$_{0.0031}$ & \underline{0.6784}$_{0.0008}$ & \underline{0.7130}$_{0.0019}$ & 0.6169$_{0.0005}$ & \textbf{0.6077$_{0.0029}$} & \underline{0.6584}$_{0.0014}$\\
+        \rowcolor{lightgray} \quad Loops=7 & \underline{0.6414}$_{0.0030}$ & \textbf{0.6306$_{0.0017}$} & \textbf{0.7179$_{0.0013}$} & \textbf{0.6771$_{0.0035}$} & \textbf{0.7100$_{0.0023}$} & \underline{0.6153}$_{0.0025}$ & \underline{0.6101}$_{0.0021}$ & \textbf{0.6575$_{0.0021}$}\\
+        \rowcolor{lightgray} \quad Loops=9 & \textbf{0.6410$_{0.0040}$} & \underline{0.6322}$_{0.0024}$ & \underline{0.7180}$_{0.0061}$ & 0.6819$_{0.0073}$ & 0.7132$_{0.0045}$ & \textbf{0.6137$_{0.0032}$} & 0.6103$_{0.0071}$ & 0.6586$_{0.0049}$\\
+    \bottomrule
+    \end{tabular}
+    }
+    \caption{\textbf{BPB results on math and reasoning tasks, with multi-seed standard deviations.}
+    $^*$ for LoopFormer \cite{jeddi2026loopformer}, stable training required a separate grid search over learning rate, weight decay, and warmup ratio at each loop count. $^\dagger$ indicates runs whose reported averages are over two random seeds, as one of the three runs diverged.}
+    \label{tab:bpb_math_results}
+\end{table*}
+
+
+\begin{table*}[t]
+    \centering
+    \setlength{\tabcolsep}{4.5pt}
+    \resizebox{0.59\linewidth}{!}{
+    \begin{tabular}{
+        l |
+        c c c
+        }
+    \toprule
+        & \multicolumn{3}{c}{\textit{Coding Tasks (BPB $\downarrow$)}}
+        \\
+        \cmidrule(lr){2-4}
+        Model
+        & mbpp & \makecell{codex\\humaneval}
+        & \textit{Avg}
+        \\ \midrule
+        \textbf{Non-looped} & 0.9710$_{0.0033}$ & 0.7538$_{0.0048}$ & 0.8624$_{0.0040}$
+        \\ \midrule
+        
+        \textbf{\textit{LoopFormer$^*$}}
+        \\
+        \quad Loops=3$^\dagger$ & 0.9922$_{0.0506}$ & 0.8152$_{0.0726}$ & 0.9037$_{0.0616}$\\
+        \quad Loops=5 & 0.9320$_{0.0153}$ & 0.7375$_{0.0186}$ & 0.8348$_{0.0163}$\\ 
+        \quad Loops=7 & 2.4820$_{2.0270}$ & 2.1205$_{1.7762}$ & 2.3012$_{1.9015}$\\ 
+        \quad Loops=9 & 1.9664$_{1.4739}$ & 1.6515$_{1.3134}$ & 1.8089$_{1.3937}$\\ \midrule
+        
+        \rowcolor{lightgray} \textit{\textbf{\textsc{LoopMTP}}\small(ours)\normalsize} &&&\\
+        \rowcolor{lightgray} \quad Loops=3 & 0.9072$_{0.0113}$ & 0.7070$_{0.0107}$ & 0.8071$_{0.0083}$\\
+        \rowcolor{lightgray} \quad Loops=5 & \underline{0.8876}$_{0.0042}$ & \underline{0.6965}$_{0.0062}$ & \underline{0.7921}$_{0.0037}$\\
+        \rowcolor{lightgray} \quad Loops=7 & \textbf{0.8812$_{0.0053}$} & \textbf{0.6832$_{0.0017}$} & 0.7822$_{0.0019}$\\
+        \rowcolor{lightgray} \quad Loops=9 & 0.8942$_{0.0115}$ & 0.7064$_{0.0087}$ & 0.8003$_{0.0101}$\\
+    \bottomrule
+    \end{tabular}
+    }
+    \caption{\textbf{BPB results on coding tasks, with multi-seed standard deviations.}
+    $^*$ for LoopFormer \cite{jeddi2026loopformer}, stable training required a separate grid search over learning rate, weight decay, and warmup ratio at each loop count. $^\dagger$ indicates runs whose reported averages are over two random seeds, as one of the three runs diverged.}
+    \label{tab:bpb_code_results}
+\end{table*}
+
+
+        
+        

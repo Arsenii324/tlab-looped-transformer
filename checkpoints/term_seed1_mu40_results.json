@@ -1,0 +1,106 @@
+{
+  "t1_mu40_term": {
+    "model_cfg": {
+      "vocab_size": 4096,
+      "hidden_size": 448,
+      "n_heads": 4,
+      "n_kv_heads": 2,
+      "head_dim": 112,
+      "intermediate_size": 1344,
+      "layers_per_loop": 3,
+      "readout_mode": "norm",
+      "convex_gate": false,
+      "fixed_gate": null,
+      "explore_noise": 0.0,
+      "explore_anneal": true,
+      "n_prelude": 0,
+      "n_coda": 0,
+      "rms_norm_eps": 1e-06,
+      "rope_theta": 10000.0,
+      "max_position_embeddings": 512,
+      "truncate_bptt": null,
+      "state_renorm": false,
+      "inject_mode": "additive",
+      "depth_init": true,
+      "n_loop_eff": 24
+    },
+    "train_cfg": {
+      "run_name": "t1_mu40_term",
+      "seq_len": 256,
+      "batch_size": 8,
+      "lr": 0.003,
+      "min_lr": 0.0003,
+      "warmup_steps": 60,
+      "weight_decay": 0.05,
+      "grad_clip": 1.0,
+      "total_tokens": 2500000,
+      "min_train_loops": 32,
+      "max_train_loops": 48,
+      "supervise_k": 1,
+      "supervise_k_final": null,
+      "supervise_switch_frac": 0.5,
+      "norm_penalty": 0.0,
+      "fixed_train_loops": null,
+      "eval_every_tokens": 1250000,
+      "eval_batches": 8,
+      "eval_batch_size": 4,
+      "eval_loop_sweep": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        24,
+        32,
+        40,
+        48,
+        56,
+        64,
+        96,
+        128
+      ],
+      "seed": 1,
+      "device": "cuda"
+    },
+    "history": [
+      {
+        "step": 610,
+        "val_curve": {
+          "1": 6.727660894393921,
+          "2": 6.504116475582123,
+          "4": 6.28045791387558,
+          "8": 6.083182752132416,
+          "16": 5.940163612365723,
+          "24": 5.891155421733856,
+          "32": 5.874627530574799,
+          "40": 5.873237431049347,
+          "48": 5.879995942115784,
+          "56": 5.891510546207428,
+          "64": 5.905927240848541,
+          "96": 5.975928723812103,
+          "128": 6.050095438957214
+        }
+      },
+      {
+        "step": 1219,
+        "val_curve": {
+          "1": 6.568987429141998,
+          "2": 6.362169861793518,
+          "4": 6.1252361536026,
+          "8": 5.874173104763031,
+          "16": 5.643143177032471,
+          "24": 5.545615315437317,
+          "32": 5.504057586193085,
+          "40": 5.490056276321411,
+          "48": 5.4910003542900085,
+          "56": 5.500790953636169,
+          "64": 5.516203582286835,
+          "96": 5.606627523899078,
+          "128": 5.716844379901886
+        }
+      }
+    ],
+    "params": 9064608,
+    "elapsed_s": 1886.6137430667877
+  }
+}

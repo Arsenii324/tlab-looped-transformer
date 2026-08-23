@@ -1,0 +1,138 @@
+% ============================================================================
+\section{Mechanism: Visible Losses Control Visible Coordinates}
+\label{sec:mechanism}
+
+The failure mode is a mismatch between what the recurrent state carries and what the loss can see.
+At loop $k$, a hidden state $H_k$ is both a prediction interface and the input to future computation:
+\begin{equation}
+    H_{k+1}=F_\theta(H_k),\qquad z_k=W_{\mathrm{out}}r(H_k),\qquad
+    \mathcal{L}_k=\mathrm{CE}(z_k,y).
+\end{equation}
+Here $F_\theta$ is the recurrent transition, $r$ is the readout, $W_{\mathrm{out}}$ maps readout states to logits $z_k$, $y$ is the next-token target, and $\mathcal{L}_k$ is the loop-$k$ cross-entropy loss.
+A degree of freedom is \emph{immediately visible} if the local readout loss has a derivative in that direction, and \emph{active} if the transition updates it and carries it forward.
+Per-loop CE makes each loop predictive, but it does not make every active degree of freedom visible.
+
+We study the scale direction.
+Let $H=su$, where $s=\|H\|_{\rms}$, $\|u\|_{\rms}=1$, and $\|v\|_{\rms}^2=d^{-1}\|v\|_2^2$ for hidden-vector dimension $d$.
+A raw readout preserves scale, $r_{\mathrm{raw}}(su)=su$.
+A normalized readout removes it, $r_{\mathrm{norm}}(su)=u$ up to the usual normalization epsilon.
+Figure~\ref{fig:mechanism} sketches the two paths the same state takes.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/visibility_activity_mechanism.pdf}
+\caption{\textbf{Visibility--activity mismatch.}
+The same hidden state $H_k=s_ku_k$ serves as both a prediction interface and the input to the next recurrent step.
+Along the readout path, output normalization removes scale, so the immediate CE loss has approximately zero radial gradient.
+Along the recurrent path, the pre-norm residual update still carries the skip state $H_k$, so scale remains active and can drift through the recurrence.
+Here $\mathrm{Norm}$ denotes the pre-sublayer normalizer and $B$ denotes the residual branch applied to the normalized state.}
+\label{fig:mechanism}
+\end{figure}
+
+\begin{lemma}[Visibility: scale-invariant readouts remove the immediate radial CE signal]
+\label{lemma:radial}
+If $r(\alpha H)=r(H)$ for all $\alpha>0$ and $\mathcal{L}(H)=\mathrm{CE}(W_{\mathrm{out}}r(H),y)$ is differentiable at $H\neq0$, then
+\begin{equation}
+    \langle \nabla_H \mathcal{L}(H),H\rangle=0.
+\end{equation}
+\end{lemma}
+\noindent
+The proof is the chain rule applied to $\mathcal{L}(e^tH)$, which is constant in $t$.
+With practical LayerNorm/RMSNorm epsilons the identity is approximate, but the radial derivative is small at large hidden norm.
+
+\begin{lemma}[Activity: pre-norm residual loops carry scale]
+\label{lemma:expansion}
+Let $H=su$ with $\|u\|_{\rms}=1$.
+For the epsilon-free pre-norm residual update, with $\mathrm{Norm}$ the pre-sublayer normalizer and $B$ the residual branch,
+\[
+    F(H)=H+B(\mathrm{Norm}(H)),
+    \qquad
+    b(u)=B(\mathrm{Norm}(u)),
+\]
+we have $F(su)=su+b(u)$.
+Decompose the residual update into radial and angular parts:
+\[
+    b(u)=a_{\rad}(u)u+b_\perp(u),
+    \qquad
+    a_{\rad}(u)=\frac{\langle u,b(u)\rangle}{d},
+    \qquad
+    \langle u,b_\perp(u)\rangle=0.
+\]
+If $\|b(u)\|_{\rms}=O(1)$ as $s\to\infty$, then
+\begin{align*}
+    \text{\emph{scale update:}}\qquad
+    \|F(su)\|_{\rms}
+    &= s+a_{\rad}(u)+O(s^{-1}), \\
+    \text{\emph{direction update:}}\qquad
+    \frac{F(su)}{\|F(su)\|_{\rms}}
+    &= u+\frac{b_\perp(u)}{s}+O(s^{-2}).
+\end{align*}
+\end{lemma}
+\noindent
+Thus normalized readouts remove the direct radial CE signal, while pre-norm recurrence can still update scale at leading order.
+The lemmas identify a local mechanism, not an unconditional theorem of explosion.
+The sign and persistence of $a_{\rad}(u_k)$ are learned empirical properties.
+If the learned block has persistent positive radial velocity, however, the local CE path through a normalized readout has no direct way to oppose it.
+Combining the two statements gives the local scale-control mismatch
+\begin{equation}
+    \langle \nabla_{H_k}\mathcal{L}_k,H_k\rangle=O(\epsilon/s_k^2),
+    \qquad
+    s_{k+1}-s_k=a_{\rad}(u_k)+O(s_k^{-1}),
+\end{equation}
+where $\epsilon$ is the normalizer epsilon; the first term is exact in the epsilon-free idealization and approximate with practical normalizers.
+Proof details are in Appendix~\ref{app:proofs}.
+
+\paragraph{Tokenwise normalization and transformer blocks.}
+The scalar decomposition keeps notation readable.
+In the actual transformer, RMSNorm is applied over channels separately at each token, so the scale-blind direction is one radial degree of freedom per token vector.
+The same expansion also applies to a multi-sublayer pre-norm decoder block at leading order: after the first residual addition, later normalizers see $su+O(1)$, so their normalized input differs from $\mathrm{Norm}(u)$ only by $O(s^{-1})$.
+Appendix~\ref{app:per-token-norms} reports token-level norm statistics.
+
+\paragraph{Indirect future-loop signals.}
+Future losses are not zero-signal.
+A later loss can backpropagate through the recurrence and therefore depend indirectly on the earlier scale.
+The issue is attenuation: for a fixed future horizon $t$, changing $s_k$ mainly changes the size of later angular steps, $u_{j+1}-u_j=b_\perp(u_j)/s_j+O(s_j^{-2})$.
+Under smoothness and bounded-update assumptions on a stable trajectory, this yields
+\begin{equation}
+    \biggl|\frac{\partial \mathcal{L}_{k+t}}{\partial \log s_k}\biggr|
+    \lesssim \frac{C t}{s_k}
+\end{equation}
+for a constant $C$ depending on those bounds.
+We offer this as an explanatory estimate rather than a global-training theorem: it is the fixed-depth reason future CE can be a weak scale-control path at large norm.
+
+\paragraph{Design rule.}
+Dense CE trains visible prediction interfaces.
+Recurrent scale control requires either making scale visible to at least one loss, for example with raw readouts or an explicit norm penalty, or removing/resetting scale inside the recurrent path, as inter-loop normalization does.
+Table~\ref{tab:interventions-main} organizes the interventions used in this paper by which of these roles they play.
+
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{Scale control and exit training are separate design requirements.} The interventions separate whether CE sees scale, whether scale is controlled by an auxiliary loss, or whether scale is removed from the recurrent path.}
+\label{tab:interventions-main}
+\begin{tabular}{p{0.30\linewidth}p{0.60\linewidth}}
+\toprule
+\textbf{Intervention} & \textbf{Role in the framework} \\
+\midrule
+\multicolumn{2}{l}{\emph{Scale-hidden CE}} \\
+Normalized readout & Hides hidden-state scale from the immediate CE loss. \\
+Per-loop CE through normalized readouts & Trains intermediate prediction exits, but does not by itself make scale visible. \\
+\addlinespace
+\multicolumn{2}{l}{\emph{Scale-visible CE}} \\
+Raw readout & Makes scale visible to CE by breaking scale invariance. \\
+\addlinespace
+\multicolumn{2}{l}{\emph{Explicit scale penalty}} \\
+Norm penalty & Adds an auxiliary scale-visible objective while keeping the normalized readout. \\
+\addlinespace
+\multicolumn{2}{l}{\emph{Hybrid readout}} \\
+Final-only norm & Exposes intermediate loops through raw readouts but keeps a normalized final interface. \\
+\addlinespace
+\multicolumn{2}{l}{\emph{Scale-removing recurrence}} \\
+Inter-loop normalization & Removes scale from the recurrent input rather than supervising it. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Raw readout by itself is not the causal proof.
+It is a useful scale-visible intervention, but it also changes logit scale, calibration, output-weight usage, and gradient magnitudes.
+The scale-visibility interpretation comes from convergence across controls: raw readouts, explicit norm penalties, final-only normalization, radial-gradient diagnostics, and the recurrent-scale clamp all point to the same active-but-hidden scale direction.

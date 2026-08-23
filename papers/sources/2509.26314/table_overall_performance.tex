@@ -1,0 +1,25 @@
+\begin{table*}[t]
+\centering
+\newcommand{\supscriptspace}{\makebox[\widthof{$^{*}$}]{}} 
+\small
+\setlength{\tabcolsep}{2pt}
+\caption{Comparison of the answer correctness rate of \LRLM using different correction methods. The best performance in each column is in \textbf{bold}, and the performance of the best baseline in each column is \underline{underlined}. $*$ indicates statistically significant improvement with $p<0.05$.}
+%\vspace{-0.3cm}
+\begin{tabular}{lccccccccc}
+\toprule
+                       \textbf{Method}& 
+                       \centering\textbf{GSM8K}&\textbf{GSM-Symbolic}&\textbf{SVAMP} & \textbf{CommonsenseQA}  & \textbf{MBPP}
+\\ \midrule Base Model   &0.326
+&0.265&0.517 &0.500&0.278\\ 
+Majority Voting &0.333&0.269&0.511&0.504&\underline{0.288}                \\
+Self-Correction w. Confidence Score&\underline{0.342}&\underline{0.281}&\underline{0.524}&\underline{0.507}&\underline{0.288}\\
+Self-Correction w. Verbal Evaluation&0.262&0.193&0.518&0.505&0.226\\
+Latent Thinking Correction w. CoE-R&0.330&0.259&0.510&0.504&0.276\\
+Latent Thinking Correction w. CoE-C&0.324&0.256&0.516&\underline{0.507}&0.280\\
+\midrule
+\rowcolor{gray!15}Weighted Majority Voting w. \LRM   &\supscriptspace0.375$^{*}$&\supscriptspace0.301$^{*}$&\supscriptspace0.537$^{*}$&0.509&\supscriptspace0.295$^{*}$\\
+\rowcolor{gray!15}\LatentThinkingOptimization w. \LRM&\supscriptspace\textbf{0.385}$^{*}$&\supscriptspace\textbf{0.305}$^{*}$&\supscriptspace\textbf{0.538}$^{*}$&\supscriptspace\textbf{0.517}$^{*}$&\supscriptspace\textbf{0.299}$^{*}$\\
+\bottomrule
+\end{tabular}
+\label{tab:overall_performance_comparison}
+\end{table*}

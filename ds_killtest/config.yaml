@@ -1,0 +1,13 @@
+name: tlab-killtest
+desc: does a mid-compute cancel preserve stdout and/or declared outputs
+cmd: python main.py
+env:
+  python:
+    type: manual
+    version: "3.11"
+    requirements-file: requirements.txt
+    local-paths:
+      - main.py
+outputs:
+  - results/partial.json
+cloud-instance-type: gt4.1

@@ -1,0 +1,20 @@
+\begin{table*}
+\centering
+\small
+\setlength{\tabcolsep}{2pt}
+\caption{Performance comparison of the latent classifier with different aggregation strategies. The best performance in each column is in \textbf{bold}.
+}
+{\begin{tabular}{lccccccccccc}
+\toprule
+\multirow{2.5}{*}{\makecell{\textbf{Aggregation}\\\textbf{Strategy}}} & \multicolumn{2}{c}{\textbf{GSM8K}} && \multicolumn{2}{c}{\textbf{SVAMP}}&& \multicolumn{2}{c}{\textbf{CommonsenseQA}}&&\multicolumn{2}{c}{\textbf{MBPP}}\\\cmidrule{2-3}\cmidrule{5-6}\cmidrule{8-9}\cmidrule{11-12}
+                       & Accuracy& ROC-AUC   && Accuracy& ROC-AUC   &
+                       & Accuracy& ROC-AUC   &
+                       & Accuracy& ROC-AUC   \\ \midrule
+
+first 10 tokens      &  0.708&0.742&&0.924&0.980&&0.574&0.595&&0.732&0.742\\ 
+last 10 tokens  &0.790&0.863&&0.957&\textbf{0.987}&&0.610&0.644&&0.749&0.773  \\
+all the tokens&\textbf{0.820}&\textbf{0.884}&&\textbf{0.960}&\textbf{0.987}&&\textbf{0.623}&\textbf{0.671}&&\textbf{0.790}&\textbf{0.807}\\
+\bottomrule
+\end{tabular}}
+\label{tab:classifier_performance_different_aggregration_strategies}
+\end{table*}

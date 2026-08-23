@@ -1,0 +1,36 @@
+\section{Introduction}
+
+Looped (weight-tied) Transformers reuse a single block $f$ for $N$ iterations ($h \leftarrow h + f(h)$, same $f$ at each step), increasing effective depth without adding parameters.
+This design appears in Universal Transformers~\citep{dehghani2018universal}, ALBERT~\citep{lan2019albert}, and recent work on algorithmic reasoning and latent computation~\citep{yang2023looped,fan2024looped,saunshi2025latent,gatmiry2024multistep,ng2024loopnn,zhu2025ouro}.
+
+\input{sections/Figs/fig_main_schematic}
+
+In practice, increasing $N$ often leads to training instability such as exploding hidden states and high sensitivity to the learning rate~\citep{zhu2025ouro}.
+A standard remedy is to scale each residual branch by a factor $\varepsilon$ that shrinks with depth, giving $h \leftarrow h + \varepsilon\,f(h)$.
+Prior depth-scaling analyses prescribe $\varepsilon = 1/\!\sqrt{N}$ for deep residual networks~\citep{bordelon2024depthwise,dey2025completep}, but whether this rule transfers to looped architectures---where the same $f$ is reused at every step---has not been established.
+
+We find that $1/\!\sqrt{N}$ scaling is indeed insufficient for looped models.
+Consider the residual-stream norm $\|h_N\|$ after $N$ iterations.
+For standard (non-shared) deep networks, $\varepsilon = 1/\!\sqrt{L}$ successfully keeps $\|h_L\|$ bounded as depth $L$ grows (Figure~\ref{fig:energy}, top row).
+For looped networks, however, $\varepsilon = 1/\!\sqrt{N}$ fails to control $\|h_N\|$, which grows rapidly with $N$; in contrast, $\varepsilon = 1/N$ keeps it bounded (Figure~\ref{fig:energy}, bottom row).
+Our theoretical analysis (Section~\ref{sec:theory}) explains this discrepancy: the $1/\!\sqrt{N}$ rule relies on the assumption that each layer has independent weights, but weight sharing makes successive updates correlated, amplifying residual-stream norm growth from $\Theta(\!\sqrt{N})$ to $\Theta(N)$.
+
+\input{sections/Figs/fig_energy}
+
+Beyond stabilizing the forward pass, the $1/N$ scaling also fixes the learning rate.
+The same constructive accumulation that drives $\Theta(N^2)$ squared-norm growth also amplifies weight updates: the output change from one optimizer step scales as $\eta\varepsilon N$, so setting $\varepsilon=1/N$ makes the stable learning rate constant in $N$ (Section~\ref{sec:theory}).
+This enables hyperparameter transfer: a learning rate tuned at $N{=}1$ remains near-optimal at larger $N$ without re-tuning.
+
+We further extend the analysis to practical multi-layer blocks, where $L$ distinct layers are each reused $N$ times (Section~\ref{sec:multilayer}).
+This introduces a second variance source: across independent layers, updates accumulate as a random walk in $L$, just as in standard deep networks.
+The factorized parameterization $\varepsilon = \lambda/(N\sqrt{L})$ handles both sources independently: $1/N$ cancels the within-layer quadratic growth, while $1/\!\sqrt{L}$ controls the across-layer random walk.
+The resulting learning-rate law, $\eta \lesssim 1/(\lambda\sqrt{L})$, depends only on the unique depth $L$, not on $N$, so hyperparameter transfer continues to hold for multi-layer blocks.
+
+Experiments on decoder-only Transformers trained on FineWeb-Edu~\citep{penedo2024fineweb} confirm these predictions (Section~\ref{sec:experiments}).
+The pairwise correlation structure underlying quadratic accumulation---dense positive cosine similarity between loop-step updates---persists well beyond initialization through full training, confirming that the $\Theta(N^2)$ growth mechanism is not an initialization artifact.
+Linear residual scaling yields improved trainability and consistent learning-rate transfer across $N\in\{1,2,4,8\}$: the optimal learning rate remains nearly invariant, unlike under $1/\!\sqrt{N}$ scaling where it shifts with $N$.
+The factorized parameterization $\varepsilon=\lambda/(N\sqrt{L})$ further extends this transfer across depths $L\in\{12,24,48\}$, with a single learning rate remaining near-optimal over all tested $(N,L)$ combinations.
+
+Taken together, our work extends the depth-scaling framework~\citep{yang2022tensorprogramsV,dey2025completep} to weight-shared architectures, showing that the standard independence assumptions break down under parameter reuse and deriving the corrected scaling rules.
+Beyond the theoretical contribution, the resulting parameterization directly solves two practical problems: it improves trainability at large loop counts and eliminates the need to re-tune hyperparameters when varying $N$.
+By making the loop count stable and tunable, these results establish reuse as a practical scaling axis for weight-tied Transformers.

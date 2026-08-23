@@ -1,0 +1,52 @@
+% \begin{algorithm}[t]
+% \caption{Explicit \HiB{\textcolor{blockdark}{\textbf{block-mode}}} \HiL{\textcolor{layerdark}{\textbf{layer-mode}}} Runge--Kutta forward pass.}
+% \label{alg:rk-unified}
+% \begin{algorithmic}[1]
+% \Require $x$, range $[a,b]$, number of stages $s$, Runge--Kutta coefficients $\{a_{ij}\}_{1\le j<i\le s},\{b_i\}_{i=1}^{s}$
+% \State $x \gets \textsc{PreLoop}(x)$ \Comment{embedding, pre-block, etc.}
+% \State \HiB{$y_0 \gets x$} \Comment{\HiB{initial state for the block}}
+% \State \HiL{\textbf{for} $\ell = a, \ldots, b$ \textbf{do}} \Comment{\HiL{outer loop over each layer}}
+% \State \HiL{\quad $y_0 \gets x$} \Comment{\HiL{initial state for every layer}}
+% \State \quad \textbf{for} $i = 1, \ldots, s$ \textbf{do} \Comment{iterate over the $s$ Runge--Kutta stages}
+% \State \quad\quad $y_i \gets y_0 + \sum_{j<i} a_{ij}k_j$ \Comment{add weighted increments}
+% \State \quad\quad $k_i \gets$ \HiB{$(L_b \circ \cdots \circ L_a)(y_i) - y_i$}\,\HiL{$L_\ell(y_i) - y_i$} \Comment{residual of the \HiB{full block}\,\HiL{single layer}}
+% \State \quad \textbf{end for}
+% \State \quad $x \gets y_0 + \sum_{i=1}^{s} b_ik_i$ \Comment{$s^\text{th}$ order Runge--Kutta update}
+% \State \HiL{\textbf{end for}}
+% \State \Return $\textsc{PostLoop}(x)$ \Comment{layers after the loop block, output head}
+% \end{algorithmic}
+% \end{algorithm}
+
+\begin{algorithm}[t]
+\caption{\HiB{\textbf{\textcolor{blockdark}{Block-mode}}} Runge--Kutta forward pass.}
+\label{alg:rk-block}
+\begin{algorithmic}[1]
+\Require $x$, block range $[a,b]$, number of stages $s$, Runge--Kutta coefficients $\{a_{ij}\}_{1\leq j<i\leq s},\{b_i\}_{i=1}^s$
+\State $x \gets \textsc{PreLoop}(x)$ \Comment{embedding, pre-block, etc.}
+\State \HiB{$y_0 \gets x$} \Comment{\HiB{initial state for the block}}
+\For{$i = 1,\dots,s$} \Comment{iterate over the $s$ Runge--Kutta stages}
+  \State $y_i \gets y_0 + \sum_{j<i} a_{ij}k_j$ \Comment{add weighted increments}
+  \State \HiB{$k_i \gets (L_b\circ\cdots\circ L_a)(y_i) - y_i$} \Comment{\HiB{residual of the full composed block}}
+\EndFor
+\State {$x \gets y_0 + \sum_{i=1}^{s} b_ik_i$} \Comment{$s^\text{th}$ order Runge--Kutta update}
+\State \Return $\textsc{PostLoop}(x)$ \Comment{layers after the loop block, output head}
+\end{algorithmic}
+
+\end{algorithm}
+\begin{algorithm}[t]
+\caption{\HiL{\textbf{\textcolor{layerdark}{Layer-mode}}} Runge--Kutta forward pass.}
+\label{alg:rk-layer}
+\begin{algorithmic}[1]
+\Require $x$, block range $[a,b]$, number of stages $s$, Runge--Kutta coefficients $\{a_{ij}\}_{1\leq j<i\leq s},\{b_i\}_{i=1}^s$
+\State $x \gets \textsc{PreLoop}(x)$ \Comment{embedding, pre-block, etc.}
+\State \HiL{\textbf{for} $\ell = a, \ldots, b$ \textbf{do}} \Comment{\HiL{outer loop over each layer}}
+  \State\quad \HiL{$y_0 \gets x$} \Comment{\HiL{initial state for every layer}}
+  \State \quad \textbf{for} $i = 1, \ldots, s$ \textbf{do} \Comment{iterate over the $s$ Runge--Kutta stages}
+    \State \quad \quad $y_i \gets y_0 + \sum_{j<i} a_{ij}k_j$ \Comment{add weighted increments}
+    \State \quad \quad\HiL{$k_i \gets L_\ell(y_i) - y_i$} \Comment{\HiL{residual of a single layer $L_\ell$}}
+\State \quad \textbf{end for}
+  \State \quad {$x \gets y_0 + \sum_{i=1}^{s} b_ik_i$} \Comment{$s^\text{th}$ order Runge--Kutta update}
+\State \HiL{\textbf{end for}}
+\State \Return $\textsc{PostLoop}(x)$ \Comment{layers after the loop block, output head}
+\end{algorithmic}
+\end{algorithm}

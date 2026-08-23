@@ -3,8 +3,27 @@ __pycache__/
 *.pyc
 data/*.bin
 data/*.parquet
-checkpoints/*.pt
-checkpoints/*.safetensors
+checkpoints/**/*.pt
+checkpoints/**/*.safetensors
+checkpoints/_arm_configs/
+checkpoints/_next_launch.sh
 *.log
 .DS_Store
 wandb/
+
+queue_run.log
+
+# --- added 2026-08-23 for the review bundle ---------------------------------
+# 1.7 GB of .npz/.pt was tracked; GitHub hard-rejects >100MB and a review bundle
+# has no use for binaries. Files remain on disk -- only the tracking is removed.
+*.npz
+*.pt
+kaggle_out/
+ds_exit/
+ds_exit2/
+ds_timing/
+
+# papers/ is TRACKED on purpose: cloud reviewers must be able to check citations.
+!papers/
+!papers/**
+ds_probe/config.yaml

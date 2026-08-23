@@ -1,0 +1,26 @@
+2048 seqs, 1024cal/1024test (split by sequence), T_max=64
+  best fixed depth (calib) k=8  TEST CE 3.9277  bpb 1.6987
+  oracle (label-using bound)           TEST CE 3.6193  bpb 1.5653  headroom 0.3084
+
+  head=mlp3 (PALBERT's Lambda-layer form): tanh features, dim 64
+    ep   0 expected-exit loss 4.0003
+    ep 100 expected-exit loss 3.9534
+    ep 200 expected-exit loss 3.9515
+
+       q   test CE      bpb   vs fixed  mean depth  headroom kept
+    0.10    3.9314   1.7003    +0.0037        5.97         -1.2%
+    0.25    3.9302   1.6998    +0.0025        6.32         -0.8%
+    0.50    3.9292   1.6993    +0.0015        6.73         -0.5%
+    0.70    3.9286   1.6991    +0.0008        7.14         -0.3%
+    0.85    3.9282   1.6989    +0.0004        7.60         -0.1%
+    0.95    3.9281   1.6989    +0.0004        8.33         -0.1%
+    0.99    3.9314   1.7003    +0.0037        9.79         -1.2%
+
+  PALBERT default q=0.5: CE 3.9292  vs fixed +0.0015  mean depth 6.73
+  best swept q=0.95  CE 3.9281  vs fixed +0.0004 nats
+  NOTE (selection-on-noise, cf. LTO arXiv 2509.26314): a learned scorer picking the best of
+  64 correlated depths can exploit its own errors -- LTO reports that removing their KL
+  regularizer reduces the method to best-of-N in latent space and 'only works well if the
+  LRM is nearly perfect'. The same caveat applies to both the oracle bound and any
+  learned rule here, which is why the reportable number is calibration-fit/test-scored.
+  VERDICT: Q-exit does NOT beat fixed depth by more than 0.01 nats -- consistent with the hand-crafted and learned-probe rules; the signal an exiter needs is not in these features

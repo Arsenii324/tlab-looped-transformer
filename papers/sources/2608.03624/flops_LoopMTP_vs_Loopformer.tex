@@ -1,0 +1,32 @@
+
+
+
+\begin{table*}[t]
+\centering
+\setlength{\tabcolsep}{6pt}
+\newcommand{\rel}[1]{{\scriptsize\,(#1$\times$)}}
+\resizebox{0.8\linewidth}{!}{
+\begin{tabular}{@{}lcccc@{\hskip 14pt}ccc@{}}
+\toprule
+& \multicolumn{3}{c}{Inference (FLOPs/token, $\times10^{9}$)}
+& \multicolumn{3}{c}{Training (total FLOPs, $\times10^{19}$)} \\
+\cmidrule(r){2-4}\cmidrule(l){5-7}
+$T$ & \textsc{LoopMTP} & LoopFormer & $\Delta$
+    & \textsc{LoopMTP} & LoopFormer & $\Delta$ \\
+\midrule
+Non-looped & \multicolumn{2}{c}{0.481} & --
+           & \multicolumn{2}{c}{0.988} & -- \\
+\midrule
+3 & 1.20\rel{2.49} & 1.31\rel{2.73} & $-8.8\%$ & 2.46\rel{2.49} & 4.15\rel{4.20} & $-40.7\%$ \\
+5 & 1.93\rel{4.01} & 2.12\rel{4.40} & $-8.9\%$ & 3.96\rel{4.01} & 6.63\rel{6.71} & $-40.2\%$ \\
+7 & 2.66\rel{5.53} & 2.92\rel{6.08} & $-9.0\%$ & 5.47\rel{5.53} & 9.11\rel{9.23} & $-40.1\%$ \\
+9 & 3.39\rel{7.05} & 3.73\rel{7.75} & $-9.0\%$ & 6.97\rel{7.05} & 11.6\rel{11.74} & $-39.9\%$ \\
+\bottomrule
+\end{tabular}
+}
+\caption{\textbf{FLOPs comparison between \textsc{LoopMTP}, its non-looped baseline and LoopFormer \cite{jeddi2026loopformer}.} Parenthesised values are multiples of the
+non-looped baseline. $\Delta$ is the relative change of \textsc{LoopMTP}
+with respect to LoopFormer; negative values indicate that
+\textsc{LoopMTP} requires less computation.}
+\label{tab:flops-loopmtp-vs-loopformer}
+\end{table*}

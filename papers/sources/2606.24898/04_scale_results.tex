@@ -1,0 +1,44 @@
+% ============================================================================
+\section{Dense CE Does Not Control Hidden-State Scale}
+\label{sec:drift}
+
+If norm drift were mainly caused by sparse supervision, adding CE at every loop should control it.
+If the problem is scale invisibility, per-loop CE should still fail when every readout is scale-invariant, while scale-visible objectives should control the norm.
+Table~\ref{tab:main} supports the second explanation.
+
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{Dense CE does not control scale when every readout is scale-invariant.} WikiText-103 validation PPL and final-loop hidden-state norm at training depth $K=4$, evaluated with the training-time full-validation harness. Values are mean $\pm$ std over 3 seeds unless a std is omitted. Within-table comparisons are like-for-like; absolute PPL differs from Tables~\ref{tab:depth}, \ref{tab:halting-main}, and~\ref{tab:endpoint-scale-full} because those use shorter slice harnesses (see Section~\ref{sec:setup}).}
+\label{tab:main}
+\begin{tabular}{llrrrr}
+\toprule
+ & & \multicolumn{2}{c}{44M} & \multicolumn{2}{c}{129M} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}
+\textbf{Loss} & \textbf{Readout} & $\|H_K\|_2$ & PPL & $\|H_K\|_2$ & PPL \\
+\midrule
+Terminal & RMSNorm & $5{,}674{\pm}393$ & $5.40$ & $5{,}997{\pm}25$ & $4.88$ \\
+Terminal & Raw & $15{\pm}2$ & $5.30$ & $24{\pm}3$ & $4.92$ \\
+\textbf{Per-loop} & \textbf{RMSNorm} & {\boldmath$39{,}207{\pm}19{,}891$} & $6.04$ & {\boldmath$56{,}051{\pm}23{,}993$} & $5.35$ \\
+Per-loop & Raw & $44{\pm}1$ & $5.38$ & $77{\pm}4$ & $4.92$ \\
+Per-loop & Final-only norm & $57{\pm}2$ & $5.42$ & $83{\pm}10$ & $4.93$ \\
+Terminal + penalty & RMSNorm & $21$ & $5.28$ & $27{\pm}0$ & $4.81$ \\
+Per-loop + penalty & RMSNorm & $17{\pm}0$ & $5.44$ & $22{\pm}0.3$ & $4.91$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The key negative result is per-loop + RMSNorm: it receives a CE loss at every loop, yet reaches final-loop norms of $39{,}207$ at 44M and $56{,}051$ at 129M.
+Raw readouts keep norms in the tens under both terminal-only and per-loop CE.
+The norm-penalty controls show that raw readout is not the only solution: even with the same RMSNorm readout, an explicit scale-visible loss collapses norms to 17--27.
+Final-only norm gives the practical hybrid: intermediate loops receive scale-sensitive raw losses, while the final interface remains normalized.
+Figure~\ref{fig:decomp} summarizes why the two interventions are not substitutes.
+Per-loop CE makes exits usable, but it does not by itself control scale.
+Scale visibility controls scale, but terminal-only raw readout still fails as an early-exit model.
+The desired corner requires both an exit-training signal and a scale-control signal.
+
+\paragraph{The drift is token-level, not just a mean shift.}
+Because RMSNorm is tokenwise, a global average could hide the wrong failure mode.
+Appendix~\ref{app:per-token-norms} reports per-token final-loop norms on a held-out slice.
+The same pattern holds below the mean: terminal-only RMSNorm drift is fairly uniform, per-loop RMSNorm drift is heavy-tailed with top-percentile tokens reaching $10^5{+}$, and raw readouts keep the whole distribution in a narrow range.
+

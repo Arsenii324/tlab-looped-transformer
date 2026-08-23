@@ -1,0 +1,22 @@
+
+
+\begin{table}[t]
+  \centering
+    \centering
+    \setlength{\tabcolsep}{3.1pt}
+    \resizebox{\linewidth}{!}{
+    \begin{tabular}{l ccccc}
+        \toprule
+        & \multicolumn{4}{c}{GSM8K Accuracy $\uparrow$} \\ 
+        \cmidrule(lr){2-5}
+         WD &  Non-looped & $T{=}3$ & $T{=}5$ & $T{=}9$\\ \midrule
+         Low (0.0132)   & 5.00              & 8.42              & 11.44             & 13.57\\
+         Medium (0.132) & \textbf{7.05}     & \textbf{12.88}    & \underline{14.70} & \textbf{18.49}\\
+         High (0.2)     & \underline{5.07}  & \underline{12.13} & \textbf{16.98}    & \underline{18.12}\\
+         \bottomrule
+    \end{tabular}
+    }
+    \caption{\textbf{Performance of looped models for different weight decay values.} Weight decay (WD) alone accounts for relative differences of up to 53\% between the best- and worst-performing settings at a fixed number of iterations.}
+    \vspace{-10pt}
+    \label{tab:wd_comparison}
+\end{table}

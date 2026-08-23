@@ -1,0 +1,117 @@
+\documentclass[11pt]{article}
+
+% Change "review" to "final" to generate the final (sometimes called camera-ready) version.
+% Change to "preprint" to generate a non-anonymous version with page numbers.
+\usepackage[preprint]{acl}
+
+% Standard package includes
+\usepackage{times}
+\usepackage{latexsym}
+
+% For proper rendering and hyphenation of words containing Latin characters (including in bib files)
+\usepackage[T1]{fontenc}
+% For Vietnamese characters
+% \usepackage[T5]{fontenc}
+% See https://www.latex-project.org/help/documentation/encguide.pdf for other character sets
+
+% This assumes your files are encoded as UTF8
+\usepackage[utf8]{inputenc}
+
+% This is not strictly necessary, and may be commented out,
+% but it will improve the layout of the manuscript,
+% and will typically save some space.
+\usepackage{microtype}
+
+% This is also not strictly necessary, and may be commented out.
+% However, it will improve the aesthetics of text in
+% the typewriter font.
+\usepackage{inconsolata}
+
+%Including images in your LaTeX document requires adding
+%additional package(s)
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{amsfonts}
+% If the title and author information does not fit in the area allocated, uncomment the following
+%
+%\setlength\titlebox{<dim>}
+%
+% and set <dim> to something 5cm or larger.
+
+% \title{IterMoE: Iteration-Conditioned Loop Modulation for \\Mixture-of-Experts Language Models}
+\title{LoopMoE: Unifying Iterative Computation with Mixture-of-Experts for Language Modeling}
+
+\author{
+ \textbf{Wenkai Chen\textsuperscript{1}},
+ \textbf{Tianshu Li\textsuperscript{2}},
+ \textbf{Wenyong Huang\textsuperscript{2}},
+ \textbf{Yichun Yin\textsuperscript{2}},
+\\
+ \textbf{Lifeng Shang\textsuperscript{2}},
+ \textbf{Chengwei Qin\textsuperscript{1}}
+\\
+\\
+ \textsuperscript{1}Hong Kong University of Science and Technology (Guangzhou)\\
+ \textsuperscript{2}Huawei Technologies Co.,Ltd.
+\\
+ \small{
+   \textbf{Correspondence:} \href{mailto:email@domain}{wchen243@connect.hkust-gz.edu.cn}
+ }
+}
+\newcommand{\ourmodel}{LoopMoE }
+\newcommand{\ourmodelnospace}{LoopMoE}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+\input{sections/0-abstract.tex}
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+\input{sections/1-introduction}
+
+\section{Related Work}
+\label{sec:bg}
+\input{sections/2-related_work}
+
+\section{Methods}
+\label{sec:method}
+\input{sections/3-method}
+
+\section{Experimental Setup}
+\label{sec:exp_setup}
+\input{sections/4-experimental_setup}
+
+\section{Results}
+\label{sec:results}
+\input{sections/5-results}
+
+\section{Analysis}
+\label{sec:analysis}
+\input{sections/6-analysis}
+
+\section{Conclusion}
+\label{sec:conclusion}
+\input{sections/7-conclusion}
+
+\section*{Limitations}
+\label{sec:limitations}
+\input{sections/limitations}
+
+% Bibliography entries for the entire Anthology, followed by custom entries
+%\bibliography{anthology,custom}
+% Custom bibliography entries only
+\bibliography{custom}
+% \bibliography{main}
+
+\appendix
+
+\section{Appendix}
+\label{sec:appendix}
+\input{sections/appendix}
+
+\end{document}

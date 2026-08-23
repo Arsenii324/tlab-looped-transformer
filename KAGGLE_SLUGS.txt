@@ -1,0 +1,5 @@
+# Canonical kaggle kernel slugs. ALWAYS read from here, never retype from memory --
+# on 2026-08-23 a status check used "tlab-loop-normpen" for what is really
+# "tlab-loop-normpenalty" and reported a permission error that looked like a dead run.
+arsen4ikvar/tlab-loop-fullrun
+arsen4ikvar/tlab-loop-normpenalty

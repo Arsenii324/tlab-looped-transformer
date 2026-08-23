@@ -1,0 +1,9 @@
+\section{Conclusion}
+
+
+
+
+We showed that weight sharing in looped Transformers requires $1/N$ residual scaling, and derived a parameterization that makes the stable learning rate independent of the loop count.
+Experiments on language modeling confirm that this recipe transfers hyperparameters across both loop counts and depths without additional tuning.
+By decoupling the loop count from optimization, our results open the possibility of treating weight reuse as a freely adjustable scaling axis.
+Natural next steps include scaling up to production-sized models and extending the theory to Post-Norm architectures~\citep{DBLP:conf/icml/XiongYHZZXZLWL20}, where the interaction between normalization placement and weight sharing may yield a different scaling regime.

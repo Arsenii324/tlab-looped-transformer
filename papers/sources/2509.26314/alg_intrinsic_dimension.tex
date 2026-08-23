@@ -1,0 +1,33 @@
+\begin{algorithm}
+\caption{Calculation of Intrinsic Dimension with Two-Nearest-Neighbour Estimation}
+\small
+\begin{algorithmic}[1]
+\Require matrix $\mathbf{h}_{t} = \{\mathbf{h}^{i}_{t}\}_{i=1}^L$, distance metric $\mathrm{dist}(\cdot, \cdot)$, trimming fraction $f \in [0,1)$ 
+\Ensure estimated intrinsic dimension $\hat d$
+
+\For{$i = 1$ \textbf{to} $L$}
+  \State Compute the pairwise distances $\{\mathrm{dist}(\mathbf{h}^{i}_{t}, \mathbf{h}^{j}_{t})\}_{j \ne i}$
+  \State $r_{1,i} \gets$ smallest distance (nearest neighbor)
+  \State $r_{2,i} \gets$ second smallest distance (second nearest neighbor)
+  \State $\mu_i \gets r_{2,i} / r_{1,i}$
+\EndFor
+
+\State Sort $\{\mu_i\}^{L}_{i=1}$ in ascending order to obtain $\mu_{(1)}, \ldots, \mu_{(L)}$
+\For{$j = 1$ \textbf{to} $L$}
+  \State $F_j \gets j / L$
+  \State $x_j \gets \log(\mu_{(j)})$
+  \State $y_j \gets -\log\bigl(1 - F_j\bigr)$
+\EndFor
+
+\If{$f > 0$}
+  \State Trim the largest $\lceil f \cdot L \rceil$ values of $\mu_{(j)}$ by setting $L^{'} \gets \lfloor (1 - f)\,L \rfloor$
+\Else
+  \State Keep all the $\mu_{(j)}$ by setting $L^{'}\gets L$
+\EndIf
+
+\State Fit the points of the plane given by coordinates $\{(x_j,y_j)\}^{{L}^{'}}_{j=1}$ with a straight
+line $y = \hat d \cdot x$ passing through the origin
+\State \Return the slope $\hat d$ as the estimated intrinsic dimension
+\end{algorithmic}
+\label{alg:intrinsic_dimension}
+\end{algorithm}

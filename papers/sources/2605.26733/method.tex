@@ -1,0 +1,190 @@
+\newtcolorbox{findings}[1][]{
+	width=\columnwidth,
+	colback = tkcolor, 
+	colframe = tkcolor, 
+boxsep=0pt,left=10pt,right=10pt,top=5pt,bottom=5pt,
+	fontupper=\linespread{0.9}\selectfont,
+	title=#1}
+
+\section{Recurrent Dynamics of LoopLM}
+\label{m1}
+To delve into the core factors governing the intrinsic dynamics of LoopLM, this section presents a series of systematic diagnostic experiments. Section \ref{subsec:Experimental Setup} first outlines the specific experimental setup. Subsequently, Section \ref{subsec:Static Architecture Analysis} analyzes the impact of critical architectural components on reasoning instability in recurrent models. Finally, Section \ref{sec:Attempted Methods} explores potential strategies for scalable latent reasoning.
+% specifically, we introduce Stochastic Depth Sampling, a tec和xun lihnique designed to decouple model performance from fixed training iteration counts, thereby enhancing the overall robustness of the system.
+
+\subsection{Experimental Setup}
+\label{subsec:Experimental Setup}
+
+
+\begin{figure*}[t] % figure* 用于双栏文档中的跨栏显示
+    \centering
+    
+    % 左侧子图
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/norm.jpg}
+        % \caption{Schematic of Normalization Architectures.}
+        \label{fig:norm_structures}
+    \end{subfigure}
+    \hfill % 在两个子图之间添加弹性间距
+    % 右侧子图
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/norm_anal.jpg}
+        % \caption{Stability Analysis and Trajectory Visualization.}
+        \label{fig:norm_analysis}
+    \end{subfigure}
+
+    \caption{
+    Left: Structural Diagrams. Right: Visualization showing accuracy evolution and latent state dynamics.}
+    \label{fig:combined_norm_figure}
+    % \vspace{-3mm}
+\end{figure*}
+
+Our study is grounded in a controlled environment designed to make latent dynamics observable. We utilize multi-digit addition as an idealized testbed for analyzing iterative algorithmic reasoning.
+
+\paragraph{Task description.} The models are trained on 4-digit by 4-digit addition problems (e.g., ``$1234+5678=6912$'') using a vocabulary consisting of digits, arithmetic operators, and special tokens. The training dataset comprises 100,000 samples which are randomly generated, a scale sufficient to preclude rote memorization and compel the model to learn a generalized addition algorithm. The choice of 4-digit addition balances computational constraints with task complexity: while 2-digit addition offers a trivial sample space ($10^4$ combinations), 4-digit addition presents a vastly larger space ($10^8$ combinations), providing a sufficiently complex landscape for analysis and posing a non-trivial challenge for non-pretrained Transformers.
+
+\paragraph{Model architecture.} We employ a standard GPT-style Transformer block~\citep{vaswani2017attention,radford2019language} as a minimal recurrent unit ($L = 1$), realizing the looped model through the recursive iteration of this unit. This architectural choice eliminates confounding variables associated with deep, heterogeneous stacked layers, enabling us to isolate performance variations as direct consequences of iteratively applying a single, well-defined state transition function. The unit hyperparameters are set to $d_{\text{model}}=512$, $n_{\text{heads}}=8$, and $d_{\text{ff}}=1024$.
+
+\paragraph{Evaluation details.} For the static architecture analysis, models are trained with a fixed loop iteration count of $T_{\text{train}}=4$. During evaluation, we sweep the test-time iteration count ($T_{\text{test}}$) across a broad spectrum. Our primary focus is to characterize the evolution of system stability and internal state trajectories when $T_{\text{test}}$ diverges from, and specifically exceeds, the training horizon $T_{\text{train}}$. We then perform PCA on the sequence of latent states and project them onto a two-dimensional space spanned by the first two principal components for visualization.
+
+% \paragraph{Trajectory visualization.} To investigate the geometric evolution of the model's representations during recurrent processing, we visualize the trajectory of its global latent state. For a given input sequence of length $l$, we extract the hidden state matrix $h_t \in \mathbb{R}^{l \times d}$ at each loop iteration $t$. To capture the holistic system dynamics, we flatten $h_t$ into a high-dimensional vector $v_t \in \mathbb{R}^{l \cdot d}$. 
+% We then apply Principal Component Analysis (PCA) to the sequence of these vectors $\{v_0, \dots, v_{t}\}$ and project them onto a two-dimensional plane spanned by the first two principal components. 
+% This projection allows us to empirically observe the topological characteristics of the inference process, such as stability, divergence, and the emergence of attractors within the latent manifold.
+
+\subsection{Static Architecture Analysis}
+\label{subsec:Static Architecture Analysis}
+
+    \subsubsection{Impacts of Norm Structure Design}
+    The architectural configuration of the recurrent unit fundamentally dictates the evolution of information flow. We conduct a comparative analysis of three normalization variants Layer Normalization ~\citep{ba2016layer}, RMSNorm~\citep{zhang2019root}, and SimpleNorm (defined as normalization without learnable affine parameters) across four structural positions. 
+    % Our choices of positions: Pre-, Post-, Pre-Sandwich, and Post-Sandwich is motivated by the impact that the placement of normalization has on training stability and performance~\citep{xiong2020layer,bai2021stabilizing}. 
+    Our choice of normalization placement: Pre-, Post-, Pre-Sandwich, and Post-Sandwich (see Figure \ref{fig:combined_norm_figure}), is primarily motivated by its substantial impact on training stability and model performance, as established in prior research~\citep{xiong2020layer,bai2021stabilizing}. This yields a total of twelve distinct architecture combinations.
+
+    % We analyze the mathematical formulations underlying these four structural configurations (using LN as the representative operator):
+    % \begin{align*}
+    %     \textbf{Pre-Norm:} &\quad x_{l+1} = x_l + f(\text{LN}(x_l)) \\
+    %     \textbf{Post-Norm:} &\quad x_{l+1} = \text{LN}(x_l + f(x_l)) \\
+    %     \textbf{Pre-Sandwich:} &\quad x_{l+1} = x_l + \text{LN}(f(\text{LN}(x_l))) \\
+    %     \textbf{Post-Sandwich:} &\quad x_{l+1} = \text{LN}(x_l + f(\text{LN}(x_l)))
+    % \end{align*}
+% \begin{figure}[htb]
+%     \centering
+%     \includegraphics[width=\linewidth]{fig/norm.jpg}
+%     \caption{\textbf{Schematic of Normalization Architectures.}}
+%     \label{fig:norm_structures}
+% \end{figure}
+    Based on these formulations, we categorize the architectures into two distinct system types: \textit{internal normalization
+ system}, where the residual connection remains outside the normalization scope (Pre-Norm and Pre-SandwichNorm), and \textit{external normalization
+ system}, where the residual stream is encapsulated within the final normalization scope (Post-Norm and Post-SandwichNorm).
+ 
+% \begin{figure}[H]
+% 	\centering
+% 	\includegraphics[width=\linewidth]{fig/norm_anal.jpg}
+%     \caption{\textbf{Stability Analysis and Trajectory Visualization.} 
+%     Comparison of latent dynamics across different normalization types (columns) and structural positions (rows). 
+%     For each configuration, we present a dual-view analysis: 
+%     the \textbf{left panel} depicts the model's accuracy evolution as the number of test-time recurrent iterations (loops) increases; 
+%     the \textbf{right panel} visualizes the corresponding topological trajectory of hidden states projected onto a 2D manifold via PCA. 
+%     Note the significant scale differences in the PCA axes between external (Pre-*) and internal (Post-*) normalization systems.}
+%     \label{fig:norm_analysis}
+% \end{figure}
+
+\begin{figure*}[t] % figure* 用于双栏文档中的跨栏显示
+    \centering
+    
+    % 左侧子图
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/prelude_coda.jpg}
+        % \caption{Non-Recurrent Layer and L2-Regularization Analysis.}
+        % \label{fig:prelude_coda}
+    \end{subfigure}
+    \hfill % 在两个子图之间添加弹性间距
+    % 右侧子图
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/random.jpg}
+        % \caption{Random Loop Strategy Analysis.}
+        % \label{fig:random}
+    \end{subfigure}
+    \caption{ Left: The top panel analyzes the impact of adding non-recurrent layers, while the bottom panel assesses the effect of introducing L2 regularization. Right: This panel evaluates the random loop strategy across distributions and parameter sets (detailed in Table \ref{tab:loop_params}). }
+    % All visualizations show accuracy evolution and PCA-projected hidden state dynamics for each configuration.
+    \label{fig:Non-recurrent and other methods}
+    % \vspace{-3mm}
+\end{figure*}
+
+Our experiments reveal an inherent design dilemma within recurrent Transformer architectures. As visualized in Figure \ref{fig:combined_norm_figure}, the specific choice of normalization operator exerts minimal influence on the model's latent dynamics; conversely, the structural placement of the normalization layer is the determining factor, precipitating two distinct failure modes.
+
+
+\begin{findings}
+    \textbf{Finding 1:} The specific normalization operator has negligible impact on model dynamics, whereas the structural placement of the layer dictates the system's evolutionary behavior.
+\end{findings}
+
+
+In the \textit{internal normalization system}, we observe that while performance is maintained throughout the training horizon and brief subsequent extrapolations, it deteriorates as test iterations increase. The PCA trajectories exhibit massive scaling, indicating that the hidden states gradually drift away from the effective structural manifold, resulting in performance collapse. Specifically, in the Pre-Norm formulation ($x_{l+1} = x_l + f(\text{Norm}(x_l))$), the residual connection establishes an information highway~\citep{he2016deep}, transmitting the previous state to the next timestamp without attenuation. However, the update vector \( f(\text{Norm}(x_l)) \) is directly accumulated onto the backbone stream. Without a constraint mechanism after the residual addition, the norm of the hidden state tends to grow without bound. This creates a positive feedback loop where the state magnitude amplifies linearly with iterations, eventually diverging from the functional data manifold.
+Conversely, in \textit{external normalization system}, although the model sustains performance for only a short duration during testing, the latent dynamics remain bounded, as evidenced by the compact scale of the PCA projections. As test iterations progress, both system types eventually converge towards attractor.
+Consequently, current normalization architectures impose a trade-off between system stability and effective information propagation, with neither paradigm achieving test-time scalable latent reasoning.
+\begin{findings}
+ % \textbf{Finding 2:} \textit{External normalization system} facilitate strong information flow via the residual backbone, maintaining early performance but suffering from instability and state divergence. \textit{Internal normalization system} attenuate the residual stream, ensuring bounded stability but converging to non-benign attractors that degrade representation quality.
+ \textbf{Finding 2:} \textit{Internal normalization system} allows strong information to flow through the residual backbone. This maintains early performance, but can lead to instability and divergent states. \textit{External normalization system} constrains the residual stream, which ensures stable boundaries, but causes the system to settle into poor states that degrade its performance.
+\end{findings}
+\subsubsection{Impacts of Prelude and Coda Layers}
+A natural consideration is whether incorporating non-recurrent layers before and after the recurrent block, similar to the approach in Huginn~\citep{geiping2025scaling}, can alleviate these limitations. To investigate this, we add Prelude and Coda layers into our experiments.  The added Prelude and Coda layers utilize the same block architecture as the recurrent unit but do not participate in the loop iterations.
+
+Given our previous finding that the specific normalization type has negligible impact, we fix LayerNorm as the normalization operator for this analysis. We conduct experiments using two structural baselines Pre-Sandwich and Post-Sandwich across four configurations: \textit{only-recurrent}, \textit{with-prelude}, \textit{with-coda}, and \textit{with-both}. 
+
+As visualized in Figure \ref{fig:Non-recurrent and other methods}, for the \textit{internal normalization system}, the addition of a prelude layer marginally slows performance degradation, but the effect is negligible; the trajectory's drift scale remains immense, and accuracy rapidly collapses to zero. For the \textit{external normalization system}, while a coda layer leads to a more concentrated set of final attractor, these prove to be non-benign fixed points that offer no performance benefit.
+
+\begin{findings}
+% \textbf{Finding 3:} The inclusion of Prelude and Coda layers does not alter the system's dynamical tendencies, which remain determined by the position of the normalization layer. Although Prelude and Coda layers likely contribute to a deeper semantic understanding of the input and output spaces, their impact on the system’s convergence and stability is negligible. This indicates that simple architectural adjustments are insufficient to simultaneously achieve long-term stability and effective reasoning.
+\textbf{Finding 3:} The inclusion of Prelude and Coda layers does not alter the system's dynamical tendencies. Although these layers likely contribute to a deeper semantic understanding of the input and output spaces, their impact on the system’s stability is negligible. 
+\end{findings}
+
+\begin{table}[t]
+    \centering
+    % \small
+    \caption{Hyperparameter settings for random loop distributions. Range indicates the clipping bounds $[\text{min}, \text{max}]$.}
+    \label{tab:loop_params}
+    % \setlength{\tabcolsep}{5pt} % 调整列间距
+    \resizebox{0.48\textwidth}{!}{ 
+    \begin{tabular}{l c c}
+        \toprule
+        \textbf{Distribution} & \textbf{Set 1 Configuration} & \textbf{Set 2 Configuration} \\
+        \midrule
+        {Log-Normal}                 & $\mu=2.62, \sigma=0.60$ & $\mu=2.00, \sigma=0.70$ \\
+                                    & range: $[1, 40]$ & range: $[1, 100]$ \\
+        \midrule
+        {Poisson}                    & $\lambda=5$ & $\lambda=10$ \\
+                                    & range: $[1, 30]$ & range: $[1, 30]$ \\
+        \midrule
+        Uniform                     & range: $[1, 10]$ & range: $[1, 40]$ \\
+        \bottomrule
+    \end{tabular}}
+\end{table}
+
+
+\subsection{Attempted Methods for Scalable Latent Reasoning}
+\label{sec:Attempted Methods}
+    \subsubsection{Random Loop Sampling}
+    The random loop sampling strategy aims to decouple model performance from a fixed training step count $T_{\text{train}}$, by dynamically sampling the number of recurrent iterations for each batch. This approach was previously employed in training recurrent models~\citep{geiping2025scaling}; however, a systematic analysis of its impact and insights into its underlying mechanics were not provided. To address this gap, we build upon this method by conducting a detailed investigation. Specifically, we experiment with three distinct distributions (Log-Normal, Poisson, and Uniform), each with two different parameter configurations, applied to our two representative architectures: Pre-Sandwich and Post-Sandwich (others are detailed in Appendix \ref{more_res}).
+% The parameter configurations for the distributions are detailed in Table~\ref{tab:loop_params}.
+
+
+As illustrated in the Figure \ref{fig:Non-recurrent and other methods}, sampling iterations during training contributes to performance retention. For Pre-Sandwich models, the random loop sampling strategy proves highly effective. Across all combinations, performance retention persists far beyond the iteration range encountered during training. However, this does not alter the fundamental nature of \textit{external normalization system}, and state drift still occurs. 
+For Post-Sandwich models, compared to the trajectory plots in previous experiments, the set of attractors it eventually converges to is more compact, but the training process is unstable, and sometimes the model even fails to learn to solve the task. Furthermore, based on the log-normal and uniform combinations, a wider sampling range and a higher mean are not necessarily better. For example, when encountering a wider sampling range, Post-Sandwich models are prone to training collapse and fail to learn the task. However, the Post-Sandwich architecture holds greater potential due to its inherent tendency to converge to an attractor. If this convergence can be guided toward an effective attractor, the system could simultaneously achieve both stability and effectiveness.
+\begin{findings}
+    \textbf{Finding 4:} Overall, sampling loop counts during training significantly enhances performance retention and generalization capabilities. However, it does not fundamentally transform the effective stability of the system and is sensitive to the size of the sampling range.
+\end{findings}
+% \begin{findings}
+%     \textbf{Finding 5:} The effectiveness of the Random Loop method is sensitive to the size of the sampling range during training. We hypothesize that external normalization systems, represented by Pre-Sandwich, are more adaptable to wider sampling ranges and achieve better results, whereas internal normalization systems, represented by Post-Sandwich, adapt poorly to wider sampling ranges and are more suited for narrower sampling.
+% \end{findings}
+
+    \subsubsection{L2 regularization}
+    To curb the continuous drift in \textit{internal normalization system} and enhance the effective stability of \textit{external normalization system}, a natural idea is to introduce a regularization term defined as the $L_2$ norm of the difference between hidden states across adjacent iterations. However, as depicted in the lower panel of the Figure \ref{fig:Non-recurrent and other methods}, the impact of L2 regularization is minimal. It provides only marginal improvements in performance retention and drift mitigation for \textit{internal normalization system}, while its effect on \textit{external normalization system} is virtually non-existent. Furthermore, we evaluated the combination of the random loop sampling strategy with L2 regularization. Contrary to expectations, this combination yields no enhancement and actually underperforms compared to the pure random loop sampling.
+    \begin{findings}
+    \textbf{Finding 5:} The introduction of an L2 regularization between hidden states yields negligible benefits and demonstrates poor synergy when combined with the random loop sampling strategy.
+    \end{findings}
+
+
+
+

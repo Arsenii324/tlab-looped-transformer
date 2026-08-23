@@ -1,0 +1,120 @@
+\begin{figure}[t]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tikzpicture}[
+  layer/.style={draw, rounded corners=1.8pt, minimum height=18pt,
+                minimum width=26pt, font=\footnotesize, inner sep=2.5pt},
+  preloop/.style={layer, fill=gray!10, draw=gray!55!black, line width=0.45pt},
+  loopwin/.style={layer, fill=blue!12, draw=blue!55!black, line width=0.8pt},
+  postloop/.style={layer, fill=gray!10, draw=gray!55!black, line width=0.45pt},
+  arrow/.style={-{Stealth[length=3pt]}, line width=0.6pt,
+                shorten >=1pt, shorten <=1pt},
+  loopback/.style={-{Stealth[length=4pt]}, line width=0.95pt,
+                   draw=blue!55!black},
+  perlayerloop/.style={-{Stealth[length=3pt]}, line width=0.8pt,
+                       draw=blue!55!black},
+  font=\footnotesize,
+  node distance=4pt,
+]
+
+\begin{scope}[shift={(0,1.6)}]
+
+\node[preloop] (L0a)   at (0.0, 0)  {$L_0$};
+\node[preloop, right=6pt of L0a] (L1a)  {$L_1$};
+\node[right=6pt of L1a]      (dotsAa){$\cdots$};
+\node[preloop, right=6pt of dotsAa] (Lam1a) {$L_{a{-}1}$};
+
+\node[loopwin, right=11pt of Lam1a]  (Laa)   {$L_a$};
+\node[right=6pt of Laa]              (dotsBa){$\cdots$};
+\node[loopwin, right=6pt of dotsBa]  (Lba)   {$L_b$};
+
+\node[postloop, right=11pt of Lba]   (Lbp1a) {$L_{b{+}1}$};
+\node[right=6pt of Lbp1a]            (dotsCa){$\cdots$};
+\node[postloop, right=6pt of dotsCa] (LNa)   {$L_{N{-}1}$};
+
+\node[font=\footnotesize\itshape, anchor=east]
+   at ($(L0a.west) + (-0.85, 0)$) {(a) block-mode};
+
+\draw[arrow] ($(L0a.west) + (-0.32,0)$) node[left]{$x$} -- (L0a);
+\draw[arrow] (L0a) -- (L1a); \draw[arrow] (L1a) -- (dotsAa);
+\draw[arrow] (dotsAa) -- (Lam1a); \draw[arrow] (Lam1a) -- (Laa);
+\draw[arrow] (Laa) -- (dotsBa); \draw[arrow] (dotsBa) -- (Lba);
+\draw[arrow] (Lba) -- (Lbp1a); \draw[arrow] (Lbp1a) -- (dotsCa);
+\draw[arrow] (dotsCa) -- (LNa);
+\draw[arrow] (LNa) -- ($(LNa.east) + (0.32,0)$) node[right]{$\hat f(x)$};
+
+\draw[loopback]
+   ([yshift=2pt]Lba.north) -- ++(0,0.32) -| ([yshift=2pt]Laa.north)
+   node[pos=0.25, above=-1pt, font=\footnotesize\bfseries,
+        color=blue!55!black] {$\times K$};
+\end{scope}
+
+\begin{scope}[shift={(0,0)}]
+
+\node[preloop] (L0b)   at (0.0, 0)  {$L_0$};
+\node[preloop, right=6pt of L0b] (L1b)  {$L_1$};
+\node[right=6pt of L1b]      (dotsAb){$\cdots$};
+\node[preloop, right=6pt of dotsAb] (Lam1b) {$L_{a{-}1}$};
+
+\node[loopwin, right=11pt of Lam1b]  (Lab)   {$L_a$};
+\node[right=6pt of Lab]              (dotsBb){$\cdots$};
+\node[loopwin, right=6pt of dotsBb]  (Lbb)   {$L_b$};
+
+\node[postloop, right=11pt of Lbb]   (Lbp1b) {$L_{b{+}1}$};
+\node[right=6pt of Lbp1b]            (dotsCb){$\cdots$};
+\node[postloop, right=6pt of dotsCb] (LNb)   {$L_{N{-}1}$};
+
+\node[font=\footnotesize\itshape, anchor=east]
+   at ($(L0b.west) + (-0.85, 0)$) {(b) layer-mode};
+
+\draw[arrow] ($(L0b.west) + (-0.32,0)$) node[left]{$x$} -- (L0b);
+\draw[arrow] (L0b) -- (L1b); \draw[arrow] (L1b) -- (dotsAb);
+\draw[arrow] (dotsAb) -- (Lam1b); \draw[arrow] (Lam1b) -- (Lab);
+\draw[arrow] (Lab) -- (dotsBb); \draw[arrow] (dotsBb) -- (Lbb);
+\draw[arrow] (Lbb) -- (Lbp1b); \draw[arrow] (Lbp1b) -- (dotsCb);
+\draw[arrow] (dotsCb) -- (LNb);
+\draw[arrow] (LNb) -- ($(LNb.east) + (0.32,0)$) node[right]{$\hat f(x)$};
+
+\draw[perlayerloop]
+   ([xshift=-3pt, yshift=2pt]Lab.north)
+   .. controls +(-0.10, 0.26) and +(0.10, 0.26) ..
+   ([xshift=3pt, yshift=2pt]Lab.north);
+\node[font=\scriptsize\bfseries, color=blue!55!black, anchor=south]
+   at ($(Lab.north) + (0,0.21)$) {$\times K$};
+
+\draw[perlayerloop]
+   ([xshift=-3pt, yshift=2pt]Lbb.north)
+   .. controls +(-0.10, 0.26) and +(0.10, 0.26) ..
+   ([xshift=3pt, yshift=2pt]Lbb.north);
+\node[font=\scriptsize\bfseries, color=blue!55!black, anchor=south]
+   at ($(Lbb.north) + (0,0.21)$) {$\times K$};
+
+\node[font=\scriptsize\bfseries, color=blue!55!black, anchor=south]
+   at ($(dotsBb.north) + (0,0.24)$) {$\times K$};
+
+\draw[decorate, decoration={brace,amplitude=3pt,mirror,raise=2pt},
+      semithick, color=blue!55!black]
+   (Lab.south west) -- (Lbb.south east)
+   node[midway, below=4pt, font=\footnotesize\bfseries,
+        color=blue!55!black]
+   {loop window $g$};
+
+\draw[decorate, decoration={brace,amplitude=3pt,mirror,raise=2pt},
+      thin, color=gray!55!black]
+   (L0b.south west) -- (Lam1b.south east)
+   node[midway, below=4pt, font=\footnotesize, color=gray!50!black]
+   {pre-loop};
+
+\draw[decorate, decoration={brace,amplitude=3pt,mirror,raise=2pt},
+      thin, color=gray!55!black]
+   (Lbp1b.south west) -- (LNb.south east)
+   node[midway, below=4pt, font=\footnotesize, color=gray!50!black]
+   {post-loop};
+
+\end{scope}
+\end{tikzpicture}
+}
+\vspace{-2pt}
+\caption{\textbf{Training-free looped transformer wrapper, two iteration modes.} A frozen checkpoint is augmented at inference by re-applying a contiguous mid-block $g = L_b\circ\cdots\circ L_a$ for $K$ iterations before resuming the post-loop layers. No weights are changed and no new parameters are introduced; the cost is $(b-a+1)(K-1)$ extra forward passes through the loop window. \textbf{(a) Block-mode} iterates the whole window $K$ times, $(L_b\circ\cdots\circ L_a)^K$. \textbf{(b) Layer-mode} iterates each window layer $K$ times before passing on, $L_b^K\circ\cdots\circ L_a^K$, which is the safer default on Mixture-of-Experts backbones because it pins per-layer expert routing across iterations (Section~\ref{sec:layer-mode}). Section~\ref{sec:strategy} interprets $g^{(K)}$ as sub-stepping the residual ODE the network already integrates with single-step forward Euler.}
+\label{fig:method}
+\end{figure}

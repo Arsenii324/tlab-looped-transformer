@@ -1,0 +1,79 @@
+% ============================================================================
+\section{Mechanism Diagnostics}
+\label{sec:diagnostics}
+
+The ablation matches the framework, but we also test the local mechanism directly.
+For the immediate readout gradient, RMSNorm readouts have radial-gradient fractions around $10^{-8}$, while raw readouts have radial fractions around $10^{-2}$ (Table~\ref{tab:radial}).
+The final-only norm hybrid has a raw-like radial gradient at intermediate loops and a normalized final readout, as designed.
+At 1.4B, Appendix~\ref{app:scale14b} repeats the same scale-intervention diagnostic as a sanity check.
+
+\paragraph{Active radial update.}
+Lemma~\ref{lemma:expansion} predicts that, once the model is in the large-scale regime, the RMS-scale increment is approximately
+$a_{\rad,k}=\langle u_k,F(H_k)-H_k\rangle/d$, while angular motion shrinks like $1/s_k$.
+Figure~\ref{fig:lemma2-main} checks this directly by running trained checkpoints for 30 loops on held-out data.
+The important empirical fact is not the Taylor expansion itself; it is that the learned residual updates enter a stable regime where a persistent radial component accounts for the observed scale motion.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/lemma2_verification.png}
+\caption{\textbf{Trained checkpoints enter the slow-angular-motion regime predicted by the scale expansion.}
+(a) Hidden-state RMS scale over 30 loops.
+(b) Euclidean radial residual inner product $\tilde a_k=\langle u_k,F(H_k)-H_k\rangle$, whose scaled value $\tilde a_k/d$ predicts the RMS-scale increment.
+(c) $\|u_{k+1}-u_k\|_{\rms}s_k$, whose leading-order value is $\|b_\perp(u_k)\|_{\rms}$.}
+\label{fig:lemma2-main}
+\end{figure}
+
+The measured residual update magnitude also separates sharply by readout.
+Across the diagnostic checkpoints, $\|b\|_{\rms}$ lies in $[0.07,0.51]$ for raw readouts but in $[20.4,258.3]$ for normalized readouts.
+For example, the 44M per-loop + RMSNorm checkpoint has $\tilde a\approx132{,}000$, predicting an RMS-scale increment of about $258$ per loop, within $3\%$ of the measured value once the transient settles.
+The corresponding per-loop + raw checkpoint predicts an increment of only $0.27$.
+The full decomposition is in Appendix~\ref{app:residual-update}; the normalized-readout checkpoints learn much larger radial residual updates than the raw-readout checkpoints.
+
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{Readout normalization removes the local radial gradient.}
+$r_k$ is the fraction of the readout gradient aligned with hidden-state scale at loop $k$; $g_K=\partial\mathcal{L}/\partial\log\|H_K\|$ is the signed final-loop radial derivative.
+Raw intermediate readouts restore a scale-sensitive signal; final-only norm restores it only before the final normalized interface.}
+\label{tab:radial}
+\begin{tabular}{llrrrr}
+\toprule
+\textbf{Model} & \textbf{Readout} & $\|H_K\|_2$ & $r_1$ & $r_K$ & $g_K$ \\
+\midrule
+44M & RMSNorm & $62{,}847$ & $5.0{\times}10^{-9}$ & $4.7{\times}10^{-9}$ & $4.0{\times}10^{-10}$ \\
+44M & Raw & $41$ & $6.3{\times}10^{-2}$ & $7.2{\times}10^{-2}$ & $8.2{\times}10^{-2}$ \\
+44M & Final-only norm & $54$ & $6.4{\times}10^{-2}$ & $1.2{\times}10^{-8}$ & $-3.9{\times}10^{-8}$ \\
+129M & RMSNorm & $26{,}045$ & $8.8{\times}10^{-9}$ & $7.5{\times}10^{-9}$ & $-3.1{\times}10^{-9}$ \\
+129M & Raw & $70$ & $6.0{\times}10^{-2}$ & $4.7{\times}10^{-2}$ & $1.4{\times}10^{-1}$ \\
+129M & Final-only norm & $91$ & $5.9{\times}10^{-2}$ & $9.5{\times}10^{-9}$ & $4.9{\times}10^{-8}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+We also run a causal clamp.
+After loop 1, we rescale each token's hidden state back to its loop-1 RMS scale before both decoding and recurrence.
+This removes recurrent scale growth while preserving direction changes.
+Table~\ref{tab:radial-clamp} shows that this changes CE very little.
+
+\begin{table}[t]
+\centering
+\small
+\caption{\textbf{Clamping recurrent scale has little CE cost.} Norm ratio is clamped $K=4$ norm divided by unclamped $K=4$ norm; $\Delta$CE is clamped minus unclamped CE. Means over 3 seeds.}
+\label{tab:radial-clamp}
+\begin{tabular}{llrr}
+\toprule
+\textbf{Readout} & \textbf{Model} & \textbf{$K=4$ norm ratio} & \textbf{$\Delta$CE} \\
+\midrule
+RMSNorm & 44M & 0.40 & $+0.0004$ \\
+RMSNorm & 129M & 0.55 & $+0.0005$ \\
+Raw & 44M & 0.53 & $+0.0055$ \\
+Raw & 129M & 0.46 & $+0.0015$ \\
+Final-only norm & 44M & 0.41 & $+0.0035$ \\
+Final-only norm & 129M & 0.42 & $+0.0027$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The clamp does not prove every radial residual component is useless.
+It shows that accumulated scale growth itself is predictively cheap to remove under this evaluation, consistent with the visibility--activity mechanism.
+Appendices~\ref{app:per-token-norms}--\ref{app:residual-update} give token-level norm statistics and exact decomposition values.

@@ -1,0 +1,51 @@
+% ============================================================================
+\section{Proof Details for Section~\ref{sec:mechanism}}
+\label{app:proofs}
+
+\paragraph{Visibility lemma.}
+Define $\phi(t)=\mathcal{L}(e^tH)$.
+If the readout is scale-invariant, $r(e^tH)=r(H)$ for all $t$, so $\phi(t)$ is constant.
+Therefore $\phi'(0)=0$.
+By the chain rule,
+\begin{equation}
+    \phi'(0)=\left\langle \nabla_H \mathcal{L}(H), H\right\rangle,
+\end{equation}
+which proves Lemma~\ref{lemma:radial}.
+With RMSNorm/LayerNorm epsilon terms, scale invariance is approximate rather than exact; at large scale the epsilon contribution is suppressed, giving the $O(\epsilon/s^2)$ radial term used in the main text.
+
+\paragraph{Activity lemma.}
+For $H=su$ with $\|u\|_{\rms}=1$ and $\|v\|_{\rms}^2=d^{-1}\|v\|_2^2$, ignoring normalizer epsilons gives
+\begin{equation}
+    F(su)=su+b(u).
+\end{equation}
+Decompose the residual update into radial and orthogonal parts,
+\begin{equation}
+    b(u)=a_{\rad}(u)u+b_\perp(u),
+    \qquad
+    a_{\rad}(u)=\frac{\langle u,b(u)\rangle}{d},
+    \qquad
+    \langle u,b_\perp(u)\rangle=0 .
+\end{equation}
+Then
+\begin{equation}
+    \|su+b(u)\|_{\rms}^2
+    =s^2+2s\,a_{\rad}(u)+\|b(u)\|_{\rms}^2 .
+\end{equation}
+Taking the square root and using $\|b(u)\|_{\rms}=O(1)$ in $s$ gives
+\begin{equation}
+    \|F(su)\|_{\rms}=s+a_{\rad}(u)+O(s^{-1}).
+\end{equation}
+Substituting this denominator into
+\begin{equation}
+    \frac{F(su)}{\|F(su)\|_{\rms}}
+    =
+    \frac{(s+a_{\rad}(u))u+b_\perp(u)}
+         {s+a_{\rad}(u)+O(s^{-1})}
+\end{equation}
+gives
+\begin{equation}
+    \frac{F(su)}{\|F(su)\|_{\rms}}
+    =
+    u+\frac{b_\perp(u)}{s}+O(s^{-2}),
+\end{equation}
+which proves Lemma~\ref{lemma:expansion}.

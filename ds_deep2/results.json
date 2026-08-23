@@ -1,0 +1,12 @@
+{
+  "d2_mu44_term": {
+    "oom": true,
+    "error": "CUDA out of memory. Tried to allocate 32.00 MiB. GPU 0 has a total capacity of 14.75 GiB of which 36.31 MiB is free. Process 5309 has 14.71 GiB memory in use. Of the allocated memory 14.57 GiB is allocated by PyTorch, and 7.20 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation. ",
+    "history": []
+  },
+  "d2_mu44_dense": {
+    "oom": true,
+    "error": "CUDA out of memory. Tried to allocate 12.00 MiB. GPU 0 has a total capacity of 14.75 GiB of which 16.31 MiB is free. Process 5309 has 14.72 GiB memory in use. Of the allocated memory 14.58 GiB is allocated by PyTorch, and 9.46 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation. ",
+    "history": []
+  }
+}

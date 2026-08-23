@@ -1,0 +1,125 @@
+\section{Loop Scaling for Shared Layers}
+\label{sec:theory}
+
+We analyze initialization-time scaling of a single shared MLP to isolate the effect of weight sharing; Section~\ref{sec:multilayer} extends to multi-layer blocks.
+
+\subsection{Setup}
+
+Consider the following simplified residual model, which abstracts one residual branch of a Transformer block:
+\begin{equation}
+  \begin{aligned}
+  h_{n+1}&=h_n+\varepsilon\, W\phi(h_n),\\
+  \varepsilon&=N^{-\alpha},\qquad n=0,\dots,N-1.
+  \end{aligned}
+  \label{eq:loop}
+\end{equation}
+Here $N$ is the loop count (the number of times the shared layer is applied), and $\alpha>0$ is the scaling exponent that controls how aggressively the residual branch is down-scaled with $N$.
+The hidden state $h_n\in\R^d$ is initialized from a given input $h_0$ with $\norm{h_0}_2^2/d=\Theta(1)$; the model output is $h_N$.
+The shared weight matrix $W\in\R^{d\times d}$ is drawn i.i.d.\ $W_{ij}\sim\mathcal N(0,1/d)$, and $\phi$ is the ReLU activation.
+Our goal is to determine the minimum $\alpha$ that keeps $h_N$ bounded as $N$ grows, and the induced scaling law for the learning rate.
+
+We write $u_n\triangleq\phi(h_n)$ for the post-activation vector, $r_n\triangleq Wu_n$ for the per-step residual, and $R_n\triangleq d^{-1/2}\norm{h_n}_2$ for the normalized residual-stream norm.
+
+\input{sections/Figs/fig_corr}
+
+\subsection{Quadratic variance accumulation}
+
+Unrolling \eqref{eq:loop} gives $h_N=h_0+\varepsilon\sum_{n=0}^{N-1}r_n$.
+To see how $R_N$ scales with $N$, we expand $R_N^2$:
+\begin{equation*}
+  \begin{aligned}
+  R_N^2
+  &=
+  R_0^2
+  +\underbrace{\frac{2\varepsilon}{d}
+    \sum_{n=0}^{N-1}\inner{h_0}{r_n}}_{B_N}
+  +\underbrace{\frac{\varepsilon^2}{d}
+    \sum_{n=0}^{N-1}\sum_{m=0}^{N-1}
+    \inner{r_n}{r_m}}_{C_N}.
+  \end{aligned}
+\end{equation*}
+The cross term $B_N$ sums $N$ inner products between the fixed input $h_0$ and the residuals $r_n$, so $B_N=O(\varepsilon N)$.
+The quadratic term $C_N$, however, sums $N^2$ pairwise interactions and equals $\frac{\varepsilon^2}{d}\norm{\sum_n r_n}_2^2$.
+Whether $C_N$ grows as $\Theta(\varepsilon^2 N^2)$ or merely $\Theta(\varepsilon^2 N)$ depends on whether the residual updates reinforce or cancel.
+
+Because $W$ is shared across all iterations, we can factor it out:
+\[
+  \left\|\sum_{n=0}^{N-1}r_n\right\|_2^2
+  =
+  \left\|W\sum_{n=0}^{N-1}u_n\right\|_2^2.
+\]
+This reduces the question to: how does $\norm{\sum_n u_n}$ scale with $N$?
+Since all $u_n=\phi(h_n)$ are produced by the same recurrence with shared $W$, successive activations are correlated.
+When this correlation is strong enough that the activations accumulate constructively, the norm of their sum grows as $\Theta(N)$ rather than $\Theta(\!\sqrt{N})$, giving $\norm{\sum_n r_n}_2^2=\Theta(N^2)$ and thus $C_N=\Theta(\varepsilon^2 N^2)$.
+
+In a standard (non-shared) deep residual network, this does not happen: each step uses an independent weight matrix $W_n$, so the cross terms $\inner{r_n}{r_m}$ have zero mean for $n\ne m$ and the sum grows only as $\Theta(\!\sqrt{N})$~\citep{bordelon2024depthwise,dey2025completep}.
+Weight sharing breaks this independence and changes the squared-norm accumulation from $\Theta(N)$ (random walk) to $\Theta(N^2)$ (linear norm growth from constructive accumulation).
+Figure~\ref{fig:corr} confirms this empirically: pairwise cosine similarities between loop-step increments $\delta_n=h_n-h_{n-1}$ are near-zero off-diagonal in non-shared stacks but densely positive in looped networks.
+
+The following theorem formalizes this.
+The proof has two parts: ReLU non-negativity places $\sum_n u_n$ in the non-negative orthant $\cpos=\{x\in\R^d: x_i\ge 0\}$, ensuring constructive accumulation; a Gaussian matrix argument~\citep{gordon1988milman} then shows $W$ preserves this norm.
+
+\begin{theorem}[Looped residual-stream norm scaling]
+  \label{thm:alpha1}
+  Assume:
+  \begin{enumerate}
+    \item \textbf{(Nondegenerate activation mass)}
+      $\frac{1}{N}\sum_{n=0}^{N-1}\frac{1}{d}\ones^\top u_n\ge m_->0$, where $m_-$ is independent of $N$.
+    \item \textbf{(Bounded activation scale)}
+      $\frac{1}{N}\sum_{n=0}^{N-1}\frac{1}{d}\norm{u_n}_2^2\le q_+<\infty$, where $q_+$ is independent of $N$.
+    \item \textbf{(Positive-cone gain)}
+      $c_W\norm{x}_2\le\norm{Wx}_2\le C_W\norm{x}_2$ for every $x\in\cpos$, with $c_W,C_W>0$.
+  \end{enumerate}
+  Then
+  \[
+    \frac{1}{d}\left\|\sum_{n=0}^{N-1}r_n\right\|_2^2
+    =
+    \Theta(N^2),
+  \]
+  and bounded residual-stream norm requires $\varepsilon N=O(1)$, i.e.\ $\alpha\ge 1$.
+  For Gaussian $W$, the positive-cone gain holds with high probability (Appendix~\ref{app:theory}).
+\end{theorem}
+
+\noindent\textbf{Proof.} See Appendix~\ref{app:theory}.
+
+In words, the residual branch must be scaled as $1/N$, not $1/\!\sqrt{N}$; Figure~\ref{fig:energy} confirms this.
+
+\smallskip
+\noindent\textbf{Remark (beyond ReLU).}\enspace
+ReLU non-negativity is a \emph{sufficient} condition used in the proof; Figures~\ref{fig:corr}(b) and~\ref{fig:update-cosine} suggest that constructive accumulation also occurs in SwiGLU-based models, where the positive-cone argument does not directly apply.
+
+\subsection{Learning-rate scaling}
+
+Theorem~\ref{thm:alpha1} controls the forward pass: setting $\varepsilon=1/N$ keeps the residual-stream norm bounded at initialization.
+But stable initialization alone does not guarantee stable training: the learning rate $\eta$ must also be chosen so that each optimizer step produces an $O(1)$ change in the output $h_N$, independent of $N$.
+This is the maximal-update principle of~\citet{yang2022tensorprogramsV}; following \citet{dey2025completep}, we apply it to the loop axis.
+Let $\Delta W$ denote the one-step weight update and $\Delta h_N$ the resulting change in output.
+
+\begin{theorem}[Loop-wise learning-rate scaling]
+  \label{thm:lr}
+  Assume:
+  \begin{enumerate}
+    \item \textbf{(Update scale)}
+      $\Delta W_{ij}=\frac{\eta}{\sqrt d}S_{ij}$ with $\norm{\Delta W}=O(\eta)$, modeling Adam-style sign updates.
+    \item \textbf{(Stable activations)}
+      $\norm{u_n}_2^2/d=\Theta(1)$, ensured by Theorem~\ref{thm:alpha1}.
+    \item \textbf{(Stable forward scaling)}
+      $\varepsilon N=O(1)$.
+  \end{enumerate}
+  Then
+  \[
+    \frac{1}{\sqrt d}\norm{\Delta h_N}_2
+    =
+    O(\eta\varepsilon N),
+  \]
+  so $\eta\,\varepsilon\,N=O(1)$ is sufficient for an $O(1)$ width-normalized one-step output perturbation.
+\end{theorem}
+
+\noindent\textbf{Proof.} See Appendix~\ref{app:lr}.
+
+\smallskip
+
+At the critical scaling $\alpha=1$, the sharpness statement gives $\eta=\Theta(1)$: the optimal learning rate is constant in $N$, enabling hyperparameter transfer from small to large loop counts (Section~\ref{sec:experiments}).
+Figure~\ref{fig:lr-step-update} corroborates the $\eta\varepsilon N$ upper-bound scaling: the per-step output update grows as $N$ and $\sqrt{N}$ under the unscaled and square-root scaling rules (where the leading $\eta\varepsilon N$ term is empirically sharp as a scaling law, though outside the $\varepsilon N{=}O(1)$ premise of Theorem~\ref{thm:lr}), while linear scaling keeps it bounded within a small range.
+
+\input{sections/Figs/fig_lr_step_update}

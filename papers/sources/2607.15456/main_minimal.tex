@@ -1,0 +1,359 @@
+\documentclass[10pt]{article}
+\PassOptionsToPackage{table}{xcolor}
+\usepackage[preprint]{tmlr}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[table]{xcolor}
+\usepackage{array}
+\usepackage{flafter}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage[section]{placeins}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{microtype}
+\hypersetup{hidelinks}
+\setlength{\textfloatsep}{5pt plus 2pt minus 2pt}
+\setlength{\floatsep}{7pt plus 2pt minus 2pt}
+\setlength{\intextsep}{5pt plus 2pt minus 2pt}
+\setlength{\abovecaptionskip}{4pt}
+\setlength{\belowcaptionskip}{2pt}
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.85}
+\renewcommand{\textfraction}{0.06}
+\renewcommand{\floatpagefraction}{0.62}
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{8pt plus 2pt minus 2pt}
+\setlength{\@fpbot}{0pt plus 1fil}
+\makeatother
+\raggedbottom
+
+\definecolor{llagreen}{HTML}{1B7837}
+\definecolor{llared}{HTML}{B2182B}
+\definecolor{llahl}{HTML}{E3EEF9}
+\newcommand{\lla}{LLA}
+\newcommand{\Kt}{K_t}
+\newcommand{\Vt}{V_t}
+\newcommand{\NA}{\textnormal{n/a}}
+\newcommand{\up}[1]{\textcolor{llagreen}{$\uparrow$#1}}
+\newcommand{\dn}[1]{\textcolor{llared}{$\downarrow$#1}}
+
+\input{results_space_optimized}
+
+\title{Looped Latent Attention: Cross-Loop KV Compression for Looped Transformers}
+
+\author{\name James O'Neill\thanks{Corresponding author.} \email james.oneill@intercom.io \\
+\addr Fin AI Research \AND
+\name Fergal Reid \\
+\addr Fin AI Research}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Looped, weight-tied Transformers reduce parameters by reusing a single block, but decoding still stores a separate K/V cache for every recurrence step. We show that this loop-indexed cache is highly structured. For a fixed token, layer and head, K/V vectors trace a short low-rank trajectory across loops, while the head and layer axes remain much flatter. We introduce Looped Latent Attention (\lla{}), a post-training cache codec that stores compact K and V latents and reconstructs loop-specific K/V vectors only when attention reads them. The default per-head codec compresses recurrence, while \lla{}-2D also folds heads into one latent for the extreme-compression regime. The codec is initialized from the SVD of teacher activations and refined with logit and attention-output distillation. At matched cache budget, per-head \lla{} outperforms head-axis MLA, cross-layer sharing, KV quantization and final-loop reuse, showing that the recurrent cache is low-rank but not safely collapsible to a single state. The same axis advantage holds on Ouro-2.6B-Thinking and transfers to Huginn-3.5B, where an SVD codec remains near-lossless to $32\times$ compression in decoder-independent evaluation. The cache reduction is exact. On one H200, the latent-store path increases measured Ouro-1.4B batch capacity at 4k context from 32 to 768 sequences at $21.3\times$ compression. Lastly, for long reasoning rollouts such as in MATH-500, on-policy refinement on student-generated prefixes raises accuracy at $4\times$ compression from 0.43 to 0.66 and reduces no-answer generations when compared to token-level off-policy distillation.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+At inference, the memory that constrains a Transformer is its KV cache, not its weights. The weights are loaded once and shared across the whole batch. The cache is private to each request and grows with the context and with every generated token. Past a certain context length, this per-request state, not the parameter count, decides how many requests fit on a device and whether batched serving stays economical.
+
+Looped, weight-tied Transformers attack the parameter side of this cost by applying one block repeatedly. Universal Transformers \citep{dehghani2019universal} recast depth as recurrence, and recent looped language models such as Ouro/LoopLM \citep{ouro2024} scale the idea to billions of parameters. However, the cache is untied. Each recurrence step recomputes attention and writes its own keys and values, so the cache is indexed by recurrence step in addition to layer, head, and token. A model with $T=4$ loops over $D=24$ layers therefore carries the KV cache of a 96-layer decoder while sharing the parameters of a 24-layer one.
+
+This cache carries far fewer degrees of freedom than its nominal size. For a fixed token, layer, and head, the per-loop K/V vectors trace a short, low-rank trajectory, and the redundancy is specific to the loop axis: at the same budget, the head and layer spectra are much flatter. Looped Latent Attention (\lla{}) exploits this by replacing the $T$ per-loop K/V vectors with single latent and loop-specific reconstruction maps.
+
+An important question is \textit{which axis to compress and what the KV cache must preserve when it does}. A looped decoder invites a degenerate shortcut, if recurrence merely converges to a fixed point, one could store the final loop and reuse it everywhere. It also inherits the usual Transformer options of compressing heads, sharing layers, and quantizing values. Our experiments separate these by only changing what the cache stores while the teacher is kept frozen and the attention pattern and recurrence intact. Under this controlled swap, final-loop reuse buys the same $4\times$ reduction for free yet collapses GSM8K generation to zero, while a small low-rank trajectory code holds performance at matched-budget. In the following, we list our three primary contributions.
+
+\paragraph{Contributions.}
+\begin{itemize}
+  \item \lla{}, a cross-loop latent K/V codec for weight-tied looped Transformers. It stores $(r_k+r_v)H$ scalars per token per layer instead of $2THd_{\rm head}$, giving compression $\rho=2Td_{\rm head}/(r_k+r_v)$. \lla{}-2D extends the same family by folding the heads into one latent for the extreme-compression regime.
+  \item We show that recurrence is the most compressible cache axis in Ouro-1.4B, Ouro-2.6B-Thinking and Huginn-3.5B. K and V follow different trajectories, motivating $r_v>r_k$, and matched-budget comparisons against head-axis MLA, cross-layer sharing, KV quantization and final-loop reuse favor the loop axis.
+  \item We tie the results to deployment: an explicit on-policy refinement objective uses student-generated prefixes to stabilize long rollouts, and the exact scalar reduction translates into measured serving gains, raising Ouro-1.4B maximum batch from 32 to 768 sequences at $21.3\times$ compression.
+\end{itemize}
+\section{Related Work}
+\label{sec:related}
+\paragraph{Looped and Universal Transformers.}
+Universal Transformers \citep{dehghani2019universal} apply a weight-tied block for several steps, casting depth as recurrence. Recent looped language models carry this to billion-parameter LMs and trade computation for parameter efficiency on reasoning workloads \citep{ouro2024}. Mechanistic studies of these models report that per-loop computation settles onto low-dimensional trajectories \citep{blayney2026mechanisticanalysisloopedreasoning}, and \lla{} builds a cache codec on exactly that structure. Recurrence does not address serving cost, where attention still stores a separate K/V state for every loop.
+
+\paragraph{Latent and compressed KV caches.}
+Multi-head Latent Attention (MLA) introduced in DeepSeek-V2 compresses the standard Transformer KV cache by storing a low-rank latent across the head/channel axis and reconstructing per-head keys and values \citep{deepseekv2}. Cross-layer sharing targets the layer axis \citep{cla2024,yoco2024,minicache2024}, quantization targets precision \citep{kvquant2024}, and token eviction targets the sequence axis \citep{h2o2023,streamingllm2024}. All of these operate on single-pass Transformers. \lla{} instead compresses recurrence, an axis that only weight-tied looped models have. Because the same block and projections are reused at every step, the loop axis is redundant for a reason the head and layer axes lack. The head axis, targeted by multi-query and grouped-query attention \citep{mqa2019,gqa2023}, composes on top of \lla{} (\lla{}-2D), and sequence-axis eviction multiplies with it (Sec.~\ref{sec:systems}).
+
+\paragraph{Memory-efficient looped Transformers.}
+MELT \citep{vendrell2026melt} is the closest concurrent work. It distills a single gated K/V state per layer, while \lla{} keeps the loop trajectory and compresses its rank. However, as we will see, our zero-parameter final-loop-reuse control, which collapses the loop to one state, fails at the same cache budget. The two methods also span different regimes. A collapsed state fixes the memory reduction at roughly the loop count, whereas a tunable latent can sit below or above that point by choice of $r_k$ and $r_v$.
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/fig1_diagram.pdf}
+  \vspace{-1.5em}
+  \caption{\textbf{Cross-loop Looped Latent Attention.}
+\textbf{Left:} A weight-tied looped language model reuses the same $D$-layer decoder stack for $T$ recurrent steps. In the standard implementation, each step contributes a separate key--value pair $(K_t,V_t)$ to a loop-indexed KV cache, so the stored cache grows with the number of recurrent steps.
+\textbf{Right:} Looped Latent Attention replaces these loop-specific cache entries with a cross-loop codec. For each layer, token, and attention head, the keys and values produced across the $T$ recurrent steps are collected along the loop axis and compressed into separate compact K and V latents. At recurrent step $t$, loop-specific up-projections reconstruct only the $K_t$ and $V_t$ required by attention. Reconstruction occurs before RoPE and multi-head attention, leaving the recurrent computation, model weights, and attention operation unchanged; only the representation stored in the KV cache is modified.}
+  \label{fig:lla-architecture}
+\end{figure}
+
+\section{Looped Latent Attention}\label{sec:method}
+Looped models save parameters but still materialize K/V states for every recurrence step. We compress this recurrence axis with a codec that retrofits onto a frozen teacher and changes only the representation held in memory, leaving the recurrent model and attention computation otherwise unchanged. As illustrated in~\autoref{fig:lla-architecture}, the standard loop-indexed KV cache is replaced by compact cross-loop K and V latents, from which the cache entries required at each recurrence step are reconstructed on demand.
+
+We first define the uncompressed recurrent cache, then introduce the cross-loop latent cache and derive its exact compression ratio. The same construction is applied separately to K and V, potentially with different ranks. We then describe the SVD initialization and the matched baselines used to test whether the loop axis is the appropriate dimension to compress.
+
+\iffalse
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig1_round2/c04_nested_zoom.png}
+  \caption{\textbf{Looped Latent Attention.} \textbf{(a)} \lla{} sits on the KV-cache path of a weight-tied looped Transformer block: the block emits per-loop $K_t,V_t$ at each recurrence step $t$, and the codec compresses only the loop axis of that cache, leaving the attention pattern and the rest of the block untouched. \textbf{(b)} \lla{}-2D (loop$\times$head), a family variant, factorizes loops \emph{and} heads together with a single latent per token and layer, decoding all $H$ heads MLA-style from one vector. The default per-head \lla{} instead keeps $H$ separate per-head latents and compresses only the (more redundant) loop axis. \textbf{(c)} The head-axis baseline, per-loop MLA \citep{deepseekv2}, compresses heads independently at every recurrence step with no sharing across loops. MLA is a method we compare against, not a component of \lla{}. \lla{} instead reconstructs each loop from one shared cross-loop latent via a per-loop up-projection $W^\uparrow_t$.}
+  \label{fig:schematic}
+\end{figure}
+\fi
+
+\paragraph{Teacher cache.}
+Consider a weight-tied looped Transformer with $D$ layers, $H$ attention heads of width $d_{\rm head}$ and $T$ recurrence steps. For one layer, one head, one token and one axis (K or V), the teacher emits $T$ vectors. We stack them as
+\begin{equation}
+  x = [x_1;\ldots;x_T] \in \mathbb{R}^{T d_{\rm head}} .
+\end{equation}
+The uncompressed cache stores both K and V for every loop, head and layer, for a per-token per-layer cost of $2THd_{\rm head}$ scalars.
+
+\paragraph{Cross-loop codec.}
+For each layer, head and axis, \lla{} stores a centered low-rank latent
+\begin{equation}
+  c = (x-\mu)W_{\rm down}, \qquad c\in\mathbb{R}^{r},
+  \label{eq:encode}
+\end{equation}
+where $\mu\in\mathbb{R}^{Td_{\rm head}}$ is a calibration-set mean and $W_{\rm down}\in\mathbb{R}^{Td_{\rm head}\times r}$. Loop $t$ is reconstructed by a loop-specific up-projection,
+\begin{equation}
+  \hat{x}_t = c W_{{\rm up},t}^{\top}+\mu_t, \qquad W_{{\rm up},t}\in\mathbb{R}^{d_{\rm head}\times r} .
+  \label{eq:decode}
+\end{equation}
+K and V have separate latents and ranks, $r_k$ and $r_v$, with $r_v > r_k$ because the value cache stabilizes more slowly across loops than the key cache. The compressed cache stores $(r_k+r_v)H$ activation scalars per token per layer, so
+\begin{equation}
+  \rho = \frac{2THd_{\rm head}}{(r_k+r_v)H} = \frac{2T d_{\rm head}}{r_k+r_v} .
+  \label{eq:ratio}
+\end{equation}
+The ratio counts the per-request cache. The fixed codec matrices are shared across tokens, contexts and batches and do not scale with sequence length.
+
+\paragraph{RoPE and reconstruction.}
+The latent is fit to the pre-RoPE content projection. In a looped decoder, a token has the same position at every recurrence step, so the rotary phase \citep{roformer2021} is shared across loops and can be applied after reconstruction. This is simpler than standard MLA, which requires an explicit decoupled-RoPE branch to preserve positional information along the head/channel axis.
+
+\paragraph{The \lla{}-2D variant (loop$\times$head).}
+The per-head codec of Eq.~\eqref{eq:encode} can be pushed further by folding the head axis into the same latent. \lla{}-2D stores a single latent per token and layer and reconstructs \emph{all} $H$ heads' K/V from it, MLA-style, in addition to the per-loop reconstruction of Eq.~\eqref{eq:decode}. This lowers the cache to $(r_k+r_v)$ scalars per token per layer, a factor $H$ below per-head \lla{}, at the cost of coupling heads through one shared code. \lla{}-2D is the extreme-compression member of the family. Its down-projection input is the full $THd_{\rm head}$ stack rather than $Td_{\rm head}$, so its parameter count grows with head count and recurrence length. This becomes the binding constraint at large $T$ (the Huginn transfer, Section~\ref{sec:experiments}). Section~\ref{sec:experiments} characterizes the accuracy/compression trade between the two members. \lla{} without qualification denotes the per-head variant.
+
+\paragraph{Initialization and conversion.}
+For each layer, head and axis we collect teacher K/V activations on a calibration set, center by the per-loop mean and initialize $W_{\rm down}$ from the top-$r$ right singular vectors of the stacked-loop matrix. The initial up-projections are the corresponding loop slices. The SVD initialization is then fine-tuned with the teacher frozen. The objective is the forward KL from the teacher distribution to the swapped model plus an attention-output matching term,
+\begin{equation}
+  \mathcal{L} = \mathrm{KL}\left(p_{\rm teacher}\|p_{\rm swap}\right)
+  + \frac{\lambda_{\rm attn}}{TD}\sum_{t,d}\|a_{t,d}-\hat a_{t,d}\|_2^2,
+  \label{eq:loss}
+\end{equation}
+with $\lambda_{\rm attn}=0.5$ in the reported runs. Only codec parameters are updated. The SVD prior matters more than any other design choice. At $4\times$, SVD initialization reaches held-out KL 0.105 after the short conversion, while random initialization stays at 0.771 under the same budget (Table~\ref{tab:ablations}, Fig.~\ref{fig:ablinit}).
+
+\paragraph{On-policy refinement.}
+Eq.~\eqref{eq:loss} is teacher-forced, fitting the codec on prefixes visited by the teacher. For long autoregressive rollouts, the swapped model instead conditions on prefixes produced by its own codec. We therefore add an optional second stage after the off-policy fit. The swapped model samples completions, the frozen teacher scores those sampled prefixes, and only codec parameters are updated. No reward or correctness filtering is used. Section~\ref{sec:onpolicy} writes the off-policy and on-policy objectives side by side. The on-policy version replaces teacher prefixes with student-generated prefixes and stops the gradient through sampling.
+
+\paragraph{Matched-axis baselines.}
+The main ablations place comparable latent codecs on other cache axes under the same scalar budget, testing whether the loop axis is the right one. The head-axis baseline is per-loop MLA (no cross-loop sharing). The layer baseline reuses K/V across adjacent layers. The precision baseline is low-bit KV quantization. We also include a zero-parameter control that caches only the final-loop K/V and reuses it for every loop. That control has the same $4\times$ cache footprint as \lla{} for $T=4$ and directly tests whether the loop trajectory can be replaced by its endpoint.
+
+\section{Cross-loop structure in the teacher cache}
+\FigureLoopRank
+\label{sec:structure}
+Before comparing trained codecs, we ask whether the frozen teacher already contains the structure that \lla{} assumes. This is a stricter test than downstream accuracy, since it examines the cache tensor directly, without optimization, decoding heuristics or task-specific effects. If the loop axis is not spectrally different from the head or layer axes, then a cross-loop codec would be an arbitrary design choice. If it is lower-rank in the teacher, the later iso-cache ordering has a mechanistic explanation.
+
+\textbf{\textit{The loop-axis advantage is visible before training any codec.}} Fig.~\ref{fig:whyloops} compares the singular spectra of frozen-teacher K/V along the loop, head and layer axes. In Ouro-1.4B and Ouro-2.6B-Thinking, the loop axis has normalized effective rank about $0.61$ to $0.63$, with a single direction carrying roughly 60 percent of the energy. The head and layer axes are close to full-rank by the same measure. This explains why a small loop latent preserves more downstream behavior per cached scalar than head or layer compression. Stabilization across loops is a related but distinct property. A contraction can converge while staying full-rank, so we read the low rank directly from these spectra rather than infer it from convergence.
+
+\textbf{\textit{Cross-loop dynamics also explain the K/V rank split.}} Across recurrence steps, K and V move toward the final loop while step-to-step changes shrink. K stabilizes earlier, while V moves slower and carries more cross-loop variance. We therefore allocate $r_v>r_k$ throughout. The matched-budget ablation confirms the benefit, with $r_k/r_v=96/160$ outperforming a shared-rank $128/128$ codec at the same scalar count (Table~\ref{tab:ablations}).
+
+
+\textbf{\textit{A single endpoint is not enough}}. Fig.~\ref{fig:whytraj} shows that each token-head unit is dominated by one cross-loop direction, but the mass does not sit on the rank-1 line. Only 6 percent of K variance and 17 percent of V variance lie on the loop axis, and most variation remains content variation. The right object is therefore a short low-rank trajectory, not a collapsed state. This distinction is reinforced by the final-loop reuse baseline in Table~\ref{tab:isocache}.
+\FigureTrajectory
+
+\FigureHuginn
+The same mechanism appears in a second looped family. Huginn-3.5B uses a different recurrent-depth architecture and up to 32 recurrence steps \citep{geiping2025huginn}. Its loop axis is far more redundant than its head axis, and its K/V states converge toward a fixed point across recurrence steps (Fig.~\ref{fig:whyhuginn}). The value cache again converges more slowly than the key cache. This recurrence-axis structure supports treating \lla{} as a property of weight-tied iteration rather than an Ouro-specific artifact. The remaining experiments test that structure through downstream accuracy, matched-budget baselines, long rollouts and serving capacity.
+
+\section{Experiments}
+\label{sec:experiments}
+The core question is which axis to spend rank on. At a fixed cache budget, we test whether compressing the loop beats compressing heads, layers or precision, and how much rank a converted codec needs before it matches the teacher on a generative task. Two further experiments ask whether the answer holds at a larger Ouro model and in the unrelated Huginn family. Table~\ref{tab:tier4} is the cold-start rank sweep, Table~\ref{tab:broadsuite} the broad-suite teacher comparison, Table~\ref{tab:isocache} the matched-budget axis comparison, and Table~\ref{tab:ablations} the design ablations. The reported ratios are representative operating points spanning the light, middle and extreme regimes.
+
+\paragraph{Setup.}
+Unless stated otherwise, generative results use the cached reconstruction decoder, which inserts reconstructed K/V before attention. The latent-store decoder in Sec.~\ref{sec:systems} is the memory-realizing path. Decoder-independent metrics evaluate the swapped model on teacher-provided tokens and are not affected by generation drift. The main teacher is Ouro-1.4B with $T=4$ loops. Scale experiments use Ouro-2.6B-Thinking, and family-transfer experiments use Huginn-3.5B.
+
+
+\paragraph{Quality under compression.}
+\FigureBroadSuite
+Figure~\ref{fig:broadsuite} summarizes Ouro-1.4B quality as the KV-cache is compressed. Across the broad suite~(a), effects are task-dependent: code (HumanEval/MBPP) and MMLU-Pro stay at or above the teacher through $4\times$, while the reasoning tasks degrade, gently within the light-compression region ($\le 2\times$) for GSM8K and BBH, and throughout for MATH-500, the most sensitive task (treated separately in Section~\ref{sec:onpolicy}, where long generations expose a different failure mode from teacher-forced fidelity). The GSM8K cold-start Pareto~(b) sharpens the picture: strict-EM accuracy is flat near $0.58$ from $4\times$ to $2.67\times$, then breaks sharply upward at $2\times$ to $0.75$ and reaches $0.795$ at $1.33\times$ (within the teacher's sampling uncertainty), while the codec train-KL collapses over the same transition. This is a rank effect rather than a method ceiling: below the break the latent is large enough to preserve the decision tokens that determine final-answer correctness. The suite therefore separates two notions that are easy to conflate: per-token reconstruction can be strong while autoregressive rollout still needs a stability correction. Full numbers are in~\autoref{app:broadsuite}.
+
+
+\paragraph{Iso-cache axis comparison.}
+\TableIsoCache
+\FigureParetoOne
+Table~\ref{tab:isocache} compares loop compression against matched-budget alternatives. 
+We find that compressing the loop axis (\lla{}, the highlighted rows) preserves GSM8K, while the head, layer and precision baselines and zero-parameter final-loop reuse do not. All learned codecs are matched by KV-cache budget. The LLA rows use the checkpoint selected under the iso-cache protocol, whereas Table~\ref{tab:tier4} is a separate cold-start rank sweep. LLA (per-head) compresses the loop axis. LLA-2D (loop$\times$head) is a family variant that additionally folds the head axis (all heads from one latent). The head, layer and precision rows are baselines that compress orthogonal axes. The zero-parameter final-loop reuse control has the same $4\times$ cache budget as LLA, but collapses generation (GSM8K $0.000$). Its reconstruction relative error is $0.35$ for K and $0.60$ for V. Precision quantization (kv\_quant) is inference-only (no codec training, hence no train-KL) and cannot exceed $\sim$8$\times$. It is competitive at $4\times$ but collapses on GSM8K at $5.33\times$.
+Table~\ref{tab:tier4} should be read separately as a cold-start rank sweep, whereas Table~\ref{tab:isocache} uses the checkpoint and evaluation protocol adopted for the baseline comparison. At $4\times$, \lla{} has substantially lower train-KL than head or layer compression and much higher GSM8K accuracy. The zero-parameter final-loop reuse baseline has the same $4\times$ cache budget and no trainable parameters, but collapses GSM8K to 0.000. This is the most direct evidence that the loop trajectory cannot be replaced by its endpoint.
+
+Within the \lla{} family, \lla{}-2D (loop$\times$head) is competitive at high compression on teacher-forced metrics but trails the per-head variant on generation at $21.3\times$. This matches the spectral picture. \lla{}-2D spends part of its budget on the head axis, which is flatter and more expensive to compress. The two variants therefore span the operating range, with per-head \lla{} for accuracy-preserving compression and \lla{}-2D for the extreme-compression regime where its $H\times$ smaller cache outweighs the accuracy gap. Table~\ref{tab:isocache} reports the matched-budget numbers method by method, while Fig.~\ref{fig:pareto1p4b} plots the same comparison as a frontier, where the loop-axis advantage is easiest to read. Per-head \lla{} does not win by overfitting a single benchmark, and the precision baseline is harmless at mild compression but brittle once the bit budget becomes too small.
+
+\TableScale
+\paragraph{Scale generalization.}
+The 2.6B results in Table~\ref{tab:scale} preserve the ordering. \lla{} remains near-lossless on full GSM8K from $4\times$ to $10.67\times$, while the head baseline loses up to 0.25 absolute accuracy at $4\times$. Fig.~\ref{fig:pareto26b} and Appendix~\ref{app:scale_mc} show that the advantage also holds across commonsense and knowledge tasks. The 2.6B model is deeper and has a stronger reasoning profile, and preserving the ordering under that change supports the structural interpretation from Section~\ref{sec:structure}.
+
+\paragraph{Design ablations.}
+Table~\ref{tab:ablations} isolates the choices used in the codec. SVD initialization is the largest factor, reducing held-out KL by an order of magnitude relative to random initialization under the same conversion budget. The asymmetric rank split improves over a shared-rank latent at matched scalar cost, and attention-output matching gives a small additional gain beyond token KL. These ablations indicate that \lla{} mostly exploits teacher geometry rather than learning a new attention mechanism from scratch.
+
+\paragraph{Transfer to Huginn.}
+A \lla{} codec also works on Huginn-3.5B, where the recurrence length is much larger. Table~\ref{tab:huginn} shows that SVD initialization alone is near-lossless to $32\times$ in decoder-independent fidelity. KL distillation recovers most of the $64\times$ and $128\times$ range. The downstream MC average is unchanged at $16\times$ and $32\times$ and degrades gracefully after that. On Huginn, head-axis SVD reconstruction is 20 to 30 times worse than \lla{} at matched budget, and \lla{}-2D (loop$\times$head) becomes parameter-infeasible at this recurrence length because its down-projection input dimension grows with head count and loop count. Per-head \lla{} avoids this cost, which is why it is the default.
+
+This transfer is intentionally harder than reproducing a number on a larger Ouro checkpoint. Huginn changes the recurrent-depth architecture, increases the realized recurrence to 32 steps, and is evaluated through decoder-independent fidelity rather than the Ouro cached generation path. The result indicates that a simple linear subspace found from teacher activations already captures most of the recurrence trajectory. Distillation is needed only when the requested budget asks the latent to represent the tail of the trajectory at $64\times$ or $128\times$. This is the behavior expected if weight-tied iteration itself is the source of the low rank, not a peculiarity of one training run or benchmark.
+\TableHuginn
+
+\section{Long-generation stability}
+\label{sec:onpolicy}
+Teacher-forced conversion trains the codec on teacher trajectories. At inference, however, the swapped model conditions on tokens produced by its own codec. A small early reconstruction error can move later prefixes away from the conversion distribution, and the error then compounds autoregressively. This failure is most visible on long MATH-500 generations, where the model can produce long non-terminating solutions even when teacher-prefix KL is low.
+
+\FigureExposure
+Fig.~\ref{fig:exposure} bins $3.2\times$ completions by generated length, with the uncompressed teacher as a reference. Off-policy accuracy degrades with length far below the teacher and the no-answer rate spikes in the longest bin. On-policy distillation trains on the codec's own sampled rollouts and closely tracks the teacher across length bins. The teacher's own gentle decline with length reflects intrinsic problem difficulty, not exposure bias.
+
+The refinement objective makes the distribution shift explicit. Let $p_T$ denote the frozen teacher and $p^\theta_S$ the swapped model with codec parameters $\theta$:
+\begin{align}
+\mathcal{L}_{\rm off}(\theta)
+&=\mathbb{E}_{y\sim p_T}\left[\frac{1}{|y|}\sum_t
+\mathrm{KL}\left(p_T(\cdot\mid y_{<t})\|p^\theta_S(\cdot\mid y_{<t})\right)\right], \\
+\mathcal{L}_{\rm on}(\theta)
+&=\mathbb{E}_{\tilde y\sim \mathrm{sg}(p^\theta_S)}\left[\frac{1}{|\tilde y|}\sum_t
+\mathrm{KL}\left(p_T(\cdot\mid \tilde y_{<t})\|p^\theta_S(\cdot\mid \tilde y_{<t})\right)\right].
+\label{eq:onpolicy_objective}
+\end{align}
+Off-policy distillation uses teacher prefixes $y$. On-policy distillation instead uses student prefixes $\tilde y$ sampled from the current compressed model. The stop-gradient blocks gradients through sampling, so updates still come only from the KL term. The teacher remains the target distribution in both objectives. The on-policy stage only changes which prefixes are used to tune the codec, turning rollout drift into a reconstruction problem on states the deployed model actually visits.
+
+\TableOnPolicy
+Table~\ref{tab:onpolicy} shows the full rank Pareto. On-policy distillation raises MATH-500 accuracy by $0.16$ to $0.24$ at $3.2$ to $5.33\times$ and reduces no-answer generations at every ratio. At $21.3\times$, it still improves termination but does not improve accuracy, indicating that the smallest latent has already lost task-relevant information. Larger re-evaluations confirm the low-compression lift in Fig.~\ref{fig:onpolicy}. For long rollouts, the conversion data must include states visited by the compressed model itself.
+
+Memory is only useful if accuracy survives at length. Figure~\ref{fig:passkey} probes exact passkey retrieval (a 5-digit key at random depth, up to $64$k) and reveals a clean \emph{compressibility--length} trade-off: the reliable-retrieval length (longest context with retrieval $\ge 0.9$) shrinks steeply as compression rises: $\ge$$64$k at $\le 5.33\times$, $16$k at $10.67\times$, $8$k at $14.2\times$. Two failure modes bound the operating range. In a \emph{length-limited} regime ($10.67$--$14.2\times$) retrieval is perfect up to a knee and then decays gracefully, as the fixed latent budget is spread over more positions and the farthest keys are lost first (the knee marches $16$k$\to$$8$k). In a \emph{compression-limited} regime ($\ge 15.5\times$) retrieval is flat and below $1.0$ at \emph{every} length, because the latent is too small to preserve the exact key-token identity at all. The trade-off also shifts with model \emph{size}: at $10.67\times$ the 2.6B model retains perfect retrieval to $32$k, where the 1.4B model has already fallen to $0.80$ (Fig.~\ref{fig:passkey}, right), consistent with a larger model carrying more redundant KV and thus tolerating the same compression to longer context. Full numbers are in Appendix~\ref{app:lc_ds}; the two-pass prefill that reaches $64$k is described in Appendix~\ref{app:serving_details} (the 2.6B $64$k cell OOMs on that prefill, a memory limit rather than an accuracy failure).
+\FigurePasskey
+
+\section{Serving and compute}
+\label{sec:systems}
+Reducing per-request cache increases the contexts and batches that fit in memory \citep{pagedattention2023}. For \lla{}, this benefit is exact on memory and implementation-dependent on compute: Eq.~\eqref{eq:ratio} reduces the cache by $\rho$, while runtime depends on how attention consumes the latent.
+
+\TableMemory
+Table~\ref{tab:memory} and Fig.~\ref{fig:capacity} translate the scalar reduction into capacity. At context length 4096 on one H200, the measured maximum batch for Ouro-1.4B rises from 32 to 128 at $4\times$ and 768 at $21.3\times$; Ouro-2.6B-Thinking rises from 16 to 64 at $4\times$. The tests fabricate the decode cache, push batch to OOM, and validate latent attention against full reconstruction.
+
+There are two implementation regimes. A full-memory fast path caches reconstructed K/V and runs at $74.1$ versus $63.6$~ms/token ($1.16\times$ teacher latency), but does not realize the memory reduction. The latent-store path caches only the latent and realizes the $\rho\times$ saving; because the current kernel reconstructs cached tokens on read, it is compute-bound (108 versus 748 peak tokens/s at the reported endpoints). The present systems result is therefore a capacity gain, not a decode-speed claim.
+
+\lla{} also composes with sequence-axis eviction, and moderate compression preserves exact passkey retrieval at long context (Sec.~\ref{sec:onpolicy}; Tables~\ref{tab:evict} and~\ref{tab:passkey}). Per-head \lla{} favors fidelity, whereas \lla{}-2D trades accuracy for a smaller single latent. An absorbed-attention formulation could avoid explicit reconstruction, but post-hoc decoupled RoPE remains less faithful than the full-RoPE reconstruction used for the main results. Appendix~\ref{app:serving_details} gives the eviction, long-prefill, variant, and absorbed-attention details.
+
+\section{Discussion}
+\label{sec:discussion}
+\vspace{-0.5em}
+The evidence supports recurrence-specific rather than axis-agnostic cache redundancy. Reapplying the same block and K/V projections to a stabilizing recurrent state produces a much steeper loop spectrum than the head or layer spectra; matched-budget codecs on those axes lose more accuracy, and the ordering transfers from Ouro to Huginn. At the same time, final-loop reuse collapses generation at the same $4\times$ budget. Recurrence may approach a fixed point, but its intermediate cache states remain functionally distinct: the compressible object is a low-rank trajectory, not a single endpoint.
+
+Rank defines the deployment regime. On Ouro-1.4B, $1.33$--$2\times$ is close to a drop-in replacement across the broad suite. At roughly $3$--$5\times$, teacher-forced fidelity remains useful, but long rollouts benefit from on-policy refinement because the compressed model visits its own prefixes. Beyond $10\times$, \lla{} is primarily a capacity tool: many likelihood tasks remain usable, while exact retrieval and long-form reasoning become increasingly rank-limited. The $21.3\times$ result, where on-policy training improves termination but not accuracy, separates correctable rollout drift from irreversible information loss.
+
+The recurrence axis is orthogonal to head sharing, cross-layer reuse, quantization, and token eviction. For looped decoders, the spectral results suggest compressing recurrence first and stacking another method only when the deployment target justifies its additional quality cost. This priority is a consequence of weight-tied iteration and need not hold for a conventional single-pass Transformer.
+
+Our central claims, exact cache reduction and accuracy under full-RoPE reconstruction, are established independently of any throughput speedup. We nevertheless implement and evaluate an absorbed-attention compute path. Because the attention score is bilinear, the key up-projection can be moved to the query, allowing attention to read the latents directly. In a shape-matched random-weight decode benchmark that isolates kernel geometry from trained-model accuracy, this path is $2.3\times$ faster than reconstruct-then-attend at 262k context and matches teacher decode latency with $4\times$ less cache. Its post-training fidelity is bounded by a decoupled-RoPE floor, which we characterize rather than leave open: a learned query adapter lowers KL from $0.55$ to $0.34$, whereas full-RoPE reconstruction reaches $0.059$, because the frozen query was trained against full-RoPE keys. This localizes the dominant mismatch and identifies native training, aligning query projections with the latent cache during pretraining, as the route to closing it and converting memory savings into compute savings. A complementary direction is to exploit low-rank residual updates across loops. The measurements are consistent with this premise because the loop trajectory is low-rank without collapsing to its endpoint, but they establish low rank in the cache rather than in the full recurrent computation. Appendix~\ref{app:serving_details} gives the implementation and complete decoupled-RoPE characterization.
+
+\section{Conclusion}
+\label{sec:conclusion}
+Looped Transformers tie weights but not their recurrence-indexed KV cache. \lla{} replaces that cache with a low-rank cross-loop K/V trajectory, outperforms matched-budget head, layer, precision, and endpoint baselines, and transfers across two looped-model families. Its exact scalar reduction yields measured serving-capacity gains. These results make recurrence a practical compression axis for looped decoders and a natural target for native latent-cache training.
+
+More broadly, the result reframes what weight tying costs at inference. Tying parameters across loops makes recurrent-depth models cheap to store, but leaves their KV cache untied and growing with the loop count, so at long context and large batch it is serving cost, not parameter count, that limits looped reasoning models. The same tied computation that shares parameters also drives the per-loop states onto a low-rank trajectory, so the axis responsible for the cost is also the most compressible one. Treating recurrence as a first-class compression axis therefore converts a serving liability into a design lever. We expect the same structure, a tied computation producing an untied but low-rank cache, to recur in other iterative or weight-shared architectures, where a cache indexed by an internal iteration could be compressed by the analogous construction.
+
+\clearpage
+\input{main.bbl}
+
+\appendix
+\AppendixExpDetails
+\section{Additional figures}
+\label{app:extrafigs}
+%\FigureTrajectory
+\FigureParetoTwoSix
+\FigureCapacity
+
+\section{Compression Across The Broad Suite}
+\label{app:broadsuite}
+\TableBroadSuite
+Across the broad suite (Table~\ref{tab:broadsuite}), light compression matches or exceeds the teacher within evaluation noise. Code and BBH retain non-trivial performance at $4\times$, but lighter ratios are needed to match the teacher. MATH-500 is the most sensitive task and is treated separately in Section~\ref{sec:onpolicy}, because long generations stress rollout stability rather than only per-token reconstruction. Appendix Table~\ref{tab:retention} restates these numbers as accuracy relative to the teacher, on a common scale.
+
+The broad-suite table also separates three regimes. Light compression ($1.33$ to $2\times$) is effectively a drop-in replacement for the full cache, resolving enough of the loop trajectory that residual differences fall within benchmark variation. By $2.67$ to $5.33\times$, the representation still carries many likelihood and short-generation tasks, though long reasoning becomes sensitive to prefix drift. At the most aggressive ratios the codec is a capacity operating point, not a universal quality-preserving conversion. The matched-axis comparisons below use the middle and high-compression regimes to test whether recurrence is the right axis to spend the latent dimension on.
+
+The regimes reflect one underlying variable, generation length. Robustness to compression falls off as generations grow longer. Multiple-choice and short-generation tasks tolerate the middle regime with little loss, code and BBH sit in between, and long-form mathematical reasoning breaks first. A deployment should budget around this ordering rather than any single benchmark.
+
+\TableTier
+\paragraph{Accuracy-compression frontier.}
+Table~\ref{tab:tier4} shows a cold-start GSM8K Pareto sweep for Ouro-1.4B. Accuracy is flat around 0.58 from $4\times$ to $2.67\times$, then rises sharply at $2\times$ and reaches 0.795 at $1.33\times$, close to the teacher. The result is a rank effect rather than a method ceiling. Below the transition, the latent is large enough to preserve the decision tokens that determine final-answer correctness. The sharp break shows where the loop trajectory becomes sufficiently resolved for GSM8K generation.
+
+\section{Token-eviction composition table}
+\label{app:evict}
+\TableEvict
+
+\section{On-policy rank Pareto (figure)}
+\label{app:oppareto}
+\FigureOnPolicy
+
+\section{Design-ablation detail}
+\label{app:abl}
+\TableAblations
+\FigureAblationInit
+
+\section{Full 2.6B commonsense and knowledge suite}
+\label{app:scale_mc}
+\TableScaleMC
+
+\section{Cross-loop stabilization at 2.6B}
+\label{app:traj26b}
+Fig.~\ref{fig:whytraj26b} repeats the trajectory diagnostic on Ouro-2.6B-Thinking. The attention K/V stabilizes within the first loop, each token-head unit has a dominant but not exhaustive loop direction, and the value cache remains the higher-variance axis.
+\FigureTrajectoryTwoSix
+
+\section{Long Context Retrieval Details}
+\label{app:lc_ds}
+\TablePasskey
+
+\section{Additional serving and discussion details}
+\label{app:serving_details}
+\paragraph{Eviction and long-context prefill.}
+The recurrence and sequence axes compose multiplicatively. Under a 260-token StreamingLLM/H2O-style budget, eviction alone and eviction stacked on \lla{}-$4\times$ score $0.51$ and $0.52$ on GSM8K (Table~\ref{tab:evict}), so the codec adds little beyond eviction's own quality cost. At the most aggressive reported point, \lla{}-$21.3\times$ combined with a 1024-token eviction budget caps the 1M-context Ouro-1.4B cache at $36$~MiB. Reaching the $64$k passkey cells required reconstructing prefill K/V layer-by-layer and freeing each layer's captures immediately; a one-shot implementation retains float32 captures and full-width reconstructions and exhausts memory beyond approximately $32$k.
+
+\paragraph{Per-head \lla{} versus \lla{}-2D at inference.}
+Per-head \lla{} stores $H$ latents per token and layer, $(r_k+r_v)H$ scalars, and reconstructs each head independently. \lla{}-2D stores one latent, $(r_k+r_v)$ scalars, and reconstructs all heads jointly. It therefore has a factor-$H$ smaller cache for fixed ranks, whereas per-head \lla{} is more accurate at matched cache budget (Table~\ref{tab:isocache}). Both variants can use either the full-memory fast path or the latent-store capacity path; the choice between them is an operating-point decision between fidelity and maximum capacity.
+
+\paragraph{Absorbed attention.}
+The bilinear score permits the K up-projection to move to the query side,
+$q^\top(W_{\rm up}c)=(W_{\rm up}^\top q)^\top c$, while the V path satisfies
+$\sum_i a_iW^V_{\rm up}c_i=W^V_{\rm up}\sum_i a_ic_i$. Attention can therefore operate directly on latents. RoPE prevents exact absorption of the positional component, so the implementation uses an MLA-style NoPE content path plus a small explicit rotary branch \citep{deepseekv2}; the rotary branch is shared across recurrence steps for each token. In a shape-matched random-weight decode benchmark at the $4\times$ geometry, which isolates the kernel dimensions from trained-model accuracy, the absorbed path is $2.3\times$ faster than reconstruct-then-attend at 262k context and reaches teacher decode latency with $4\times$ less cache (Table~\ref{tab:absorbed_latency}). The advantage grows with context because reconstruct-then-attend must materialize the full-width K/V at every step.
+
+\begin{table}[h]\centering\small
+\caption{\textbf{Absorbed decoupled decode latency} (Ouro-1.4B, $4\times$ geometry; shape-matched benchmark that isolates kernel dimensions from trained-model accuracy). As context grows, the absorbed path's advantage over reconstruct-then-attend rises to $2.3\times$ and its per-token latency reaches teacher parity.}
+\label{tab:absorbed_latency}
+\begin{tabular}{rcccc}
+\toprule
+context $L$ & teacher (ms/tok) & absorbed (ms/tok) & vs.\ reconstruct-then-attend & vs.\ teacher \\
+\midrule
+$32{,}768$  & 0.66 & 1.19 & $1.22\times$ & $0.56\times$ \\
+$131{,}072$ & 2.29 & 2.32 & $2.17\times$ & $0.99\times$ \\
+$262{,}144$ & 4.46 & 4.25 & $2.30\times$ & $1.05\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For a frozen pretrained model, post-hoc decoupled RoPE introduces a fidelity floor because the query projection was trained against full-RoPE keys. Without adapting the query, the decoupled path has reconstruction KL $0.55$; a learned query adapter lowers it to $0.34$, and extended training reaches $0.30$, while full-RoPE reconstruction reaches $0.059$ (Table~\ref{tab:decoupled_char}). The adapter gain implicates query-key positional mismatch as the dominant limiting factor, but the remaining gap means that all main accuracy results use full-RoPE reconstruction. Native training can remove this mismatch by aligning the query projections with the latent cache from pretraining onward.
+
+\begin{table}[h]\centering\small
+\caption{\textbf{Post-hoc decoupled-RoPE characterization} (Ouro-1.4B, $4\times$, $d_{\rm rope}=64$). A learned query adapter lowers reconstruction KL and raises top-1 token agreement (to $0.84$, and $0.88$ with extended training), versus ${\sim}0.95$ for full-RoPE. A sweep over $d_{\rm rope}\in\{32,64,96\}$ preserves the ordering (smaller $d_{\rm rope}$ is worse, e.g.\ KL $1.04$ at $d_{\rm rope}=32$ with the adapter). No post-hoc configuration reaches full-RoPE reconstruction, which is why all main accuracy results use the full-RoPE path.}
+\label{tab:decoupled_char}
+\begin{tabular}{lc}
+\toprule
+configuration & reconstruction KL $\downarrow$ \\
+\midrule
+full-RoPE reconstruction (reference) & 0.059 \\
+decoupled-RoPE, no query adapter & 0.55 \\
+decoupled-RoPE $+$ query adapter & 0.34 \\
+decoupled-RoPE $+$ query adapter, extended training & 0.30 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Native recurrent architectures and scope.}
+A model trained natively with a decoupled latent cache could expose the latent directly to attention and align its query projections with the absorbed implementation. A more ambitious design could exploit low-rank residual updates across loops, computing shared content once and adding inexpensive loop-specific deltas. These are future architecture directions, not assumptions behind the reported accuracy or capacity numbers: the evaluated reconstruction path preserves the teacher's attention computation and changes only the representation stored in the cache.
+
+\end{document}

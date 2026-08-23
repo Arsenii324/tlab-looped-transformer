@@ -1,0 +1,6 @@
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/toy_mlp_contour_2.pdf}
+\caption{\textbf{RK integration vs.\ naive looping.} A tiny MLP $\operatorname{pre}(\mathbb{R}^4\to\mathbb{R}^2)\to$ block of 3 residual layers $(\mathbb{R}^2\to\mathbb{R}^2) \to \operatorname{post}(\mathbb{R}^2\to\mathbb{R}^2)$ is trained end-to-end on a 2-D regression target. Each panel fixes $K \in \{2,4,8\}$ and shows, over a $220{\times}220$ grid in the post-block hidden state $\mathbf{z}$, the median test loss $L(\mathbf{z}) = \operatorname{med}_i \norm{\operatorname{post}(\mathbf{z}) - y_i}^2$ (log scale, colored) together with the test-set scatters obtained by naive looping (red circles) and $K$-stage RK integration (purple squares). The trained baseline induces a central low-loss valley (blue); our endpoints stay clustered in that valley at every $K$, while naive $K$-loop endpoints drift increasingly outward into high-loss regions (yellow) as $K$ increases.}
+\label{fig:toy-mlp-contour}
+\end{figure}

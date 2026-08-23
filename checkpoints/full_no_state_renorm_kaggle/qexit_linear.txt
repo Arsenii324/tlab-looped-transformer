@@ -1,0 +1,28 @@
+2048 seqs, 1024cal/1024test (split by sequence), T_max=64
+  best fixed depth (calib) k=8  TEST CE 3.9277  bpb 1.6987
+  oracle (label-using bound)           TEST CE 3.6193  bpb 1.5653  headroom 0.3084
+
+  head=linear (PonderNet form; PALBERT's ablation shows this row is weaker), dim 8
+    ep   0 expected-exit loss 4.0003
+    ep 100 expected-exit loss 3.9744
+    ep 200 expected-exit loss 3.9717
+/Users/a2mogus/build-projs/barannikov-work/tlab-loop-transformer/src/qexit.py:121: RuntimeWarning: overflow encountered in exp
+  lam_t = 1.0 / (1.0 + np.exp(-(Xt @ w + b0)))
+
+       q   test CE      bpb   vs fixed  mean depth  headroom kept
+    0.10    3.9468   1.7069    +0.0190        3.93         -6.2%
+    0.25    3.9452   1.7062    +0.0174        4.07         -5.7%
+    0.50    3.9443   1.7059    +0.0166        4.27         -5.4%
+    0.70    3.9444   1.7059    +0.0167        4.53         -5.4%
+    0.85    3.9461   1.7066    +0.0183        4.98         -5.9%
+    0.95    3.9516   1.7090    +0.0238        6.14         -7.7%
+    0.99    3.9626   1.7138    +0.0349        8.71        -11.3%
+
+  PALBERT default q=0.5: CE 3.9443  vs fixed +0.0166  mean depth 4.27
+  best swept q=0.5  CE 3.9443  vs fixed +0.0166 nats
+  NOTE (selection-on-noise, cf. LTO arXiv 2509.26314): a learned scorer picking the best of
+  64 correlated depths can exploit its own errors -- LTO reports that removing their KL
+  regularizer reduces the method to best-of-N in latent space and 'only works well if the
+  LRM is nearly perfect'. The same caveat applies to both the oracle bound and any
+  learned rule here, which is why the reportable number is calibration-fit/test-scored.
+  VERDICT: Q-exit does NOT beat fixed depth by more than 0.01 nats -- consistent with the hand-crafted and learned-probe rules; the signal an exiter needs is not in these features

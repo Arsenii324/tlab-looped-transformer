@@ -1,0 +1,50 @@
+
+\section{Experiments}
+In this section, we conduct experiments to demonstrate the effectiveness of our proposed method. 
+We mainly focus on two tasks: the arithmetic task mentioned in Section \ref{m1} and complex mathematical reasoning benchmarks of a pretrained LoopLM model, exemplified by Ouro. Furthermore, we conduct rigorous ablation and analysis studies.
+
+\begin{figure*}[t]
+	\centering
+	\includegraphics[width=\linewidth]{fig/ablation_with_compare.png}
+    \caption{Comparative analysis of our method against baselines and its ablation variants across mathematical reasoning benchmarks. The left panel illustrates accuracy versus recurrent steps for Ouro, Ouro-SFT, and Ouro-STARS. The right panel details an ablation study evaluating the base Ouro model, Ouro with a Random Loop, Ouro with JSRR, and Ouro-STARS.}
+    \label{fig:ablation}
+    \vspace{-2.3mm}
+\end{figure*}
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=0.90\linewidth]{fig/main_addition.jpg}
+    \caption{Performance and state evolution on the multi-digit addition task. The left panel displays the performance curve across recurrent steps, demonstrating the model's stability. The right panel illustrates the PCA-projected hidden state dynamics.}
+     \label{fig:main_addition}
+     \vspace{-5mm}
+\end{figure}
+
+\subsection{Experimental Setup}
+\paragraph{Multi-digits addition task.}
+%遵循section \label{m1}的设置，我们xxx使用什么分布，超参设置
+We follow the experimental setup described in Section \ref{m1} and adopt a Post-Sandwich LayerNorm structure due to our previous findings. For the random loop configurations, we employ log-normal random loop sampling ($\mu=2, \sigma=0.7, \text{range}=[1, 100]$) with a weight $\lambda=0.1$. The training is conducted with a learning rate of $1 \times 10^{-4}$.
+\paragraph{Mathematical reasoning task.}
+We employ Ouro-1.4B~\citep{zhu2025scaling} which is a pre-trained LoopLM as our base model, specifically targeting its unreliable scaling behavior in test-time scaling. We fine-tuned the model on a random subset of \texttt{NuminaMath-1.5}~\citep{li2024numinamath} dataset containing 400K samples due to the computational resource constraints. The training configuration involved log-normal random loop sampling ($\mu=1.7, \sigma=0.4, \text{range}=[1, 16]$) and the weight $\lambda=0.1$. The model was trained for one epoch across four NVIDIA A800 GPUs using AdamW~\citep{loshchilov2017decoupled} and a cosine learning rate scheduler starting at $1 \times 10^{-6}$. Subsequently, we use the lm\_eval harness~\citep{eval-harness} to evaluate model's performance in a zero-shot setting across five mathematical benchmarks: GSM8K~\citep{cobbe2021gsm8k}, MATH500~\citep{lightman2023lets}, ASDiv~\citep{miao2020diverse}, SVAMP~\citep{patel2021nlp}, and AMC23~\citep{yang2025qwen3}. 
+\subsection{Main Results}
+%展示2个任务的主表。展示轨迹和性能曲线。
+\paragraph{Multi-digits addition task.}
+As illustrated in Figure \ref{fig:main_addition}, with the integration of our proposed STARS, the model demonstrates notable robustness in performance.   
+Regardless of the number of recurrent iterations, accuracy consistently remains at 100\%, indicating that the model has stably learned the task.   
+From a dynamical systems perspective, the latent states converge successfully to a stable fixed point with a relatively fast convergence rate.   
+This ensures reliable reasoning even as the number of recurrent steps increases.
+
+
+
+\paragraph{Mathematical reasoning task.}
+Table \ref{tab:ouro_iterations} summarizes the performance of our framework in comparison to base Ouro-1.4B model and a standard Supervised Fine-Tuning (SFT) baseline across the five mathematical reasoning benchmarks.
+We also compare with existing open-source small models.
+As anticipated and consistent with prior observations on recurrent models, both the base Ouro-1.4B and the SFT baseline exhibit significant performance degradation when the number of recurrent steps is extended beyond the nominal training depth (e.g., scaling from $4$ to $8$ recurrents). Specifically, the SFT baseline's average accuracy plummets from $70.46\%$ at $4$ steps to a collapse at $52.97\%$ at $8$ steps.
+In contrast, Ouro-1.4B-STARS (Ours) achieves the highest overall in-distribution performance, peaking at an average accuracy of $74.18\%$ at $4$ recurrent steps. More critically, when subjected to significant depth-scaling to 8 recurrent steps, our framework maintains a remarkably robust average accuracy of $65.55\%$. 
+As shown in the right panel of Figure \ref{fig:ablation}, our method exhibits a slower decline in performance after reaching its peak as recurrent steps increase, demonstrating more stable scaling behavior.
+
+\subsection{Ablation Study}
+To thoroughly validate the effectiveness and quantify the individual contributions of each component in our proposed framework, we conduct a comprehensive ablation study. We evaluate performance across four representative mathematical reasoning benchmarks: GSM8K, MATH500, ASDiv, and SVAMP. Specifically, we compare the original Ouro-1.4B base model against three key variants: one integrated only with random loop sampling (Ouro-Random Loop), one with only JSRR (Ouro-JSRR), and the full STARS combining both strategies (Ouro-STARS). As shown in the right panel of Figure \ref{fig:ablation}, the results demonstrate that STARS generally exhibits a slower decline in performance compared to the ablated variants, with each component, random loop sampling and JSRR, contributing to this delayed degradation. We provide additional analysis in Appendix \ref{app:analysis}.
+%
+
+%We provide additional analysis in the Appendix \ref{app:analysis}.
+%性能曲线

@@ -1,0 +1,20 @@
+\begin{abstract}
+\label{sec:abstract}
+% What problem; Why important; Why hard problem
+Improving the reasoning abilities of Large Language Models (LLMs), especially under parameter constraints, is crucial for real-world applications.
+Looped transformers address this by performing multiple latent iterations to refine each token beyond a single forward pass.
+% After the first, standard forward pass, instead of verbalization, last-layer hidden states are fed back as inputs for additional iterations to refine token predictions. 
+% Insight
+However, we identify a \emph{latent overthinking} phenomenon: most token predictions are already correct after the first pass, but are sometimes revised into errors in later iterations.
+% Our approach
+We ask whether \emph{selectively skipping} latent iterations can \emph{improve accuracy}, and reveal significant potential with an oracle iteration policy that boosts performance by up to 7.3\%.
+Motivated by this, we propose Think-at-Hard (\name), a looped transformer optimized for selective iteration.
+\name employs a lightweight neural decider to trigger latent iteration, only at tokens likely to be incorrect after the standard forward pass.
+During latent iterations, depth-aware Low-Rank Adaptation (LoRA) modules shift the objective from general next-token prediction to focused hard-token refinement.
+A duo-causal attention mechanism extends attention from the token sequence dimension to an additional iteration depth dimension, enabling cross-iteration information flow with full sequential parallelism.
+% Experiment
+Experiments on nine benchmarks show consistent gains across math, QA, and coding tasks.
+With identical parameter counts, \name outperforms always-iterate baselines by 3.8-4.4\% while skipping iterations on 93\% of tokens, and exceeds single-iteration Qwen3 baselines by 3.0-3.8\%.
+When allowing $<3\%$ more parameters from LoRA and decider, the gains further increase to 5.3-6.2\% and 6.1-6.8\%, respectively.
+Our code is available \href{https://github.com/thu-nics/TaH}{here}.
+\end{abstract}

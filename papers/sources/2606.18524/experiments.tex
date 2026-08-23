@@ -1,0 +1,69 @@
+\section{Experiments}
+\label{sec:experiments}
+
+We test the scaling predictions on looped Transformers trained for language modeling, progressing from a controlled initialization diagnostic (Section~\ref{sec:init-scaling}) to full-scale training with learning-rate transfer (Sections~\ref{sec:lm-transfer}--\ref{sec:depth-scaling}) and validation that the theoretical assumptions hold beyond initialization (Section~\ref{sec:post-training}).
+
+\paragraph{Model structure.}
+All experiments use decoder-only Transformers with a Llama-style pre-norm architecture~\citep{DBLP:conf/nips/VaswaniSPUJGKP17,DBLP:journals/corr/abs-2302-13971}.
+The token embedding and unembedding head sit outside the loop; the looped stack contains $L$ unique Transformer blocks, each with two residual branches (attention and MLP), and the entire $L$-block sequence is repeated for $N$ passes.
+The residual scaling factor $\varepsilon$ is applied to each branch; in the single-layer theory (Section~\ref{sec:theory}), one ``layer'' corresponds to one branch, so the constant factor of two per block is absorbed into $\lambda$.
+
+\subsection{Residual scaling at initialization}
+\label{sec:init-scaling}
+
+\paragraph{Protocol.}
+We run a controlled experiment that measures the residual-stream norm during the first $10$ optimizer steps.
+We vary the number of loop iterations $N\in\{1,2,4,8,16,32,64\}$ and compare three residual scalings: \emph{none} ($\varepsilon{=}1$), \emph{sqrt} ($\varepsilon{=}1/\sqrt{N}$), and \emph{linear} ($\varepsilon{=}1/N$).
+Training uses AdamW for 10 steps, batch size 1, sequence length 128, and fixed random token inputs.
+Figure~\ref{fig:energy} plots the residual-stream norm $R=d^{-1/2}\norm{h}_2$ at the end of the last loop iteration, averaged over 10 seeds.
+To directly observe the correlation structure, we also measure pairwise cosine similarities between block-level increments $\delta_n = h_n - h_{n-1}$ for a non-shared deep stack ($64$ independent copies of a 12-layer block, effective depth $12{\times}64$) and a looped network ($L{=}12$, $N{=}64$), both without residual scaling (Figure~\ref{fig:corr}).
+Using the same setup, we measure the per-step output update---the root-mean-square (RMS) change in $h_N$ after one optimizer step---to directly test the $\eta\varepsilon N$ prediction of Theorem~\ref{thm:lr} (Figure~\ref{fig:lr-step-update}).
+
+\paragraph{Findings.}
+(i)~\emph{linear scaling controls forward-pass growth}: $1/\!\sqrt{N}$ scaling is insufficient---the residual-stream norm grows rapidly with $N$ and can explode during early optimization (Figure~\ref{fig:energy}, bottom row), while linear scaling keeps it bounded and approximately invariant across $N$ (Figure~\ref{fig:energy}, panel~f).
+(ii)~\emph{the stronger scaling is specific to weight sharing}: for non-shared deep stacks, $1/\!\sqrt{L}$ scaling suffices (Figure~\ref{fig:energy}, top row).
+(iii)~\emph{the mechanism is constructive accumulation}: in non-shared stacks, pairwise cosine similarities between residual updates are near-zero off-diagonal (Figure~\ref{fig:corr}, panel~a); in looped networks, the shared weights produce dense positive correlations, so updates reinforce rather than cancel (panel~b), matching the prediction of Theorem~\ref{thm:alpha1}.
+(iv)~\emph{per-step output update tracks the leading $\eta\varepsilon N$ trend}: with a shared base learning rate, the output update grows as $N$ for $\varepsilon{=}1$ and as $\sqrt{N}$ for $\varepsilon{=}1/\!\sqrt{N}$, tracking the leading $\eta\varepsilon N$ trend (Figure~\ref{fig:lr-step-update}).
+Theorem~\ref{thm:lr} proves a uniform sufficient bound in the stable regime $\varepsilon N=O(1)$; the unscaled and square-root curves are empirical extrapolations of the same leading term outside the theorem's assumptions.
+For $\varepsilon{=}1/N$, the update is not strictly constant---it grows mildly before saturating near $N{=}32$---but stays within a small range across the full $N{=}1$--$64$ sweep, consistent with the theorem providing an $O(\cdot)$ upper bound rather than a tight scaling (Appendix~\ref{app:lr}).
+
+\subsection{Learning-rate transfer across loop counts}
+\label{sec:lm-transfer}
+
+\paragraph{Protocol.}
+We train $L{=}12$ looped Transformers on FineWeb-Edu~\citep{penedo2024fineweb} (10B tokens) with loop counts $N\in\{1,2,4,8\}$.
+For each $N$, we sweep learning rates around a base value tuned at $N{=}1$ and compare sqrt vs.\ linear residual scaling.
+Optimizer, schedule, and full model configuration are in Appendix Table~\ref{tab:lm-model-config}. 
+We evaluate the validation loss on the FineWeb-Edu held-out split, evaluated at the end of training.
+
+\paragraph{Findings.}
+
+(i)~\emph{improved performance}: at $N=8$, linear scaling achieves a lower minimum loss than sqrt scaling (a reduction of $0.025$ nats), indicating better trainability at larger loop counts.
+(ii)~\emph{predictable transfer}: the optimal learning rate for linear scaling remains nearly invariant across $N$ (Figure~\ref{fig:lr-transfer}b), consistent with our theoretical prediction ($\eta \propto N^0$); under sqrt scaling, the optimum shifts with $N$ (Figure~\ref{fig:lr-transfer}a), requiring separate tuning for each loop count.
+Note that Theorem~\ref{thm:lr} requires $\varepsilon N = O(1)$ (Assumption~3); sqrt scaling ($\alpha{=}1/2$) violates this premise---forward-pass norms still grow with $N$ (Figure~\ref{fig:energy}e)---so the theorem does not predict the direction or magnitude of the optimum shift in that regime.
+
+\subsection{Joint transfer across depth and loop count}
+\label{sec:depth-scaling}
+
+\paragraph{Protocol.}
+We train the $L{=}24$ and $L{=}48$ members of the same model family under the same setup as Section~\ref{sec:lm-transfer}, sweeping over learning rates and loop counts $N\in\{1,2,4,8\}$.
+Following the theoretical prediction $\eta\lesssim 1/(\lambda\sqrt{L})$, we scale the learning rate by $m_L^{-1/2}=(L/12)^{-1/2}$ relative to the $L{=}12$ baseline (Appendix~\ref{app:completep-loop-table}).
+
+\paragraph{Findings.}
+(i)~\emph{loop transfer at larger depth}: at both $L{=}24$ and $L{=}48$, the optimal learning rate remains nearly invariant across $N$ (Figure~\ref{fig:lr-transfer}c,d).
+(ii)~\emph{depth transfer}: after applying the depth correction, a single base learning rate is near-optimal across all three depths, confirming that the factorized parameterization decouples the loop and depth axes.
+For $L{=}48$ with $N{=}8$, base learning rates above $2\!\times\!10^{-3}$ cause divergence, consistent with the tighter stability margin at large effective depth.
+
+\subsection{Residual scaling beyond initialization}
+\label{sec:post-training}
+
+\paragraph{Protocol.}
+The theoretical analysis characterizes residual-stream behavior at initialization.
+We test whether two empirical signatures of the mechanism persist after full training (step 20{,}000) for the $L\in\{12,24,48\}$ models with $N{=}8$.
+First, we compute the pairwise cosine similarity between all pairs of loop-step increments $\delta_n = h_n - h_{n-1}$, forming an $N \times N$ correlation matrix (Figure~\ref{fig:update-cosine}).
+Second, we trace the L2 norm of the residual stream at every loop step from step~0 (post-embedding) through step~$N$, for each $N\in\{2,4,8\}$ (Figure~\ref{fig:hidden-norm}).
+
+\paragraph{Findings.}
+(i)~\emph{correlation weakens but remains positive}: compared to initialization (Figure~\ref{fig:corr}), the pairwise cosine similarities between loop-step increments decrease after full training, but the correlation matrix remains positive for most loop-step pairs across all three depths, with early and middle iterations concentrated in the 0.3--0.6 range; only the latest steps show near-zero or mildly negative values (Figure~\ref{fig:update-cosine}). 
+A similar early/middle-step positive-correlation pattern holds at $N{=}4$, while pairs involving the final step can again be weak or negative; see Appendix~\ref{app:cosine-small-N}.
+(ii)~\emph{consistent final norm across loop counts}: although different $N$ values lead to different per-step increments in the residual stream, the final norm after the last loop step converges to roughly the same value within each depth group, with only modest variation across $N$ (Figure~\ref{fig:hidden-norm}), indicating that $1/N$ scaling produces similar training dynamics regardless of loop count.

@@ -1,0 +1,24 @@
+% ============================================================================
+\section{Experimental Setup}
+\label{sec:setup}
+
+We train autoregressive looped transformers on WikiText-103 \citep{merity2017pointer} with $K=4$ recurrent applications of a shared decoder stack.
+Each recurrent step applies the same full stack: 8 pre-norm RMSNorm/SwiGLU transformer layers for the 44M model ($d=512$, 8 heads), or 12 layers for the 129M model ($d=768$, 12 heads).
+We denote the stack output after loop $k$ by $H_k$.
+The output projection $W_{\mathrm{out}}$ is shared across exits.
+A normalized readout computes logits from $\mathrm{RMSNorm}(H_k)$, while a raw readout computes logits directly from $H_k$.
+The controlled ablations remove inter-loop normalization, so the unnormalized $H_k$ is fed into the next recurrent application and hidden-state scale remains in the recurrent path.
+We train both sizes for 4 epochs over 3 seeds.
+
+The core ablation crosses loss placement and readout:
+\begin{equation}
+    \{\text{terminal-only CE},\text{ per-loop CE}\}\times
+    \{\text{RMSNorm readout},\text{ raw readout}\}.
+\end{equation}
+Per-loop CE averages the $K$ token-level losses.
+We also include two controls: \emph{final-only norm}, which uses raw intermediate readouts but an RMSNorm final readout, and \emph{norm penalty}, which keeps RMSNorm readouts but adds
+$\lambda K^{-1}\sum_k \mathbb{E}\|H_k\|_{\rms}^2$ with $\lambda=0.01$.
+We report cross-entropy and perplexity (PPL), where PPL is the exponentiated token-level CE.
+Reported norms are tokenwise Euclidean $\|H\|_2$ averaged over tokens unless stated otherwise.
+We use separate evaluation harnesses for different questions and compare absolute PPL only within a table or figure: Table~\ref{tab:main} uses the full-validation training-time harness, Table~\ref{tab:depth} uses a fixed-depth variable-depth slice harness, and Appendix~\ref{app:halt-protocol} uses a separate timed-slice halting protocol.
+Appendix~\ref{app:repro} gives optimizer, tokenizer, harness, and runtime details.

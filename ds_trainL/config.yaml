@@ -1,0 +1,18 @@
+name: tlab-train-at-L
+desc: TRAIN-AT-L sweep - separate models at fixed loop count L in {2,4,8,16,32}, 10M tokens each, each evaluated at its own L
+cmd: pip install -q torch --index-url https://download.pytorch.org/whl/cu121 && python main.py
+env:
+  python:
+    type: manual
+    version: "3.11"
+    requirements-file: requirements.txt
+    local-paths:
+      - main.py
+outputs:
+  - results.json
+  # WEIGHTS: the kernel writes OUT_DIR/{run_name}_last.pt but a file not listed here is
+  # NEVER returned by DataSphere. Every DS job before 2026-08-23 12:05 lost its checkpoints
+  # this way -- which is why §4.16c could not include the five train-at-L arms.
+  - "*_last.pt"
+  - checkpoints/**
+cloud-instance-type: gt4.1

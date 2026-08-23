@@ -1,0 +1,26 @@
+\section{Related Work}
+\label{sec:related_work}
+Unlike standard LLMs that verbalize at every autoregressive step, latent thinking shifts part of generation away from explicit natural-language CoT in order to improve reasoning~\citep{li2025implicit}.
+
+% type1: verbal space
+\xhdr{Signal-guided control}
+These methods keep reasoning in token space but steer computation by inserting control tokens.
+They add filler tokens (e.g., dots)~\citep{pfau2404let} and learnable \texttt{[PAUSE]} tokens~\citep{goyal2310think,kim2025learning} for extra compute during decoding.
+They are lightweight but constrained to discrete-token interventions with limited latent control.
+
+% type2: continuous space
+\xhdr{Latent optimization}
+These methods perform autoregressive reasoning directly in internal representations, emitting little or no intermediate text.
+They distill CoT into continuous embeddings via progressive replacement~\citep{hao2024training, cheng2024compressed}, hidden-state alignment~\citep{su2025token, liu2024expediting}, or logit-weighted embeddings~\citep{zhang2025soft}.
+While efficient, these methods sacrifice interpretability, with training-based ones requiring heavy mitigation from verbal LLMs.
+
+% type3: mix
+\xhdr{Looped transformers}
+These methods interleave latent and verbal reasoning, adding latent iterations before each token verbalization.
+Previous work focuses on scaling up iteration depths, with the main architectural focus on next-iteration inputs: reusing hidden states directly~\citep{saunshi2025loopedTrans,geiping2025scaling,zhu2025ouro} or using logit-weighted embeddings~\citep{zeng2025pondering}.
+Looped transformers achieve deeper computation without parameter increases. However, uniform depth scaling burdens training and inference, and risks overthinking already-correct tokens.
+
+\xhdr{Positioning}
+\name belongs to the looped transformer family, but identifies \emph{selective iteration} as a new design principle to improve performance.
+While concurrent works~\citep{bae2025mor, zhu2025ouro} also enable dynamic recursion, they degrade performance at non-maximum depths and require full retraining.
+\name instead leverages existing pre-trained models, adding depth-aware LoRA and duo-causal attention to improve reasoning with minimal fine-tuning overhead.

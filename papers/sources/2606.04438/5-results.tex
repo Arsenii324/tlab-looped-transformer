@@ -1,0 +1,65 @@
+\subsection{Main Results}
+\label{sec:main_result}
+
+Table~\ref{tab:main_results} compares \ourmodel against dense, dense-loop, and MoE baselines across nine benchmarks spanning knowledge, general language understanding, commonsense reasoning, multi-step reasoning, and mathematical problem solving. Vanilla MoE is the matched non-loop MoE described in Section~\ref{sec:method-budget}, sharing total parameters, per-token FLOPs, active sublayer ratio, and training tokens with \ourmodelnospace.
+
+\ourmodel delivers consistent general improvements over the Vanilla MoE. It outperforms the baseline on 8 of the 9 benchmarks with an average gain of over 1 point, the only exception being a marginal regression on MMLU. These improvements span both evaluation dimensions, covering knowledge and language understanding as well as reasoning and mathematics. This shows that introducing the loop architecture into a modern MoE stack yields a broad net benefit under a strictly controlled compute budget. While the gains are broad, they are not uniform in magnitude. The largest improvements concentrate on reasoning and mathematics, where all datasets improve by a substantial margin relative to the average. We attribute this concentration to the additional iterative computation that the loop provides. Tasks that reward multi-step reasoning benefit most directly from repeated refinement of the hidden state. Section~\ref{sec:ablation} decomposes these contributions across the individual architectural components.
+
+For broader context, Table~\ref{tab:main_results} also lists external systems trained on comparable token budgets (Pythia-1.4B~\cite{biderman2023pythia}, OLMo2-1B~\cite{olmo20242}, Hyperloop~\cite{zeitoun2026hyperloop}, DeepSeekMoE-2B~\cite{dai2024deepseekmoe}) and on substantially larger ones (Qwen-3-1.7B~\cite{yang2025qwen3}, Griffin~\cite{de2024griffin}, Ouro-1.4B-R4~\cite{zhu2025scaling}, PowerMoE-3B~\cite{shen2024power}). Against token-matched dense baselines, \ourmodel substantially outperforms them under identical training volume. On reasoning and mathematics, it further remains competitive with OLMoE-1B-7B~\cite{muennighoff2025olmoe}, despite using less than half the total parameters. We include the trillion-token systems only to mark the current performance frontier and do not treat them as head-to-head competitors, since their numbers conflate architecture with training scale and pipeline maturity. We regard large-scale training as complementary to the architectural axis isolated 
+in this work.
+
+\subsection{Scaling Behavior}
+\label{sec:scaling}
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Model} & \textbf{Params (T/A)} & \textbf{Avg.} \\
+\midrule
+Vanilla MoE & 9B / 1.9B            & 35.02 \\
+\textbf{\ourmodelnospace}     & 9B / 1.9B$^\ddagger$ & \textbf{36.17} \\
+\bottomrule
+\end{tabular}
+\caption{Scaling results at 9B parameters under a token-matched comparison at an early-training checkpoint of 100B tokens. Average is over the same 9 benchmarks as Table~\ref{tab:main_results} (see full per-benchmark results in Appendix~\ref{app:scaling-full}). The actual physical active parameter count for $^\ddagger$ is 1.3B (see in in~\ref{app:hyperparams}).}
+\label{tab:scaling}
+\end{table}
+
+A central question for any looped architecture is whether the advantage observed at small scale persists as model capacity grows. To address this, we train 9B variants of both \ourmodel and the Vanilla MoE under the same training recipe and corpus, and report a strictly token-matched head-to-head comparison at an early-training checkpoint of 100B tokens. Table~\ref{tab:scaling} reports results across the same nine benchmarks used in Section~\ref{sec:main_result}. \ourmodel outperforms the matched Vanilla MoE by an average of 1.15 points, marginally exceeding the 1.05 point gap observed at the 3B scale, indicating that the architectural benefit is preserved, and even slightly amplified, at larger scale.
+
+Two observations follow. First, the gap between LoopMoE and the Vanilla MoE does not collapse with scale and remains positive at 9B. This directly addresses the common concern that loop architectures stop helping once parameter counts grow large. Second, the qualitative profile of where LoopMoE helps most, namely reasoning-heavy and multi-step tasks, is preserved across scales. This consistency suggests that the iterative-depth advantage is a structural property of the architecture rather than an artifact of any particular capacity regime.
+
+
+
+
+\subsection{Ablation Study}
+\label{sec:ablation}
+
+\begin{table}[t]
+\centering
+\resizebox{\columnwidth}{!}{
+\begin{tabular}{lccccc}
+\toprule
+Architecture & MMLU & HellaSwag & BBH & GSM8K\\
+\midrule
+Vanilla MoE                  & \textbf{27.86} & 58.68 & 26.12 & 4.12\\
+\midrule
+Loop Base & 27.15 & 58.87 & 27.33 & \textbf{5.34}\\
+\quad + IterAdaLN   & 25.96 & 59.19 & 27.26 & \textbf{5.34}\\
+\quad ++Balancing (\ourmodelnospace)  & 26.81 & \textbf{60.98} & \textbf{27.94} & 5.26\\
+\bottomrule
+\end{tabular}
+}
+\caption{Ablation study on the core components of the proposed architecture.}
+\label{tab:ablation}
+\end{table}
+
+We dissect the contribution of each architectural component through a controlled ablation, presented in Table~\ref{tab:ablation}. We select four representative benchmarks that span the major capability dimensions evaluated in Section~\ref{sec:main_result}: MMLU (knowledge), HellaSwag (commonsense), BBH (multi-step reasoning), and GSM8K (mathematical problem solving). Each row adds one component on top of the previous, starting from the Vanilla MoE.
+
+Moving from the Vanilla MoE to Loop Base introduces weight sharing across iterations. We observe clear gains on reasoning and math benchmarks, together with mixed but mostly small improvements on the knowledge and language-oriented tasks. This pattern indicates that the loop architecture, even before any further conditioning, already contributes most of the reasoning and mathematics improvement.
+
+Adding IterAdaLN introduces token-level conditioning on the iteration state. The model can then modulate its computation across loop iterations based on per-token context. We observe a modest improvement in the commonsense dataset. This indicates that fine-grained per-token modulation captures meaningful distinctions in how different tokens benefit from iterative refinement. Multi-step reasoning and math remain essentially unchanged at this stage, suggesting that the computational benefit of loop iterations on these tasks is already realized without explicit conditioning. The remaining movement is a drop on MMLU, which the next component addresses by directly targeting the underlying structural imbalance.
+
+% The final component, Balancing, restores the attention-to-FFN parameter ratio to that of a standard non-loop transformer. This corrects the FFN-heavy skew that arises when a loop architecture is constrained to match both total parameters and active compute (Section~\ref{sec:method}). Commonsense performance improves substantially. MMLU and multi-step reasoning also recover relative to the previous row. We interpret this as evidence that the attention component is a principal driver of relational and contextual processing. The additional FFN capacity in the unbalanced loop yields diminishing returns once it exceeds the standard proportion, particularly under weight sharing where the parameters are reused rather than expanded. A small regression on mathematical reasoning accompanies this gain. This is consistent with prior observations that math relies more heavily on FFN-heavy computation~\cite{geva2021transformer, jin2025disentangling}. Across the aggregate of benchmarks, the trade-off is clearly favorable, and the resulting model achieves the best overall performance among all ablated configurations.
+
+The final component, Balancing, restores the attention-to-FFN parameter ratio to that of a standard non-loop transformer, correcting the FFN-heavy skew induced by weight sharing (Section~\ref{sec:method}). HellaSwag improves substantially, and MMLU and BBH recover relative to the previous row. A small regression on GSM8K accompanies this gain, consistent with prior observations that math relies more heavily on FFN computation~\cite{geva2021transformer, jin2025disentangling}. Across the aggregate of benchmarks, the trade-off is clearly favorable, and the resulting model achieves the best overall performance among all ablated configurations.

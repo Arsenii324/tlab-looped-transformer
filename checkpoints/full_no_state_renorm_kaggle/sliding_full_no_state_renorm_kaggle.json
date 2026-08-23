@@ -1,0 +1,11 @@
+{
+  "loops": 8,
+  "stride": 64,
+  "chunked_ce": 3.9164777775885353,
+  "sliding_ce": 3.8003318348718764,
+  "chunked_bpb": 1.6938314849447835,
+  "sliding_bpb": 1.643599703789829,
+  "n_scored_sliding": 399744,
+  "n_scored_chunked": 399872,
+  "tokens": 45975552
+}

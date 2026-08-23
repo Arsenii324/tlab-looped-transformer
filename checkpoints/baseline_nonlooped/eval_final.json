@@ -1,0 +1,12 @@
+{
+  "step": 144,
+  "tokens": 296960,
+  "n_layers": 33,
+  "params": 81351200,
+  "val_ce": 6.6107019782066345,
+  "val_ppl": 743.0044085953135,
+  "bits_per_byte": 2.8590523894578728,
+  "note": "training NaN-unstable, see LOG.md 2026-08-16; this is the last good checkpoint before divergence, evaluated post-hoc with 40 batches (not the 15-batch in-training estimate)",
+  "bytes_per_token": 3.3358,
+  "bpb_note": "training NaN-unstable, see LOG.md 2026-08-16; this is the last good checkpoint before divergence, evaluated post-hoc with 40 batches (not the 15-batch in-training estimate) | bpb recomputed at 3.3358 bytes/token"
+}

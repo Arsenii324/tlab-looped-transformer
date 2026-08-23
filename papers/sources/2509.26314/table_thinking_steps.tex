@@ -1,0 +1,27 @@
+\begin{table*}[t]
+\centering
+\newcommand{\supscriptspace}{\makebox[\widthof{$^{*}$}]{}} 
+\small
+\setlength{\tabcolsep}{1pt}
+\caption{Performance of \LTO with different numbers of thinking steps. For each thinking step, the best-performing method is highlighted in \textbf{bold}. $*$ indicates the improvement over the best runner-up is statistically significant with $p<0.05$.}
+\begin{tabular}{llccccccccc}
+\toprule
+                       \textbf{Thinking Steps}& \textbf{Method}& 
+                       \centering\textbf{GSM8K}&\textbf{GSM-Symbolic}&\textbf{SVAMP} & \textbf{CommonsenseQA}  & \textbf{MBPP}
+\\ \midrule \multirow{3}{*}{16 Steps} &Base Model  &0.333
+&0.269&0.503 &0.498&0.276\\ 
+&Majority Voting &0.345&0.279&0.501&0.498&0.274                \\
+&\LatentThinkingOptimization&\supscriptspace\textbf{0.434}$^{*}$&\supscriptspace\textbf{0.335}$^{*}$&\supscriptspace\textbf{0.560}$^{*}$&\supscriptspace\textbf{0.523}$^{*}$&\supscriptspace\textbf{0.295}$^{*}$\\
+\midrule \multirow{3}{*}{24 Steps} &Base Model  &0.326 
+&0.265&0.515 &0.507&0.282\\ 
+&Majority Voting &0.334&0.274&0.513&0.509&\textbf{0.293} \\             &\LatentThinkingOptimization&\supscriptspace\textbf{0.398}$^{*}$&\supscriptspace\textbf{0.312}$^{*}$&\supscriptspace\textbf{0.549}$^{*}$&\supscriptspace\textbf{0.523}$^{*}$&\textbf{0.293} \\
+
+\midrule \multirow{3}{*}{32 Steps}
+&Base Model  &0.326
+&0.265&0.517 &0.500&0.278\\ 
+&Majority Voting &0.333&0.269&0.511&0.504&0.288                \\
+&\LatentThinkingOptimization&\supscriptspace\textbf{0.378}$^{*}$&\supscriptspace\textbf{0.303}$^{*}$&\supscriptspace\textbf{0.539}$^{*}$&\supscriptspace\textbf{0.520}$^{*}$&\supscriptspace\textbf{0.295}$^{*}$\\
+\bottomrule
+\end{tabular}
+\label{tab:thinking_steps}
+\end{table*}

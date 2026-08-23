@@ -1,0 +1,11 @@
+2048 seqs, split by sequence: 1024 cal / 1024 test; features from loops 1..4
+  best fixed depth (calib) k=8   TEST CE 3.9277  bpb 1.6987
+  oracle (label-using bound)            TEST CE 3.6193  bpb 1.5653  headroom 0.3084
+
+  LEARNED PROBE: TEST CE 4.0150  bpb 1.7364  vs fixed +0.0873 nats
+    bucket accuracy 0.315  mean depth 37.44  depth histogram [4521, 43465, 8872, 5828, 712, 198746]
+    oracle headroom captured: -28.3%
+  VERDICT: even a learned probe on all four signals does NOT beat fixed depth by more than 0.01 nats.
+    This strengthens §4.7: the negative is not 'we failed to find a threshold', it is
+    'the information required to choose a per-token depth is not present in these
+    signals at all'. An exiter would need a different observable.

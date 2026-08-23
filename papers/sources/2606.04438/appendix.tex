@@ -1,0 +1,249 @@
+\subsection{Training Hyperparameters for \ourmodelnospace}
+\label{app:hyperparams}
+Table~\ref{tab:hyperparams} summarizes the architectural and training hyperparameters of LoopMoE and the Vanilla MoE. Values not explicitly differentiated are shared across the two models to ensure a strictly controlled comparison. Due to the computational cost of pre-training 3B MoE models on 200B tokens, all reported results correspond to a single training run, with the same random seed for both Vanilla MoE and \ourmodelnospace.
+
+\begin{table*}[h]
+\centering
+\small
+\setlength{\tabcolsep}{3.5pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{tabular}{lcccc}
+\toprule
+& \multicolumn{2}{c}{\textbf{3B}} & \multicolumn{2}{c}{\textbf{9B}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+\textbf{Hyperparameter} & \textbf{Vanilla MoE} & \textbf{LoopMoE} & \textbf{Vanilla MoE} & \textbf{LoopMoE} \\
+\midrule
+\multicolumn{5}{l}{\emph{Backbone}} \\
+\midrule
+Total parameters                 & 3B   & 3B   & 9B   & 9B   \\
+Active parameters                & 0.8B & 0.8B & 1.9B& 1.9B\\
+Physical active parameters       & 0.8B & 0.6B & 1.9B& 1.3B\\
+Effective depth                  & 12   & 12   & 18& 18\\
+Unique layers                    & 12   & 6    & 18& 9\\
+\quad Prefix layers $L_p$        & --   & 2    & --   & 3\\
+\quad Loop-block layers $L_b$    & --   & 2    & --   & 3\\
+\quad Suffix layers $L_s$        & --   & 2    & --   & 3\\
+Loop iterations $K$              & --   & 4    & --   & 4\\
+\midrule
+\multicolumn{5}{l}{\emph{MLA}} \\
+\midrule
+Q LoRA Rank                      & 384  & 512  & 768& 896\\
+K/V LoRA Rank                    & 512  & 640  & 512& 640\\
+\midrule
+\multicolumn{5}{l}{\emph{MoE-FFN}} \\
+\midrule
+routed experts                   & 64   & 136  & 64& 136\\
+shared experts                   & 2    & 2    & 2& 2\\
+Top-$k$                          & 6    & 6    & 6& 6\\
+FFN Hidden Size                  & 896  & 864  & 1280& 1216\\
+\midrule
+\multicolumn{5}{l}{\emph{Optimization}} \\
+\midrule
+Optimizer                        & \multicolumn{4}{c}{AdamW} \\
+$(\beta_1, \beta_2)$             & \multicolumn{4}{c}{(0.9, 0.95)} \\
+LR schedule                      & \multicolumn{4}{c}{cosine} \\
+Warmup steps                     & \multicolumn{4}{c}{2000} \\
+Peak learning rate               & 8.6e-4 & 8.6e-4 & 5.9e-4 & 5.9e-4 \\
+Min.\ LR ratio                   & 7e-6 & 7e-6 & 5e-6 & 5e-6\\
+\bottomrule
+\end{tabular}
+\caption{Architectural and training hyperparameters of LoopMoE and the Vanilla MoE at 3B and 9B scales.}
+\label{tab:hyperparams}
+\end{table*}
+
+
+\subsection{Detail LM Eval}
+We evaluate our models using the \texttt{lm-evaluation-harness} framework. To provide a clear overview of our evaluation protocol, the detailed settings for each downstream benchmark are summarized in Table \ref{tab:eval_details}.
+
+\label{app:lm_eval}
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Benchmark} & \textbf{n-shot} & \textbf{Metric} \\
+\midrule
+MMLU       & 5-shot & Accuracy \\
+HellaSwag  & 10-shot & Accuracy \\
+PIQA       & 0-shot & Accuracy \\
+WinoGrande & 0-shot & Accuracy \\
+TriviaQA   & 5-shot & Exact Match \\
+RACE       & 0-shot & Accuracy \\
+BBH        & 3-shot & Exact Match \\
+GSM8K      & 5-shot & Exact Match \\
+MATH       & 4-shot & Exact Match \\
+\bottomrule
+\end{tabular}
+\caption{Detailed evaluation settings across all downstream benchmarks.}
+\label{tab:eval_details}
+\end{table}
+
+\subsection{Asymmetric Placement of the Residual Gate}
+\label{app:alpha-asymmetric}
+A critical design choice concerns where the residual gate $\alpha_{k,t}$ should act. While DiT applies a symmetric gate to both sublayer outputs, we apply $\alpha_{k,t}$ exclusively to the attention branch. This design follows directly from the structure of the MoE operator. For an IterAdaLN-modulated input $\tilde h_{k,t}$, the MoE output is a routing-weighted sum over selected experts, so that a branch-level residual gate is absorbed straight into those routing weights,
+
+\begin{equation}
+\small
+  \alpha_{k,t}\!\cdot\!\mathrm{MoE}(\tilde h_{k,t})
+  = \!\!\sum_{i\in\mathrm{Topk=}}\!\!\big(\alpha_{k,t}\, w_{k,t,i}\big)\,
+         E_i(\tilde h_{k,t}).
+  \label{eq:gate-absorb}
+\end{equation}
+The router therefore already provides the same per-token reweighting that an MoE-branch gate would offer, so the gate adds no representational capacity. It also actively interferes with routing. The routing weights $w_{k,t,i}$ are calibrated by the load-balancing loss and the expert-bias update~\cite{liu2024deepseek} to remain in a well-behaved regime. Rescaling them by a data-dependent $\alpha_{k,t}$ perturbs that calibration along with the running statistics driving the expert-bias controller. The MLA attention sublayer, by contrast, has no analogous internal token-conditional reweighting mechanism, which makes a residual gate there strictly complementary.
+
+
+\subsection{Active Parameter Scaling under Loop Iterations}
+\label{app:active-scaling}
+
+Figure~\ref{fig:active-scaling} empirically characterizes how the attention and FFN active parameters evolve as the number of loop iterations $K$ increases, together with the resulting attention-to-FFN active ratio $\rho = A_{\mathrm{attn}}/A_{\mathrm{ffn}}$. The dense MLA sublayer reuses the same parameters across all iterations, so $A_{\mathrm{attn}}$ remains constant in $K$. In contrast, a token may route to different experts at each iteration of the shared MoE layer, so its unique active FFN parameters $A_{\mathrm{ffn}}$ accumulate with $K$. The growth is, however, sublinear rather than $K\!\times\!$: as $K$ increases, the probability that a later iteration selects an already-activated expert grows, so the marginal contribution of each additional iteration to $A_{\mathrm{ffn}}$ shrinks. As a direct consequence, $\rho$ drops monotonically and falls well below the operating point $\rho^{\star}$ of well-tuned Vanilla MoE (red dotted line), motivating the capacity-balancing strategy described in Section~\ref{sec:method-budget}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{Images/active_scaling.png}
+\caption{Attention and FFN active parameters (left axis) and the active ratio $\rho = A_{\mathrm{attn}}/A_{\mathrm{ffn}}$ (right axis) as a function of loop iterations $K$. $A_{\mathrm{attn}}$ is constant in $K$ because the MLA sublayer is reused across iterations, while $A_{\mathrm{ffn}}$ grows sublinearly due to overlapping expert selections across iterations. The red dotted line marks the Vanilla MoE ratio $\rho^{\star}$.}
+\label{fig:active-scaling}
+\end{figure}
+
+\subsection{Full 9B Scaling Results}
+\label{app:scaling-full}
+
+Table~\ref{tab:9b-full} reports the complete per-benchmark results for the 9B scaling comparison summarized in Section~\ref{sec:scaling}. Both LoopMoE and the Vanilla MoE are trained under identical recipes, corpus, and a strictly token-matched budget of 100B tokens, with all evaluation protocols identical to those in Section~\ref{sec:main_result}.
+
+\begin{table*}[h]
+\centering
+\small
+\setlength{\tabcolsep}{3.5pt}
+\renewcommand{\arraystretch}{1.1}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccccccccc}
+\toprule
+\textbf{Model} & \textbf{Params (T/A)} & \textbf{MMLU} & \textbf{HSwag} & \textbf{PIQA} & \textbf{WGrd} & \textbf{TQA} & \textbf{RACE} & \textbf{BBH} & \textbf{GSM8K} & \textbf{MATH} & \textbf{Avg.} \\
+\midrule
+Vanilla MoE & 9B / 1.9B & \textbf{24.27} & 62.74 & 74.61 & 51.32 & 37.53 & 33.50 & 26.65 & 4.45 & 1.26 & 35.02 \\
+LoopMoE & 9B / 1.9B$^{\ddagger}$ & 23.37 & \textbf{64.08} & \textbf{75.73} & \textbf{51.52} & \textbf{38.33} & \textbf{35.25} & \textbf{27.72}& \textbf{7.58} & \textbf{1.92} & \textbf{36.17} \\
+\bottomrule
+\end{tabular}}
+\caption{Full per-benchmark results at 9B scale under a token-matched comparison at an early-training checkpoint of 100B tokens. $^{\ddagger}$ The physical active parameter count of LoopMoE is 1.3B, while the reported active parameter figure matches the per-token FLOPs of the Vanilla MoE for fair comparison. HSwag = HellaSwag, WGrd = WinoGrande, TQA = TriviaQA. Best results between Vanilla MoE and LoopMoE in each column are in \textbf{bold}.}
+\label{tab:9b-full}
+\end{table*}
+Table~\ref{tab:9b-full} reports the complete per-benchmark results for the 9B scaling comparison summarized in Section~\ref{sec:scaling}. Both \ourmodel and the Vanilla MoE are trained under identical recipes, corpus, and a strictly token-matched budget of 100B tokens, with all evaluation protocols identical to those in Section~\ref{sec:main_result}.
+
+The per-benchmark breakdown confirms the qualitative pattern reported in Section~\ref{sec:scaling}. \ourmodel outperforms the Vanilla MoE on 8 of the 9 benchmarks, with MMLU being the only regression—mirroring exactly the win pattern observed at the 3B scale. Gains are broadly distributed across the benchmark suite and concentrate on reasoning and mathematics, with GSM8K showing the largest absolute improvement. The aggregate improvement of 1.15 points indicates that LoopMoE's advantage over the Vanilla MoE is preserved, and slightly widens, at the 9B scale relative to the 1.05 point gap at 3B. As this is an early-training snapshot, we leave a full-budget 9B comparison to future work.
+
+\subsection{BBH Detailed Subtasks Result}
+\label{appendix:bbh}
+\begin{table*}[h]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Subtask} & \textbf{Vanilla MoE} & \textbf{Loop Base} & \textbf{\ourmodelnospace} \\
+\midrule
+boolean\_expressions                       & 49.58 & 52.08 & 54.58 \\
+causal\_judgement                          & 47.16 & 48.86 & 50.57 \\
+date\_understanding                        & 17.92 & 15.00 & 12.08 \\
+disambiguation\_qa                         & 35.00 & 31.25 & 40.00 \\
+dyck\_languages                            &  0.00 &  0.00 &  0.83 \\
+formal\_fallacies                          & 41.25 & 53.33 & 48.33 \\
+geometric\_shapes                          & 20.00 & 19.17 & 27.08 \\
+hyperbaton                                 & 31.25 & 50.83 & 51.25 \\
+logical\_deduction\_five\_objects          & 22.50 & 17.50 & 16.25 \\
+logical\_deduction\_seven\_objects         & 14.17 & 13.33 & 13.33 \\
+logical\_deduction\_three\_objects         & 34.17 & 26.25 & 32.50 \\
+movie\_recommendation                      & 24.17 & 28.75 & 19.58 \\
+multistep\_arithmetic\_two                 &  0.42 &  0.00 &  0.83 \\
+navigate                                   & 40.83 & 52.50 & 57.08 \\
+object\_counting                           & 17.08 & 28.33 & 22.92 \\
+penguins\_in\_a\_table                     & 19.44 & 18.75 & 18.06 \\
+reasoning\_about\_colored\_objects         & 12.08 & 15.83 &  9.58 \\
+ruin\_names                                & 22.50 & 23.33 & 17.08 \\
+salient\_translation\_error\_detection     & 22.50 & 16.67 & 15.00 \\
+snarks                                     & 44.89 & 55.68 & 53.98 \\
+sports\_understanding                      & 51.25 & 50.00 & 53.33 \\
+temporal\_sequences                        & 25.00 & 26.67 & 25.42 \\
+tracking\_shuffled\_objects\_five\_objects & 21.67 & 15.00 & 20.83 \\
+tracking\_shuffled\_objects\_seven\_objects& 15.00 &  1.25 & 13.33 \\
+tracking\_shuffled\_objects\_three\_objects& 32.50 & 32.92 & 33.75 \\
+web\_of\_lies                              & 49.58 & 54.17 & 54.17 \\
+word\_sorting                              &  1.25 &  0.42 &  1.67 \\
+\midrule
+\textbf{Average}                           & 26.12 & 27.33 & 27.94 \\
+\bottomrule
+\end{tabular}
+\caption{Per-subtask scores on BBH for Vanilla MoE, Loop Base, and \ourmodelnospace.}
+\label{tab:bbh-full}
+\end{table*}
+
+Table~\ref{tab:bbh-full} provides the complete per-task breakdown across all 27 subtasks within the BIG-bench Hard (BBH) suite. The disaggregated results provide a clearer view of the specific domains where the \ourmodel architecture excels.
+
+
+\subsection{Per-layer Routing Dynamics in the Loop Body}
+\label{app:per_layer_routing}
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.98\columnwidth]{Images/loop_layer3_cosine.png}
+    \includegraphics[width=0.98\columnwidth]{Images/loop_layer3_jaccard.png}
+    \includegraphics[width=0.98\columnwidth]{Images/loop_layer4_cosine.png}
+    \includegraphics[width=0.98\columnwidth]{Images/loop_layer4_jaccard.png}
+    \caption{Per-layer cross-iteration routing dynamics within the shared block on the BBH dataset. The heatmaps display the router-input cosine similarity (left column) and expert-activation Jaccard similarity (right column) across the 4 loop iterations.}
+    \label{fig:loop_dynamics_layers}
+\end{figure*}
+Figure~\ref{fig:loop_dynamics_layers} decomposes the three-phase routing structure into the two shared loop layers, revealing that they contribute asymmetrically.
+
+\paragraph{Loop Layer~1} 
+Loop Layer~1 shows monotonically increasing adjacent-pair cosine similarity across iterations, consistent with progressive fixed-point convergence of the recurrent block: once the prefix distribution has been absorbed at iter~0, successive applications drive the representation toward a stable attractor.
+
+\paragraph{Loop Layer~2} 
+Loop Layer~2 remains comparatively stable through the recurrent core but concentrates its functional shift at the read-out boundary, where its routing turnover (Jaccard drop at the terminal iteration) is substantially sharper than that of Loop Layer~1. This is consistent with Loop Layer~2 acting as the interface to the downstream non-loop suffix: rather than continuing to refine the recurrent state, it reformats it into a distribution suitable for the suffix layers.
+
+\paragraph{Summary} 
+Neither extreme intuition---fully disjoint per-iteration experts nor a single fixed coalition---holds in isolation. The loop adopts the fixed-coalition strategy within the recurrent core while employing distinct expert subsets at the two interface boundaries, with the entry layer (Loop Layer~1 at iter~0) absorbing the prefix and the exit layer (Loop Layer~2 at the terminal iteration) preparing the hand-off to the suffix. The entry and exit layers thus play complementary roles in mediating the transition between non-loop and recurrent computation.
+
+
+\subsection{Emergent per-iteration allocation of residual updates}
+\label{app:loop-alpha-schedule}
+
+\begin{table*}[h]
+\centering
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{lcccccccc}
+\toprule
+Module & $i$ & $\overline{\gamma}$ & $\overline{|\gamma|}$ & $\overline{\beta}$ & $\overline{|\beta|}$ & $\overline{\alpha}$ & \textsc{$tok_{std}$} & \textsc{$tok_{range}$} \\
+\midrule
+\multirow{4}{*}{L1 attn} & 0 & $-0.159$ & $0.160$ & $-0.000$ & $0.001$ & $+0.707$ & $0.181$ & $0.805$ \\
+                         & 1 & $+0.049$ & $0.171$ & $-0.000$ & $0.001$ & $+0.805$ & $0.227$ & $0.934$ \\
+                         & 2 & $+0.237$ & $0.311$ & $-0.000$ & $0.001$ & $+1.044$ & $0.311$ & $1.273$ \\
+                         & 3 & $+0.503$ & $0.545$ & $-0.000$ & $0.001$ & $+1.355$ & $0.486$ & $1.789$ \\
+\midrule
+\multirow{4}{*}{L1 ffn}  & 0 & $-0.339$ & $0.339$ & $-0.001$ & $0.001$ & --- & --- & --- \\
+                         & 1 & $-0.276$ & $0.280$ & $-0.001$ & $0.001$ & --- & --- & --- \\
+                         & 2 & $-0.196$ & $0.228$ & $-0.000$ & $0.001$ & --- & --- & --- \\
+                         & 3 & $+0.008$ & $0.179$ & $+0.001$ & $0.002$ & --- & --- & --- \\
+\midrule
+\multirow{4}{*}{L2 attn} & 0 & $+0.034$ & $0.150$ & $+0.001$ & $0.001$ & $+0.601$ & $0.147$ & $0.761$ \\
+                         & 1 & $+0.137$ & $0.227$ & $+0.002$ & $0.002$ & $+0.672$ & $0.225$ & $0.941$ \\
+                         & 2 & $+0.253$ & $0.322$ & $+0.002$ & $0.002$ & $+0.839$ & $0.353$ & $1.373$ \\
+                         & 3 & $+0.500$ & $0.554$ & $-0.001$ & $0.001$ & $+1.613$ & $0.922$ & $3.432$ \\
+\midrule
+\multirow{4}{*}{L2 ffn}  & 0 & $-0.252$ & $0.252$ & $+0.000$ & $0.000$ & --- & --- & --- \\
+                         & 1 & $-0.222$ & $0.230$ & $+0.001$ & $0.001$ & --- & --- & --- \\
+                         & 2 & $-0.168$ & $0.199$ & $+0.002$ & $0.002$ & --- & --- & --- \\
+                         & 3 & $-0.075$ & $0.204$ & $+0.003$ & $0.003$ & --- & --- & --- \\
+\bottomrule
+\end{tabular}
+\caption{Full per-iteration IterAdaLN modulation statistics for the two shared loop layers, averaged over BBH dataset. $\overline{|\gamma|}$ and $\overline{|\beta|}$ denote the mean of absolute values of $\gamma$ and $\beta$, \texttt{$tok_{std}$} and \texttt{$tok_{rng}$} are the per-token standard deviation and range of $\alpha$.}
+\label{tab:adaln-stats-full}
+\end{table*}
+
+
+\paragraph{Setup and observations.}
+We instrument the IterAdaLN modulation outputs $(\gamma, \beta, \alpha)$ of the two shared loop layers (L1 and L2) at every iteration $i \in \{0,1,2,3\}$, separately for the attention branch and the FFN branch, averaged over the BBH dataset (full per-iteration statistics in Table~\ref{tab:adaln-stats-full}). Since the asymmetric residual gating design (Section~\ref{sec:method-tadaln}) fixes $\alpha\!=\!1$ on the FFN branch, $\alpha$ is not included in ffn branch. Three findings emerge. First ~$\gamma$ increases monotonically across loop iterations in all four cells, but the endpoint regime differs by branch. Attention branches cross into amplification by the late loop, while FFN branches remain in mild contraction throughout (never crossing zero). Under the IterAdaLN input scaling, early iterations on every branch suppress the normalised input, while late iterations amplify it for attention but only relax the suppression for FFN. Second, attention $\alpha$ is strongly back-loaded. $\overline{\alpha}$ grows monotonically on both layers, with the final-iteration gate substantially exceeding the residual baseline of~1. The L2 endpoint of~1.613 means the last iteration's attention contribution is amplified by over 60\% relative to the residual baseline. Third, per-token dispersion of attention $\alpha$ grows monotonically with loop index. $tok_{std}(\alpha)$ increases roughly $3$--$6$ times, and the per-token range $tok_{range}(\alpha)$ on L2 attention grows from $0.761$ to $3.432$. It indicates early iterations apply a nearly token-uniform update, and late iterations differentiate tokens strongly. The shift $\beta$ is negligible throughout ($|\overline{\beta}|<4\!\times\!10^{-3}$ across all cells).
+
+\paragraph{Interpretation and implications}
+We term this pattern a back-loaded update schedule with asymmetric branch roles. In the early loop iterations, both branches operate in a light-touch phase, characterised by input contraction, modest attention gating ($\alpha<1$), and near-token-uniform updates. The late iterations then diverge by branch. The attention branch enters a heavy-update phase, exhibiting input amplification ($\gamma>0$), strong gating, and strongly token-differentiated updates. The FFN branch, in contrast, implements persistent contraction, with $\gamma$ remaining $\leq 0$ at every iteration (with one marginal exception). Since FFN $\alpha\!\equiv\!1$ by design, the FFN contribution at every iteration is a consistently down-scaled update that merely becomes less down-scaled as the loop progresses. Effective late-loop computation is therefore concentrated specifically in the attention branch, both via its growing $\alpha$ gate and its growing per-token dispersion. This is consistent with emergent depth allocation under fixed-loop training. Weight sharing prevents the model from skipping iterations, but the model can learn to make early iterations approximate identity transformations and concentrate effective computation at the final iteration, choosing attention as the channel through which to do so. The monotonic growth of $tok_{std}(\alpha)$ and $tok_{range}(\alpha)$ reflects that per-token information about update magnitude is encoded precisely where differentiation is highest. Since $\gamma$ is conditioned on the evolving residual state $h$ rather than a directly zero-initialized scalar, the $\gamma$ sweep reflects learned behavior rather than initialization bias. This schedule does not yield a prefix-truncation inference speedup, since all four iterations are required to realise the late-loop attention amplification, and depth compressibility, to the extent it exists, is located at the front of the loop.
+
+
+% \subsection{Use of AI Assistants}
+% We used AI assistants for polishing the writing of this paper and for assisting with auxiliary coding tasks such as plotting and analysis scripts. All research ideas, experimental design, model implementation, and scientific claims are the authors' own, and all AI-generated content has been verified by the authors.

@@ -1,0 +1,212 @@
+{
+  "baseline_cuda_lr0.003": {
+    "model_cfg": {
+      "untied_stack": true,
+      "n_layers": 33
+    },
+    "train_cfg": {
+      "run_name": "baseline_cuda_lr0.003",
+      "seq_len": 256,
+      "batch_size": 8,
+      "lr": 0.003,
+      "min_lr": 0.00030000000000000003,
+      "warmup_steps": 300,
+      "weight_decay": 0.05,
+      "grad_clip": 0.5,
+      "total_tokens": 6000000,
+      "min_train_loops": 1,
+      "max_train_loops": 1,
+      "supervise_k": 1,
+      "norm_penalty": 0.0,
+      "fixed_train_loops": null,
+      "eval_every_tokens": 1000000,
+      "eval_batches": 8,
+      "eval_batch_size": 4,
+      "eval_loop_sweep": [
+        1
+      ],
+      "seed": 0,
+      "device": "cuda"
+    },
+    "history": [
+      {
+        "step": 488,
+        "val_curve": {
+          "1": 5.769508898258209
+        }
+      },
+      {
+        "step": 976,
+        "val_curve": {
+          "1": 5.236130118370056
+        }
+      },
+      {
+        "step": 1464,
+        "val_curve": {
+          "1": 4.974122166633606
+        }
+      },
+      {
+        "step": 1952,
+        "val_curve": {
+          "1": 4.772550523281097
+        }
+      },
+      {
+        "step": 2440,
+        "val_curve": {
+          "1": 4.605347573757172
+        }
+      },
+      {
+        "step": 2928,
+        "val_curve": {
+          "1": 4.465104579925537
+        }
+      }
+    ],
+    "params": 81351200,
+    "elapsed_s": 1335.9367744922638
+  },
+  "baseline_cuda_lr0.001": {
+    "model_cfg": {
+      "untied_stack": true,
+      "n_layers": 33
+    },
+    "train_cfg": {
+      "run_name": "baseline_cuda_lr0.001",
+      "seq_len": 256,
+      "batch_size": 8,
+      "lr": 0.001,
+      "min_lr": 0.0001,
+      "warmup_steps": 300,
+      "weight_decay": 0.05,
+      "grad_clip": 0.5,
+      "total_tokens": 6000000,
+      "min_train_loops": 1,
+      "max_train_loops": 1,
+      "supervise_k": 1,
+      "norm_penalty": 0.0,
+      "fixed_train_loops": null,
+      "eval_every_tokens": 1000000,
+      "eval_batches": 8,
+      "eval_batch_size": 4,
+      "eval_loop_sweep": [
+        1
+      ],
+      "seed": 0,
+      "device": "cuda"
+    },
+    "history": [
+      {
+        "step": 488,
+        "val_curve": {
+          "1": 5.8111337423324585
+        }
+      },
+      {
+        "step": 976,
+        "val_curve": {
+          "1": 5.217623293399811
+        }
+      },
+      {
+        "step": 1464,
+        "val_curve": {
+          "1": 4.896436035633087
+        }
+      },
+      {
+        "step": 1952,
+        "val_curve": {
+          "1": 4.674278438091278
+        }
+      },
+      {
+        "step": 2440,
+        "val_curve": {
+          "1": 4.518127501010895
+        }
+      },
+      {
+        "step": 2928,
+        "val_curve": {
+          "1": 4.374224305152893
+        }
+      }
+    ],
+    "params": 81351200,
+    "elapsed_s": 1344.0283410549164
+  },
+  "baseline_cuda_lr0.0005": {
+    "model_cfg": {
+      "untied_stack": true,
+      "n_layers": 33
+    },
+    "train_cfg": {
+      "run_name": "baseline_cuda_lr0.0005",
+      "seq_len": 256,
+      "batch_size": 8,
+      "lr": 0.0005,
+      "min_lr": 5e-05,
+      "warmup_steps": 300,
+      "weight_decay": 0.05,
+      "grad_clip": 0.5,
+      "total_tokens": 6000000,
+      "min_train_loops": 1,
+      "max_train_loops": 1,
+      "supervise_k": 1,
+      "norm_penalty": 0.0,
+      "fixed_train_loops": null,
+      "eval_every_tokens": 1000000,
+      "eval_batches": 8,
+      "eval_batch_size": 4,
+      "eval_loop_sweep": [
+        1
+      ],
+      "seed": 0,
+      "device": "cuda"
+    },
+    "history": [
+      {
+        "step": 488,
+        "val_curve": {
+          "1": 5.8107874393463135
+        }
+      },
+      {
+        "step": 976,
+        "val_curve": {
+          "1": 5.287502288818359
+        }
+      },
+      {
+        "step": 1464,
+        "val_curve": {
+          "1": 4.944170773029327
+        }
+      },
+      {
+        "step": 1952,
+        "val_curve": {
+          "1": 4.725445330142975
+        }
+      },
+      {
+        "step": 2440,
+        "val_curve": {
+          "1": 4.578520476818085
+        }
+      },
+      {
+        "step": 2928,
+        "val_curve": {
+          "1": 4.442230939865112
+        }
+      }
+    ],
+    "params": 81351200,
+    "elapsed_s": 1343.0679807662964
+  }
+}

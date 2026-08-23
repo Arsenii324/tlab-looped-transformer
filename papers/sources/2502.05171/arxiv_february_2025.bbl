@@ -1,0 +1,918 @@
+\begin{thebibliography}{187}
+\providecommand{\natexlab}[1]{#1}
+
+\bibitem[{Abnar et~al.(2023)Abnar, Saremi, Dinh, Wilson, Bautista, Huang, Thilak, Littwin, Gu, Susskind, and Bengio}]{abnar_adaptivity_2023}
+Samira Abnar, Omid Saremi, Laurent Dinh, Shantel Wilson, Miguel~Angel Bautista, Chen Huang, Vimal Thilak, Etai Littwin, Jiatao Gu, Josh Susskind, and Samy Bengio. 2023.
+\newblock \href {https://doi.org/10.48550/arXiv.2310.08866} {Adaptivity and {{Modularity}} for {{Efficient Generalization Over Task Complexity}}}.
+\newblock \emph{arxiv:2310.08866[cs]}.
+
+\bibitem[{AI2(2024)}]{ai2_olmo_2024}
+AI2. 2024.
+\newblock \href {https://blog.allenai.org/olmo-1-7-7b-a-24-point-improvement-on-mmlu-92b43f7d269d} {{{OLMo}} 1.7--{{7B}}: {{A}} 24 point improvement on {{MMLU}}}.
+
+\bibitem[{{Allen-Zhu} and Li(2024)}]{allen-zhu_physics_2024-1}
+Zeyuan {Allen-Zhu} and Yuanzhi Li. 2024.
+\newblock Physics of language models: Part 3.1, knowledge storage and extraction.
+\newblock In \emph{Proceedings of the 41st {{International Conference}} on {{Machine Learning}}}, volume 235 of \emph{{{ICML}}'24}, pages 1067--1077, Vienna, Austria. JMLR.org.
+
+\bibitem[{Amari(1972)}]{amari_learning_1972}
+S.-I. Amari. 1972.
+\newblock \href {https://doi.org/10.1109/T-C.1972.223477} {Learning {{Patterns}} and {{Pattern Sequences}} by {{Self-Organizing Nets}} of {{Threshold Elements}}}.
+\newblock \emph{IEEE Transactions on Computers}, C-21(11):1197--1206.
+
+\bibitem[{AMD(2021)}]{amd_amd_2021}
+AMD. 2021.
+\newblock \href {https://www.amd.com/en/products/accelerators/instinct/mi200/mi250x.html} {{{AMD Instinct}}™ {{MI250X Accelerators}}}.
+
+\bibitem[{Amini et~al.(2019)Amini, Gabriel, Lin, Koncel-Kedziorski, Choi, and Hajishirzi}]{amini2019mathqa}
+Aida Amini, Saadia Gabriel, Peter Lin, Rik Koncel-Kedziorski, Yejin Choi, and Hannaneh Hajishirzi. 2019.
+\newblock Mathqa: Towards interpretable math word problem solving with operation-based formalisms.
+\newblock \emph{arXiv preprint arXiv:1905.13319}.
+
+\bibitem[{Amos and Kolter(2017)}]{amos_optnet:_2017}
+Brandon Amos and J.~Zico Kolter. 2017.
+\newblock \href {http://proceedings.mlr.press/v70/amos17a.html} {{{OptNet}}: {{Differentiable Optimization}} as a {{Layer}} in {{Neural Networks}}}.
+\newblock In \emph{International {{Conference}} on {{Machine Learning}}}, pages 136--145.
+
+\bibitem[{Anil et~al.(2022)Anil, Pokle, Liang, Treutlein, Wu, Bai, Kolter, and Grosse}]{anil_path_2022}
+Cem Anil, Ashwini Pokle, Kaiqu Liang, Johannes Treutlein, Yuhuai Wu, Shaojie Bai, J.~Zico Kolter, and Roger~Baker Grosse. 2022.
+\newblock \href {https://openreview.net/forum?id=kgT6D7Z4Xv9} {Path {{Independent Equilibrium Models Can Better Exploit Test-Time Computation}}}.
+\newblock In \emph{Advances in {{Neural Information Processing Systems}}}.
+
+\bibitem[{Austin et~al.(2021)Austin, Odena, Nye, Bosma, Michalewski, Dohan, Jiang, Cai, Terry, Le et~al.}]{austin2021program}
+Jacob Austin, Augustus Odena, Maxwell Nye, Maarten Bosma, Henryk Michalewski, David Dohan, Ellen Jiang, Carrie Cai, Michael Terry, Quoc Le, and 1 others. 2021.
+\newblock Program synthesis with large language models.
+\newblock \emph{arXiv preprint arXiv:2108.07732}.
+
+\bibitem[{Azerbayev et~al.(2023)Azerbayev, Schoelkopf, Paster, Santos, McAleer, Jiang, Deng, Biderman, and Welleck}]{azerbayev_llemma_2023}
+Zhangir Azerbayev, Hailey Schoelkopf, Keiran Paster, Marco~Dos Santos, Stephen~Marcus McAleer, Albert~Q. Jiang, Jia Deng, Stella Biderman, and Sean Welleck. 2023.
+\newblock \href {https://openreview.net/forum?id=4WnqRR915j} {Llemma: {{An Open Language Model}} for {{Mathematics}}}.
+\newblock In \emph{The {{Twelfth International Conference}} on {{Learning Representations}}}.
+
+\bibitem[{Bae et~al.(2024)Bae, Fisch, Harutyunyan, Ji, Kim, and Schuster}]{bae_relaxed_2024}
+Sangmin Bae, Adam Fisch, Hrayr Harutyunyan, Ziwei Ji, Seungyeon Kim, and Tal Schuster. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2410.20672} {Relaxed {{Recursive Transformers}}: {{Effective Parameter Sharing}} with {{Layer-wise LoRA}}}.
+
+\bibitem[{Bai et~al.(2019)Bai, Kolter, and Koltun}]{bai_deep_2019}
+Shaojie Bai, J.~Zico Kolter, and Vladlen Koltun. 2019.
+\newblock \href {https://arxiv.org/abs/1909.01377} {Deep {{Equilibrium Models}}}.
+\newblock In \emph{Advances in {{Neural Information Processing Systems}}}, volume~32. Curran Associates, Inc.
+
+\bibitem[{Bai et~al.(2022)Bai, Koltun, and Kolter}]{bai_neural_2022}
+Shaojie Bai, Vladlen Koltun, and J.~Zico Kolter. 2022.
+\newblock \href {https://openreview.net/forum?id=B0oHOwT5ENL} {Neural {{Deep Equilibrium Solvers}}}.
+\newblock In \emph{International {{Conference}} on {{Learning Representations}}}.
+
+\bibitem[{Bai et~al.(2024)Bai, Zhang, Lv, Zheng, Zhu, Hou, Dong, Tang, and Li}]{bai_longwriter_2024}
+Yushi Bai, Jiajie Zhang, Xin Lv, Linzhi Zheng, Siqi Zhu, Lei Hou, Yuxiao Dong, Jie Tang, and Juanzi Li. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2408.07055} {{{LongWriter}}: {{Unleashing}} 10,000+ {{Word Generation}} from {{Long Context LLMs}}}.
+\newblock \emph{arxiv:2408.07055[cs]}.
+
+\bibitem[{Banino et~al.(2021)Banino, Balaguer, and Blundell}]{banino_pondernet_2021}
+Andrea Banino, Jan Balaguer, and Charles Blundell. 2021.
+\newblock \href {https://openreview.net/forum?id=1EuxRTe0WN} {{{PonderNet}}: {{Learning}} to {{Ponder}}}.
+\newblock In \emph{8th {{ICML Workshop}} on {{Automated Machine Learning}} ({{AutoML}})}.
+
+\bibitem[{Bansal et~al.(2022)Bansal, Schwarzschild, Borgnia, Emam, Huang, Goldblum, and Goldstein}]{bansal_end--end_2022}
+Arpit Bansal, Avi Schwarzschild, Eitan Borgnia, Zeyad Emam, Furong Huang, Micah Goldblum, and Tom Goldstein. 2022.
+\newblock \href {https://openreview.net/forum?id=PPjSKy40XUB} {End-to-end {{Algorithm Synthesis}} with {{Recurrent Networks}}: {{Extrapolation}} without {{Overthinking}}}.
+\newblock In \emph{Advances in {{Neural Information Processing Systems}}}.
+
+\bibitem[{Bauschke et~al.(2011)Bauschke, Moffat, and Wang}]{bauschke_firmly_2011}
+Heinz~H. Bauschke, Sarah~M. Moffat, and Xianfu Wang. 2011.
+\newblock \href {https://arxiv.org/abs/1101.4688} {Firmly nonexpansive mappings and maximally monotone operators: Correspondence and duality}.
+\newblock \emph{arXiv:1101.4688 [math]}.
+
+\bibitem[{Bear et~al.(2024)Bear, {Pr{\"u}gel-Bennett}, and Hare}]{bear_rethinking_2024}
+Jay Bear, Adam {Pr{\"u}gel-Bennett}, and Jonathon Hare. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2410.23451} {Rethinking {{Deep Thinking}}: {{Stable Learning}} of {{Algorithms}} using {{Lipschitz Constraints}}}.
+\newblock \emph{arxiv:2410.23451[cs]}.
+
+\bibitem[{Bekman(2023)}]{bekman_machine_2023}
+Stas Bekman. 2023.
+\newblock \href {https://github.com/stas00/ml-engineering} {\emph{Machine Learning Engineering Open Book}}.
+\newblock Stasosphere Online Inc.
+
+\bibitem[{Ben~Allal et~al.(2024)Ben~Allal, Lozhkov, Penedo, Wolf, and {von Werra}}]{benallal2024smollmcorpus}
+Loubna Ben~Allal, Anton Lozhkov, Guilherme Penedo, Thomas Wolf, and Leandro {von Werra}. 2024.
+\newblock \href {https://huggingface.co/datasets/HuggingFaceTB/smollm-corpus} {{{SmolLM-corpus}}}.
+
+\bibitem[{Biderman et~al.(2023)Biderman, Schoelkopf, Anthony, Bradley, O'Brien, Hallahan, Khan, Purohit, Prashanth, Raff, Skowron, Sutawika, and {van der Wal}}]{biderman_pythia_2023}
+Stella Biderman, Hailey Schoelkopf, Quentin Anthony, Herbie Bradley, Kyle O'Brien, Eric Hallahan, Mohammad~Aflah Khan, Shivanshu Purohit, USVSN~Sai Prashanth, Edward Raff, Aviya Skowron, Lintang Sutawika, and Oskar {van der Wal}. 2023.
+\newblock \href {https://doi.org/10.48550/arXiv.2304.01373} {Pythia: {{A Suite}} for {{Analyzing Large Language Models Across Training}} and {{Scaling}}}.
+\newblock \emph{arxiv:2304.01373[cs]}.
+
+\bibitem[{Biderman et~al.(2024)Biderman, Schoelkopf, Sutawika, Gao, Tow, Abbasi, Aji, Ammanamanchi, Black, Clive, DiPofi, Etxaniz, Fattori, Forde, Foster, Hsu, Jaiswal, Lee, Li, Lovering, Muennighoff, Pavlick, Phang, Skowron, Tan, Tang, Wang, Winata, Yvon, and Zou}]{biderman_lessons_2024}
+Stella Biderman, Hailey Schoelkopf, Lintang Sutawika, Leo Gao, Jonathan Tow, Baber Abbasi, Alham~Fikri Aji, Pawan~Sasanka Ammanamanchi, Sidney Black, Jordan Clive, Anthony DiPofi, Julen Etxaniz, Benjamin Fattori, Jessica~Zosa Forde, Charles Foster, Jeffrey Hsu, Mimansa Jaiswal, Wilson~Y. Lee, Haonan Li, and 11 others. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2405.14782} {Lessons from the {{Trenches}} on {{Reproducible Evaluation}} of {{Language Models}}}.
+\newblock \emph{arxiv:2405.14782[cs]}.
+
+\bibitem[{Bisk et~al.(2020)Bisk, Zellers, Bras, Gao, and Choi}]{Bisk2020}
+Yonatan Bisk, Rowan Zellers, Ronan~Le Bras, Jianfeng Gao, and Yejin Choi. 2020.
+\newblock Piqa: Reasoning about physical commonsense in natural language.
+\newblock In \emph{Thirty-Fourth AAAI Conference on Artificial Intelligence}.
+
+\bibitem[{Boudiaf et~al.(2022)Boudiaf, Mueller, Ben~Ayed, and Bertinetto}]{boudiaf_parameter-free_2022}
+Malik Boudiaf, Romain Mueller, Ismail Ben~Ayed, and Luca Bertinetto. 2022.
+\newblock \href {https://openaccess.thecvf.com/content/CVPR2022/html/Boudiaf\_Parameter-Free\_Online\_Test-Time\_Adaptation\_CVPR\_2022\_paper.html} {Parameter-{{Free Online Test-Time Adaptation}}}.
+\newblock In \emph{Proceedings of the {{IEEE}}/{{CVF Conference}} on {{Computer Vision}} and {{Pattern Recognition}}}, pages 8344--8353.
+
+\bibitem[{Braitenberg(1986)}]{braitenberg_vehicles_1986}
+Valentino Braitenberg. 1986.
+\newblock \emph{Vehicles: {{Experiments}} in Synthetic Psychology}.
+\newblock MIT press.
+
+\bibitem[{Brandon et~al.(2024)Brandon, Mishra, Nrusimha, Panda, and Kelly}]{brandon_reducing_2024}
+William Brandon, Mayank Mishra, Aniruddha Nrusimha, Rameswar Panda, and Jonathan~Ragan Kelly. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2405.12981} {Reducing {{Transformer Key-Value Cache Size}} with {{Cross-Layer Attention}}}.
+\newblock \emph{arxiv:2405.12981[cs]}.
+
+\bibitem[{{British Library Labs}(2021)}]{bBritishLibraryBooks2021}
+{British Library Labs}. 2021.
+\newblock \href {https://doi.org/10.23636/r7w6-zy15} {\emph{Digitised {{Books}}. c. 1510 - c. 1900. {{JSONL}} ({{OCR}} Derived Text + Metadata)}}.
+\newblock British Library.
+
+\bibitem[{Cai et~al.(2024)Cai, Li, Geng, Peng, Lee, Chen, and Dao}]{cai_medusa_2024-1}
+Tianle Cai, Yuhong Li, Zhengyang Geng, Hongwu Peng, Jason~D. Lee, Deming Chen, and Tri Dao. 2024.
+\newblock \href {https://openreview.net/forum?id=PEpbUobfJv} {Medusa: {{Simple LLM Inference Acceleration Framework}} with {{Multiple Decoding Heads}}}.
+\newblock In \emph{Forty-First {{International Conference}} on {{Machine Learning}}}.
+
+\bibitem[{{character.ai}(2024)}]{characterai_optimizing_2024}
+{character.ai}. 2024.
+\newblock \href {https://research.character.ai/optimizing-inference/} {Optimizing {{AI Inference}} at {{Character}}.{{AI}}}.
+
+\bibitem[{Chen et~al.(2021)Chen, Tworek, Jun, Yuan, de~Oliveira~Pinto, Kaplan, Edwards, Burda, Joseph, Brockman, Ray, Puri, Krueger, Petrov, Khlaaf, Sastry, Mishkin, Chan, Gray, Ryder, Pavlov, Power, Kaiser, Bavarian, Winter, Tillet, Such, Cummings, Plappert, Chantzis, Barnes, Herbert-Voss, Guss, Nichol, Paino, Tezak, Tang, Babuschkin, Balaji, Jain, Saunders, Hesse, Carr, Leike, Achiam, Misra, Morikawa, Radford, Knight, Brundage, Murati, Mayer, Welinder, McGrew, Amodei, McCandlish, Sutskever, and Zaremba}]{chen2021evaluating}
+Mark Chen, Jerry Tworek, Heewoo Jun, Qiming Yuan, Henrique~Ponde de~Oliveira~Pinto, Jared Kaplan, Harri Edwards, Yuri Burda, Nicholas Joseph, Greg Brockman, Alex Ray, Raul Puri, Gretchen Krueger, Michael Petrov, Heidy Khlaaf, Girish Sastry, Pamela Mishkin, Brooke Chan, Scott Gray, and 39 others. 2021.
+\newblock \href {https://arxiv.org/abs/2107.03374} {Evaluating large language models trained on code}.
+\newblock \emph{Preprint}, arXiv:2107.03374.
+
+\bibitem[{Cheng and Durme(2024)}]{cheng_compressed_2024}
+Jeffrey Cheng and Benjamin~Van Durme. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2412.13171} {Compressed {{Chain}} of {{Thought}}: {{Efficient Reasoning Through Dense Representations}}}.
+\newblock \emph{arxiv:2412.13171[cs]}.
+
+\bibitem[{Choi(2023)}]{GoodWiki}
+Euirim Choi. 2023.
+\newblock \href {https://www.github.com/euirim/goodwiki} {{{GoodWiki}} dataset}.
+
+\bibitem[{Chollet(2019)}]{chollet_measure_2019}
+Fran{\c c}ois Chollet. 2019.
+\newblock \href {https://doi.org/10.48550/arXiv.1911.01547} {On the {{Measure}} of {{Intelligence}}}.
+\newblock \emph{arxiv:1911.01547[cs]}.
+
+\bibitem[{Chowdhery et~al.(2022)Chowdhery, Narang, Devlin, Bosma, Mishra, Roberts, Barham, Chung, Sutton, Gehrmann, Schuh, Shi, Tsvyashchenko, Maynez, Rao, Barnes, Tay, Shazeer, Prabhakaran, Reif, Du, Hutchinson, Pope, Bradbury, Austin, Isard, {Gur-Ari}, Yin, Duke, Levskaya, Ghemawat, Dev, Michalewski, Garcia, Misra, Robinson, Fedus, Zhou, Ippolito, Luan, Lim, Zoph, Spiridonov, Sepassi, Dohan, Agrawal, Omernick, Dai, Pillai, Pellat, Lewkowycz, Moreira, Child, Polozov, Lee, Zhou, Wang, Saeta, Diaz, Firat, Catasta, Wei, {Meier-Hellstern}, Eck, Dean, Petrov, and Fiedel}]{chowdhery_palm_2022}
+Aakanksha Chowdhery, Sharan Narang, Jacob Devlin, Maarten Bosma, Gaurav Mishra, Adam Roberts, Paul Barham, Hyung~Won Chung, Charles Sutton, Sebastian Gehrmann, Parker Schuh, Kensen Shi, Sasha Tsvyashchenko, Joshua Maynez, Abhishek Rao, Parker Barnes, Yi~Tay, Noam Shazeer, Vinodkumar Prabhakaran, and 48 others. 2022.
+\newblock \href {https://arxiv.org/abs/2204.02311} {{{PaLM}}: {{Scaling Language Modeling}} with {{Pathways}}}.
+\newblock \emph{arXiv:2204.02311 [cs]}.
+
+\bibitem[{Clark et~al.(2018)Clark, Cowhey, Etzioni, Khot, Sabharwal, Schoenick, and Tafjord}]{allenai:arc}
+Peter Clark, Isaac Cowhey, Oren Etzioni, Tushar Khot, Ashish Sabharwal, Carissa Schoenick, and Oyvind Tafjord. 2018.
+\newblock Think you have solved question answering? try arc, the ai2 reasoning challenge.
+\newblock \emph{arXiv:1803.05457v1}.
+
+\bibitem[{Cobbe et~al.(2021)Cobbe, Kosaraju, Bavarian, Chen, Jun, Kaiser, Plappert, Tworek, Hilton, Nakano, Hesse, and Schulman}]{cobbe_training_2021}
+Karl Cobbe, Vineet Kosaraju, Mohammad Bavarian, Mark Chen, Heewoo Jun, Lukasz Kaiser, Matthias Plappert, Jerry Tworek, Jacob Hilton, Reiichiro Nakano, Christopher Hesse, and John Schulman. 2021.
+\newblock \href {https://doi.org/10.48550/arXiv.2110.14168} {Training {{Verifiers}} to {{Solve Math Word Problems}}}.
+\newblock \emph{arxiv:2110.14168[cs]}.
+
+\bibitem[{Colegrove et~al.(2024)Colegrove, Paruchuri, and {OpenPhi-Team}}]{colegrove_open-phitextbooks_2024}
+Owen Colegrove, Vik Paruchuri, and {OpenPhi-Team}. 2024.
+\newblock \href {https://huggingface.co/datasets/open-phi/textbooks} {Open-phi/textbooks {$\cdot$} {{Datasets}} at {{Hugging Face}}}.
+
+\bibitem[{Csord{\'a}s et~al.(2024)Csord{\'a}s, Irie, Schmidhuber, Potts, and Manning}]{csordas_moeut_2024}
+R{\'o}bert Csord{\'a}s, Kazuki Irie, J{\"u}rgen Schmidhuber, Christopher Potts, and Christopher~D. Manning. 2024.
+\newblock \href {https://openreview.net/forum?id=ZxVrkm7Bjl\&noteId=xzoi2mTLOI} {{{MoEUT}}: {{Mixture-of-Experts Universal Transformers}}}.
+\newblock In \emph{The {{Thirty-eighth Annual Conference}} on {{Neural Information Processing Systems}}}.
+
+\bibitem[{Dagan(2024)}]{dagan_bpeasy_2024}
+Gautier Dagan. 2024.
+\newblock \href {https://github.com/gautierdag/bpeasy} {Bpeasy}.
+
+\bibitem[{Dagan et~al.(2024)Dagan, Synnaeve, and Rozi{\`e}re}]{dagan_getting_2024}
+Gautier Dagan, Gabriel Synnaeve, and Baptiste Rozi{\`e}re. 2024.
+\newblock \href {https://arxiv.org/abs/2402.01035} {Getting the most out of your tokenizer for pre-training and domain adaptation}.
+\newblock \emph{arxiv:2402.01035[cs]}.
+
+\bibitem[{Dao(2023)}]{dao_flashattention-2_2023}
+Tri Dao. 2023.
+\newblock \href {https://doi.org/10.48550/arXiv.2307.08691} {{{FlashAttention-2}}: {{Faster Attention}} with {{Better Parallelism}} and {{Work Partitioning}}}.
+\newblock \emph{arxiv:2307.08691[cs]}.
+
+\bibitem[{Dao et~al.(2022)Dao, Fu, Ermon, Rudra, and R{\'e}}]{dao_flashattention_2022}
+Tri Dao, Daniel~Y. Fu, Stefano Ermon, Atri Rudra, and Christopher R{\'e}. 2022.
+\newblock \href {https://doi.org/10.48550/arXiv.2205.14135} {{{FlashAttention}}: {{Fast}} and {{Memory-Efficient Exact Attention}} with {{IO-Awareness}}}.
+\newblock \emph{arxiv:2205.14135[cs]}.
+
+\bibitem[{{DeepSeek-AI} et~al.(2025){DeepSeek-AI}, Guo, Yang, Zhang, Song, Zhang, Xu, Zhu, Ma, Wang, Bi, Zhang, Yu, Wu, Wu, Gou, Shao, Li, Gao, Liu, Xue, Wang, Wu, Feng, Lu, Zhao, Deng, Zhang, Ruan, Dai, Chen, Ji, Li, Lin, Dai, Luo, Hao, Chen, Li, Zhang, Bao, Xu, Wang, Ding, Xin, Gao, Qu, Li, Guo, Li, Wang, Chen, Yuan, Qiu, Li, Cai, Ni, Liang, Chen, Dong, Hu, Gao, Guan, Huang, Yu, Wang, Zhang, Zhao, Wang, Zhang, Xu, Xia, Zhang, Zhang, Tang, Li, Wang, Li, Tian, Huang, Zhang, Wang, Chen, Du, Ge, Zhang, Pan, Wang, Chen, Jin, Chen, Lu, Zhou, Chen, Ye, Wang, Yu, Zhou, Pan, Li, Zhou, Wu, Ye, Yun, Pei, Sun, Wang, Zeng, Zhao, Liu, Liang, Gao, Yu, Zhang, Xiao, An, Liu, Wang, Chen, Nie, Cheng, Liu, Xie, Liu, Yang, Li, Su, Lin, Li, Jin, Shen, Chen, Sun, Wang, Song, Zhou, Wang, Shan, Li, Wang, Wei, Zhang, Xu, Li, Zhao, Sun, Wang, Yu, Zhang, Shi, Xiong, He, Piao, Wang, Tan, Ma, Liu, Guo, Ou, Wang, Gong, Zou, He, Xiong, Luo, You, Liu, Zhou, Zhu, Xu, Huang, Li, Zheng, Zhu, Ma, Tang, Zha, Yan, Ren, Ren, Sha, Fu, Xu, Xie,
+  Zhang, Hao, Ma, Yan, Wu, Gu, Zhu, Liu, Li, Xie, Song, Pan, Huang, Xu, Zhang, and Zhang}]{deepseek-ai_deepseek-r1_2025}
+{DeepSeek-AI}, Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu, Shirong Ma, Peiyi Wang, Xiao Bi, Xiaokang Zhang, Xingkai Yu, Yu~Wu, Z.~F. Wu, Zhibin Gou, Zhihong Shao, Zhuoshu Li, Ziyi Gao, and 181 others. 2025.
+\newblock \href {https://doi.org/10.48550/arXiv.2501.12948} {{{DeepSeek-R1}}: {{Incentivizing Reasoning Capability}} in {{LLMs}} via {{Reinforcement Learning}}}.
+\newblock \emph{arxiv:2501.12948[cs]}.
+
+\bibitem[{{DeepSeek-AI} et~al.(2024){DeepSeek-AI}, Liu, Feng, Xue, Wang, Wu, Lu, Zhao, Deng, Zhang, Ruan, Dai, Guo, Yang, Chen, Ji, Li, Lin, Dai, Luo, Hao, Chen, Li, Zhang, Bao, Xu, Wang, Zhang, Ding, Xin, Gao, Li, Qu, Cai, Liang, Guo, Ni, Li, Wang, Chen, Chen, Yuan, Qiu, Li, Song, Dong, Hu, Gao, Guan, Huang, Yu, Wang, Zhang, Xu, Xia, Zhao, Wang, Zhang, Li, Wang, Zhang, Zhang, Tang, Li, Tian, Huang, Wang, Zhang, Wang, Zhu, Chen, Du, Chen, Jin, Ge, Zhang, Pan, Wang, Xu, Zhang, Chen, Li, Lu, Zhou, Chen, Wu, Ye, Ye, Ma, Wang, Zhou, Yu, Zhou, Pan, Wang, Yun, Pei, Sun, Xiao, Zeng, Zhao, An, Liu, Liang, Gao, Yu, Zhang, Li, Jin, Wang, Bi, Liu, Wang, Shen, Chen, Zhang, Chen, Nie, Sun, Wang, Cheng, Liu, Xie, Liu, Yu, Song, Shan, Zhou, Yang, Li, Su, Lin, Li, Wang, Wei, Zhu, Zhang, Xu, Xu, Huang, Li, Zhao, Sun, Li, Wang, Yu, Zheng, Zhang, Shi, Xiong, He, Tang, Piao, Wang, Tan, Ma, Liu, Guo, Wu, Ou, Zhu, Wang, Gong, Zou, He, Zha, Xiong, Ma, Yan, Luo, You, Liu, Zhou, Wu, Ren, Ren, Sha, Fu, Xu, Huang, Zhang, Xie, Zhang,
+  Hao, Gou, Ma, Yan, Shao, Xu, Wu, Zhang, Li, Gu, Zhu, Liu, Li, Xie, Song, Gao, and Pan}]{deepseek-ai_deepseek-v3_2024}
+{DeepSeek-AI}, Aixin Liu, Bei Feng, Bing Xue, Bingxuan Wang, Bochao Wu, Chengda Lu, Chenggang Zhao, Chengqi Deng, Chenyu Zhang, Chong Ruan, Damai Dai, Daya Guo, Dejian Yang, Deli Chen, Dongjie Ji, Erhang Li, Fangyun Lin, Fucong Dai, and 181 others. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2412.19437} {{{DeepSeek-V3 Technical Report}}}.
+\newblock \emph{arxiv:2412.19437[cs]}.
+
+\bibitem[{Dehghani et~al.(2019)Dehghani, Gouws, Vinyals, Uszkoreit, and Kaiser}]{dehghani_universal_2019}
+Mostafa Dehghani, Stephan Gouws, Oriol Vinyals, Jakob Uszkoreit, and {\L}ukasz Kaiser. 2019.
+\newblock \href {https://doi.org/10.48550/arXiv.1807.03819} {Universal {{Transformers}}}.
+\newblock \emph{arxiv:1807.03819[cs, stat]}.
+
+\bibitem[{Deng et~al.(2024)Deng, Choi, and Shieber}]{deng_explicit_2024}
+Yuntian Deng, Yejin Choi, and Stuart Shieber. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2405.14838} {From {{Explicit CoT}} to {{Implicit CoT}}: {{Learning}} to {{Internalize CoT Step}} by {{Step}}}.
+\newblock \emph{arxiv:2405.14838[cs]}.
+
+\bibitem[{Ding et~al.(2024)Ding, Wang, Paolini, Kumar, Deoras, Roth, and Soatto}]{ding_fewer_2024}
+Hantian Ding, Zijian Wang, Giovanni Paolini, Varun Kumar, Anoop Deoras, Dan Roth, and Stefano Soatto. 2024.
+\newblock \href {https://openreview.net/forum?id=kRxCDDFNpp} {Fewer {{Truncations Improve Language Modeling}}}.
+\newblock In \emph{Forty-First {{International Conference}} on {{Machine Learning}}}.
+
+\bibitem[{Ding et~al.(2021)Ding, Yang, Hong, Zheng, Zhou, Yin, Lin, Zou, Shao, Yang, and Tang}]{ding_cogview_2021}
+Ming Ding, Zhuoyi Yang, Wenyi Hong, Wendi Zheng, Chang Zhou, Da~Yin, Junyang Lin, Xu~Zou, Zhou Shao, Hongxia Yang, and Jie Tang. 2021.
+\newblock \href {https://proceedings.neurips.cc/paper/2021/hash/a4d92e2cd541fca87e4620aba658316d-Abstract.html} {{{CogView}}: {{Mastering Text-to-Image Generation}} via {{Transformers}}}.
+\newblock In \emph{Advances in {{Neural Information Processing Systems}}}, volume~34, pages 19822--19835. Curran Associates, Inc.
+
+\bibitem[{Elbayad et~al.(2019)Elbayad, Gu, Grave, and Auli}]{elbayad_depth-adaptive_2019}
+Maha Elbayad, Jiatao Gu, Edouard Grave, and Michael Auli. 2019.
+\newblock \href {https://openreview.net/forum?id=SJg7KhVKPH} {Depth-{{Adaptive Transformer}}}.
+\newblock In \emph{International {{Conference}} on {{Learning Representations}}}.
+
+\bibitem[{Elhoushi et~al.(2024)Elhoushi, Shrivastava, Liskovich, Hosmer, Wasti, Lai, Mahmoud, Acun, Agarwal, Roman, Aly, Chen, and Wu}]{elhoushi_layerskip_2024}
+Mostafa Elhoushi, Akshat Shrivastava, Diana Liskovich, Basil Hosmer, Bram Wasti, Liangzhen Lai, Anas Mahmoud, Bilge Acun, Saurabh Agarwal, Ahmed Roman, Ahmed~A. Aly, Beidi Chen, and Carole-Jean Wu. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2404.16710} {{{LayerSkip}}: {{Enabling Early Exit Inference}} and {{Self-Speculative Decoding}}}.
+\newblock \emph{arxiv:2404.16710[cs]}.
+
+\bibitem[{Everett et~al.(2024)Everett, Xiao, Wortsman, Alemi, Novak, Liu, Gur, {Sohl-Dickstein}, Kaelbling, Lee, and Pennington}]{everett_scaling_2024}
+Katie Everett, Lechao Xiao, Mitchell Wortsman, Alexander~A. Alemi, Roman Novak, Peter~J. Liu, Izzeddin Gur, Jascha {Sohl-Dickstein}, Leslie~Pack Kaelbling, Jaehoon Lee, and Jeffrey Pennington. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2407.05872} {Scaling {{Exponents Across Parameterizations}} and {{Optimizers}}}.
+\newblock \emph{arxiv:2407.05872[cs]}.
+
+\bibitem[{Fan et~al.(2019)Fan, Grave, and Joulin}]{fan_reducing_2019}
+Angela Fan, Edouard Grave, and Armand Joulin. 2019.
+\newblock \href {https://doi.org/10.48550/arXiv.1909.11556} {Reducing {{Transformer Depth}} on {{Demand}} with {{Structured Dropout}}}.
+\newblock \emph{arxiv:1909.11556[cs, stat]}.
+
+\bibitem[{Fan et~al.(2021)Fan, Lavril, Grave, Joulin, and Sukhbaatar}]{fan_addressing_2021}
+Angela Fan, Thibaut Lavril, Edouard Grave, Armand Joulin, and Sainbayar Sukhbaatar. 2021.
+\newblock \href {https://doi.org/10.48550/arXiv.2002.09402} {Addressing {{Some Limitations}} of {{Transformers}} with {{Feedback Memory}}}.
+\newblock \emph{arxiv:2002.09402[cs, stat]}.
+
+\bibitem[{Fan et~al.(2025)Fan, Du, Ramchandran, and Lee}]{fan_looped_2025}
+Ying Fan, Yilun Du, Kannan Ramchandran, and Kangwook Lee. 2025.
+\newblock \href {https://openreview.net/forum?id=2edigk8yoU} {Looped {{Transformers}} for {{Length Generalization}}}.
+\newblock In \emph{The {{Thirteenth International Conference}} on {{Learning Representations}}}.
+
+\bibitem[{Fedus et~al.(2022)Fedus, Zoph, and Shazeer}]{fedus_switch_2022}
+William Fedus, Barret Zoph, and Noam Shazeer. 2022.
+\newblock \href {https://doi.org/10.48550/arXiv.2101.03961} {Switch {{Transformers}}: {{Scaling}} to {{Trillion Parameter Models}} with {{Simple}} and {{Efficient Sparsity}}}.
+\newblock \emph{arxiv:2101.03961[cs]}.
+
+\bibitem[{Feng et~al.(2023)Feng, Luo, Wang, Tang, Yang, Shao, Mguni, Du, and Wang}]{feng_chessgpt_2023}
+Xidong Feng, Yicheng Luo, Ziyan Wang, Hongrui Tang, Mengyue Yang, Kun Shao, David Mguni, Yali Du, and Jun Wang. 2023.
+\newblock \href {https://proceedings.neurips.cc/paper\_files/paper/2023/hash/16b14e3f288f076e0ca73bdad6405f77-Abstract-Datasets\_and\_Benchmarks.html} {{{ChessGPT}}: {{Bridging Policy Learning}} and {{Language Modeling}}}.
+\newblock \emph{Advances in Neural Information Processing Systems}, 36:7216--7262.
+
+\bibitem[{Gabarain(2024)}]{gabarain_locutusquehercules-v50_2024}
+Sebastian Gabarain. 2024.
+\newblock \href {https://huggingface.co/datasets/Locutusque/hercules-v5.0} {Locutusque/hercules-v5.0 {$\cdot$} {{Datasets}} at {{Hugging Face}}}.
+
+\bibitem[{Gatmiry et~al.(2024)Gatmiry, Saunshi, Reddi, Jegelka, and Kumar}]{gatmiry_can_2024}
+Khashayar Gatmiry, Nikunj Saunshi, Sashank~J. Reddi, Stefanie Jegelka, and Sanjiv Kumar. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2410.08292} {Can {{Looped Transformers Learn}} to {{Implement Multi-step Gradient Descent}} for {{In-context Learning}}?}
+
+\bibitem[{Geiping and Goldstein(2023)}]{geiping_cramming_2023}
+Jonas Geiping and Tom Goldstein. 2023.
+\newblock \href {https://proceedings.mlr.press/v202/geiping23a.html} {Cramming: {{Training}} a {{Language Model}} on a single {{GPU}} in one day.}
+\newblock In \emph{Proceedings of the 40th {{International Conference}} on {{Machine Learning}}}, pages 11117--11143. PMLR.
+
+\bibitem[{Geiping and Moeller(2019)}]{geiping_parametric_2019-1}
+Jonas Geiping and Michael Moeller. 2019.
+\newblock \href {https://arxiv.org/abs/1908.06209} {Parametric {{Majorization}} for {{Data-Driven Energy Minimization Methods}}}.
+\newblock In \emph{Proceedings of the {{IEEE International Conference}} on {{Computer Vision}}}, pages 10262--10273.
+
+\bibitem[{Gers and Schmidhuber(2000)}]{gers_recurrent_2000}
+F.A. Gers and J.~Schmidhuber. 2000.
+\newblock \href {https://doi.org/10.1109/IJCNN.2000.861302} {Recurrent nets that time and count}.
+\newblock In \emph{Proceedings of the {{IEEE-INNS-ENNS International Joint Conference}} on {{Neural Networks}}. {{IJCNN}} 2000. {{Neural Computing}}: {{New Challenges}} and {{Perspectives}} for the {{New Millennium}}}, volume~3, pages 189--194 vol.3.
+
+\bibitem[{Giannou et~al.(2023)Giannou, Rajput, Sohn, Lee, Lee, and Papailiopoulos}]{giannou_looped_2023}
+Angeliki Giannou, Shashank Rajput, Jy-Yong Sohn, Kangwook Lee, Jason~D. Lee, and Dimitris Papailiopoulos. 2023.
+\newblock \href {https://proceedings.mlr.press/v202/giannou23a.html} {Looped {{Transformers}} as {{Programmable Computers}}}.
+\newblock In \emph{Proceedings of the 40th {{International Conference}} on {{Machine Learning}}}, pages 11398--11442. PMLR.
+
+\bibitem[{Goyal et~al.(2018)Goyal, Doll{\'a}r, Girshick, Noordhuis, Wesolowski, Kyrola, Tulloch, Jia, and He}]{goyal_accurate_2018}
+Priya Goyal, Piotr Doll{\'a}r, Ross Girshick, Pieter Noordhuis, Lukasz Wesolowski, Aapo Kyrola, Andrew Tulloch, Yangqing Jia, and Kaiming He. 2018.
+\newblock \href {https://arxiv.org/abs/1706.02677} {Accurate, {{Large Minibatch SGD}}: {{Training ImageNet}} in 1 {{Hour}}}.
+\newblock \emph{arxiv:1706.02677[cs]}.
+
+\bibitem[{Graves(2017)}]{graves_adaptive_2017}
+Alex Graves. 2017.
+\newblock \href {https://doi.org/10.48550/arXiv.1603.08983} {Adaptive {{Computation Time}} for {{Recurrent Neural Networks}}}.
+\newblock \emph{arxiv:1603.08983[cs]}.
+
+\bibitem[{Graves et~al.(2014)Graves, Wayne, and Danihelka}]{graves_neural_2014}
+Alex Graves, Greg Wayne, and Ivo Danihelka. 2014.
+\newblock \href {https://arxiv.org/abs/1410.5401} {Neural {{Turing Machines}}}.
+\newblock \emph{arxiv:1410.5401[cs]}.
+
+\bibitem[{Groeneveld et~al.(2024)Groeneveld, Beltagy, Walsh, Bhagia, Kinney, Tafjord, Jha, Ivison, Magnusson, Wang, Arora, Atkinson, Authur, Chandu, Cohan, Dumas, Elazar, Gu, Hessel, Khot, Merrill, Morrison, Muennighoff, Naik, Nam, Peters, Pyatkin, Ravichander, Schwenk, Shah, Smith, Strubell, Subramani, Wortsman, Dasigi, Lambert, Richardson, Zettlemoyer, Dodge, Lo, Soldaini, Smith, and Hajishirzi}]{groeneveld_olmo_2024}
+Dirk Groeneveld, Iz~Beltagy, Pete Walsh, Akshita Bhagia, Rodney Kinney, Oyvind Tafjord, Ananya~Harsh Jha, Hamish Ivison, Ian Magnusson, Yizhong Wang, Shane Arora, David Atkinson, Russell Authur, Khyathi~Raghavi Chandu, Arman Cohan, Jennifer Dumas, Yanai Elazar, Yuling Gu, Jack Hessel, and 24 others. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2402.00838} {{{OLMo}}: {{Accelerating}} the {{Science}} of {{Language Models}}}.
+\newblock \emph{arxiv:2402.00838[cs]}.
+
+\bibitem[{H{\"a}gele et~al.(2024)H{\"a}gele, Bakouch, Kosson, Allal, Werra, and Jaggi}]{hagele_scaling_2024}
+Alexander H{\"a}gele, Elie Bakouch, Atli Kosson, Loubna~Ben Allal, Leandro~Von Werra, and Martin Jaggi. 2024.
+\newblock \href {https://openreview.net/forum?id=ompl7supoX\&referrer=\%5Bthe\%20profile\%20of\%20Martin\%20Jaggi\%5D(\%2Fprofile\%3Fid\%3D{\textasciitilde}Martin\_Jaggi1)} {Scaling {{Laws}} and {{Compute-Optimal Training Beyond Fixed Training Durations}}}.
+\newblock In \emph{Workshop on {{Efficient Systems}} for {{Foundation Models II}} @ {{ICML2024}}}.
+
+\bibitem[{Hao et~al.(2024)Hao, Sukhbaatar, Su, Li, Hu, Weston, and Tian}]{hao_training_2024}
+Shibo Hao, Sainbayar Sukhbaatar, DiJia Su, Xian Li, Zhiting Hu, Jason Weston, and Yuandong Tian. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2412.06769} {Training {{Large Language Models}} to {{Reason}} in a {{Continuous Latent Space}}}.
+\newblock \emph{arxiv:2412.06769[cs]}.
+
+\bibitem[{Hay and Wolf(2023)}]{hay_dynamic_2023}
+Tamir~David Hay and Lior Wolf. 2023.
+\newblock \href {https://openreview.net/forum?id=d4uL2MSe0z} {Dynamic {{Layer Tying}} for {{Parameter-Efficient Transformers}}}.
+\newblock In \emph{The {{Twelfth International Conference}} on {{Learning Representations}}}.
+
+\bibitem[{He et~al.(2024)He, Karlinsky, Kim, McAuley, Krotov, and Feris}]{he_camelot_2024}
+Zexue He, Leonid Karlinsky, Donghyun Kim, Julian McAuley, Dmitry Krotov, and Rogerio Feris. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2402.13449} {{{CAMELoT}}: {{Towards Large Language Models}} with {{Training-Free Consolidated Associative Memory}}}.
+\newblock \emph{arxiv:2402.13449[cs]}.
+
+\bibitem[{Hendrycks et~al.(2021{\natexlab{a}})Hendrycks, Burns, Basart, Zou, Mazeika, Song, and Steinhardt}]{hendryckstest2021}
+Dan Hendrycks, Collin Burns, Steven Basart, Andy Zou, Mantas Mazeika, Dawn Song, and Jacob Steinhardt. 2021{\natexlab{a}}.
+\newblock Measuring massive multitask language understanding.
+\newblock \emph{Proceedings of the International Conference on Learning Representations (ICLR)}.
+
+\bibitem[{Hendrycks et~al.(2021{\natexlab{b}})Hendrycks, Burns, Basart, Zou, Mazeika, Song, and Steinhardt}]{hendrycks_measuring_2021}
+Dan Hendrycks, Collin Burns, Steven Basart, Andy Zou, Mantas Mazeika, Dawn Song, and Jacob Steinhardt. 2021{\natexlab{b}}.
+\newblock \href {https://openreview.net/forum?id=d7KBjmI3GmQ} {Measuring {{Massive Multitask Language Understanding}}}.
+\newblock In \emph{International {{Conference}} on {{Learning Representations}}}.
+
+\bibitem[{Hopfield(1982)}]{hopfield_neural_1982}
+J~J Hopfield. 1982.
+\newblock \href {https://www.ncbi.nlm.nih.gov/pmc/articles/PMC346238/} {Neural networks and physical systems with emergent collective computational abilities.}
+\newblock \emph{Proceedings of the National Academy of Sciences of the United States of America}, 79(8):2554--2558.
+
+\bibitem[{Hu et~al.(2024)Hu, Zhu, and Welleck}]{hu_minictx_2024}
+Jiewen Hu, Thomas Zhu, and Sean Welleck. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2408.03350} {{{miniCTX}}: {{Neural Theorem Proving}} with ({{Long-}}){{Contexts}}}.
+\newblock \emph{arxiv:2408.03350[cs]}.
+
+\bibitem[{Izmailov et~al.(2018)Izmailov, Podoprikhin, Garipov, Vetrov, and Wilson}]{izmailov_averaging_2018}
+Pavel Izmailov, Dmitrii Podoprikhin, Timur Garipov, Dmitry Vetrov, and Andrew~Gordon Wilson. 2018.
+\newblock \href {http://www.scopus.com/inward/record.url?scp=85059432227\&partnerID=8YFLogxK} {Averaging weights leads to wider optima and better generalization: 34th {{Conference}} on {{Uncertainty}} in {{Artificial Intelligence}} 2018, {{UAI}} 2018}.
+\newblock \emph{34th Conference on Uncertainty in Artificial Intelligence 2018, UAI 2018}, pages 876--885.
+
+\bibitem[{Jiang et~al.(2023)Jiang, Li, and Jamnik}]{jiang_multilingual_2023}
+Albert~Q. Jiang, Wenda Li, and Mateja Jamnik. 2023.
+\newblock \href {https://doi.org/10.48550/arXiv.2311.03755} {Multilingual {{Mathematical Autoformalization}}}.
+\newblock \emph{arxiv:2311.03755[cs]}.
+
+\bibitem[{Johannes~Welbl(2017)}]{SciQ}
+Matt~Gardner Johannes~Welbl, Nelson F.~Liu. 2017.
+\newblock Crowdsourcing multiple choice science questions.
+
+\bibitem[{Kaddour(2022)}]{kaddour_stop_2022}
+Jean Kaddour. 2022.
+\newblock \href {https://doi.org/10.48550/arXiv.2209.14981} {Stop {{Wasting My Time}}! {{Saving Days}} of {{ImageNet}} and {{BERT Training}} with {{Latest Weight Averaging}}}.
+\newblock \emph{arxiv:2209.14981[cs, stat]}.
+
+\bibitem[{Kaplan et~al.(2024)Kaplan, Oren, Reif, and Schwartz}]{kaplan_tokens_2024}
+Guy Kaplan, Matanel Oren, Yuval Reif, and Roy Schwartz. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2410.05864} {From {{Tokens}} to {{Words}}: {{On}} the {{Inner Lexicon}} of {{LLMs}}}.
+\newblock \emph{arxiv:2410.05864[cs]}.
+
+\bibitem[{Kaplan et~al.(2020)Kaplan, McCandlish, Henighan, Brown, Chess, Child, Gray, Radford, Wu, and Amodei}]{kaplan_scaling_2020}
+Jared Kaplan, Sam McCandlish, Tom Henighan, Tom~B. Brown, Benjamin Chess, Rewon Child, Scott Gray, Alec Radford, Jeffrey Wu, and Dario Amodei. 2020.
+\newblock \href {https://doi.org/10.48550/arXiv.2001.08361} {Scaling {{Laws}} for {{Neural Language Models}}}.
+\newblock \emph{arxiv:2001.08361[cs, stat]}.
+
+\bibitem[{Katharopoulos et~al.(2020)Katharopoulos, Vyas, Pappas, and Fleuret}]{katharopoulos_transformers_2020}
+Angelos Katharopoulos, Apoorv Vyas, Nikolaos Pappas, and Fran{\c c}ois Fleuret. 2020.
+\newblock \href {https://proceedings.mlr.press/v119/katharopoulos20a.html} {Transformers are {{RNNs}}: {{Fast Autoregressive Transformers}} with {{Linear Attention}}}.
+\newblock In \emph{Proceedings of the 37th {{International Conference}} on {{Machine Learning}}}, pages 5156--5165. PMLR.
+
+\bibitem[{Kenney(2024)}]{arxivldinstruct}
+Matthew Kenney. 2024.
+\newblock \href {https://huggingface.co/datasets/AlgorithmicResearchGroup/ArXivDLInstruct} {{{ArXivDLInstruct}}}.
+
+\bibitem[{Kim et~al.(2024)Kim, Suk, Longpre, Lin, Shin, Welleck, Neubig, Lee, Lee, and Seo}]{kim_prometheus_2024}
+Seungone Kim, Juyoung Suk, Shayne Longpre, Bill~Yuchen Lin, Jamin Shin, Sean Welleck, Graham Neubig, Moontae Lee, Kyungjae Lee, and Minjoon Seo. 2024.
+\newblock \href {https://doi.org/10.18653/v1/2024.emnlp-main.248} {Prometheus 2: {{An Open Source Language Model Specialized}} in {{Evaluating Other Language Models}}}.
+\newblock In \emph{Proceedings of the 2024 {{Conference}} on {{Empirical Methods}} in {{Natural Language Processing}}}, pages 4334--4353, Miami, Florida, USA. Association for Computational Linguistics.
+
+\bibitem[{Kingma and Ba(2015)}]{kingma_adam:_2015}
+Diederik~P. Kingma and Jimmy Ba. 2015.
+\newblock \href {https://arxiv.org/abs/1412.6980} {Adam: {{A Method}} for {{Stochastic Optimization}}}.
+\newblock In \emph{International {{Conference}} on {{Learning Representations}} ({{ICLR}})}, San Diego.
+
+\bibitem[{Kry{\'s}ci{\'n}ski et~al.(2022)Kry{\'s}ci{\'n}ski, Rajani, Agarwal, Xiong, and Radev}]{kryscinski_booksum_2022}
+Wojciech Kry{\'s}ci{\'n}ski, Nazneen Rajani, Divyansh Agarwal, Caiming Xiong, and Dragomir Radev. 2022.
+\newblock \href {https://doi.org/10.48550/arXiv.2105.08209} {{{BookSum}}: {{A Collection}} of {{Datasets}} for {{Long-form Narrative Summarization}}}.
+\newblock \emph{arxiv:2105.08209[cs]}.
+
+\bibitem[{Lai et~al.(2024)Lai, Tian, Chen, Yang, Peng, and Jia}]{lai_step-dpo_2024}
+Xin Lai, Zhuotao Tian, Yukang Chen, Senqiao Yang, Xiangru Peng, and Jiaya Jia. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2406.18629} {Step-{{DPO}}: {{Step-wise Preference Optimization}} for {{Long-chain Reasoning}} of {{LLMs}}}.
+\newblock \emph{arxiv:2406.18629[cs]}.
+
+\bibitem[{Lan et~al.(2019)Lan, Chen, Goodman, Gimpel, Sharma, and Soricut}]{lan_albert_2019}
+Zhenzhong Lan, Mingda Chen, Sebastian Goodman, Kevin Gimpel, Piyush Sharma, and Radu Soricut. 2019.
+\newblock \href {https://arxiv.org/abs/1909.11942} {{{ALBERT}}: {{A Lite BERT}} for {{Self-supervised Learning}} of {{Language Representations}}}.
+\newblock In \emph{International {{Conference}} on {{Learning Representations}}}.
+
+\bibitem[{LeCun(2022)}]{lecun_path_2022}
+Yann LeCun. 2022.
+\newblock A {{Path Towards Autonomous Machine Intelligence}}.
+\newblock \emph{Preprint}, Version 0.9.2:62.
+
+\bibitem[{LeCun and Huang(2005)}]{lecun_loss_2005}
+Yann LeCun and Fu~Jie Huang. 2005.
+\newblock \href {https://nyuscholars.nyu.edu/en/publications/loss-functions-for-discriminative-training-of-energy-based-models} {{Loss functions for discriminative training of energy-based models}}.
+\newblock In \emph{{AISTATS 2005 - Proceedings of the 10th International Workshop on Artificial Intelligence and Statistics}}, pages 206--213.
+
+\bibitem[{Lee et~al.(2018)Lee, Mansimov, and Cho}]{lee_deterministic_2018}
+Jason Lee, Elman Mansimov, and Kyunghyun Cho. 2018.
+\newblock \href {https://doi.org/10.18653/v1/D18-1149} {Deterministic {{Non-Autoregressive Neural Sequence Modeling}} by {{Iterative Refinement}}}.
+\newblock In \emph{Proceedings of the 2018 {{Conference}} on {{Empirical Methods}} in {{Natural Language Processing}}}, pages 1173--1182, Brussels, Belgium. Association for Computational Linguistics.
+
+\bibitem[{Leviathan et~al.(2023)Leviathan, Kalman, and Matias}]{leviathan_fast_2023}
+Yaniv Leviathan, Matan Kalman, and Yossi Matias. 2023.
+\newblock \href {https://proceedings.mlr.press/v202/leviathan23a.html} {Fast {{Inference}} from {{Transformers}} via {{Speculative Decoding}}}.
+\newblock In \emph{Proceedings of the 40th {{International Conference}} on {{Machine Learning}}}, pages 19274--19286. PMLR.
+
+\bibitem[{Levine et~al.(2021)Levine, Wies, Sharir, Bata, and Shashua}]{levine_depth--width_2021}
+Yoav Levine, Noam Wies, Or~Sharir, Hofit Bata, and Amnon Shashua. 2021.
+\newblock \href {https://doi.org/10.48550/arXiv.2006.12467} {The {{Depth-to-Width Interplay}} in {{Self-Attention}}}.
+\newblock \emph{arxiv:2006.12467[cs, stat]}.
+
+\bibitem[{Lewkowycz et~al.(2022)Lewkowycz, Andreassen, Dohan, Dyer, Michalewski, Ramasesh, Slone, Anil, Schlag, Gutman-Solo, Wu, Neyshabur, Gur-Ari, and Misra}]{lewkowycz2022solving}
+Aitor Lewkowycz, Anders Andreassen, David Dohan, Ethan Dyer, Henryk Michalewski, Vinay Ramasesh, Ambrose Slone, Cem Anil, Imanol Schlag, Theo Gutman-Solo, Yuhuai Wu, Behnam Neyshabur, Guy Gur-Ari, and Vedant Misra. 2022.
+\newblock \href {https://arxiv.org/abs/2206.14858} {Solving quantitative reasoning problems with language models}.
+\newblock \emph{Preprint}, arXiv:2206.14858.
+
+\bibitem[{Li et~al.(2023)Li, Allal, Zi, Muennighoff, Kocetkov, Mou, Marone, Akiki, Li, Chim, Liu, Zheltonozhskii, Zhuo, Wang, Dehaene, {Lamy-Poirier}, Monteiro, Gontier, Yee, Umapathi, Zhu, Lipkin, Oblokulov, Wang, Murthy, Stillerman, Patel, Abulkhanov, Zocca, Dey, Zhang, Bhattacharyya, Yu, Luccioni, Villegas, Zhdanov, Lee, Timor, Ding, Schlesinger, Schoelkopf, Ebert, Dao, Mishra, Gu, Anderson, {Dolan-Gavitt}, Contractor, Reddy, Fried, Bahdanau, Jernite, Ferrandis, Hughes, Wolf, Guha, Werra, and de~Vries}]{li_starcoder_2023}
+Raymond Li, Loubna~Ben Allal, Yangtian Zi, Niklas Muennighoff, Denis Kocetkov, Chenghao Mou, Marc Marone, Christopher Akiki, Jia Li, Jenny Chim, Qian Liu, Evgenii Zheltonozhskii, Terry~Yue Zhuo, Thomas Wang, Olivier Dehaene, Joel {Lamy-Poirier}, Joao Monteiro, Nicolas Gontier, Ming-Ho Yee, and 39 others. 2023.
+\newblock \href {https://openreview.net/forum?id=KoFOg41haE} {{{StarCoder}}: May the source be with you!}
+\newblock \emph{Transactions on Machine Learning Research}.
+
+\bibitem[{Li et~al.(2020{\natexlab{a}})Li, Stickland, Tang, and Kong}]{li_deep_2020}
+Xian Li, Asa~Cooper Stickland, Yuqing Tang, and Xiang Kong. 2020{\natexlab{a}}.
+\newblock \href {https://doi.org/10.48550/arXiv.2009.13102} {Deep {{Transformers}} with {{Latent Depth}}}.
+\newblock \emph{arxiv:2009.13102[cs]}.
+
+\bibitem[{Li et~al.(2020{\natexlab{b}})Li, Gimeno, Kohli, and Vinyals}]{li_strong_2020}
+Yujia Li, Felix Gimeno, Pushmeet Kohli, and Oriol Vinyals. 2020{\natexlab{b}}.
+\newblock \href {https://doi.org/10.48550/arXiv.2007.03629} {Strong {{Generalization}} and {{Efficiency}} in {{Neural Programs}}}.
+\newblock \emph{arxiv:2007.03629[cs]}.
+
+\bibitem[{Liping~Tang(2024)}]{liping_tang_txt360_2024}
+Omkar~Pangarkar Liping~Tang, Nikhil~Ranjan. 2024.
+\newblock \href {https://huggingface.co/spaces/LLM360/TxT360} {{{TxT360}}: A top-quality {{LLM}} pre-training dataset requires the perfect blend}.
+
+\bibitem[{Liu et~al.(2023{\natexlab{a}})Liu, Zaharia, and Abbeel}]{liu2023ring}
+Hao Liu, Matei Zaharia, and Pieter Abbeel. 2023{\natexlab{a}}.
+\newblock \href {https://arxiv.org/abs/2310.01889} {Ring attention with blockwise transformers for near-infinite context}.
+\newblock \emph{arXiv preprint arXiv:2310.01889}.
+
+\bibitem[{Liu et~al.(2024{\natexlab{a}})Liu, Pfeiffer, Wu, Xie, and Szlam}]{liu_deliberation_2024}
+Luyang Liu, Jonas Pfeiffer, Jiaxing Wu, Jun Xie, and Arthur Szlam. 2024{\natexlab{a}}.
+\newblock \href {https://doi.org/10.48550/arXiv.2412.17747} {Deliberation in {{Latent Space}} via {{Differentiable Cache Augmentation}}}.
+\newblock \emph{arxiv:2412.17747[cs]}.
+
+\bibitem[{Liu et~al.(2023{\natexlab{b}})Liu, Lai, Yu, Xu, Zeng, Du, Zhang, Dong, and Tang}]{liu_webglm_2023}
+Xiao Liu, Hanyu Lai, Hao Yu, Yifan Xu, Aohan Zeng, Zhengxiao Du, Peng Zhang, Yuxiao Dong, and Jie Tang. 2023{\natexlab{b}}.
+\newblock \href {https://doi.org/10.1145/3580305.3599931} {{{WebGLM}}: {{Towards An Efficient Web-Enhanced Question Answering System}} with {{Human Preferences}}}.
+\newblock In \emph{Proceedings of the 29th {{ACM SIGKDD Conference}} on {{Knowledge Discovery}} and {{Data Mining}}}, {{KDD}} '23, pages 4549--4560, New York, NY, USA. Association for Computing Machinery.
+
+\bibitem[{Liu et~al.(2024{\natexlab{b}})Liu, Zhao, Iandola, Lai, Tian, Fedorov, Xiong, Chang, Shi, Krishnamoorthi, Lai, and Chandra}]{liu_mobilellm_2024}
+Zechun Liu, Changsheng Zhao, Forrest Iandola, Chen Lai, Yuandong Tian, Igor Fedorov, Yunyang Xiong, Ernie Chang, Yangyang Shi, Raghuraman Krishnamoorthi, Liangzhen Lai, and Vikas Chandra. 2024{\natexlab{b}}.
+\newblock \href {https://arxiv.org/abs/2402.14905} {{{MobileLLM}}: {{Optimizing Sub-billion Parameter Language Models}} for {{On-Device Use Cases}}}.
+\newblock \emph{arxiv:2402.14905[cs]}.
+
+\bibitem[{Liu et~al.(2023{\natexlab{c}})Liu, Qiao, Neiswanger, Wang, Tan, Tao, Li, Wang, Sun, Pangarkar, Fan, Gu, Miller, Zhuang, He, Li, Koto, Tang, Ranjan, Shen, Ren, Iriondo, Mu, Hu, Schulze, Nakov, Baldwin, and Xing}]{liu_llm360_2023}
+Zhengzhong Liu, Aurick Qiao, Willie Neiswanger, Hongyi Wang, Bowen Tan, Tianhua Tao, Junbo Li, Yuqi Wang, Suqi Sun, Omkar Pangarkar, Richard Fan, Yi~Gu, Victor Miller, Yonghao Zhuang, Guowei He, Haonan Li, Fajri Koto, Liping Tang, Nikhil Ranjan, and 9 others. 2023{\natexlab{c}}.
+\newblock \href {https://www.llm360.ai/blog/introducing-llm360-fully-transparent-open-source-llms.html} {{{LLM360}}: {{Towards}} fully transparent open-source {{LLMs}}}.
+
+\bibitem[{Loshchilov and Hutter(2017)}]{loshchilov_decoupled_2017}
+Ilya Loshchilov and Frank Hutter. 2017.
+\newblock \href {https://arxiv.org/abs/1711.05101} {Decoupled {{Weight Decay Regularization}}}.
+\newblock \emph{arXiv:1711.05101 [cs, math]}.
+
+\bibitem[{Lozhkov et~al.(2024)Lozhkov, Li, Allal, Cassano, {Lamy-Poirier}, Tazi, Tang, Pykhtar, Liu, Wei, Liu, Tian, Kocetkov, Zucker, Belkada, Wang, Liu, Abulkhanov, Paul, Li, Li, Risdal, Li, Zhu, Zhuo, Zheltonozhskii, Dade, Yu, Krau{\ss}, Jain, Su, He, Dey, Abati, Chai, Muennighoff, Tang, Oblokulov, Akiki, Marone, Mou, Mishra, Gu, Hui, Dao, Zebaze, Dehaene, Patry, Xu, McAuley, Hu, Scholak, Paquet, Robinson, Anderson, Chapados, Patwary, Tajbakhsh, Jernite, Ferrandis, Zhang, Hughes, Wolf, Guha, von Werra, and de~Vries}]{lozhkov_starcoder_2024}
+Anton Lozhkov, Raymond Li, Loubna~Ben Allal, Federico Cassano, Joel {Lamy-Poirier}, Nouamane Tazi, Ao~Tang, Dmytro Pykhtar, Jiawei Liu, Yuxiang Wei, Tianyang Liu, Max Tian, Denis Kocetkov, Arthur Zucker, Younes Belkada, Zijian Wang, Qian Liu, Dmitry Abulkhanov, Indraneil Paul, and 47 others. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2402.19173} {{{StarCoder}} 2 and {{The Stack}} v2: {{The Next Generation}}}.
+
+\bibitem[{Lu et~al.(2024)Lu, Zhou, Wang, Ren, Shi, Pan, Zhan, and Li}]{lu_mathcoder2_2024}
+Zimu Lu, Aojun Zhou, Ke~Wang, Houxing Ren, Weikang Shi, Junting Pan, Mingjie Zhan, and Hongsheng Li. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2410.08196} {{{MathCoder2}}: {{Better Math Reasoning}} from {{Continued Pretraining}} on {{Model-translated Mathematical Code}}}.
+\newblock \emph{arxiv:2410.08196[cs]}.
+
+\bibitem[{Majstorovic(2024)}]{majstorovic_selected_2024}
+Sebastian Majstorovic. 2024.
+\newblock \href {https://www.loc.gov/collections/selected-digitized-books} {Selected {{Digitized Books}} {\textbar} {{The Library}} of {{Congress}}}.
+
+\bibitem[{Markeeva et~al.(2024)Markeeva, McLeish, Ibarz, Bounsi, Kozlova, Vitvitskyi, Blundell, Goldstein, Schwarzschild, and Veli{\v c}kovi{\'c}}]{markeeva_clrs-text_2024}
+Larisa Markeeva, Sean McLeish, Borja Ibarz, Wilfried Bounsi, Olga Kozlova, Alex Vitvitskyi, Charles Blundell, Tom Goldstein, Avi Schwarzschild, and Petar Veli{\v c}kovi{\'c}. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2406.04229} {The {{CLRS-Text Algorithmic Reasoning Language Benchmark}}}.
+\newblock \emph{arxiv:2406.04229[cs]}.
+
+\bibitem[{Mathur et~al.(2024)Mathur, Pearlmutter, and Plis}]{mathur_mind_2024}
+Mrinal Mathur, Barak~A. Pearlmutter, and Sergey~M. Plis. 2024.
+\newblock \href {https://openreview.net/forum?id=EjJGND0m1x} {{{MIND}} over {{Body}}: {{Adaptive Thinking}} using {{Dynamic Computation}}}.
+\newblock In \emph{The {{Thirteenth International Conference}} on {{Learning Representations}}}.
+
+\bibitem[{McLeish et~al.(2024)McLeish, Bansal, Stein, Jain, Kirchenbauer, Bartoldson, Kailkhura, Bhatele, Geiping, Schwarzschild, and Goldstein}]{mcleish_transformers_2024}
+Sean~Michael McLeish, Arpit Bansal, Alex Stein, Neel Jain, John Kirchenbauer, Brian~R. Bartoldson, Bhavya Kailkhura, Abhinav Bhatele, Jonas Geiping, Avi Schwarzschild, and Tom Goldstein. 2024.
+\newblock \href {https://openreview.net/forum?id=aIyNLWXuDO\&referrer=\%5BAuthor\%20Console\%5D(\%2Fgroup\%3Fid\%3DNeurIPS.cc\%2F2024\%2FConference\%2FAuthors\%23your-submissions)} {Transformers {{Can Do Arithmetic}} with the {{Right Embeddings}}}.
+\newblock In \emph{The {{Thirty-eighth Annual Conference}} on {{Neural Information Processing Systems}}}.
+
+\bibitem[{Merrill et~al.(2022)Merrill, Sabharwal, and Smith}]{merrill_saturated_2022}
+William Merrill, Ashish Sabharwal, and Noah~A. Smith. 2022.
+\newblock \href {https://doi.org/10.1162/tacl_a_00493} {Saturated {{Transformers}} are {{Constant-Depth Threshold Circuits}}}.
+\newblock \emph{Transactions of the Association for Computational Linguistics}, 10:843--856.
+
+\bibitem[{Mihaylov et~al.(2018)Mihaylov, Clark, Khot, and Sabharwal}]{OpenBookQA2018}
+Todor Mihaylov, Peter Clark, Tushar Khot, and Ashish Sabharwal. 2018.
+\newblock Can a suit of armor conduct electricity? a new dataset for open book question answering.
+\newblock In \emph{EMNLP}.
+
+\bibitem[{Mikolov et~al.(2011)Mikolov, Kombrink, Burget, {\v C}ernock{\'y}, and Khudanpur}]{mikolov_extensions_2011}
+Tom{\'a}{\v s} Mikolov, Stefan Kombrink, Luk{\'a}{\v s} Burget, Jan {\v C}ernock{\'y}, and Sanjeev Khudanpur. 2011.
+\newblock \href {https://doi.org/10.1109/ICASSP.2011.5947611} {Extensions of recurrent neural network language model}.
+\newblock In \emph{2011 {{IEEE International Conference}} on {{Acoustics}}, {{Speech}} and {{Signal Processing}} ({{ICASSP}})}, pages 5528--5531.
+
+\bibitem[{Miyato et~al.(2024)Miyato, L{\"o}we, Geiger, and Welling}]{miyato_artificial_2024}
+Takeru Miyato, Sindy L{\"o}we, Andreas Geiger, and Max Welling. 2024.
+\newblock \href {https://openreview.net/forum?id=nwDRD4AMoN} {Artificial {{Kuramoto Oscillatory Neurons}}}.
+\newblock In \emph{The {{Thirteenth International Conference}} on {{Learning Representations}}}, Singapore.
+
+\bibitem[{Moulton(2023)}]{moulton_many_2023}
+Ryan Moulton. 2023.
+\newblock \href {https://moultano.wordpress.com/2023/06/28/the-many-ways-that-digital-minds-can-know/} {The {{Many Ways}} that {{Digital Minds Can Know}}}.
+
+\bibitem[{Muennighoff et~al.(2024)Muennighoff, Liu, Zebaze, Zheng, Hui, Zhuo, Singh, Tang, von Werra, and Longpre}]{muennighoff_octopack_2024}
+Niklas Muennighoff, Qian Liu, Armel Zebaze, Qinkai Zheng, Binyuan Hui, Terry~Yue Zhuo, Swayam Singh, Xiangru Tang, Leandro von Werra, and Shayne Longpre. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2308.07124} {{{OctoPack}}: {{Instruction Tuning Code Large Language Models}}}.
+\newblock \emph{arxiv:2308.07124[cs]}.
+
+\bibitem[{{Nam Pham}(2023)}]{nam_pham_2023}
+{Nam Pham}. 2023.
+\newblock \href {https://doi.org/10.57967/hf/1126} {Tiny-textbooks ({{Revision}} 14de7ba)}.
+
+\bibitem[{{Nam Pham}(2024)}]{nam_pham_2024}
+{Nam Pham}. 2024.
+\newblock \href {https://doi.org/10.57967/hf/1612} {Tiny-strange-textbooks ({{Revision}} 6f304f1)}.
+
+\bibitem[{Nanda et~al.(2022)Nanda, Chan, Lieberum, Smith, and Steinhardt}]{nanda_progress_2022}
+Neel Nanda, Lawrence Chan, Tom Lieberum, Jess Smith, and Jacob Steinhardt. 2022.
+\newblock \href {https://openreview.net/forum?id=9XFSbDPmdW} {Progress measures for grokking via mechanistic interpretability}.
+\newblock In \emph{The {{Eleventh International Conference}} on {{Learning Representations}}}.
+
+\bibitem[{Noci et~al.(2022)Noci, Anagnostidis, Biggio, Orvieto, Singh, and Lucchi}]{noci_signal_2022}
+Lorenzo Noci, Sotiris Anagnostidis, Luca Biggio, Antonio Orvieto, Sidak~Pal Singh, and Aurelien Lucchi. 2022.
+\newblock \href {https://openreview.net/forum?id=FxVH7iToXS} {Signal {{Propagation}} in {{Transformers}}: {{Theoretical Perspectives}} and the {{Role}} of {{Rank Collapse}}}.
+\newblock In \emph{Advances in {{Neural Information Processing Systems}}}.
+
+\bibitem[{OpenAI(2024)}]{openai2024o1}
+OpenAI. 2024.
+\newblock New reasoning models: Openai o1-preview and o1-mini.
+\newblock \url{https://openai.com/research/o1-preview-and-o1-mini}.
+
+\bibitem[{Ouyang et~al.(2022)Ouyang, Wu, Jiang, Almeida, Wainwright, Mishkin, Zhang, Agarwal, Slama, Ray, Schulman, Hilton, Kelton, Miller, Simens, Askell, Welinder, Christiano, Leike, and Lowe}]{ouyang_training_2022}
+Long Ouyang, Jeff Wu, Xu~Jiang, Diogo Almeida, Carroll~L. Wainwright, Pamela Mishkin, Chong Zhang, Sandhini Agarwal, Katarina Slama, Alex Ray, John Schulman, Jacob Hilton, Fraser Kelton, Luke Miller, Maddie Simens, Amanda Askell, Peter Welinder, Paul Christiano, Jan Leike, and Ryan Lowe. 2022.
+\newblock \href {https://doi.org/10.48550/arXiv.2203.02155} {Training language models to follow instructions with human feedback}.
+\newblock \emph{arxiv:2203.02155[cs]}.
+
+\bibitem[{Paster et~al.(2023)Paster, Santos, Azerbayev, and Ba}]{paster_openwebmath_2023}
+Keiran Paster, Marco~Dos Santos, Zhangir Azerbayev, and Jimmy Ba. 2023.
+\newblock \href {https://openreview.net/forum?id=jKHmjlpViu} {{{OpenWebMath}}: {{An Open Dataset}} of {{High-Quality Mathematical Web Text}}}.
+\newblock In \emph{The {{Twelfth International Conference}} on {{Learning Representations}}}.
+
+\bibitem[{Peebles and Xie(2023)}]{peebles_scalable_2023}
+William Peebles and Saining Xie. 2023.
+\newblock \href {https://openaccess.thecvf.com/content/ICCV2023/html/Peebles\_Scalable\_Diffusion\_Models\_with\_Transformers\_ICCV\_2023\_paper.html} {Scalable {{Diffusion Models}} with {{Transformers}}}.
+\newblock In \emph{Proceedings of the {{IEEE}}/{{CVF International Conference}} on {{Computer Vision}}}, pages 4195--4205.
+
+\bibitem[{Radford et~al.(2019)Radford, Wu, Child, Luan, Amodei, and Sutskever}]{radford_language_2019}
+Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, and Ilya Sutskever. 2019.
+\newblock Language {{Models}} are {{Unsupervised Multitask Learners}}.
+\newblock \emph{OpenAI}, page~24.
+
+\bibitem[{Rae et~al.(2019)Rae, Potapenko, Jayakumar, and Lillicrap}]{rae_compressive_2019}
+Jack~W. Rae, Anna Potapenko, Siddhant~M. Jayakumar, and Timothy~P. Lillicrap. 2019.
+\newblock \href {https://doi.org/10.48550/arXiv.1911.05507} {Compressive {{Transformers}} for {{Long-Range Sequence Modelling}}}.
+\newblock \emph{arxiv:1911.05507[cs]}.
+
+\bibitem[{Rajbhandari et~al.(2020)Rajbhandari, Rasley, Ruwase, and He}]{rajbhandari_zero_2020}
+Samyam Rajbhandari, Jeff Rasley, Olatunji Ruwase, and Yuxiong He. 2020.
+\newblock \href {https://doi.org/10.1109/SC41405.2020.00024} {{{ZeRO}}: {{Memory}} optimizations {{Toward Training Trillion Parameter Models}}}.
+\newblock In \emph{{{SC20}}: {{International Conference}} for {{High Performance Computing}}, {{Networking}}, {{Storage}} and {{Analysis}}}, pages 1--16.
+
+\bibitem[{Rombach et~al.(2022)Rombach, Blattmann, Lorenz, Esser, and Ommer}]{rombach_high-resolution_2022}
+Robin Rombach, Andreas Blattmann, Dominik Lorenz, Patrick Esser, and Bj{\"o}rn Ommer. 2022.
+\newblock \href {https://openaccess.thecvf.com/content/CVPR2022/html/Rombach\_High-Resolution\_Image\_Synthesis\_With\_Latent\_Diffusion\_Models\_CVPR\_2022\_paper.html} {High-{{Resolution Image Synthesis With Latent Diffusion Models}}}.
+\newblock In \emph{Proceedings of the {{IEEE}}/{{CVF Conference}} on {{Computer Vision}} and {{Pattern Recognition}}}, pages 10684--10695.
+
+\bibitem[{Sakaguchi et~al.(2021)Sakaguchi, Bras, Bhagavatula, and Choi}]{sakaguchi_winogrande_2021}
+Keisuke Sakaguchi, Ronan~Le Bras, Chandra Bhagavatula, and Yejin Choi. 2021.
+\newblock \href {https://doi.org/10.1145/3474381} {{{WinoGrande}}: An adversarial winograd schema challenge at scale}.
+\newblock \emph{Commun. ACM}, 64(9):99--106.
+
+\bibitem[{Sanh et~al.(2021)Sanh, Webson, Raffel, Bach, Sutawika, Alyafeai, Chaffin, Stiegler, Raja, Dey, Bari, Xu, Thakker, Sharma, Szczechla, Kim, Chhablani, Nayak, Datta, Chang, Jiang, Wang, Manica, Shen, Yong, Pandey, Bawden, Wang, Neeraj, Rozen, Sharma, Santilli, Fevry, Fries, Teehan, Scao, Biderman, Gao, Wolf, and Rush}]{sanh_multitask_2021}
+Victor Sanh, Albert Webson, Colin Raffel, Stephen Bach, Lintang Sutawika, Zaid Alyafeai, Antoine Chaffin, Arnaud Stiegler, Arun Raja, Manan Dey, M.~Saiful Bari, Canwen Xu, Urmish Thakker, Shanya~Sharma Sharma, Eliza Szczechla, Taewoon Kim, Gunjan Chhablani, Nihal Nayak, Debajyoti Datta, and 21 others. 2021.
+\newblock \href {https://openreview.net/forum?id=9Vrb9D0WI4} {Multitask {{Prompted Training Enables Zero-Shot Task Generalization}}}.
+\newblock In \emph{International {{Conference}} on {{Learning Representations}}}.
+
+\bibitem[{Sanyal et~al.(2024)Sanyal, Neerkaje, Kaddour, Kumar, and {sanghavi}}]{sanyal_early_2024}
+Sunny Sanyal, Atula~Tejaswi Neerkaje, Jean Kaddour, Abhishek Kumar, and sujay {sanghavi}. 2024.
+\newblock \href {https://openreview.net/forum?id=IA8CWtNkUr} {Early weight averaging meets high learning rates for {{LLM}} pre-training}.
+\newblock In \emph{First Conference on Language Modeling}.
+
+\bibitem[{Schmidhuber(2012)}]{schmidhuber_self-delimiting_2012}
+Juergen Schmidhuber. 2012.
+\newblock \href {https://doi.org/10.48550/arXiv.1210.0118} {Self-{{Delimiting Neural Networks}}}.
+\newblock \emph{arxiv:1210.0118[cs]}.
+
+\bibitem[{Schuster et~al.(2022)Schuster, Fisch, Gupta, Dehghani, Bahri, Tran, Tay, and Metzler}]{schuster_confident_2022}
+Tal Schuster, Adam Fisch, Jai Gupta, Mostafa Dehghani, Dara Bahri, Vinh~Q. Tran, Yi~Tay, and Donald Metzler. 2022.
+\newblock \href {https://openreview.net/forum?id=uLYc4L3C81A} {Confident {{Adaptive Language Modeling}}}.
+\newblock In \emph{Advances in {{Neural Information Processing Systems}}}.
+
+\bibitem[{Schwarzschild(2023)}]{schwarzschild_deep_2023}
+Avi Schwarzschild. 2023.
+\newblock \href {https://www.proquest.com/dissertations-theses/deep-thinking-systems-logical-extrapolation-with/docview/2830027656/se-2} {\emph{Deep Thinking Systems: {{Logical}} Extrapolation with Recurrent Neural Networks}}.
+\newblock Ph.D. thesis, University of Maryland, College Park, College Park.
+
+\bibitem[{Schwarzschild et~al.(2021{\natexlab{a}})Schwarzschild, Borgnia, Gupta, Bansal, Emam, Huang, Goldblum, and Goldstein}]{schwarzschild_datasets_2021}
+Avi Schwarzschild, Eitan Borgnia, Arjun Gupta, Arpit Bansal, Zeyad Emam, Furong Huang, Micah Goldblum, and Tom Goldstein. 2021{\natexlab{a}}.
+\newblock \href {https://doi.org/10.48550/arXiv.2108.06011} {Datasets for {{Studying Generalization}} from {{Easy}} to {{Hard Examples}}}.
+\newblock \emph{arxiv:2108.06011[cs]}.
+
+\bibitem[{Schwarzschild et~al.(2021{\natexlab{b}})Schwarzschild, Borgnia, Gupta, Huang, Vishkin, Goldblum, and Goldstein}]{schwarzschild_can_2021}
+Avi Schwarzschild, Eitan Borgnia, Arjun Gupta, Furong Huang, Uzi Vishkin, Micah Goldblum, and Tom Goldstein. 2021{\natexlab{b}}.
+\newblock \href {https://proceedings.neurips.cc/paper\_files/paper/2021/hash/3501672ebc68a5524629080e3ef60aef-Abstract.html} {Can {{You Learn}} an {{Algorithm}}? {{Generalizing}} from {{Easy}} to {{Hard Problems}} with {{Recurrent Networks}}}.
+\newblock In \emph{Advances in {{Neural Information Processing Systems}}}, volume~34, pages 6695--6706. Curran Associates, Inc.
+
+\bibitem[{Schwarzschild et~al.(2023)Schwarzschild, McLeish, Bansal, Diaz, Stein, Chandnani, Saha, Baraniuk, {Tran-Thanh}, Geiping, and Goldstein}]{schwarzschild_algorithm_2023}
+Avi Schwarzschild, Sean~Michael McLeish, Arpit Bansal, Gabriel Diaz, Alex Stein, Aakash Chandnani, Aniruddha Saha, Richard Baraniuk, Long {Tran-Thanh}, Jonas Geiping, and Tom Goldstein. 2023.
+\newblock \href {https://openreview.net/forum?id=N2M8zxPcKp} {Algorithm {{Design}} for {{Learned Algorithms}}}.
+
+\bibitem[{Sennrich et~al.(2016)Sennrich, Haddow, and Birch}]{sennrich_neural_2016}
+Rico Sennrich, Barry Haddow, and Alexandra Birch. 2016.
+\newblock \href {https://doi.org/10.18653/v1/P16-1162} {Neural {{Machine Translation}} of {{Rare Words}} with {{Subword Units}}}.
+\newblock In \emph{Proceedings of the 54th {{Annual Meeting}} of the {{Association}} for {{Computational Linguistics}} ({{Volume}} 1: {{Long Papers}})}, pages 1715--1725, Berlin, Germany. Association for Computational Linguistics.
+
+\bibitem[{Shao et~al.(2024)Shao, Wang, Zhu, Xu, Song, Bi, Zhang, Zhang, Li, Wu et~al.}]{shao2024deepseekmath}
+Zhihong Shao, Peiyi Wang, Qihao Zhu, Runxin Xu, Junxiao Song, Xiao Bi, Haowei Zhang, Mingchuan Zhang, YK~Li, Y~Wu, and 1 others. 2024.
+\newblock Deepseekmath: Pushing the limits of mathematical reasoning in open language models.
+\newblock \emph{arXiv preprint arXiv:2402.03300}.
+
+\bibitem[{Shazeer(2020)}]{shazeer_glu_2020}
+Noam Shazeer. 2020.
+\newblock \href {https://doi.org/10.48550/arXiv.2002.05202} {{{GLU Variants Improve Transformer}}}.
+\newblock \emph{arxiv:2002.05202[cs]}.
+
+\bibitem[{Shazeer et~al.(2017)Shazeer, Mirhoseini, Maziarz, Davis, Le, Hinton, and Dean}]{shazeer_outrageously_2017}
+Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le, Geoffrey Hinton, and Jeff Dean. 2017.
+\newblock \href {https://doi.org/10.48550/arXiv.1701.06538} {Outrageously {{Large Neural Networks}}: {{The Sparsely-Gated Mixture-of-Experts Layer}}}.
+\newblock \emph{arxiv:1701.06538[cs]}.
+
+\bibitem[{Singh and Bhatele(2022)}]{singh_axonn_2022}
+Siddharth Singh and Abhinav Bhatele. 2022.
+\newblock \href {https://doi.org/10.1109/IPDPS53621.2022.00065} {{{AxoNN}}: {{An}} asynchronous, message-driven parallel framework for extreme-scale deep learning}.
+\newblock In \emph{2022 {{IEEE International Parallel}} and {{Distributed Processing Symposium}} ({{IPDPS}})}, pages 606--616.
+
+\bibitem[{Singh et~al.(2024)Singh, Singhania, Ranjan, Kirchenbauer, Geiping, Wen, Jain, Hans, Shu, Tomar, Goldstein, and Bhatele}]{singh_democratizing_2024-1}
+Siddharth Singh, Prajwal Singhania, Aditya Ranjan, John Kirchenbauer, Jonas Geiping, Yuxin Wen, Neel Jain, Abhimanyu Hans, Manli Shu, Aditya Tomar, Tom Goldstein, and Abhinav Bhatele. 2024.
+\newblock \href {https://doi.org/10.1109/SC41406.2024.00010} {Democratizing {{AI}}: {{Open-source Scalable LLM Training}} on {{GPU-based Supercomputers}}}.
+\newblock In \emph{2024 {{SC24}}: {{International Conference}} for {{High Performance Computing}}, {{Networking}}, {{Storage}} and {{Analysis SC}}}, pages 36--49. IEEE Computer Society.
+
+\bibitem[{Skean et~al.(2024)Skean, Arefin, LeCun, and {Shwartz-Ziv}}]{skean_does_2024}
+Oscar Skean, Md~Rifat Arefin, Yann LeCun, and Ravid {Shwartz-Ziv}. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2412.09563} {Does {{Representation Matter}}? {{Exploring Intermediate Layers}} in {{Large Language Models}}}.
+\newblock \emph{arxiv:2412.09563[cs]}.
+
+\bibitem[{Soboleva et~al.(2023)Soboleva, {Al-Khateeb}, Hestness, Dey, Myers, and Steeves}]{soboleva_slimpajama_2023}
+Daria Soboleva, Faisal {Al-Khateeb}, Joel Hestness, Nolan Dey, Robert Myers, and Jacob~Robert Steeves. 2023.
+\newblock \href {https://www.cerebras.net/blog/slimpajama-a-627b-token-cleaned-and-deduplicated-version-of-redpajama/} {{{SlimPajama}}: {{A 627B}} token cleaned and deduplicated version of {{RedPajama}}}.
+
+\bibitem[{Soldaini et~al.(2024)Soldaini, Kinney, Bhagia, Schwenk, Atkinson, Authur, Bogin, Chandu, Dumas, Elazar, Hofmann, Jha, Kumar, Lucy, Lyu, Lambert, Magnusson, Morrison, Muennighoff, Naik, Nam, Peters, Ravichander, Richardson, Shen, Strubell, Subramani, Tafjord, Walsh, Zettlemoyer, Smith, Hajishirzi, Beltagy, Groeneveld, Dodge, and Lo}]{soldaini_dolma_2024}
+Luca Soldaini, Rodney Kinney, Akshita Bhagia, Dustin Schwenk, David Atkinson, Russell Authur, Ben Bogin, Khyathi Chandu, Jennifer Dumas, Yanai Elazar, Valentin Hofmann, Ananya Jha, Sachin Kumar, Li~Lucy, Xinxi Lyu, Nathan Lambert, Ian Magnusson, Jacob Morrison, Niklas Muennighoff, and 17 others. 2024.
+\newblock \href {https://doi.org/10.18653/v1/2024.acl-long.840} {Dolma: An {{Open Corpus}} of {{Three Trillion Tokens}} for {{Language Model Pretraining Research}}}.
+\newblock In \emph{Proceedings of the 62nd {{Annual Meeting}} of the {{Association}} for {{Computational Linguistics}} ({{Volume}} 1: {{Long Papers}})}, pages 15725--15788, Bangkok, Thailand. Association for Computational Linguistics.
+
+\bibitem[{Song and Ermon(2019)}]{song_generative_2019}
+Yang Song and Stefano Ermon. 2019.
+\newblock \href {https://arxiv.org/abs/1907.05600} {Generative {{Modeling}} by {{Estimating Gradients}} of the {{Data Distribution}}}.
+\newblock \emph{arXiv:1907.05600 [cs, stat]}.
+
+\bibitem[{Su et~al.(2021)Su, Lu, Pan, Wen, and Liu}]{su_roformer_2021}
+Jianlin Su, Yu~Lu, Shengfeng Pan, Bo~Wen, and Yunfeng Liu. 2021.
+\newblock \href {https://arxiv.org/abs/2104.09864} {{{RoFormer}}: {{Enhanced Transformer}} with {{Rotary Position Embedding}}}.
+\newblock \emph{arxiv:2104.09864 [cs]}.
+
+\bibitem[{Sukhbaatar et~al.(2019)Sukhbaatar, Grave, Lample, Jegou, and Joulin}]{sukhbaatar_augmenting_2019}
+Sainbayar Sukhbaatar, Edouard Grave, Guillaume Lample, Herve Jegou, and Armand Joulin. 2019.
+\newblock \href {https://doi.org/10.48550/arXiv.1907.01470} {Augmenting {{Self-attention}} with {{Persistent Memory}}}.
+\newblock \emph{arxiv:1907.01470[cs, stat]}.
+
+\bibitem[{Sun et~al.(2024)Sun, Pickett, Nain, and Jones}]{sun_transformer_2024}
+Qi~Sun, Marc Pickett, Aakash~Kumar Nain, and Llion Jones. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2407.09298} {Transformer {{Layers}} as {{Painters}}}.
+\newblock \emph{arxiv:2407.09298[cs]}.
+
+\bibitem[{Sun et~al.(2020)Sun, Wang, Liu, Miller, Efros, and Hardt}]{sun_test-time_2020}
+Yu~Sun, Xiaolong Wang, Zhuang Liu, John Miller, Alexei Efros, and Moritz Hardt. 2020.
+\newblock \href {https://proceedings.mlr.press/v119/sun20b.html} {Test-{{Time Training}} with {{Self-Supervision}} for {{Generalization}} under {{Distribution Shifts}}}.
+\newblock In \emph{Proceedings of the 37th {{International Conference}} on {{Machine Learning}}}, pages 9229--9248. PMLR.
+
+\bibitem[{Sutskever et~al.(2008)Sutskever, Hinton, and Taylor}]{sutskever_recurrent_2008}
+Ilya Sutskever, Geoffrey~E Hinton, and Graham~W Taylor. 2008.
+\newblock \href {https://proceedings.neurips.cc/paper\_files/paper/2008/hash/9ad6aaed513b73148b7d49f70afcfb32-Abstract.html} {The {{Recurrent Temporal Restricted Boltzmann Machine}}}.
+\newblock In \emph{Advances in {{Neural Information Processing Systems}}}, volume~21. Curran Associates, Inc.
+
+\bibitem[{Suzgun et~al.(2019)Suzgun, Gehrmann, Belinkov, and Shieber}]{suzgun_memory-augmented_2019}
+Mirac Suzgun, Sebastian Gehrmann, Yonatan Belinkov, and Stuart~M. Shieber. 2019.
+\newblock \href {https://doi.org/10.48550/arXiv.1911.03329} {Memory-{{Augmented Recurrent Neural Networks Can Learn Generalized Dyck Languages}}}.
+\newblock \emph{arxiv:1911.03329[cs]}.
+
+\bibitem[{Takase and Kiyono(2023)}]{takase_lessons_2023}
+Sho Takase and Shun Kiyono. 2023.
+\newblock \href {https://doi.org/10.48550/arXiv.2104.06022} {Lessons on {{Parameter Sharing}} across {{Layers}} in {{Transformers}}}.
+\newblock \emph{arxiv:2104.06022[cs]}.
+
+\bibitem[{Takase et~al.(2024)Takase, Kiyono, Kobayashi, and Suzuki}]{takase_spike_2024-1}
+Sho Takase, Shun Kiyono, Sosuke Kobayashi, and Jun Suzuki. 2024.
+\newblock \href {https://arxiv.org/abs/2312.16903} {Spike {{No More}}: {{Stabilizing}} the {{Pre-training}} of {{Large Language Models}}}.
+\newblock \emph{arxiv:2312.16903[cs]}.
+
+\bibitem[{Tan et~al.(2023)Tan, Shen, Chen, Courville, and Gan}]{tan_sparse_2023}
+Shawn Tan, Yikang Shen, Zhenfang Chen, Aaron Courville, and Chuang Gan. 2023.
+\newblock \href {https://doi.org/10.48550/arXiv.2310.07096} {Sparse {{Universal Transformer}}}.
+\newblock \emph{arxiv:2310.07096[cs]}.
+
+\bibitem[{{Team Gemma} et~al.(2024){Team Gemma}, Riviere, Pathak, Sessa, Hardin, Bhupatiraju, Hussenot, Mesnard, Shahriari, Ram{\'e}, Ferret, Liu, Tafti, Friesen, Casbon, Ramos, Kumar, Lan, Jerome, Tsitsulin, Vieillard, Stanczyk, Girgin, Momchev, Hoffman, Thakoor, Grill, Neyshabur, Bachem, Walton, Severyn, Parrish, Ahmad, Hutchison, Abdagic, Carl, Shen, Brock, Coenen, Laforge, Paterson, Bastian, Piot, Wu, Royal, Chen, Kumar, Perry, Welty, {Choquette-Choo}, Sinopalnikov, Weinberger, Vijaykumar, Rogozi{\'n}ska, Herbison, Bandy, Wang, Noland, Moreira, Senter, Eltyshev, Visin, Rasskin, Wei, Cameron, Martins, Hashemi, {Klimczak-Pluci{\'n}ska}, Batra, Dhand, Nardini, Mein, Zhou, Svensson, Stanway, Chan, Zhou, Carrasqueira, Iljazi, Becker, Fernandez, van Amersfoort, Gordon, Lipschultz, Newlan, Ji, Mohamed, Badola, Black, Millican, McDonell, Nguyen, Sodhia, Greene, Sjoesund, Usui, Sifre, Heuermann, Lago, McNealus, Soares, Kilpatrick, Dixon, Martins, Reid, Singh, Iverson, G{\"o}rner, Velloso, Wirth, Davidow, Miller,
+  Rahtz, Watson, Risdal, Kazemi, Moynihan, Zhang, Kahng, Park, Rahman, Khatwani, Dao, Bardoliwalla, Devanathan, Dumai, Chauhan, Wahltinez, Botarda, Barnes, Barham, Michel, Jin, Georgiev, Culliton, Kuppala, Comanescu, Merhej, Jana, Rokni, Agarwal, Mullins, Saadat, Carthy, Cogan, Perrin, Arnold, Krause, Dai, Garg, Sheth, Ronstrom, Chan, Jordan, Yu, Eccles, Hennigan, Kocisky, Doshi, Jain, Yadav, Meshram, Dharmadhikari, Barkley, Wei, Ye, Han, Kwon, Xu, Shen, Gong, Wei, Cotruta, Kirk, Rao, Giang, Peran, Warkentin, Collins, Barral, Ghahramani, Hadsell, Sculley, Banks, Dragan, Petrov, Vinyals, Dean, Hassabis, Kavukcuoglu, Farabet, Buchatskaya, Borgeaud, Fiedel, Joulin, Kenealy, Dadashi, and Andreev}]{team_gemma_gemma_2024}
+{Team Gemma}, Morgane Riviere, Shreya Pathak, Pier~Giuseppe Sessa, Cassidy Hardin, Surya Bhupatiraju, L{\'e}onard Hussenot, Thomas Mesnard, Bobak Shahriari, Alexandre Ram{\'e}, Johan Ferret, Peter Liu, Pouya Tafti, Abe Friesen, Michelle Casbon, Sabela Ramos, Ravin Kumar, Charline~Le Lan, Sammy Jerome, and 179 others. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2408.00118} {Gemma 2: {{Improving Open Language Models}} at a {{Practical Size}}}.
+\newblock \emph{arxiv:2408.00118[cs]}.
+
+\bibitem[{{Team OLMo} et~al.(2025){Team OLMo}, Walsh, Soldaini, Groeneveld, Lo, Arora, Bhagia, Gu, Huang, Jordan, Lambert, Schwenk, Tafjord, Anderson, Atkinson, Brahman, Clark, Dasigi, Dziri, Guerquin, Ivison, Koh, Liu, Malik, Merrill, Miranda, Morrison, Murray, Nam, Pyatkin, Rangapur, Schmitz, Skjonsberg, Wadden, Wilhelm, Wilson, Zettlemoyer, Farhadi, Smith, and Hajishirzi}]{team_olmo_2_2025}
+{Team OLMo}, Pete Walsh, Luca Soldaini, Dirk Groeneveld, Kyle Lo, Shane Arora, Akshita Bhagia, Yuling Gu, Shengyi Huang, Matt Jordan, Nathan Lambert, Dustin Schwenk, Oyvind Tafjord, Taira Anderson, David Atkinson, Faeze Brahman, Christopher Clark, Pradeep Dasigi, Nouha Dziri, and 21 others. 2025.
+\newblock \href {https://doi.org/10.48550/arXiv.2501.00656} {2 {{OLMo}} 2 {{Furious}}}.
+\newblock \emph{arxiv:2501.00656[cs]}.
+
+\bibitem[{TogetherAI(2023)}]{togetherai_llama-2-7b-32k-instruct_2023}
+TogetherAI. 2023.
+\newblock \href {https://www.together.ai/blog/llama-2-7b-32k-instruct} {Llama-2-{{7B-32K-Instruct}} --- and fine-tuning for {{Llama-2}} models with {{Together API}}}.
+
+\bibitem[{Toshniwal et~al.(2024{\natexlab{a}})Toshniwal, Du, Moshkov, Kisacanin, Ayrapetyan, and Gitman}]{toshniwal_openmathinstruct-2_2024}
+Shubham Toshniwal, Wei Du, Ivan Moshkov, Branislav Kisacanin, Alexan Ayrapetyan, and Igor Gitman. 2024{\natexlab{a}}.
+\newblock \href {https://doi.org/10.48550/arXiv.2410.01560} {{{OpenMathInstruct-2}}: {{Accelerating AI}} for {{Math}} with {{Massive Open-Source Instruction Data}}}.
+\newblock \emph{arxiv:2410.01560[cs]}.
+
+\bibitem[{Toshniwal et~al.(2024{\natexlab{b}})Toshniwal, Moshkov, Narenthiran, Gitman, Jia, and Gitman}]{toshniwal_openmathinstruct-1_2024}
+Shubham Toshniwal, Ivan Moshkov, Sean Narenthiran, Daria Gitman, Fei Jia, and Igor Gitman. 2024{\natexlab{b}}.
+\newblock \href {https://openreview.net/forum?id=Mbd3QxXjq5\#discussion} {{{OpenMathInstruct-1}}: {{A}} 1.8 {{Million Math Instruction Tuning Dataset}}}.
+\newblock In \emph{The {{Thirty-eight Conference}} on {{Neural Information Processing Systems Datasets}} and {{Benchmarks Track}}}.
+
+\bibitem[{Vaswani et~al.(2017)Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez, Kaiser, and Polosukhin}]{vaswani_attention_2017}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan~N. Gomez, Lukasz Kaiser, and Illia Polosukhin. 2017.
+\newblock \href {https://arxiv.org/abs/1706.03762} {Attention {{Is All You Need}}}.
+\newblock \emph{arXiv:1706.03762 [cs]}.
+
+\bibitem[{Wang et~al.(2024{\natexlab{a}})Wang, Li, Xia, and Liu}]{wang_mathpile_2024}
+Zengzhi Wang, Xuefeng Li, Rui Xia, and Pengfei Liu. 2024{\natexlab{a}}.
+\newblock \href {https://openreview.net/forum?id=RSvhU69sbG\#discussion} {{{MathPile}}: {{A Billion-Token-Scale Pretraining Corpus}} for {{Math}}}.
+\newblock In \emph{The {{Thirty-eight Conference}} on {{Neural Information Processing Systems Datasets}} and {{Benchmarks Track}}}.
+
+\bibitem[{Wang et~al.(2024{\natexlab{b}})Wang, Dong, Delalleau, Zeng, Shen, Egert, Zhang, Sreedhar, and Kuchaiev}]{wang_helpsteer2_2024}
+Zhilin Wang, Yi~Dong, Olivier Delalleau, Jiaqi Zeng, Gerald Shen, Daniel Egert, Jimmy~J. Zhang, Makesh~Narsimhan Sreedhar, and Oleksii Kuchaiev. 2024{\natexlab{b}}.
+\newblock \href {https://doi.org/10.48550/arXiv.2406.08673} {{{HelpSteer2}}: {{Open-source}} dataset for training top-performing reward models}.
+\newblock \emph{arxiv:2406.08673[cs]}.
+
+\bibitem[{Weber et~al.(2024)Weber, Fu, Anthony, Oren, Adams, Alexandrov, Lyu, Nguyen, Yao, Adams, Athiwaratkun, Chalamala, Chen, Ryabinin, Dao, Liang, Re, Rish, and Zhang}]{weber_redpajama_2024}
+Maurice Weber, Daniel~Y. Fu, Quentin~Gregory Anthony, Yonatan Oren, Shane Adams, Anton Alexandrov, Xiaozhong Lyu, Huu Nguyen, Xiaozhe Yao, Virginia Adams, Ben Athiwaratkun, Rahul Chalamala, Kezhen Chen, Max Ryabinin, Tri Dao, Percy Liang, Christopher Re, Irina Rish, and Ce~Zhang. 2024.
+\newblock \href {https://openreview.net/forum?id=lnuXaRpwvw\#discussion} {{{RedPajama}}: An {{Open Dataset}} for {{Training Large Language Models}}}.
+\newblock In \emph{The {{Thirty-eight Conference}} on {{Neural Information Processing Systems Datasets}} and {{Benchmarks Track}}}.
+
+\bibitem[{Williams and Peng(1990)}]{williams_efficient_1990}
+Ronald~J. Williams and Jing Peng. 1990.
+\newblock \href {https://doi.org/10.1162/neco.1990.2.4.490} {An {{Efficient Gradient-Based Algorithm}} for {{On-Line Training}} of {{Recurrent Network Trajectories}}}.
+\newblock \emph{Neural Computation}, 2(4):490--501.
+
+\bibitem[{Wortsman et~al.(2023{\natexlab{a}})Wortsman, Dettmers, Zettlemoyer, Morcos, Farhadi, and Schmidt}]{wortsman_stable_2023}
+Mitchell Wortsman, Tim Dettmers, Luke Zettlemoyer, Ari Morcos, Ali Farhadi, and Ludwig Schmidt. 2023{\natexlab{a}}.
+\newblock \href {https://proceedings.neurips.cc/paper\_files/paper/2023/hash/20bd42d82998bc61732c00452228e814-Abstract-Conference.html} {Stable and low-precision training for large-scale vision-language models}.
+\newblock \emph{Advances in Neural Information Processing Systems}, 36:10271--10298.
+
+\bibitem[{Wortsman et~al.(2023{\natexlab{b}})Wortsman, Dettmers, Zettlemoyer, Morcos, Farhadi, and Schmidt}]{wortsman_stable_2023-1}
+Mitchell Wortsman, Tim Dettmers, Luke Zettlemoyer, Ari~S. Morcos, Ali Farhadi, and Ludwig Schmidt. 2023{\natexlab{b}}.
+\newblock \href {https://openreview.net/forum?id=sqqASmpA2R} {Stable and low-precision training for large-scale vision-language models}.
+\newblock In \emph{Thirty-Seventh {{Conference}} on {{Neural Information Processing Systems}}}.
+
+\bibitem[{Wu and Stock(2024)}]{wu_enhancing_2024}
+Mengshiou Wu and Mark Stock. 2024.
+\newblock \href {https://www.olcf.ornl.gov/wp-content/uploads/OLCF\_AI\_Training\_0417\_2024.pdf} {Enhancing {{PyTorch Performance}} on {{Frontier}} with the {{RCCL OFI-Plugin}}}.
+
+\bibitem[{Wu et~al.(2022)Wu, Rabe, Hutchins, and Szegedy}]{wu_memorizing_2022}
+Yuhuai Wu, Markus~Norman Rabe, DeLesley Hutchins, and Christian Szegedy. 2022.
+\newblock \href {https://openreview.net/forum?id=TrjbxzRcnf-} {Memorizing {{Transformers}}}.
+\newblock In \emph{International {{Conference}} on {{Learning Representations}}}.
+
+\bibitem[{Wu et~al.(2024)Wu, Wang, Lin, and Chen}]{wu_lean-github_2024}
+Zijian Wu, Jiayu Wang, Dahua Lin, and Kai Chen. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2407.17227} {{{LEAN-GitHub}}: {{Compiling GitHub LEAN}} repositories for a versatile {{LEAN}} prover}.
+\newblock \emph{arxiv:2407.17227[cs]}.
+
+\bibitem[{Xu et~al.(2024)Xu, Jiang, Niu, Deng, Poovendran, Choi, and Lin}]{xu_magpie_2024}
+Zhangchen Xu, Fengqing Jiang, Luyao Niu, Yuntian Deng, Radha Poovendran, Yejin Choi, and Bill~Yuchen Lin. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2406.08464} {Magpie: {{Alignment Data Synthesis}} from {{Scratch}} by {{Prompting Aligned LLMs}} with {{Nothing}}}.
+\newblock \emph{arxiv:2406.08464[cs]}.
+
+\bibitem[{Yang et~al.(2023)Yang, Swope, Gu, Chalamala, Song, Yu, Godil, Prenger, and Anandkumar}]{yang_leandojo_2023}
+Kaiyu Yang, Aidan~M. Swope, Alex Gu, Rahul Chalamala, Peiyang Song, Shixing Yu, Saad Godil, Ryan Prenger, and Anima Anandkumar. 2023.
+\newblock \href {https://openreview.net/forum?id=g7OX2sOJtn\&noteId=EJxdCMebal} {{{LeanDojo}}: {{Theorem Proving}} with {{Retrieval-Augmented Language Models}}}.
+\newblock In \emph{Thirty-Seventh {{Conference}} on {{Neural Information Processing Systems Datasets}} and {{Benchmarks Track}}}.
+
+\bibitem[{Yang et~al.(2024{\natexlab{a}})Yang, Lee, Nowak, and Papailiopoulos}]{yang_looped_2024}
+Liu Yang, Kangwook Lee, Robert~D. Nowak, and Dimitris Papailiopoulos. 2024{\natexlab{a}}.
+\newblock \href {https://openreview.net/forum?id=HHbRxoDTxE} {Looped {{Transformers}} are {{Better}} at {{Learning Learning Algorithms}}}.
+\newblock In \emph{The {{Twelfth International Conference}} on {{Learning Representations}}}.
+
+\bibitem[{Yang et~al.(2024{\natexlab{b}})Yang, Wang, Zhang, Shen, and Kim}]{yang_parallelizing_2024}
+Songlin Yang, Bailin Wang, Yu~Zhang, Yikang Shen, and Yoon Kim. 2024{\natexlab{b}}.
+\newblock \href {https://openreview.net/forum?id=y8Rm4VNRPH\&referrer=\%5Bthe\%20profile\%20of\%20Yoon\%20Kim\%5D(\%2Fprofile\%3Fid\%3D{\textasciitilde}Yoon\_Kim1)} {Parallelizing {{Linear Transformers}} with the {{Delta Rule}} over {{Sequence Length}}}.
+\newblock In \emph{The {{Thirty-eighth Annual Conference}} on {{Neural Information Processing Systems}}}.
+
+\bibitem[{Ying et~al.(2024)Ying, Wu, Geng, Wang, Lin, and Chen}]{ying_lean_2024}
+Huaiyuan Ying, Zijian Wu, Yihan Geng, {\relax Ji}ayu Wang, Dahua Lin, and Kai Chen. 2024.
+\newblock \href {https://openreview.net/forum?id=Vcw3vzjHDb\&referrer=\%5Bthe\%20profile\%20of\%20Zijian\%20Wu\%5D(\%2Fprofile\%3Fid\%3D{\textasciitilde}Zijian\_Wu5)} {Lean {{Workbook}}: {{A}} large-scale {{Lean}} problem set formalized from natural language math problems}.
+\newblock In \emph{The {{Thirty-eight Conference}} on {{Neural Information Processing Systems Datasets}} and {{Benchmarks Track}}}.
+
+\bibitem[{Yu et~al.(2023)Yu, Jiang, Shi, Yu, Liu, Zhang, Kwok, Li, Weller, and Liu}]{yu_metamath_2023}
+Longhui Yu, Weisen Jiang, Han Shi, Jincheng Yu, Zhengying Liu, Yu~Zhang, James Kwok, Zhenguo Li, Adrian Weller, and Weiyang Liu. 2023.
+\newblock \href {https://openreview.net/forum?id=N8N0hgNDRt} {{{MetaMath}}: {{Bootstrap Your Own Mathematical Questions}} for {{Large Language Models}}}.
+\newblock In \emph{The {{Twelfth International Conference}} on {{Learning Representations}}}.
+
+\bibitem[{Zamirai et~al.(2021)Zamirai, Zhang, Aberger, and De~Sa}]{zamirai_revisiting_2021}
+Pedram Zamirai, Jian Zhang, Christopher~R. Aberger, and Christopher De~Sa. 2021.
+\newblock \href {https://doi.org/10.48550/arXiv.2010.06192} {Revisiting {{BFloat16 Training}}}.
+\newblock \emph{arxiv:2010.06192[cs, stat]}.
+
+\bibitem[{Zelikman et~al.(2024)Zelikman, Harik, Shao, Jayasiri, Haber, and Goodman}]{zelikman_quiet-star_2024}
+Eric Zelikman, Georges Harik, Yijia Shao, Varuna Jayasiri, Nick Haber, and Noah~D. Goodman. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2403.09629} {Quiet-{{STaR}}: {{Language Models Can Teach Themselves}} to {{Think Before Speaking}}}.
+\newblock \emph{arxiv:2403.09629[cs]}.
+
+\bibitem[{Zellers et~al.(2019)Zellers, Holtzman, Bisk, Farhadi, and Choi}]{zellers2019hellaswag}
+Rowan Zellers, Ari Holtzman, Yonatan Bisk, Ali Farhadi, and Yejin Choi. 2019.
+\newblock Hellaswag: Can a machine really finish your sentence?
+\newblock In \emph{Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics}.
+
+\bibitem[{Zhai et~al.(2022)Zhai, Kolesnikov, Houlsby, and Beyer}]{zhai_scaling_2022}
+Xiaohua Zhai, Alexander Kolesnikov, Neil Houlsby, and Lucas Beyer. 2022.
+\newblock \href {https://openaccess.thecvf.com/content/CVPR2022/html/Zhai\_Scaling\_Vision\_Transformers\_CVPR\_2022\_paper.html} {Scaling {{Vision Transformers}}}.
+\newblock In \emph{Proceedings of the {{IEEE}}/{{CVF Conference}} on {{Computer Vision}} and {{Pattern Recognition}}}, pages 12104--12113.
+
+\bibitem[{Zhang and Sennrich(2019)}]{zhang_root_2019-1}
+Biao Zhang and Rico Sennrich. 2019.
+\newblock \href {https://proceedings.neurips.cc/paper/2019/hash/1e8a19426224ca89e83cef47f1e7f53b-Abstract.html} {Root {{Mean Square Layer Normalization}}}.
+\newblock In \emph{Advances in {{Neural Information Processing Systems}}}, volume~32. Curran Associates, Inc.
+
+\bibitem[{Zhang et~al.(2024{\natexlab{a}})Zhang, Qu, Liu, Zhang, Lin, Yu, Pan, Cheng, Liu, Lin, Yuan, Zheng, Pang, Du, Liang, Ma, Li, Ma, Lin, Benetos, Yang, Zhou, Ma, Liu, Niu, Wang, Que, Liu, Liu, Guo, Gao, Zhou, Zhang, Zhou, Wang, Bai, Zhang, Zhang, Wang, Yang, Zhao, Zhang, Ouyang, Huang, and Chen}]{zhang_map-neo_2024}
+Ge~Zhang, Scott Qu, Jiaheng Liu, Chenchen Zhang, Chenghua Lin, Chou~Leuang Yu, Danny Pan, Esther Cheng, Jie Liu, Qunshu Lin, Raven Yuan, Tuney Zheng, Wei Pang, Xinrun Du, Yiming Liang, Yinghao Ma, Yizhi Li, Ziyang Ma, Bill Lin, and 26 others. 2024{\natexlab{a}}.
+\newblock \href {https://doi.org/10.48550/arXiv.2405.19327} {{{MAP-Neo}}: {{Highly Capable}} and {{Transparent Bilingual Large Language Model Series}}}.
+\newblock \emph{arxiv:2405.19327[cs]}.
+
+\bibitem[{Zhang et~al.(2024{\natexlab{b}})Zhang, Wang, Li, Shou, Chen, Chen, and Mehrotra}]{zhang_draft_2024}
+Jun Zhang, Jue Wang, Huan Li, Lidan Shou, Ke~Chen, Gang Chen, and Sharad Mehrotra. 2024{\natexlab{b}}.
+\newblock \href {https://doi.org/10.18653/v1/2024.acl-long.607} {Draft\& {{Verify}}: {{Lossless Large Language Model Acceleration}} via {{Self-Speculative Decoding}}}.
+\newblock In \emph{Proceedings of the 62nd {{Annual Meeting}} of the {{Association}} for {{Computational Linguistics}} ({{Volume}} 1: {{Long Papers}})}, pages 11263--11282, Bangkok, Thailand. Association for Computational Linguistics.
+
+\bibitem[{Zhang et~al.(2024{\natexlab{c}})Zhang, Luo, Yuan, and Yao}]{zhang_autonomous_2024}
+Yifan Zhang, Yifan Luo, Yang Yuan, and Andrew~C. Yao. 2024{\natexlab{c}}.
+\newblock \href {https://openreview.net/forum?id=bBF077z8LF} {Autonomous {{Data Selection}} with {{Language Models}} for {{Mathematical Texts}}}.
+\newblock In \emph{{{ICLR}} 2024 {{Workshop}} on {{Navigating}} and {{Addressing Data Problems}} for {{Foundation Models}}}.
+
+\bibitem[{Zheng et~al.(2024)Zheng, Zhang, Shen, Liu, Lin, Fu, Chen, and Yue}]{zheng_opencodeinterpreter_2024}
+Tianyu Zheng, Ge~Zhang, Tianhao Shen, Xueling Liu, Bill~Yuchen Lin, Jie Fu, Wenhu Chen, and Xiang Yue. 2024.
+\newblock \href {https://doi.org/10.18653/v1/2024.findings-acl.762} {{{OpenCodeInterpreter}}: {{Integrating Code Generation}} with {{Execution}} and {{Refinement}}}.
+\newblock In \emph{Findings of the {{Association}} for {{Computational Linguistics}}: {{ACL}} 2024}, pages 12834--12859, Bangkok, Thailand. Association for Computational Linguistics.
+
+\bibitem[{Zhou et~al.(2024)Zhou, Wang, Liu, Li, and Liu}]{zhou_programming_2024}
+Fan Zhou, Zengzhi Wang, Qian Liu, Junlong Li, and Pengfei Liu. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2409.17115} {Programming {{Every Example}}: {{Lifting Pre-training Data Quality}} like {{Experts}} at {{Scale}}}.
+\newblock \emph{arxiv:2409.17115[cs]}.
+
+\bibitem[{Zhuo et~al.(2024)Zhuo, Vu, Chim, Hu, Yu, Widyasari, Yusuf, Zhan, He, Paul, Brunner, Gong, Hoang, Zebaze, Hong, Li, Kaddour, Xu, Zhang, Yadav, Jain, Gu, Cheng, Liu, Liu, Wang, Lo, Hui, Muennighoff, Fried, Du, de~Vries, and Werra}]{zhuo_bigcodebench_2024}
+Terry~Yue Zhuo, Minh~Chien Vu, Jenny Chim, Han Hu, Wenhao Yu, Ratnadira Widyasari, Imam Nur~Bani Yusuf, Haolan Zhan, Junda He, Indraneil Paul, Simon Brunner, Chen Gong, Thong Hoang, Armel~Randy Zebaze, Xiaoheng Hong, Wen-Ding Li, Jean Kaddour, Ming Xu, Zhihan Zhang, and 14 others. 2024.
+\newblock \href {https://doi.org/10.48550/arXiv.2406.15877} {{{BigCodeBench}}: {{Benchmarking Code Generation}} with {{Diverse Function Calls}} and {{Complex Instructions}}}.
+
+\end{thebibliography}

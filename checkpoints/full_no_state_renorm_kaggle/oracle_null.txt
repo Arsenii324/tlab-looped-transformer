@@ -1,0 +1,23 @@
+524,288 tokens x 64 loops
+  best fixed depth k=8  CE 3.9382
+  real oracle (all 64 candidates)  3.6295   raw headroom 0.3086
+
+  COARSE-GRID CHECK: oracle over 7 candidates [1, 2, 4, 8, 16, 32, 64] = 3.6319  headroom 0.3062
+    fraction of the 64-candidate headroom captured by 7 candidates: 99.2%
+    (high => heterogeneity is real and coarse; low => most of the excess is selection)
+
+  REAL argmin: median 7  frac>8 0.464  frac>32 0.279  frac==1 0.216
+
+  NULL A circular shift (preferred)
+    null oracle 3.5505   null headroom 0.3877
+    ** REAL headroom = null_oracle - real_oracle = -0.0791 nats **
+    null frac>8 0.829 (real 0.464)   null frac>32 0.387 (real 0.279)
+
+  NULL B full permutation (conservative)
+    null oracle 3.5271   null headroom 0.4110
+    ** REAL headroom = null_oracle - real_oracle = -0.1024 nats **
+    null frac>8 0.752 (real 0.464)   null frac>32 0.182 (real 0.279)
+
+  Read: if REAL headroom under NULL A stays large, per-token depth demand is genuine
+  heterogeneity. If it collapses toward 0, the apparent dispersion is mostly the minimum
+  of noise -- itself a reportable finding, and better learned here than from a grader.

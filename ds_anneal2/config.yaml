@@ -1,0 +1,27 @@
+name: tlab-anneal-rep
+desc: annealing replication with the dense control IN-JOB and 2 seeds -- does an_sw50 keep terminal depth at near-dense CE?
+cmd: >
+  export WANDB_API_KEY="$WANDB_API_KEY";  # set in the launching shell -- never stored in this file
+  export WANDB_PROJECT=tlab-loop;
+  date +%s;
+  python -c "import torch,sys; sys.exit(0 if torch.cuda.is_available() else 1)" 2>/dev/null
+  && echo "TORCH_PREINSTALLED_OK skipping pip"
+  || pip install -q --root-user-action=ignore torch --index-url https://download.pytorch.org/whl/cu121;
+  date +%s;
+  python main.py
+env:
+  docker:
+    image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
+  python:
+    type: manual
+    version: "3.11"
+    requirements-file: requirements.txt
+    local-paths:
+      - main.py
+outputs:
+  - results.json
+  # WEIGHTS: the kernel writes OUT_DIR/{run_name}_last.pt but a file not listed here is
+  # NEVER returned by DataSphere. Every DS job before 2026-08-23 12:05 lost its checkpoints
+  # this way -- which is why §4.16c could not include the five train-at-L arms.
+  - "*_last.pt"
+cloud-instance-type: gt4.1

@@ -1,0 +1,783 @@
+\appendix
+
+\section{Proofs of Theoretical Results}
+\label{app:proofs}
+
+\subsection{Deep (non-shared) residual stacks}
+\label{app:deep}
+
+For comparison, consider
+\[
+  \begin{aligned}
+  h_{\ell+1}&=h_\ell+\varepsilon W_\ell\phi(h_\ell),\\
+  W_\ell&\ \text{independent across }\ell.
+  \end{aligned}
+\]
+Let $R_\ell=d^{-1/2}\norm{h_\ell}_2$. Expanding one step gives
+\[
+  \begin{aligned}
+  R_{\ell+1}^2
+  &=
+  R_\ell^2
+  +
+  \frac{2\varepsilon}{d}\inner{h_\ell}{W_\ell\phi(h_\ell)}\\
+  &\quad+
+  \frac{\varepsilon^2}{d}\norm{W_\ell\phi(h_\ell)}_2^2.
+  \end{aligned}
+\]
+Because $h_\ell$ depends on $W_{<\ell}$ but not on $W_\ell$, the cross term
+has zero conditional mean given the past. To make the scale of the last term
+explicit, take the standard mean-field parameterization
+$W_\ell=(\sigma_W/\sqrt d)G_\ell$, with the entries of $G_\ell$ independent
+standard Gaussians. Conditional on $h_\ell$,
+\[
+  \E\left[
+  \frac{1}{d}\norm{W_\ell\phi(h_\ell)}_2^2
+  \,\middle|\, h_\ell
+  \right]
+  =
+  \sigma_W^2\frac{1}{d}\norm{\phi(h_\ell)}_2^2.
+\]
+Under the usual ReLU mean-field scaling,
+$d^{-1}\norm{\phi(h_\ell)}_2^2=\Theta(R_\ell^2)$, so the last term
+contributes $\Theta(\varepsilon^2R_\ell^2)$ and
+\[
+  \E[R_{\ell+1}^2]
+  \approx
+  (1+c\varepsilon^2)\E[R_\ell^2],\qquad c=\Theta(1).
+\]
+Iterating this recursion:
+\[
+  \E[R_L^2]
+  \approx
+  (1+c\varepsilon^2)^L R_0^2
+  \approx
+  \exp(cL\varepsilon^2)R_0^2.
+\]
+With $\varepsilon=L^{-\alpha}$:
+\[
+  \E[R_L^2]\approx \exp(cL^{1-2\alpha})R_0^2.
+\]
+Hence a bounded residual-stream norm for large $L$ requires $\alpha\ge \tfrac12$.
+
+\subsection{Proof of looped residual-stream norm scaling}
+\label{app:theory}
+
+For $x\in\R^d$, write
+\[
+  \begin{aligned}
+  q(x)&:=\frac{1}{d}\norm{x}_2^2,\\
+  m(x)&:=\frac{1}{d}\ones^\top x
+  \quad\text{when }x\in\cpos.
+  \end{aligned}
+\]
+The key point is that ReLU activations are nonnegative, so loop reuse creates an exact factorization through a vector in the positive cone.
+
+\begin{lemma}[Positive-cone mass]
+\label{lem:positive-cone-mass}
+Let $u_0,\ldots,u_{N-1}\in\cpos$ and $U_N=\sum_{n=0}^{N-1}u_n$. If
+\[
+  \begin{aligned}
+  \frac{1}{N}\sum_{n=0}^{N-1}m(u_n)&\ge m_->0,\\
+  \frac{1}{N}\sum_{n=0}^{N-1}q(u_n)&\le q_+<\infty,
+  \end{aligned}
+\]
+then
+\begin{equation}
+  m_-N
+  \le
+  \frac{1}{\sqrt d}\norm{U_N}_2
+  \le
+  \sqrt{q_+}N.
+  \label{eq:app-UN-linear}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+For the lower bound, since $U_N\in\cpos$,
+\[
+  \norm{U_N}_2^2
+  \ge
+  \frac{1}{d}(\ones^\top U_N)^2.
+\]
+Dividing by $d$ gives $d^{-1}\norm{U_N}_2^2\ge(\sum_n m(u_n))^2\ge m_-^2N^2$. For the upper bound,
+\[
+  \begin{aligned}
+  \frac{1}{\sqrt d}\norm{U_N}_2
+  &\le
+  \sum_{n=0}^{N-1}\sqrt{q(u_n)}
+  \le
+  \sqrt{N\sum_{n=0}^{N-1}q(u_n)}
+  \\
+  &\le
+  \sqrt{q_+}N.
+  \end{aligned}
+\]
+\end{proof}
+
+\begin{lemma}[Gaussian gain on the positive cone]
+\label{lem:cone-gain}
+Let $G\in\R^{d\times d}$ have independent $\mathcal N(0,1)$ entries and set $W=(\sigma_W/\sqrt d)G$. For any $0<\gamma<1-1/\sqrt2$, define $a_\gamma=1-1/\sqrt2-\gamma>0$. With probability at least
+\[
+  1-\exp(-\gamma^2d/2)-2\exp(-d/2),
+\]
+the following holds for every $x\in\cpos$:
+\begin{equation}
+  a_\gamma\sigma_W\norm{x}_2
+  \le
+  \norm{Wx}_2
+  \le
+  3\sigma_W\norm{x}_2.
+  \label{eq:app-cone-gain}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+The upper bound follows from the standard Gaussian operator-norm estimate
+$\Prob\{\norm{G}_{\mathrm{op}}>3\sqrt d\}\le 2e^{-d/2}$. For the lower bound, Gordon's escape-through-a-mesh theorem~\citep{gordon1988milman} gives, with probability at least $1-e^{-t^2/2}$,
+\[
+  \inf_{x\in\cpos\cap S^{d-1}}\norm{Gx}_2
+  \ge
+  \sqrt d-w(\cpos\cap S^{d-1})-t,
+\]
+where $w(\cdot)$ is Gaussian width. For the positive cone,
+\[
+  \begin{aligned}
+  w(\cpos\cap S^{d-1})
+  &=
+  \E\norm{g_+}_2
+  \le
+  \sqrt{\E\norm{g_+}_2^2}
+  \\
+  &=
+  \sqrt{d/2}.
+  \end{aligned}
+\]
+Taking $t=\gamma\sqrt d$ and multiplying by $\sigma_W/\sqrt d$ gives the lower bound.
+\end{proof}
+
+\subsubsection{Proof of Theorem~\ref{thm:alpha1}}
+
+\begin{proof}
+Let $u_n=\phi(h_n)$, $U_N=\sum_{n=0}^{N-1}u_n$, and $S_N=\sum_{n=0}^{N-1}r_n$. Since $W$ is tied across loop steps,
+\begin{equation}
+  S_N
+  =
+  \sum_{n=0}^{N-1}W u_n
+  =
+  WU_N.
+  \label{eq:app-tied-factorization}
+\end{equation}
+By Lemma~\ref{lem:positive-cone-mass}, $d^{-1/2}\norm{U_N}_2=\Theta(N)$. Applying the cone-gain condition to $U_N\in\cpos$ gives
+\[
+  \frac{1}{d}\norm{S_N}_2^2
+  =
+  \frac{1}{d}\norm{WU_N}_2^2
+  =
+  \Theta(N^2).
+\]
+Since $h_N=h_0+\varepsilon S_N$ and $R_N=d^{-1/2}\norm{h_N}_2$,
+\[
+  \left(\varepsilon cN-R_0\right)_+
+  \le
+  R_N
+  \le
+  R_0+C\varepsilon N
+\]
+for constants $c,C>0$ independent of $N$. Thus $R_N=O(1)$ when $R_0=O(1)$ and $\varepsilon N=O(1)$, while $R_N$ diverges if $R_0=O(1)$ and $\varepsilon N\to\infty$. For $\varepsilon=N^{-\alpha}$, a bounded residual-stream norm therefore requires $\alpha\ge1$.
+
+The same argument also explains the empirical positive-overlap pattern:
+\[
+  \begin{aligned}
+  \frac{1}{N^2}\sum_{n,m=0}^{N-1}
+  \frac{1}{d}\inner{u_n}{u_m}
+  &=
+  \frac{1}{N^2}\frac{1}{d}\norm{U_N}_2^2\\
+  &=
+  \Theta(1),
+  \end{aligned}
+\]
+so positive average overlap is a consequence of the positive-cone trajectory condition rather than a separate primitive assumption.
+\end{proof}
+
+\subsection{Proof of loop-wise learning-rate scaling}
+\label{app:lr}
+
+Fix one update $t\to t+1$ and write $W^+=W+\Delta W$. Let $h_n^+$ denote the post-update trajectory initialized from the same $h_0$, and let $\Delta h_n=h_n^+-h_n$. Subtracting the two tied recursions gives
+\begin{equation}
+  \begin{aligned}
+  \Delta h_{n+1}
+  &=
+  \Delta h_n
+  +\varepsilon\Delta W\phi(h_n^+)\\
+  &\quad
+  +\varepsilon W\bigl(\phi(h_n^+)-\phi(h_n)\bigr).
+  \end{aligned}
+  \label{eq:app-delta-rec}
+\end{equation}
+
+\subsubsection{Sufficient upper bound}
+
+Assume $\norm{W}_{\mathrm{op}}\le C_W$, $\norm{\Delta W}_{\mathrm{op}}\le C_\Delta\eta$, $\max_{n<N}d^{-1/2}\norm{\phi(h_n^+)}_2\le Q_+$, and $\varepsilon C_WN\le M$. Since ReLU is $1$-Lipschitz, \eqref{eq:app-delta-rec} implies, with $a_n=\norm{\Delta h_n}_2$,
+\[
+  a_{n+1}
+  \le
+  (1+\varepsilon C_W)a_n
+  +
+  \varepsilon C_\Delta\eta Q_+\sqrt d.
+\]
+Iterating from $a_0=0$ yields
+\[
+  \frac{1}{\sqrt d}\norm{\Delta h_N}_2
+  \le
+  C_\Delta Q_+e^M\eta\varepsilon N.
+\]
+Therefore $\eta\varepsilon N=O(1)$ is sufficient for an $O(1)$ width-normalized one-step output perturbation.
+
+\subsubsection{Trajectory-direction sharpness}
+
+The sufficient bound becomes sharp only when the actual optimizer update has nondegenerate gain on the loop-summed trajectory direction.
+Empirically, this $\eta\,\varepsilon\,N$ scaling persists across the first 10 optimizer steps for $\varepsilon\in\{1,1/\!\sqrt N,1/N\}$; see Appendix~\ref{app:lr-multistep} for the multi-step verification.
+
+\noindent
+Formally, let
+\[
+  \begin{aligned}
+  U_N&=\sum_{n=0}^{N-1}\phi(h_n),\\
+  \zeta_N
+  &:=
+  \frac{\norm{\Delta WU_N}_2}{\eta\norm{U_N}_2},
+  \qquad U_N\ne0,
+  \end{aligned}
+\]
+and decompose
+\[
+  \Delta h_N
+  =
+  \varepsilon\Delta WU_N+E_N^{\mathrm{nl}}.
+\]
+If the activation-mass condition of Lemma~\ref{lem:positive-cone-mass} holds and
+\[
+  \norm{E_N^{\mathrm{nl}}}_2\le\theta\norm{\varepsilon\Delta WU_N}_2
+  \qquad\text{for some }\theta<1,
+\]
+then
+\[
+  \frac{1}{d}\norm{\Delta h_N}_2^2
+  =
+  \Theta\!\left(\zeta_N^2(\eta\varepsilon N)^2\right).
+\]
+In particular, if $\zeta_N=\Theta(1)$ over the update range of interest, the stable scale is sharp and $\varepsilon=N^{-\alpha}$ gives $\eta\propto N^{\alpha-1}$.
+
+\subsection{Multi-layer block scaling proof (Theorem~\ref{thm:Llayer})}
+\label{app:Llayer}
+
+Recall the recursion from Equation~\eqref{eq:Llayer-recursion}:
+\[
+  \begin{aligned}
+  h_{n,\ell+1}
+  &= h_{n,\ell}+\varepsilon W_\ell\phi(h_{n,\ell}),\\
+  \ell&=0,\dots,L-1,\qquad n=0,\dots,N-1,
+  \end{aligned}
+\]
+with $h_{n+1,0} = h_{n,L}$ and $h_{0,0} = h_0$. The final output is
+\[
+  h_{\text{out}}
+  =
+  h_0+\varepsilon\sum_{\ell=0}^{L-1}
+  \left[
+    W_\ell\sum_{n=0}^{N-1}\phi(h_{n,\ell})
+  \right].
+\]
+
+Define the normalized loop-averaged activation and branch output
+\[
+  \begin{aligned}
+  \bar U_\ell &:= \frac{1}{N}\sum_{n=0}^{N-1}\phi(h_{n,\ell}),\\
+  Y_\ell &:= W_\ell \bar U_\ell,\\
+  G_\ell &:= N Y_\ell.
+  \end{aligned}
+\]
+Let $\beta:=\varepsilon N$.
+
+\paragraph{Assumptions.}
+First, assume normalized branch squared norms are nondegenerate: for constants $0<a_-\le a_+<\infty$ independent of $N,L,d$,
+\begin{equation}
+  a_-
+  \le
+  \E\left[\frac{1}{d}\norm{Y_\ell}_2^2\right]
+  \le
+  a_+
+  \qquad \text{for all }\ell.
+  \label{eq:app-branch-energy}
+\end{equation}
+This is the $N^{-2}$-normalized analogue of the single-layer loop bound.
+
+Second, assume single-layer replacement stability. Let
+\[
+  \begin{aligned}
+  \mathcal F_{-\ell}&:=\sigma(W_s:s\ne \ell),\\
+  B_\ell&:=\E[Y_\ell\mid \mathcal F_{-\ell}],\\
+  M_\ell&:=Y_\ell-B_\ell.
+  \end{aligned}
+\]
+For $s\ne\ell$, let $Y_\ell^{(s)}$ denote the same normalized branch output after replacing $W_s$ by an independent copy and recomputing the full trajectory. We assume that for constants $C_0,C_1$ independent of $N,L,d$,
+\begin{align}
+  \E\left[\frac{1}{d}\norm{B_\ell}_2^2\right]
+  &\le C_0\beta^2,
+  \label{eq:app-drift-assumption}\\
+  \frac{1}{2}\E\left[\frac{1}{d}\norm{Y_\ell-Y_\ell^{(s)}}_2^2\right]
+  &\le C_1\beta^2.
+  \label{eq:app-replacement-assumption}
+\end{align}
+This condition says that one unique layer can affect a normalized branch output only through its total residual strength $\varepsilon N=\beta$. It is a local influence condition, not a direct assumption that cross-layer inner products are small.
+Together, these hypotheses rule out a strong layer-wise coupling mode in which the shared residual stream forces all normalized branch outputs to move coherently, which would reintroduce an $L^2$ contribution after the within-layer $N^2$ growth has been normalized.
+
+\begin{theorem}[Multi-layer block scaling; formal restatement of Theorem~\ref{thm:Llayer}]
+\label{thm:Llayer-formal}
+Under assumptions~\eqref{eq:app-branch-energy}--\eqref{eq:app-replacement-assumption}:
+\[
+  \begin{aligned}
+  \E\left[
+    \frac{1}{d}\left\|\sum_{\ell=0}^{L-1}G_\ell\right\|_2^2
+  \right]
+  &\le C N^2\left(L+\beta^2L^2\right),\\
+  \beta&=\varepsilon N.
+  \end{aligned}
+\]
+The factorized parameterization $\varepsilon = \lambda/(N\sqrt{L})$ yields
+\[
+  \varepsilon^2\E\left[d^{-1}\left\|\sum_{\ell}G_\ell\right\|_2^2\right]
+  =
+  O(\lambda^2+\lambda^4),
+\]
+with constants independent of $N$ and $L$.
+With the matching nondegeneracy condition and sufficiently small fixed $\lambda$, the unscaled branch squared norm is $\Theta(LN^2)$.
+\end{theorem}
+
+\begin{proof}
+
+\noindent\textbf{Upper bound.}
+We prove
+\begin{equation}
+  \E\left[
+  \frac{1}{d}
+  \left\|
+  \sum_{\ell=0}^{L-1}Y_\ell
+  \right\|_2^2
+  \right]
+  \le
+  C\left(L+\beta^2L^2\right).
+  \label{eq:app-Y-bound}
+\end{equation}
+Multiplying by $N^2$ gives the theorem's bound for $\sum_\ell G_\ell$.
+
+The drift part is controlled directly by \eqref{eq:app-drift-assumption}:
+\[
+  \begin{aligned}
+  \E\left[
+  \frac{1}{d}
+  \left\|
+  \sum_{\ell=0}^{L-1}B_\ell
+  \right\|_2^2
+  \right]
+  &\le
+  \left(
+  \sum_{\ell=0}^{L-1}
+  \sqrt{\E[d^{-1}\norm{B_\ell}_2^2]}
+  \right)^2\\
+  &\le
+  C_0\beta^2L^2.
+  \end{aligned}
+\]
+
+It remains to bound the centered part $\sum_\ell M_\ell$. Use the Hoeffding--ANOVA decomposition with respect to the independent weights $W_0,\dots,W_{L-1}$~\citep{DBLP:books/daglib/0035704}:
+\[
+  M_\ell=\sum_{A\subseteq[L]}(M_\ell)_A,
+\]
+where different index sets are orthogonal in $L^2$. Since $\E[M_\ell\mid\mathcal F_{-\ell}]=0$, every nonzero component of $M_\ell$ contains index $\ell$. Therefore, for $\ell\ne s$, only components containing both $\ell$ and $s$ contribute to $\E\langle M_\ell,M_s\rangle$.
+Define
+\[
+  V_{\ell,s}
+  :=
+  \sum_{A\ni s}
+  \E\left[\frac{1}{d}\norm{(M_\ell)_A}_2^2\right].
+\]
+By Cauchy--Schwarz and the Efron--Stein identity,
+\[
+  \left|
+  \E\left[\frac{1}{d}\inner{M_\ell}{M_s}\right]
+  \right|
+  \le
+  V_{\ell,s}^{1/2}V_{s,\ell}^{1/2}.
+\]
+Replacing one coordinate controls the ANOVA mass of all components containing that coordinate. Since conditional expectation is a contraction in $L^2$, \eqref{eq:app-replacement-assumption} also gives, up to a universal constant,
+\[
+  V_{\ell,s}\le C\beta^2
+  \qquad (s\ne \ell).
+\]
+Thus each centered cross term is $O(\beta^2)$:
+\begin{equation}
+  \left|
+  \E\left[\frac{1}{d}\inner{M_\ell}{M_s}\right]
+  \right|
+  \le
+  C\beta^2
+  \qquad (\ell\ne s).
+  \label{eq:app-centered-cross}
+\end{equation}
+The diagonal terms obey
+\[
+  \begin{aligned}
+  \E[d^{-1}\norm{M_\ell}_2^2]
+  &\le
+  2\E[d^{-1}\norm{Y_\ell}_2^2]\\
+  &\quad+
+  2\E[d^{-1}\norm{B_\ell}_2^2]\\
+  &\le
+  C.
+  \end{aligned}
+\]
+Consequently,
+\[
+  \E\left[
+  \frac{1}{d}
+  \left\|
+  \sum_{\ell=0}^{L-1}M_\ell
+  \right\|_2^2
+  \right]
+  \le
+  C\left(L+\beta^2L^2\right).
+\]
+Combining the centered and drift bounds with
+$\norm{\sum_\ell Y_\ell}_2^2\le 2\norm{\sum_\ell M_\ell}_2^2+2\norm{\sum_\ell B_\ell}_2^2$
+proves \eqref{eq:app-Y-bound}.
+
+\smallskip
+\noindent\textbf{Consequences for factorized scaling.}
+Since $G_\ell=NY_\ell$,
+\[
+  \E\left[
+  \frac{1}{d}
+  \left\|
+  \sum_{\ell=0}^{L-1}G_\ell
+  \right\|_2^2
+  \right]
+  \le
+  C N^2\left(L+\beta^2L^2\right).
+\]
+With $\varepsilon=\lambda/(N\sqrt L)$, we have $\beta=\lambda/\sqrt L$, so
+\[
+  \begin{aligned}
+  &\varepsilon^2
+  \E\left[
+    \frac{1}{d}
+    \left\|\sum_{\ell=0}^{L-1}G_\ell\right\|_2^2
+  \right]\\
+  &\qquad\le
+  \frac{\lambda^2}{N^2L}\,C N^2(L+\lambda^2L)
+  =
+  O(\lambda^2+\lambda^4).
+  \end{aligned}
+\]
+For the matching lower bound, define
+\[
+  \begin{aligned}
+  S_M&:=\sum_{\ell=0}^{L-1}M_\ell,\\
+  S_B&:=\sum_{\ell=0}^{L-1}B_\ell,\\
+  S_Y&:=\sum_{\ell=0}^{L-1}Y_\ell=S_M+S_B.
+  \end{aligned}
+\]
+The drift bound above gives
+\[
+  \E[d^{-1}\norm{S_B}_2^2]\le C\beta^2L^2.
+\]
+For the centered diagonal terms, the inequality
+$\norm{Y_\ell-B_\ell}_2^2\ge \frac12\norm{Y_\ell}_2^2-\norm{B_\ell}_2^2$
+and assumptions \eqref{eq:app-branch-energy}--\eqref{eq:app-drift-assumption} imply
+\[
+  \sum_{\ell=0}^{L-1}\E[d^{-1}\norm{M_\ell}_2^2]
+  \ge
+  \frac{a_-}{2}L-C\beta^2L.
+\]
+Together with the centered cross bound \eqref{eq:app-centered-cross}, this yields
+\[
+  \E[d^{-1}\norm{S_M}_2^2]
+  \ge
+  cL-C\beta^2L^2
+\]
+for constants $c,C>0$. Finally,
+$\norm{S_M+S_B}_2^2\ge \frac12\norm{S_M}_2^2-\norm{S_B}_2^2$, so
+\[
+  \E[d^{-1}\norm{S_Y}_2^2]
+  \ge
+  cL-C\beta^2L^2.
+\]
+Hence, when $\beta=\lambda/\sqrt L$ and $\lambda$ is below a constant threshold depending on $c$ and $C$,
+\[
+  \E\left[
+  \frac{1}{d}
+  \left\|
+  \sum_{\ell=0}^{L-1}Y_\ell
+  \right\|_2^2
+  \right]
+  =
+  \Theta(L),
+\]
+and therefore
+\[
+  \E\left[\frac{1}{d}\left\|\sum_{\ell=0}^{L-1} G_\ell\right\|_2^2\right]
+  =
+  \Theta(LN^2).
+\]
+\end{proof}
+
+\subsection{Multi-layer learning-rate scaling proof}
+\label{app:Llayer-lr}
+
+Theorem~\ref{thm:Llayer-formal} controls the forward residual-stream norm.
+The learning-rate rule in Section~\ref{sec:multilayer} concerns a different object: the one-step sensitivity of the final output to simultaneous updates of the reused matrices.
+We formalize that calculation in the linearized maximal-update sense.
+
+Fix one optimizer step and write $W_\ell^+=W_\ell+\Delta W_\ell$.
+For each occurrence $(n,\ell)$, let $\mathcal J_{n,\ell}$ denote the Jacobian, along the pre-update trajectory, of the map from an additive perturbation inserted after the residual branch at $h_{n,\ell+1}$ to the final output $h_{\mathrm{out}}$.
+The first-order output perturbation is
+\begin{equation}
+  \Delta h_{\mathrm{out}}^{\mathrm{lin}}
+  =
+  \varepsilon
+  \sum_{\ell=0}^{L-1}
+  \sum_{n=0}^{N-1}
+  \mathcal J_{n,\ell}\Delta W_\ell\phi(h_{n,\ell}).
+  \label{eq:app-Llayer-lr-linearized}
+\end{equation}
+
+\begin{proposition}[Multi-layer learning-rate scaling]
+\label{prop:Llayer-lr}
+Assume the factorized residual scaling $\varepsilon=\lambda/(N\sqrt L)$ and the following tangent-stability conditions hold for constants independent of $N,L,d$:
+\begin{align}
+  \max_{n,\ell}
+  \frac{1}{\sqrt d}
+  \norm{\Delta W_\ell\phi(h_{n,\ell})}_2
+  &\le C_\Delta\eta,
+  \label{eq:app-Llayer-lr-update-scale}\\
+  \max_{n,\ell}\norm{\mathcal J_{n,\ell}}_{\mathrm{op}}
+  &\le C_J.
+  \label{eq:app-Llayer-lr-jacobian}
+\end{align}
+Then
+\[
+  \frac{1}{\sqrt d}
+  \norm{\Delta h_{\mathrm{out}}^{\mathrm{lin}}}_2
+  \le
+  C_JC_\Delta\,\eta\varepsilon NL
+  =
+  C_JC_\Delta\,\eta\lambda\sqrt L.
+\]
+Consequently, $\eta=O((\lambda\sqrt L)^{-1})$ is sufficient for an $O(1)$ width-normalized linearized output perturbation.
+If, in addition, the layer-update contributions are coherent in the sense that for some $c_{\mathrm{coh}}>0$,
+\begin{equation}
+  \frac{1}{\sqrt d}
+  \left\|
+  \sum_{\ell=0}^{L-1}
+  \sum_{n=0}^{N-1}
+  \mathcal J_{n,\ell}\Delta W_\ell\phi(h_{n,\ell})
+  \right\|_2
+  \ge
+  c_{\mathrm{coh}}\eta NL,
+  \label{eq:app-Llayer-lr-coherence}
+\end{equation}
+then the bound is sharp up to constants:
+\[
+  \frac{1}{\sqrt d}
+  \norm{\Delta h_{\mathrm{out}}^{\mathrm{lin}}}_2
+  =
+  \Omega(\eta\lambda\sqrt L).
+\]
+\end{proposition}
+
+\begin{proof}
+Using \eqref{eq:app-Llayer-lr-linearized}, write $v_{n,\ell}:=\mathcal J_{n,\ell}\Delta W_\ell\phi(h_{n,\ell})$.
+The triangle inequality and the two tangent-stability assumptions give
+\[
+  \begin{aligned}
+  \frac{1}{\sqrt d}
+  \norm{\Delta h_{\mathrm{out}}^{\mathrm{lin}}}_2
+  &\le
+  \varepsilon
+  \sum_{\ell=0}^{L-1}
+  \sum_{n=0}^{N-1}
+  \frac{1}{\sqrt d}
+  \norm{v_{n,\ell}}_2\\
+  &\le
+  \varepsilon
+  \sum_{\ell=0}^{L-1}
+  \sum_{n=0}^{N-1}
+  C_JC_\Delta\eta\\
+  &=
+  C_JC_\Delta\eta\varepsilon NL.
+  \end{aligned}
+\]
+Substituting $\varepsilon=\lambda/(N\sqrt L)$ gives the claimed $O(\eta\lambda\sqrt L)$ upper bound.
+Thus choosing $\eta=O((\lambda\sqrt L)^{-1})$ keeps the width-normalized linearized output update bounded.
+
+For sharpness, combine \eqref{eq:app-Llayer-lr-linearized} with the coherence condition \eqref{eq:app-Llayer-lr-coherence}:
+\[
+  \frac{1}{\sqrt d}
+  \norm{\Delta h_{\mathrm{out}}^{\mathrm{lin}}}_2
+  \ge
+  c_{\mathrm{coh}}\eta\varepsilon NL
+  =
+  c_{\mathrm{coh}}\eta\lambda\sqrt L.
+\]
+Therefore, in coherent regimes, taking $\eta\lambda\sqrt L\to\infty$ produces a diverging linearized output perturbation, so the stable scale is $\eta=\Theta((\lambda\sqrt L)^{-1})$.
+\end{proof}
+
+For finite optimizer steps, the same scaling applies to the actual output difference whenever the nonlinear Taylor remainder is smaller than a constant multiple of the linearized term, matching the trajectory-direction sharpness condition used in Appendix~\ref{app:lr} for the single-layer loop.
+If the layer contributions are less coherent than \eqref{eq:app-Llayer-lr-coherence}, the upper bound can be loose; this is the sense in which less coherent regimes can tolerate larger learning rates.
+
+\section{Experimental Setup and Implementation Details}
+\label{app:experimental-details}
+
+\subsection{Language modeling experiment configuration}
+\label{app:model-config}
+
+Table~\ref{tab:lm-model-config} lists the model configurations and training hyperparameters for the language modeling depth--loop transfer experiments reported in the main text.
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}cccccccc@{}}
+\toprule
+Unique layers $L$ & Loop counts $N$ & $d_{\mathrm{model}}$ & Attn/KV heads & Head dim & MLP dim & Vocab size & Params (tied) \\
+\midrule
+12 & $\{1,2,4,8\}$ & 768 & 12/12 & 64 & 2048 & 128256 & 183.5M \\
+24 & $\{1,2,4,8\}$ & 768 & 12/12 & 64 & 2048 & 128256 & 268.4M \\
+48 & $\{1,2,4,8\}$ & 768 & 12/12 & 64 & 2048 & 128256 & 438.3M \\
+\bottomrule
+\end{tabular}
+\caption{
+\textbf{Model configurations for the main depth--loop transfer experiments.}
+``KV'' denotes key/value attention heads (each row uses 12 attention heads and 12 key/value heads, i.e.\ no GQA grouping).
+All models are decoder-only Llama-style pre-norm Transformers with RMSNorm and the Llama~3 tokenizer vocabulary~\citep{DBLP:conf/nips/VaswaniSPUJGKP17,DBLP:journals/corr/abs-2302-13971,dubey2024llama,DBLP:conf/icml/XiongYHZZXZLWL20,DBLP:conf/nips/ZhangS19a}.
+The token embedding and tied LM head are outside the loop~\citep{DBLP:conf/eacl/PressW17}, while the whole Transformer stack is repeated $N$ times.
+Training uses FineWeb-Edu for 20{,}000 optimizer steps (10B tokens, 0.5M-token global batch), AdamW~\citep{DBLP:conf/iclr/LoshchilovH19} with $(\beta_1,\beta_2)=(0.9,0.95)$ and weight decay $\omega_0$ (see Appendix~\ref{app:hparam-values}), and a warmup-stable-linear-decay schedule~\citep{DBLP:journals/corr/abs-2410-05192} with 500 warmup steps and a final 1{,}000-step decay.
+}
+\label{tab:lm-model-config}
+\end{table*}
+
+\subsection{Depth--loop parameterization}
+\label{app:completep-loop-table}
+
+This subsection spells out the implementation-facing parameterization
+corresponding to the single-stage case of the theory.  We consider an
+$L$-layer pre-LN Transformer block looped $N$ times: there are $L$ unique Transformer blocks, each with two residual branches, and every unique layer is reused $N$ times.  Let
+\[
+  m_L := \frac{L}{12},
+\]
+where 12 is the reference unique depth used in our baseline tuning.  Width
+scaling terms are set to one, so the table below isolates the depth and loop
+axes.  We write $\eta_0$ for the base learning rate at $L=12$,
+$\sigma_0^2$ for the base initialization variance, $\omega_0$ for the base
+AdamW weight decay, and $\epsilon_0$ for the base AdamW numerical epsilon.
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.30\textwidth}>{\raggedright\arraybackslash}p{0.64\textwidth}@{}}
+\toprule
+Quantity & Scaling rule \\
+\midrule
+Token embedding init. variance & $\sigma_0^2$ \\
+Token embedding LR & $\eta_0$ \\
+\midrule
+Pre-LN init. variance & $\sigma_0^2$ \\
+Pre-LN LR & $\eta_0\,m_L^{-1/2}$ \\
+\midrule
+Transformer hidden init. variance & $\sigma_0^2$ \\
+Transformer hidden LR & $\eta_0\,m_L^{-1/2}$ \\
+Transformer hidden bias LR & $\eta_0\,m_L^{-1/2}$ \\
+Transformer hidden AdamW weight decay & $\omega_0$ \\
+\midrule
+Attention residual branch &
+\(\begin{aligned}[t]
+x_{n,\ell}
+&+\lambda N^{-1}m_L^{-1/2}\\
+&\cdot \mathrm{Attn}(\mathrm{LN}(x_{n,\ell}))
+\end{aligned}\) \\
+MLP residual branch &
+\(\begin{aligned}[t]
+z_{n,\ell}
+&+\lambda N^{-1}m_L^{-1/2}\\
+&\cdot \mathrm{MLP}(\mathrm{LN}(z_{n,\ell}))
+\end{aligned}\) \\
+\midrule
+Final-LN init. variance & $\sigma_0^2$ \\
+Final-LN LR & $\eta_0$ \\
+\midrule
+Unembedding init. variance & $\sigma_0^2$ \\
+Unembedding LR & $\eta_0$ \\
+Unembedding forward map & $h_{\mathrm{out}}W_{\mathrm{unemb}}^\top$ \\
+\midrule
+AdamW $\epsilon$ for residual blocks & $\epsilon_0\,m_L^{-1/2}$ \\
+AdamW $\epsilon$ for embedding and unembedding & $\epsilon_0$ \\
+\bottomrule
+\end{tabular}
+\caption{
+Depth--loop parameterization for an $L$-layer block looped $N$ times.
+The local loop correction is the factor $N^{-1}$ in each attention and MLP
+residual branch.  The global depth correction is the factor $m_L^{-1/2}$,
+with $m_L=L/12$.  Learning rates depend on the unique depth $L$ but not on
+the loop count $N$ once the local residual correction has been applied.
+}
+\label{tab:completep-loop-param}
+\end{table*}
+
+\subsection{Hyperparameter values and sweep configuration}
+\label{app:hparam-values}
+
+Table~\ref{tab:repro} lists the numerical values used to instantiate the parameterization of Appendix~\ref{app:completep-loop-table} for the main language-modeling experiments (Sections~\ref{sec:lm-transfer}--\ref{sec:depth-scaling}) and the learning-rate sweep protocol behind Figure~\ref{fig:lr-transfer}.
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{@{}lcl@{}}
+\toprule
+Quantity & Symbol & Value \\
+\midrule
+Residual branch constant & $\lambda$ & $1$ \\
+Base learning rate at $L{=}12$ & $\eta_0$ & $1.25\times10^{-3}$ \\
+Initialization standard deviation & $\sigma_0$ & $0.02$ \\
+AdamW weight decay & $\omega_0$ & $0.1$ \\
+AdamW numerical epsilon & $\epsilon_0$ & $10^{-8}$ \\
+\midrule
+LR sweep grid (base $\eta_0$) & --- & $\{5,\,7.5,\,10,\,12.5,\,15,\,20,\,30,\,40\}\!\times\!10^{-4}$ \\
+Divergence criterion & --- & final validation loss $>4$ \\
+Random seed & --- & $0$ (single run) \\
+Validation split & --- & FineWeb-Edu held-out \\
+\bottomrule
+\end{tabular}
+\caption{
+Numerical values used in the language-modeling experiments. Symbols refer to the parameterization in Table~\ref{tab:completep-loop-param}; per-component scaling rules apply as listed there. Initialization uses a truncated normal with standard deviation $\sigma_0$.
+}
+\label{tab:repro}
+\end{table*}
+
+\subsection{Post-training cosine similarity at smaller loop counts}
+\label{app:cosine-small-N}
+
+Figure~\ref{fig:update-cosine-appendix} extends the post-training cosine-similarity diagnostic of Figure~\ref{fig:update-cosine} in the main text from $N{=}8$ to $N{=}4$, using the corresponding $L\in\{12,24,48\}$ models trained at $N{=}4$.
+The qualitative pattern matches the $N{=}8$ case: early and middle loop steps remain positively correlated across all three depths, while final-step pairs are weaker and can be near zero or negative, especially at $L{=}12$.
+
+\input{sections/Figs/fig_update_cosine_appendix}
+
+\subsection{Multi-step learning-rate transfer}
+\label{app:lr-multistep}
+
+Figure~\ref{fig:lr-step-update-appendix} extends the one-step learning-rate analysis of Figure~\ref{fig:lr-step-update} in the main text to the first 10 optimizer steps.
+The $\eta\,\varepsilon\,N$ scaling identified in Theorem~\ref{thm:lr} persists across all measured steps for $\varepsilon\in\{1,1/\!\sqrt N,1/N\}$: the linear-scaled update stays within a small constant range, while the sqrt- and unscaled updates track the predicted power laws.
+
+\input{sections/Figs/fig_lr_step_update_appendix}

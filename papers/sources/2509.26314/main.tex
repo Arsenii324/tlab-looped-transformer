@@ -1,0 +1,1314 @@
+
+\documentclass{article} % For LaTeX2e
+\usepackage{iclr2026_conference,times}
+
+% Optional math commands from https://github.com/goodfeli/dlbook_notation.
+\input{math_commands.tex}
+\input{define.tex}
+
+\usepackage[colorlinks,
+            linkcolor=blue!50!black,
+            anchorcolor=blue!50!black,
+            citecolor=blue!50!black,
+            urlcolor=blue!50!black
+            ]{hyperref}
+\usepackage{url}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{subcaption}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\captionsetup[algorithm]{font=small}
+\usepackage{cancel}
+\usepackage{lipsum} % For filler text
+\usepackage{wrapfig}
+\usepackage{graphicx}
+\usepackage{xspace}
+\usepackage{colortbl}
+\usepackage{calc}
+\usepackage{makecell}
+\usepackage{marvosym}
+\usepackage{minted}
+\usepackage{xcolor}
+\usepackage[breakable,skins]{tcolorbox}
+\usepackage{alltt}
+\usepackage{xcolor}
+\newtcolorbox{AIBox}[2][]{aibox,title=#2,#1}
+
+\tcbset{
+  aibox/.style={
+    width=0.95\textwidth,
+    top=5pt,
+    colback=black!05,
+    colframe=black!20,
+    colbacktitle=black!50,
+    enhanced,
+    center,
+    attach boxed title to top left={yshift=-0.1in,xshift=0.1in},
+    boxed title style={boxrule=0pt,colframe=white,},
+  }
+}
+\renewcommand{\qedsymbol}{}
+\algrenewcommand\Require{\State \textbf{Input: }}
+\algrenewcommand\Ensure{\State \textbf{Output: }}
+\title{Latent Thinking Optimization: Your Latent Reasoning Language Model Secretly Encodes Reward Signals in Its Latent Thoughts}
+
+% Authors must not appear in the submitted version. They should be hidden
+% as long as the \iclrfinalcopy macro remains commented out below.
+% Non-anonymous submissions will be rejected without review.
+
+\author{Hanwen Du\textsuperscript{$\clubsuit$} \ Yuxin Dong\textsuperscript{$\clubsuit$}\ Xia Ning\textsuperscript{$\clubsuit$}\textsuperscript{$\spadesuit$}\textsuperscript{$\heartsuit$}\Letter \\
+\textsuperscript{$\clubsuit$}Department of Computer Science
+and Engineering, The Ohio State University, USA\\
+\textsuperscript{$\spadesuit$}Department of Biomedical Informatics, The Ohio State University, USA\\
+\textsuperscript{$\heartsuit$}Translational Data Analytics Institute, The Ohio State University, USA\\
+\texttt{\{du.1128, dong.1357, ning.104\}@osu.edu}}
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to \LaTeX{} to determine where to break
+% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
+% puts 3 of 4 authors names on the first line, and the last on the second
+% line, try using \AND instead of \And before the third author name.
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+\iclrfinalcopy 
+
+\begin{document}
+
+
+\maketitle
+
+\begin{abstract}
+Large Language Models (LLMs) excel at problem solving by generating chain of thoughts in natural language, but such \textit{verbal thinking} is computationally costly and prone to overthinking. A recent work instead proposes a \textit{latent thinking} architecture, \LRLM, which represents intermediate reasoning steps as a sequence of latent representations. However, latent thoughts lack interpretability and are difficult to supervise, raising concerns about the correctness and reliability of the model's latent thinking processes.
+%
+In this paper, we provide a systematic study of how \LRLM thinks in the latent space and how external supervision signals can improve its latent thinking processes. We show that latent thoughts leading to correct versus incorrect answers exhibit highly distinguishable patterns, and that a latent classifier can reliably predict answer correctness directly from latent thoughts. Leveraging these insights, we propose Latent Thinking Optimization (LTO), a probabilistic algorithm that employs the latent classifier as a Latent Reward Model (LRM) to optimize the latent thinking processes. Extensive experiments across diverse reasoning tasks demonstrate that LRM is highly effective in detecting incorrect latent thinking patterns, and LTO can significantly improve the latent thinking processes.
+%
+Furthermore, we show that LRM can generalize across diverse domains, and LTO can be seamlessly applied to general LLMs to improve their thinking processes.
+%
+In contrast to verbal thinking, our method demonstrates that reward modeling and scaling test-time thinking with supervision can be performed directly in the latent space, highlighting its potential as a general, efficient, and domain-agnostic approach to improving the thinking processes of LLMs.
+
+\end{abstract}
+
+\section{Introduction}
+
+%ICLR requires electronic submissions, processed by
+%\url{https://openreview.net/}. See ICLR's website for %more instructions.
+
+%If your paper is ultimately accepted, the statement {\tt
+%  {\textbackslash}iclrfinalcopy} should be inserted to adjust the
+%format to the camera ready requirements.
+
+%The format for the submissions is a variant of the NeurIPS format.
+%Please read carefully the instructions below, and follow them
+%faithfully.
+
+Large Language Models (LLMs)~\citep{openai2023gpt,bai2023qwen,touvron2023llama,team2023gemini} have demonstrated impressive problem-solving abilities by generating natural language as a form of thinking and reasoning\footnote{In this paper, we use the terms ``thinking'' and ``reasoning'' interchangeably to refer to the process by which an LLM generates intermediate steps or latent thoughts toward an answer.}~\citep{wei2022chain,kojima2022large,yao2023tree}.
+%
+This ability to ``think'' enables them to solve a variety of complex tasks, such as math~\citep{lightman2024lets,gao2023pal}, coding~\citep{li2022competition,nijkamp2023codegen}, and embodied planning~\citep{shinn2023reflexion,hao2023reasoning}.
+%
+However, generating the whole thinking process in natural language is very costly and prone to the overthinking issue where LLMs output redundant or misleading thoughts that degrade both accuracy and efficiency~\citep{sui2025stop,chen2025do}.
+
+In contrast, humans think largely through internal latent representations---compact, abstract mental codes that capture abstract concepts and hidden structures~\citep{quiroga2005invariant,mishchanchuk2024hidden}.
+%
+Such a latent thinking process is highly efficient as it avoids the need to verbalize every intermediate step, and is well-suited for reasoning with abstract logic or concepts that are often difficult to convey through natural language. 
+%
+Motivated by this, a recent work explores modeling the thinking process as a sequence of latent representations (i.e., latent thoughts) and proposes a new latent reasoning language model \LRLM~\citep{geiping2025scaling}, where each latent thought corresponds to a thinking step. 
+%
+These latent thoughts form a latent reasoning chain that enable the model to reason effectively in the latent space and achieve impressive performance across a variety of reasoning tasks.
+
+Despite promising, such latent thinking architecture faces a major challenge: it lacks interpretability and supervision. Unlike verbal thinking, where each intermediate step can be inspected and evaluated~\citep{wang-etal-2024-math}, latent thinking is encoded in internal hidden states that are hard to interpret. 
+%
+This makes it difficult to understand what the model is actually thinking about or to verify its correctness. Furthermore, the model is trained to generate these latent thoughts in an unsupervised manner without explicit supervision or reward signals that can indicate what a ``good'' latent thought is. This raises concerns on whether the model is truly learning to think in the latent space, or simply memorizing the answers using the parameters of latent representations~\citep{wang2025generalization}.
+
+In this paper, we aim to understand how \LRLM thinks in the latent space and how external supervision signals can improve its latent thinking process. 
+%
+Specifically, we observe that latent thinking trajectories (i.e., sequences of latent thoughts) that lead to correct versus incorrect answers exhibit distinct patterns. 
+%
+To further investigate this, we train a latent classifier to predict answer correctness from the latent thinking trajectories, and observe that it can reliably distinguish between correct and incorrect trajectories, even for partial trajectories with just the first few thinking steps.
+
+Building on these insights, we formulate latent thinking improvement as a reward optimization problem over latent policies, and propose a \LatentThinkingOptimization (\LTO) algorithm that uses the latent classifier as a Latent Reward Model (\LRM) to sample latent thinking trajectories with a higher estimated likelihood of correctness. \LTO is theoretically guaranteed to improve the expected correctness rate and empirically yields significant gains across a range of challenging reasoning tasks. 
+
+While we use \LRLM as a starting point to understand the latent thinking processes, the proposed \LRM and \LTO extend naturally to general LLMs.
+%
+Although general LLMs do not explicitly incorporate latent thinking, their latent representations across multiple layers can be interpreted as latent chain of thoughts~\citep{wang2025latent}.
+%
+Under this view, \LRM and \LTO can be readily applied to general LLMs.
+%
+In our experiments, we demonstrate that the latent thoughts from general LLMs also encode appropriate reward signals and \LTO can significantly improve the performance of general LLMs on diverse reasoning tasks using these {\LRM}s.
+%
+Furthermore, we show that \LRM exhibits strong cross-domain generalization even with a small amount of training data, highlighting its potential as an efficient and generalist reward model in the latent space.
+%
+In contrast to verbal thinking approaches that scale test-time compute through natural language generation~\citep{guo2025deepseek,muennighoff2025s1}, our method demonstrates that reward modeling and scaling test-time thinking with supervision can be performed directly in the latent space, highlighting its potential as a general, efficient, and domain-agnostic approach to improving the thinking processes of LLMs.
+
+%This stands in contrast to natural language-based process reward models, which are often constrained to narrow domains~\citep{wang-etal-2024-math,lu2024autopsv}. More importantly, we demonstrate that \LTO and \LRM extend beyond \LRLM and can be readily applied to a variety of LLMs to enhance their reasoning capabilities. In contrast to verbal thinking approaches that scale test-time compute through natural language generation~\citep{guo2025deepseek,muennighoff2025s1}, our method demonstrates that reward modeling and scaling test-time thinking with verification can be performed directly in the latent space, offering a general, efficient, and domain-agnostic approach to improving the thinking process of LLMs.
+
+%Our contributions are summarized as follows:
+%\begin{itemize}[noitemsep,nolistsep,leftmargin=*]
+%\item \textit{Understanding latent thinking}. We uncover structural patterns in latent trajectories and show that we reliably distinguish between the correct and incorrect trajectories.
+%\item \textit{Improving latent thinking}. We train a lightweight classifier to predict the correctness of latent trajectories and use it to guide reasoning through a novel latent rejection sampling algorithm. 
+%\item \textit{Future implications}. We demonstrate that our latent classifier can generalize across domains, offering a path toward scalable, domain-agnostic reward modeling in the latent space.
+%\end{itemize}
+\section{Definitions and Notations of Reasoning LLMs}\label{sec:latent_thinking_llms}
+%\paragraph*{The Thinking Process of LLMs}
+Given a question $x\sim\mathcal{D}$ sampled from the dataset $\mathcal{D}$, a language model $\pi(\cdot)$ can directly generate an answer by sampling from $y \sim \pi(y \mid x)$. For complex questions, however, it is often beneficial to introduce intermediate reasoning steps $z$ to represent the model’s thinking process. 
+%
+In this case, the model first thinks by sampling from $z \sim \pi(z \mid x)$ and then generates the final answer conditioned on $z$, that is, $y \sim \pi(y \mid z)$. Empirically, this two-stage generation process often improves the answer correctness rate, as generating 
+$z$ allows the model to decompose a complex problem into simpler subproblems that are easier to solve and verify~\citep{wei2022chain,kojima2022large}.
+%This decomposes the overall generation process into two stages:  
+%\begin{equation}
+%p(y \mid x) = \int \pi(z \mid x) \, p(y \mid z) \, dz
+%\end{equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace{-0.1cm}
+\paragraph*{Verbal Thinking}
+\vspace{-0.1cm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Common reasoning LLMs~\citep{li2025system} represent $z$ as a sequence of reasoning steps~\citep{wei2022chain} in natural language, that is, $z=(e_1,\cdots, e_t, \cdots, e_T)$, where each $e_t$ is a chunk of text that corresponds to a specific step in the reasoning process. 
+%
+However, generating all the reasoning steps in natural language
+introduces significant computational overhead, and increases the risk of overthinking where the model generates unnecessarily verbose or logically inconsistent reasoning chains that lead to incorrect answers~\citep{chen2025do,sui2025stop}.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace{-0.1cm}
+\paragraph*{Latent Thinking}
+\vspace{-0.1cm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+To address the limitations of verbal thinking, inspired by the human cognitive theory, a recent work proposes a latent reasoning language model Huginn-3.5B~\citep{geiping2025scaling} which represents the sequence of reasoning steps as a sequence of internal hidden states $z=(\mathbf{h}_1,\cdots, \mathbf{h}_t, \cdots, \mathbf{h}_T)$ (i.e., a latent thinking trajectory). Each $\mathbf{h}_t\in\mathbb{R}^{L\times d}$ represents a latent reasoning step (i.e., a latent thought), where $L$ is the number of tokens in the output $y$, $d$ is the hidden dimensionality.
+%
+The number of thinking steps $T$ is set as 32 by default, and can vary according to the computation budget.
+%
+The initial latent thought $\mathbf{h}_0\sim\mathcal{N}(\mathbf{0},\sigma^2\mathbb{I}_{L\cdot d})$ is sampled from random Gaussian noise with the standard deviation $\sigma$, and a recurrent block is introduced to generate the latent thoughts $\mathbf{h}_{1:T}$ recursively conditioned on the question $x$. A lightweight decoding module generates the answer $y$ in natural language conditioned on the last latent thought $\mathbf{h}_T$.
+%
+%Additional technical details of the latent reasoning language model are in Appendix~\ref{sec:technical_details_latent_reasoning_language_model}.
+%
+Because both chain‑of-thought reasoning and recurrent architectures can be conceptualized as finite-state automata~\citep{svete2023recurrent,zhang2024autoregressive}, this approach can be viewed as generating the chain of thoughts in the latent space without the need for verbose reasoning. 
+%
+While efficient, it is difficult to trace the model’s logic or provide step-level supervision due to the lack of interpretable patterns in the latent space.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\vspace{-0.3cm}
+\section{Decipher How \LRLM Thinks in the Latent Space}
+%\vspace{-0.3cm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{sec:understand}
+Latent thoughts are hidden states and may not have an intrinsic notion of ``correctness'' themselves. To determine what constitutes a ``good'' or ``bad'' latent thought, in this paper, we define the correctness of a latent thinking trajectory (latent thinking process) in terms of whether the trajectory (thinking process) leads to a correct answer. This definition provides a reference point for distinguishing ``good'' from ``bad'' latent thoughts and enables us to systematically investigate whether these trajectories exhibit distinct patterns in latent space.
+%
+It is also consistent with the idea of process reward models~\citep{wang-etal-2024-math,lu2024autopsv}, where the correctness of intermediate reasoning steps is labeled based on their relation with the final answer.
+
+To understand the latent thinking processes, we consider an interesting research question:
+%\vspace{-0.2cm}
+\begin{tcolorbox}[enhanced,
+    colframe=blue!40!black,
+    colback=blue!2!white,
+    fonttitle=\bfseries,
+  attach boxed title to top text left={xshift=30mm,yshift=-2.5mm},
+  boxed title style={size=small,colframe=blue!40!black,colback=blue!40!black}]
+\textbf{Research Question:} Do latent thoughts that lead to correct answers exhibit different patterns in latent space compared to those leading to incorrect answers?
+\end{tcolorbox}
+%\vspace{-0.2cm}
+If differences exist, they would not only provide insights into how \LRLM encodes abstract concepts during its thinking process, but also provide a foundation for detecting and correcting thinking errors directly in the latent space.
+%\item %\textbf{Curvature}~\citep{hosseini2023large} Higher curvature means the thinking trajectory shift direction
+%abruptly; lower curvature suggests a smoother trajectory.
+%
+%%%%%%%%%%%%%%%%%%%%%
+%\vspace{-0.3cm}
+\subsection{Visualization of Latent Thoughts}\label{sec:visualization_latent_thoughts}
+%\vspace{-0.3cm}
+%%%%%%%%%%%%%%%%%%%%%
+To answer this research question, we select two datasets from different domains: SVAMP~\citep{patel2021nlp} (grade school math) and MBPP~\citep{austin2021program} (python programming). For each problem in these datasets, we randomly sample 100 latent thinking trajectories by sampling from initial latent thought $\mathbf{h}_0$ with different random seeds, and generate the corresponding answers from these latent thoughts. To compare the difference between latent thoughts that lead to correct and incorrect answers, we select those problems that contain both correct and incorrect answers, then visualize and compare their latent thoughts in Figure~\ref{fig:correct_incorrect_trajectory}. We have the following observations:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace{-0.1cm}
+\paragraph*{Correct and incorrect latent thoughts exhibit different structures in the latent space.}
+\vspace{-0.1cm}
+For the same problem, the trajectories of correct and incorrect latent thoughts diverge in both their paths and endpoints, indicating that the model is engaging in different thinking behaviors for correct and incorrect solutions.
+%
+Interestingly, the distributions of correct latent thoughts are relatively compact and tend to converge toward consistent solution paths. In contrast, incorrect latent thoughts are more dispersed in the latent space, suggesting that they lack a stable and consistent reasoning pattern.
+%This is probably because most problems have only a limited number of correct solutions, so correct thoughts tend to follow similar paths that end up close together in latent space. 
+%
+%In contrast, the large variety of possible thinking errors cause incorrect thoughts to diverge more widely, resulting in a scattered distribution in the latent space.
+\vspace{-0.1cm}
+\paragraph*{Both correct and incorrect latent thoughts exhibit different thinking dynamics at different steps.}
+\vspace{-0.1cm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Latent thoughts from early steps show sharp and abrupt changes.
+%
+This suggests that the model is probably doing active computation and exploratory reasoning, which might involve cognitive behaviors such as searching or backtracking~\citep{gandhi2025cognitive} that are helpful for problem solving.
+%
+Latent thoughts evolve more smoothly in the middle steps, suggesting that the model is probably finetuning its thinking process for iterative refinement~\citep{madaan2023self}.
+%
+In the last few steps, latent thoughts almost converge, indicating that the thinking process is complete and a conclusion is reached.
+%
+These patterns suggest that the latent space effectively captures the progression of the thinking dynamics, with distinct behaviors emerging at different steps.
+%The changing direction of the first few thinking steps are more sharp and abrupt, while the latent thoughts the middle steps change more smoothly while the latent thoughts at the last few thinking steps almost converge to the same point. This is probably because in the first few steps the LLM is actively thinking so its latent thought change rapidly to reflect thinking and computation process, but when the thinking is almost complete the latent representation converges and will not change much.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace{-0.1cm}
+\paragraph*{Distinct thinking patterns emerge for different types of problems.}
+\vspace{-0.1cm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Latent thoughts from math problems display different thinking patterns from those observed in programming problems. 
+%
+Within the same dataset, the model also generates latent thoughts with different patterns for different types of problems. 
+%
+Notably,
+convergence of latent thoughts is faster on math problems, which typically require only two to three arithmetic computations~\citep{patel2021nlp}. By comparison, the latent thoughts take more steps to converge for programming problems, which are more difficult and require longer reasoning steps~\citep{austin2021program}. 
+%
+These observations indicate that the model can flexibly adjust its thinking strategy in response to different problem types and difficulty levels.
+%The latent thoughts from math problems show different structural patterns from programming problems, and different problems from the same dataset (math or programming) also shows different patterns. Also, the latent thoughts take longer steps to converge on programming problems than math problems probably because math problems are easier with only two or three computation steps required so fewer thinking steps, progamming problems harder more thinking steps. All these patterns suggest that the model can adaptively adopt different thinking strategies for different problems with varying difficulty levels.
+\begin{figure*}[t]
+    \centering
+\begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/mean_trajectory_svamp26.pdf}
+    \caption{Problem \#26 from SVAMP.}
+    \label{fig:correct_incorrect_trajectory_svamp_26}
+    \end{subfigure}
+        \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/mean_trajectory_mbpp97.pdf}
+    \caption{Problem \#97 from MBPP.}
+    \label{fig:correct_incorrect_trajectory_mbpp_97}
+    \end{subfigure} 
+        \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/mean_trajectory_svamp156.pdf}
+    \caption{Problem \#156 from SVAMP.}
+    \label{fig:correct_incorrect_trajectory_svamp_156}
+    \end{subfigure} 
+        \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/mean_trajectory_mbpp105.pdf}
+    \caption{Problem \#105 from MBPP.}
+    \label{fig:correct_incorrect_trajectory_mbpp_105}
+    \end{subfigure} 
+    
+    \caption{Visualization of the distribution of the \textcolor[HTML]{5E88B7}{correct} and \textcolor[HTML]{C84D50}{incorrect} latent thoughts projected onto 3D space using PCA for dimension reduction. The arrows along the lines indicate the progression from the current step to the next step of the latent thought. More examples are in Appendix~\ref{appendix:examples_latent_thoughts}.}
+    \label{fig:correct_incorrect_trajectory}
+    %\vspace{-0.5cm}
+\end{figure*} 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\vspace{-0.2cm}
+\subsection{Qualitative and Quantitative Analyses on Latent Thoughts}\label{sec:representation_quality_metrics}
+%\vspace{-0.2cm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The case studies in Section~\ref{sec:visualization_latent_thoughts} demonstrate that the model is engaging in different thinking behaviors for latent thoughts that lead to correct and incorrect answers. 
+%
+To gain a deeper understanding of its thinking processes, we evaluate the latent thoughts at different thinking steps using four metrics that measure the quality of latent representations from the perspective of information content (Entropy, Effective Rank) and geometric structure (Anisotropy, Intrinsic Dimension). These metrics are calculated using all the samples from each dataset.
+%
+\begin{itemize}[noitemsep,nolistsep,leftmargin=*]
+\item \textbf{Entropy}~\citep{skean2025layer} quantifies how much information content the latent representations carry. A higher entropy indicates the latent representations contain diverse, more informative features, while a lower entropy suggests the existence of redundant information.
+%A higher entropy indicates a richer spread of information across many dimensions, reflecting diverse, less redundant features and better information preservation. Conversely, a lower entropy reflects concentrated eigenvalue spectra, suggesting that the latent representations may contain redundant information.
+\item \textbf{Effective Rank}~\citep{wei2024DiffeRank} measures how the dimensionality of the latent representation effectively shrinks under strong compression.
+%how effectively the model extracts key concepts and reduce noises. 
+A higher effective rank implies noisy features, while a lower effective rank indicates better noise reduction and more compact representations.
+
+\item \textbf{Anisotropy}~\citep{razzhigaev2024shape} measures the non-uniformity of a distribution in the latent space. A higher anisotropy
+suggests that representations are more directed
+in specific orientations, while a lower anisotropy indicates that the representations are spread out more evenly.
+\item \textbf{Intrinsic Dimension}~\citep{facco2017estimating,cheng2025emergence} quantifies the minimal number of coordinates required to describe the local geometric structure of the representations without significant information loss. A higher intrinsic dimension indicates a rich, complex latent structure, while a lower intrinsic dimension suggests the representation lies on a simpler manifold.
+
+\end{itemize}
+\begin{figure*}
+    \centering
+    \begin{subfigure}{\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/correct_incorrect_distribution_quantitative_metrics_svamp.pdf}
+    \caption{Distribution of representation quality metrics across 32 steps of the latent thoughts on SVAMP.}
+    \label{fig:representation_metrics_svamp}
+    \end{subfigure}  
+
+        \begin{subfigure}{\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/correct_incorrect_distribution_quantitative_metrics_mbpp.pdf}
+    \caption{Distribution of representation quality metrics across 32 steps of the latent thoughts on MBPP.}
+    \label{fig:representation_metrics_mbpp}
+    \end{subfigure} 
+    \caption{Representation quality metrics of the latent thoughts on two datasets. The \textcolor[HTML]{5E88B7}{blue} and \textcolor[HTML]{C84D50}{red} distributions represent the distributions for the \textcolor[HTML]{5E88B7}{correct} and \textcolor[HTML]{C84D50}{incorrect} trajectory of latent thoughts, respectively. These metrics are calculated using all the samples from each dataset.}
+    \label{fig:representation_quality_metrics}
+    %\vspace{-0.5cm}
+\end{figure*} 
+The calculation details of these metrics are in Appendix~\ref{appendix:representation_quality_metrics}. From the visualization of the representation quality metrics across all the thinking steps in Figure~\ref{fig:representation_quality_metrics}, we have the following observations:
+
+%\paragraph*{Representation quality metrics change rapidly at first and then stabilize.} 
+
+%Representation quality metrics first change quickly in the first few thinking steps probably because the thinking is going on so a lot of computation is doing in the latent space, and then stabilize, probably because the completed its thinking process and reached a conclusion. This also corresponds with the visualization of latent thoughts in Figure~\ref{fig:correct_incorrect_trajectory} that latent thoughts change direction abruptly first and then converge to a point in the last few steps.
+%\vspace{-0.2cm}
+\paragraph*{Correct thinking processes carry richer information with less noise.}
+%\vspace{-0.2cm}
+%
+The entropy of correct latent thoughts is consistently higher than that of incorrect ones, and the effective rank of correct latent thoughts is consistently lower. 
+%
+This suggests that correct thinking processes can preserve richer and more informative features (higher entropy), while reducing noisy components (lower effective rank). 
+%
+These observations are consistent with the view of language modeling as a form of compression~\citep{deletang2024language}, where effective thinking of LLMs can be understood as a process of extracting the key concepts while discarding noisy or redundant information.
+%
+%\vspace{-0.2cm}
+\paragraph*{Correct thinking processes generate more expressive latent representations with structured and complex geometries.}
+%\vspace{-0.2cm}
+The anisotropy and the intrinsic dimension of correct latent thoughts are consistently higher than those of incorrect ones.
+%
+This suggests that correct latent thoughts align well along informative directions in the latent space, with a richer and more diverse manifold structure capable of capturing task-relevant features~\citep{valeriani2023geometry}.
+%
+In contrast, incorrect thoughts collapse into flatter, less organized structures, reflecting a collapse of expressiveness and representational capacity~\citep{ansuini2019intrinsic,cheng2025emergence}.
+%\paragraph*{The model performs intensive computation during early thinking steps and then gradually converges to a solution.}
+%\vspace{-0.2cm}
+\paragraph*{Differences in thinking patterns become more distinguishable at later steps.}
+%\vspace{-0.2cm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+At the beginning of the thinking processes, the representation quality metrics change rapidly and show little difference between correct and incorrect latent thoughts.
+%
+This probably reflects an exploratory reasoning phase, where the model is actively processing information and has not yet formed a clear solution path. 
+%
+As the thinking progresses, these metrics then stabilize and the difference between correct and incorrect thoughts becomes more salient, suggesting that the thinking process has converged to a solution, with the emergence of distinct reasoning patterns between correct and incorrect latent thoughts.
+%
+%This trend is also consistent with the visualization of latent thoughts in Figure~\ref{fig:correct_incorrect_trajectory}, where latent thoughts first abruptly shift in the latent space before gradually converging toward a stable point in the final thinking steps.
+
+%This indicates that correct latent thoughts are organized along more pronounced orientations in the latent space, while the elevated intrinsic dimension reflects a richer and more intricate local manifold structure.
+
+%\begin{itemize}[noitemsep,nolistsep,leftmargin=*]
+%\item Latent reasoning LLMs have some fundamental reasoning abilities but may not always robust (e.g., different initializations lead to different reasoning trajectories.)
+%\item The reasoning trajectories of correct and incorrect samples show different patterns.
+%\item Latent representations from the first few thinking steps are already very predictive of the correctness of the reasoning process.
+%\item Latent representations of earlier tokens are less predictive than those of later tokens.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\vspace{-0.2cm}
+\subsection{Latent Thoughts Encode Signals Predictive of Their Correctness}\label{sec:training_latent_classifier}
+%\vspace{-0.2cm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure*}
+    \centering
+    %\begin{subfigure}[t]{0.49\textwidth}
+    %\centering
+    %\includegraphics[width=\textwidth]{figures/classifier_accuracy_svamp.pdf}
+    %\caption{Accuracy of the latent classifier on SVAMP.}
+    %\label{fig:classifier_accuracy_svamp}
+    %\end{subfigure}
+    \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/classifier_roc_auc_svamp.pdf}
+    \caption{ROC-AUC of the latent classifier on SVAMP.}
+    \end{subfigure}
+    %\begin{subfigure}[t]{0.49\textwidth}
+    %\centering
+    %\includegraphics[width=\textwidth]{figures/classifier_accuracy_mbpp.pdf}
+    %\caption{Accuracy of the latent classifier on MBPP.}
+    %\label{fig:classifier_accuracy_mbpp}
+    %\end{subfigure}
+    \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/classifier_roc_auc_MBPP.pdf}
+    \caption{ROC-AUC of the latent classifier on MBPP.}
+    %\label{fig:classifier_roc_auc_mbpp}
+    \end{subfigure}
+
+    \caption{Performance of the latent classifier trained with varying numbers of latent thinking steps on the SVAMP and MBPP datasets. Additional metrics and results are available in Appendix~\ref{appendix:additional_results_classifier}}
+    %\vspace{-0.5cm}
+    \label{fig:classifier_performance}
+\end{figure*}
+Empirical results from Section~\ref{sec:visualization_latent_thoughts} and Section~\ref{sec:representation_quality_metrics} demonstrate that the latent thoughts contain rich semantic and geometric features that are predictive of their correctness. If these signals indeed capture the distinction between correct and incorrect thinking processes, they should be discriminative enough for a model to identify their correctness directly from the latent thoughts.
+To verify this hypothesis, we follow the widely-used probing technique~\citep{liu2019linguistic,hewitt2019structural}, and train a lightweight sequence classifier to predict the correctness of latent thoughts. 
+
+The classifier takes as input the trajectory of latent thoughts from a problem, and predicts the probability that the thinking process is correct.
+%
+For each problem in the training set, we sample 5 different latent thoughts and answers, and train the classifier to predict the correctness of the answer via binary cross-entropy loss. More training details of the latent classifier are in Appendix~\ref{appendix:training_details_latent_classifier}. To study how predictive the latent representations are at different thinking steps, we construct 32 experimental settings for each dataset. In the $t$-th experiment ($1{\leq}t{\leq}32$), the classifier receives the first $t$ steps of latent thoughts $\mathbf{h}_{1:t}$ as input. The maximum of 32 steps is chosen to match the default number of thinking steps in \LRLM. Evaluation is performed on the test set using standard binary classification metrics such as ROC-AUC and Accuracy.
+%%\vspace{-0.2cm}
+%\paragraph*{Experimental Results}
+%%\vspace{-0.2cm}
+%
+
+The results are shown in Figure~\ref{fig:classifier_performance}. We observe that this latent classifier achieves strong performance on the test set, although it is trained with only a relatively small amount of data. On SVAMP, it achieves an ROC-AUC score close to 1.0, while on MBPP it achieves an ROC-AUC score of around 0.8. These results indicate that latent thoughts encode rich signals that are highly predictive of their correctness.
+%
+We also observe that classification performance improves steadily with more thinking steps included, before reaching a plateau. This is consistent with the observation in Section~\ref{sec:representation_quality_metrics} that differences between correct and incorrect thinking patterns become more distinguishable after a few thinking steps. Furthermore, the fact that incorporating latent thoughts from multiple steps improves classification performance suggests that the correctness signal is not solely reflected in a specific step of thought, but also in the evolving dynamics of the whole latent thinking trajectory.
+%\vspace{-0.2cm}
+\begin{tcolorbox}[enhanced,
+    colframe=blue!40!black,
+    colback=blue!2!white,
+    fonttitle=\bfseries,
+  attach boxed title to top text left={xshift=30mm,yshift=-2.5mm},
+  boxed title style={size=small,colframe=blue!40!black,colback=blue!40!black}]
+\textbf{Major Observation:} The latent reasoning language model displays distinct thinking patterns between correct and incorrect thinking processes, and such difference is highly distinguishable in the latent space, especially after a few thinking steps.
+\end{tcolorbox}
+%\vspace{-0.2cm}
+%In summary, our empirical observations confirm that \LRLM displays distinct thinking patterns between correct and incorrect thinking process, and such difference is highly distinguishable in the latent space, especially after a few thinking steps.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\vspace{-0.2cm}
+\section{Latent Thinking Optimization}
+%\vspace{-0.2cm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{sec:improve}
+Motivated by our observations, we propose Latent Thinking Optimization (\LTO), a probabilistic optimization approach designed to improve the latent thinking processes by selectively sampling trajectories that exhibit correct patterns.
+%
+\LTO formulates this as an optimization problem over latent policies, and introduces a probabilistic algorithm to solve the optimization problem.
+%
+While \LTO uses \LRLM as a starting point, we further demonstrate that \LTO can also be applied to general LLMs, and achieves strong transferability across diverse domains with high efficiency. These results highlight the potential of \LTO as an effective and scalable approach for optimizing LLM thinking by performing reward modeling and thinking correction directly in the latent space.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsection{Latent Policy Optimization}\label{sec:latent_policy_optimization}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\vspace{-0.2cm}
+\paragraph*{Objective of LTO}
+%\vspace{-0.2cm}
+To formalize this, we introduce a binary variable $\mathcal{O}$ that indicates whether the latent thinking trajectory $z$ is correct. Our goal is to find an optimal latent thinking policy $\pi^{*}(z|x)$ such that it maximizes the expectation of generating a correct latent thinking trajectory $z$:
+\begin{equation}
+\pi^*(z \mid x) = \argmax\nolimits_{\pi(z \mid x)} \mathbb{E}_{z \sim \pi(z \mid x)} p(\mathcal{O} = 1\mid x, z)
+%\vspace{-0.2cm}
+\end{equation}
+where $p(\mathcal{O}=1|x, z)$ is the probability of a latent thinking trajectory $z$ being correct for a question $x$. Since the classifier introduced in Section~\ref{sec:training_latent_classifier} is trained to predict the correctness of latent thoughts, it can be used as a Latent Reward Model (\LRM) $r(x,z)$ to estimate the probability of $p(\mathcal{O}=1|x, z)$. To ensure that the optimized policy does not deviate significantly from the original policy $\piref(z|x)$ (the latent policy distribution of the model before \LTO optimization), we introduce a KL-regularization term~\citep{jaques2017sequence,ziegler2019fine,rafailov2023direct} with the weight $\beta$ to penalize the difference between the optimized policy $\pi^{*}(z|x)$ and the original policy $\piref(z|x)$. The optimization objective then becomes:
+\begin{equation}
+    \label{eqn:KL_constrained_reward_optimization}\pi^{*}(z|x)=\argmax\nolimits_{\pi(z|x)}\mathbb{E}_{z\sim\pi(z|x)}\left[r(x,z)\right]-\beta\kldiv(\pi(z|x)||\piref(z|x))
+    %\vspace{-0.8cm}
+\end{equation}
+\paragraph*{The Necessity of KL regularization}
+The inclusion of KL regularization with the weight $\beta$ is well motivated from the KL-regularized policy optimization theory. Without KL regularization, the optimized policy might collapse into a degenerated policy that significantly deviates from the base policy. Moreover, if we remove $\beta$ (set $\beta{\rightarrow}0$), \LTO will reduce to best-of-N sampling in the latent space, i.e., we sample N latent trajectories, score them with the \LRM, and pick the highest-scoring one. This strategy only works well if the \LRM is nearly perfect with almost 1.0 classification accuracy for correct and incorrect latent trajectories. In practice, the \LRM is learned and not perfect. Without any regularization, \LTO may exploit the errors of the \LRM and select suboptimal latent thoughts. By including a KL penalty, we constrain the optimized policy so that it does not drift too far from the base policy, thereby preserving the diversity of sampled latent thoughts and mitigating overfitting to reward model noise.
+\paragraph*{Probabilistic Sampling}Directly optimizing over the latent policy $\pi(z|x)$ is often difficult. Instead, we approximate $\pi(z|x)$ using a finite set of  $N$ sampled latent thinking trajectories $\{z_i\}^{N}_{i=1}$. In this case, we show that Equation~\ref{eqn:KL_constrained_reward_optimization} has a closed-form solution:
+\begin{theorem}\label{thm:sample_distribution_solution}
+    Given a sampled set of $\{z_i\}^{N}_{i=1}$ to approximate the policy distribution $\pi^{*}(z|x)$, for each $i$, the solution to Equation~\ref{eqn:KL_constrained_reward_optimization} is 
+    $\pi_{r}(z_i|x)=\frac{\piref(z_i\mid x)\exp\left(\frac{1}{\beta}r(x, z_i)\right)}{\sum^{N}_{j=1}\piref(z_j\mid x)\exp\left(\frac{1}{\beta}r(x, z_j)\right)}$.
+\end{theorem}
+%\vspace{-0.2cm}
+We provide the proof in Appendix~\ref{appendix:sample_distribution_solution_proof}. Here we use the subscript notation $\pi_{r}$ to indicate that the policy is derived from the reward function $r(x, z)$. For simplicity, we omit the superscript $*$, but $\pi_{r}$ still represents the optimized policy.
+
+%Intuitively, the optimized policy $\pi_{r}$ reweights the original policy $\pi_{\text{ref}}$ with the exponential reward term $\exp(\frac{1}{\beta}r(x, z))$: latent trajectories with higher reward $r(x,z)$ will have higher probability of being selected, while trajectories with lower reward will have lower probability of being selected. The weight $\beta$ controls how strong this adjustment is: when $\beta$ is small, the policy becomes more ``greedy'' and focuses heavily on the high-rewarded latent trajectories; when $\beta$ is large, it stays closer to the original policy $\pi_{\text{ref}}$.
+%
+%\subsection{Latent Probabilistic Sampling}\label{sec:latent_probabilistic_sampling}
+%
+\input{algorithms/alg_latent_probabilistic_sampling}
+While Theorem~\ref{thm:sample_distribution_solution} gives a closed-form solution for our optimization problem, sampling directly from the distribution $\pi_{r}(z|x)$ is still difficult, since it is hard to accurately estimate the probability of each $\piref(z_i|x)$. To address this issue, inspired by acceptance-rejection sampling algorithms~\citep{flury1990acceptance,grover2018variational,liu2024statistical}, we propose Algorithm~\ref{alg:latent_probabilistic_sampling} to draw samples $z$ without explicitly calculating the value of $\pi_{r}(z|x)$. It draws $N$ candidate thinking trajectories $\{z_i\}^{N}_{i=1}$ from the original policy $\piref(z|x)$. Each candidate sample $z_i$ will only be accepted with probability $\phi_{i}$, where $\phi_{i}$ is designed such that the latent thinking trajectories with higher reward are more likely to be accepted. This procedure is repeated until $M$ valid samples are collected. Theoretically, the set of samples drawn in Algorithm~\ref{alg:latent_probabilistic_sampling} is guaranteed to follow the distribution $\pi_{r}(z|x)$:
+\begin{theorem}\label{thm:sampling_probability}
+    In Algorithm~\ref{alg:latent_probabilistic_sampling}, for each $i$, the probability of $z_i$ being drawn and accepted is $\Pr(z_i|u_i<\phi_i,x)=\pi_{r}(z_i|x)$.
+\end{theorem}
+%\vspace{-0.2cm}
+We provide the proof in Appendix~\ref{appendix:sampling_probability_proof}. This theorem shows that each accepted sample $z_i$ is drawn with probability $\pi_{r}(z_i|x)$. Since each sampling process is independent, repeating the procedure produces i.i.d. samples from exactly the same distribution $\pi_{r}(z|x)$.
+
+We summarize the workflow of \LTO as follows: 1) Collect latent thinking trajectories from the training data to train \LRM and 2) sample multiple latent thinking trajectories and accept only high-rewarded ones that are more likely to be correct via Algorithm~\ref{alg:latent_probabilistic_sampling}. The samples drawn from Algorithm~\ref{alg:latent_probabilistic_sampling} is theoretically guaranteed to follow the distribution in Theorem~\ref{thm:sample_distribution_solution}, which is the solution to the objective of latent thinking optimization problem as defined in Equation~\ref{eqn:KL_constrained_reward_optimization}. Note that although \LTO relies on probabilistic sampling instead of parameter update to improve the latent policy, this does not diminish its nature as solving a discrete optimization problem over the latent policy.
+%\vspace{-0.2cm}
+\paragraph*{Application to General LLMs}
+%\vspace{-0.2cm}
+While our main focus is to improve the thinking process of the latent reasoning language model, the proposed \LTO algorithm can also be applied to general LLMs, such as OLMo~\citep{groeneveld2024olmo}, Llama~\citep{touvron2023llama2} and Mistral~\citep{jiang2023mistral}. 
+%
+Although general LLMs do not explicitly introduce a latent thinking process, their latent representations across multiple layers can be interpreted as latent chain of thoughts~\citep{wang2025latent}.
+Under this view, \LRM and \LTO can be readily applied to general LLMs. In Appendix~\ref{appendix:additional_results_classifier}, we demonstrate that {\LRM}s trained with the latent representations of general LLMs can also achieve strong classification performance, indicating that the latent thoughts from general LLMs also encode appropriate reward signals. In Section~\ref{sec:application_to_general_LLMs}, we demonstrate that \LTO can significantly improve the performance of general LLMs on diverse reasoning tasks using these {\LRM}s.
+%\vspace{-0.2cm}
+\paragraph*{Generalist Reward Modeling}
+%\vspace{-0.2cm}
+Natural language-based process reward models are often limited to narrow domains such as math~\citep{wang-etal-2024-math,lu2024autopsv} due to their reliance on domain-specific thinking formats and structures~\citep{zeng2025versaprm}. 
+%
+By comparison, reward modeling in the latent space has the potential for better generalizability, since latent thoughts share a unified form of latent representations and may be more transferable across diverse domains. In Section~\ref{sec:generalist_reward_modeling}, we demonstrate that \LRM achieves strong transferability across diverse domains and shows potential for building a
+generalist reward model in the latent space.
+%
+%\vspace{-0.2cm}
+\paragraph*{High Efficiency} 
+%\vspace{-0.2cm}
+\LRM only requires a modest number of training samples (Section~\ref{appendix:implementation_details}), and \LTO is highly efficient at both the training and inference stage (Section~\ref{appendix:efficiency_analysis}). 
+%
+This highlights the potential of \LTO as an efficient alternative that performs reward modeling in the latent space, in contrast to natural language-based reward models that require substantial finetuning and inference costs~\citep{wang-etal-2024-math,lu2024autopsv,lightman2024lets}.
+%\vspace{-0.2cm}
+\paragraph*{Guaranteed Performance Improvement}%\vspace{-0.2cm} 
+While \LTO does not explicitly modify the latent policy, we theoretically demonstrate in Appendix~\ref{appendix:theoretical_analysis_correctness_rate} that improving the accuracy of the \LRM directly translates into a higher expected correctness rate. Thus, \LTO enables latent thinking improvement simply by scaling and refining the \LRM (e.g., with more training data) which is computationally lightweight, rather than costly finetuning the base model to improve its latent policy.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%\vspace{-0.2cm}
+%\subsection{Theoretical Analysis on Correctness Rate}\label{sec:performance_guarantee}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%To analyze the expected correctness rate of the LPS algorithm using the trained latent classifier as a reward model, we first introduce the notion of a \emph{perfect reward model}, which serves as an oracle for evaluating the correctness of latent thinking trajectories. This formalization provides a reference point for quantifying the performance of the latent policy derived from the trained classifier: 
+
+%\begin{definition}[Perfect reward model]
+%A perfect reward model $r^{*}(x, z)$ is a function that always assigns a value of 1.0 if the latent thinking trajectory $z$ is correct for question $x$, and 0.0 if the latent thinking trajectory $z$ is incorrect for question $x$. Using this definition, for a question $x$, the expected correctness rate that a latent policy $\pi$ will achieve can be calculated as $\mathbb{E}_{z\sim\pi} r^{*}(x,z)$.
+%\end{definition}
+%Next, we introduce the following theorem to measure how the expected correctness rate of $z\sim\pi_{r}(z|x)$ (the policy derived from the trained reward model) relates to that of $z\sim\pi_{r^{*}}(z|x)$ (the policy derived from the perfect reward model):
+%\begin{theorem}\label{thm:reward_bound}
+%    For a question $x$, for each sample $z_i$, if the error between the trained reward model $r(x,z_i)$ and the perfect reward model $r^{*}(x,z_i)$ is bounded by $\epsilon$, i.e., $\left|r(x,z_i)-r^{*}(x,z_i)\right|\leq\epsilon$, then the performance gap of using an imperfect reward model is upper bounded by $\left|\mathbb{E}_{z\sim\pi_{r}(z|x)}r^{*}-\mathbb{E}_{z\sim\pi_{r^{*}}(z|x)}r^{*}(x,z)\right|\leq\sqrt{\frac{4\epsilon}{\beta}}$
+%\end{theorem}
+%We provide the proof in Appendix~\ref{appendix:thm_proof}.
+%This theorem establishes a bound on the expected correctness rate of trajectories $z$ generated using the trained reward model in comparison to the perfect reward model. As the performance of the classifier improves, the error $\epsilon$ will drop, leading to a tighter bound and higher expected correctness rate.
+%
+%Empirically, as shown in Section~\ref{sec:training_latent_classifier}, the classifier achieves a very high AUC-ROC, implying that $\epsilon$ is small in practice. 
+%
+%From a theoretical perspective, standard generalization bounds for binary classifiers guarantee that the reward error $\epsilon$ is controlled by the classification error on the training set plus a complexity term of order $\mathcal{O}(\sqrt{1/S})$ with $S$ being the number of training samples~\citep{bartlett2002rademacher, bartlett2017spectrally}.
+%
+%Consequently, with a well-trained classifier as the reward model, this bound guarantees that the expected correctness rate under the trained reward model closely matches that of the perfect reward model.
+%, providing a theoretical guarantee of the effectiveness of the LPS algorithm.
+\section{Experimental Settings}\label{sec:experimental_settings}
+%
+\paragraph*{Datasets}
+To study whether our approach can improve the thinking processes of \LRLM across diverse tasks with different thinking patterns, we evaluate its performance on five datasets from three domains: (1) \textbf{GSM8K}~\citep{cobbe2021training}, \textbf{SVAMP}~\citep{patel2021nlp}, \textbf{GSM-Symbolic}~\citep{mirzadeh2025gsmsymbolic} for the \textit{Math} domain, (2) \textbf{CommonsenseQA}~\citep{talmor2019commonsenseqa} for the \textit{Commonsense Reasoning} domain; and (3) \textbf{MBPP}~\citep{austin2021program} for the \textit{Code Generation} domain. The details of the datasets are in Appendix~\ref{appendix:dataset_details}.
+%
+%\vspace{-0.2cm}
+\paragraph*{Baselines and Implementation Details} 
+%\vspace{-0.2cm}
+Since \LRLM generates the thinking process in the form of latent representations, many thinking correction methods with a trained process verifier in the natural language space~\citep{lu2024autopsv,wang-etal-2024-math} may not be applicable to the latent space. 
+%
+Therefore, we compare our approach against two types of reasoning correction and improvement methods applicable to \LRLM: 
+%
+(1) \textit{Answer Correction}. These methods correct and improve the answers without requiring access to the thinking process. We include three representative approaches: Majority Voting~\citep{wang2023selfconsistency}, Self-Correction with Confidence Score~\citep{ren2023self}, Self-Correction with Verbal Evaluation~\citep{manakul2023selfcheckgpt}.
+%
+(2) \textit{Latent Thinking Correction}. While explicit correction of latent thoughts remains underexplored, a recent work~\citep{wang2025latent} introduces two heuristic metrics (CoE-R and CoE-C) to evaluate the correctness score of latent thoughts. We adopt these scores as the correction signals, yielding two additional baselines: Latent Thinking Correction with CoE-R, and Latent Thinking Correction with CoE-C.
+%
+Furthermore, we evaluate a simplified version of our approach, Weighted Majority Voting with \LRM, which use the \LRM reward as a weighting signal. 
+%
+We also report the performance of the base model (directly generating a latent thinking trajectory and the corresponding answer without any correction) to quantify the performance improvement achieved by our approach and competing baselines.
+%
+Implementation details of baselines and our method are in Section~\ref{appendix:implementation_details}.
+\section{Experimental Results}
+\subsection{Overall Performance Comparison}
+\input{tables/table_overall_performance}
+Table~\ref{tab:overall_performance_comparison} presents the experimental results on all the datasets. We have the following observations:
+%
+%\vspace{-0.2cm}
+\paragraph*{\LTO significantly improves the latent thinking processes.}
+%\vspace{-0.2cm}
+%
+Across all datasets, \LTO consistently outperforms both the base model and the best baseline for thinking correction. 
+%
+Leveraging a well-trained \LRM, \LTO can effectively detect and correct erroneous thinking patterns in the latent space via a probabilistic algorithm, bringing robust and consistent improvements to the latent thinking processes. 
+%
+By comparison, other thinking correction methods show suboptimal performance or even worse performance than the base model, indicating that these techniques originally developed for verbal thinking are not suitable for identifying errors for latent thinking.
+%
+%\vspace{-0.2cm}
+\paragraph*{\LRM is highly effective in detecting incorrect latent thinking patterns.} 
+%\vspace{-0.2cm}
+%
+Both weighted majority voting and \LatentThinkingOptimization with \LRM achieve consistent improvements over the base model. 
+%
+Notably, standard majority voting yields little to no benefit; however, when the \LRM reward is used as a weighting signal, weighted majority voting achieves substantial gains. 
+%
+This demonstrates that the \LRM reward provides a reliable estimation of the correctness of latent thoughts and serves as an effective correction signal for thinking correction algorithms in the latent space.
+%
+\subsection{Application to General LLMs}\label{sec:application_to_general_LLMs}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{tables/table_general_llms}
+While we mainly focus on improving the thinking process of \LRLM, we also demonstrate that \LTO can be applied to general LLMs, such as OLMo~\citep{groeneveld2024olmo}, Llama~\citep{touvron2023llama2} and Mistral~\citep{jiang2023mistral}. 
+%
+%Although these models do not explicitly introduce a latent thinking process, their intermediate representations across layers can be interpreted as latent chain of thoughts~\citep{wang2025latent}.
+%Under this view, \LRM and \LTO can be readily adapted to general LLMs. 
+%
+To evaluate the performance of \LTO on general LLMs, we use the same \LRM and \LTO configurations as described in Section~\ref{sec:experimental_settings}, and train {\LRM}s using the latent representations from general LLMs. 
+%
+From the experimental results in Table~\ref{tab:performance_general_llms}, we can see that \LTO achieves substantial performance gains across diverse datasets, with an improvement of up to 103\% over the base model, even with a modest sampling budget ($N=20$). 
+%
+These results highlight the potential of \LTO as a general method for improving the latent thinking processes of LLMs.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Generalist Reward Modeling}\label{sec:generalist_reward_modeling}
+\begin{wrapfigure}{r}{0.3\textwidth}
+\vspace{-1.2cm}
+%\begin{figure}[t]
+\centering
+%\begin{minipage}{0.3\textwidth}
+\includegraphics[width=\linewidth]{figures/performance_on_different_datasets.pdf}
+    \caption{Performance of \LTO using different {\LRM}s. ``GSM-S'' refers to the GSM-Symbolic dataset. ``CQA'' refers to the CommonsenseQA dataset. 
+    ``None'' refers to the performance of the base model without \LTO.}
+    \vspace{-0.5cm}
+    \label{fig:performance_on_different_datasets}
+    %\end{minipage}\hfill
+%\end{figure}
+\end{wrapfigure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Natural language-based process reward models are often limited to narrow domains such as math~\citep{wang-etal-2024-math,lu2024autopsv} due to their reliance on domain-specific thinking formats and structures~\citep{zeng2025versaprm}. 
+%
+%By comparison, reward modeling in the latent space has the potential for better generalizability, since latent thoughts share a unified form of latent representations and may be more transferable across diverse domains.
+%
+To evaluate whether {\LRM}s trained on one dataset can be applied to another dataset, we first examine the cross-dataset transferability of {\LRM}s by evaluating the performance of \LTO when paired with an \LRM trained on different datasets. We extend the study by training a general \LRM on the combined training data from all datasets and evaluating the performance of \LTO with the general \LRM. From the results in Figure~\ref{fig:performance_on_different_datasets}, we can see that {\LRM}s demonstrate transferability across different domains, since \LTO can improve the performance of the base model when paired with an \LRM trained on a different dataset. The improvement is consistent even if the gap between domains is large. 
+%
+For example, although CommonsenseQA primarily involves commonsense reasoning% rather than mathematical problem solving
+, an \LRM trained on CommonsenseQA still improves performance on math-focused datasets such as GSM8K, GSM-Symbolic, and SVAMP. This suggests that LRMs may capture some fundamental aspects of latent thinking patterns shareable across different domains. 
+%
+Furthermore, the performance of \LTO using the general \LRM is on par with the performance of \LTO using domain-specific LRMs. 
+%
+These results suggest that latent reward modeling can generalize across domains. 
+While our empirical results have not yet achieved full transferability across all possible tasks, we believe that they indicate promising cross-domain potential for building a generalist reward model in the latent space for future work.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace{-0.2cm}
+\section{Conclusion}
+\vspace{-0.2cm}
+In this paper, %we aim to understand how \LRLM thinks in latent space and how external supervision can improve its thinking processes. 
+%
+we observe that the latent thoughts of \LRLM that lead to correct versus incorrect answers display distinct thinking patterns, and such difference is highly distinguishable by a latent classifier.
+%
+Building on these insights, we formulate latent thinking improvement as a reward optimization problem over latent policies, and propose an \LTO algorithm that uses the latent classifier as an \LRM to optimize the latent thinking processes. Extensive experiments across diverse reasoning tasks demonstrate \LTO can significantly improve the latent thinking processes of \LRLM.
+%
+Furthermore, we show \LRM can generalize across different domains, and \LTO can be seamlessly applied to general LLMs to improve their thinking processes.
+%
+In contrast to verbal thinking approaches that scale test-time compute through natural language generation~\citep{guo2025deepseek,muennighoff2025s1}, our method demonstrates that reward modeling and scaling test-time thinking with supervision can be performed directly in the latent space, offering a general (Section~\ref{sec:application_to_general_LLMs}), efficient (Appendix~\ref{appendix:efficiency_analysis}), and domain-agnostic (Section~\ref{sec:generalist_reward_modeling}) approach to improving the thinking processes of LLMs. We discuss the related works, limitations, broader impact and reproducibility of our research in Appendix~\ref{appendix:related_works}, Appendix~\ref{appendix:limitation_statement}, Appendix~\ref{appendix:impact_statement} and Appendix~\ref{appendix:reproducibility_statement}, respectively.
+\newpage
+\bibliography{iclr2026_conference}
+\bibliographystyle{iclr2026_conference}
+\newpage
+\appendix
+\setcounter{table}{0}
+\setcounter{figure}{0}
+\setcounter{theorem}{0}
+\setcounter{definition}{0}
+\renewcommand{\thetable}{A\arabic{table}}
+\renewcommand{\thefigure}{A\arabic{figure}}
+\part*{Appendices}
+\begin{figure*}
+    \centering
+\begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/mean_trajectory_svamp171.pdf}
+    \caption{Problem \#171 from SVAMP.}
+    \label{fig:correct_incorrect_trajectory_svamp_171}
+    \end{subfigure}
+        \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/mean_trajectory_mbpp70.pdf}
+    \caption{Problem \#70 from MBPP.}
+    \label{fig:correct_incorrect_trajectory_mbpp_70}
+    \end{subfigure} 
+        \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/mean_trajectory_svamp257.pdf}
+    \caption{Problem \#257 from SVAMP.}
+    \label{fig:correct_incorrect_trajectory_svamp_257}
+    \end{subfigure} 
+        \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/mean_trajectory_mbpp102.pdf}
+    \caption{Problem \#102 from MBPP.}
+        \label{fig:correct_incorrect_trajectory_mbpp_102}
+    \end{subfigure}
+    
+    \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/mean_trajectory_svamp276.pdf}
+    \caption{Problem \#276 from SVAMP.}
+    \label{fig:correct_incorrect_trajectory_svamp_276}
+    \end{subfigure}
+        \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/mean_trajectory_mbpp159.pdf}
+    \caption{Problem \#159 from MBPP.}
+    \label{fig:correct_incorrect_trajectory_mbpp_159}
+    \end{subfigure} 
+        \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/mean_trajectory_svamp365.pdf}
+    \caption{Problem \#365 from SVAMP.}
+    \label{fig:correct_incorrect_trajectory_svamp_365}
+    \end{subfigure} 
+        \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/mean_trajectory_mbpp191.pdf}
+    \caption{Problem \#191 from MBPP.}
+    \label{fig:correct_incorrect_trajectory_mbpp_191}
+    \end{subfigure} 
+        \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/mean_trajectory_svamp624.pdf}
+    \caption{Problem \#624 from SVAMP.}
+    \label{fig:correct_incorrect_trajectory_svamp_624}
+    \end{subfigure} 
+        \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/mean_trajectory_mbpp215.pdf}
+    \caption{Problem \#215 from MBPP.}
+    \label{fig:correct_incorrect_trajectory_mbpp_215}
+    \end{subfigure} 
+    \caption{Visualization of the distribution of the \textcolor[HTML]{5E88B7}{correct} and \textcolor[HTML]{C84D50}{incorrect} latent thoughts projected onto 3D space demonstrate that correct and incorrect latent thoughts exhibit different patterns in the latent space. Note that this phenomenon is not limited to these cases. On the SVAMP dataset, we identify 1,654 problems with both correct and incorrect answers, and on the MBPP dataset, we identify 179 problems with both correct and incorrect answers. In all of these cases, the latent thoughts leading to correct versus incorrect answers show different patterns in the latent space.}
+    \label{fig:correct_incorrect_trajectory_additional_examples}
+\end{figure*} 
+%%%%%%%%%%%%%%%%%%%%%%
+\section{Related Works}\label{appendix:related_works}
+%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Verbal and Latent Thinking for LLMs}
+Human cognition often involves thinking through intermediate steps rather than directly answering the question~\citep{kahneman2011thinking,zelikman2024quietstar}. 
+%
+Inspired by this, a growing line of research focuses on guiding LLMs to generate intermediate reasoning steps as the thinking process before generating the answers. 
+%
+Most approaches represent the thinking process in natural language, such as step-by-step chain-of-thought prompting~\citep{wei2022chain,kojima2022large,wang2023selfconsistency}, self-correction via iterative feedback~\citep{shinn2023reflexion,madaan2023self,kumar2025training}, or building reasoning trees to explore diverse solutions~\citep{yao2023tree,hao2023reasoning}. 
+%
+While effective, such verbal thinking incurs significant computational cost, and is also prone to the overthinking issue~\citep{chen2025do,sui2025stop}. 
+%
+In contrast, latent thinking offers an alternative approach, where the model represents its thinking process as compact latent representations rather than natural language. This approach is more computationally efficient and better suited for reasoning with abstract concepts that are difficult to verbalize. Among various approaches for latent thinking~\citep{zhang2023planner,goyal2024think,hao2025training,geiping2025scaling}, a representative one is the latent reasoning language model~\citep{geiping2025scaling}, which is pretrained from scratch as a new language model architecture. It introduces a recurrent unit to generate sequences of latent thoughts and supports test-time scaling with flexible computation budgets. 
+%
+Despite promising, the lack of interpretability in the latent representations makes it difficult to understand what the model is actually thinking about or to verify the correctness of its thinking process. 
+%
+\emph{In this paper, we aim to bridge this gap by investigating how the latent reasoning language model thinks in the latent space and how external supervision can guide and improve the latent thinking processes.}
+\subsection{Scaling up Test-Time Compute}
+As LLMs are tasked with increasingly difficult problems, directly prompting the LLM to generate the answers is often insufficient. 
+%
+To address this, recent works emphasize scaling up test-time compute as an effective approach to enhance the problem-solving capability of LLMs~\citep{sardana2024beyond,snell2025scaling}.
+%
+Existing approaches scale up test time compute from different perspectives, such as sequential scaling with revisions to refine the answer~\citep{shinn2023reflexion,madaan2023self,muennighoff2025s1}, parallel scaling by generating multiple answers to search for diverse solutions~\citep{wang2023selfconsistency,yao2023tree,hao2023reasoning}, or scaling with a verifier or reward model to ensure the correctness of solutions~\citep{wang-etal-2024-math,lu2024autopsv,feng2025stepbystep,setlur2025scaling}. 
+%
+However, most of these approaches focus on scaling up test-time compute using natural language, and how to scale up test-time compute in the latent space~\citep{geiping2025scaling} remains underexplored. \emph{In this paper, we introduce a probabilistic sampling approach with a latent reward model that can improve the latent thinking processes and enable efficient and effective test-time scaling in the latent space.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Additional Visualization of Latent Thoughts}\label{appendix:examples_latent_thoughts}
+Additional examples on the visualization of correct and incorrect latent thoughts are in Figure~\ref{fig:correct_incorrect_trajectory_additional_examples}.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Calculation of Representation quality Metrics}\label{appendix:representation_quality_metrics}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%
+In this section, we provide the details on how to calculate the representation quality metrics. For a question $x$, \LRLM generates $T$ steps of latent thoughts $\mathbf{h}_{1:T}$ recursively. Each latent thought $\mathbf{h}_t\in\mathbb{R}^{L\times d}$ is an internal hidden state generated by \LRLM, where $L$ is the number of tokens, $d$ is the hidden dimensionality. The representation quality metrics are calculated over the latent thoughts across all the thinking steps to capture the evolving dynamics of latent thinking processes. Note that in the Huginn-3.5B architecture, the same RMSNorm module with the same rescaling weight $w$ is applied to each step of latent thought. Therefore, all the latent thoughts from different steps are already normalized to the same scale before we calculate the representation quality metrics, making these latent representations scale-invariant. For each latent thought $\mathbf{h}_t (1{\leq}t{\leq}T)$, we calculate the Entropy, Effective Rank, Anisotropy and Intrinsic Dimension of $\mathbf{h}_t$ as follows.
+%%%%%%%%%%%%%%%%%%%%
+\subsection{Entropy}
+%%%%%%%%%%%%%%%%%%%%
+Entropy~\citep{skean2025layer} quantifies how much information content the latent representations carry. A higher entropy indicates a richer spread of information across many dimensions, reflecting diverse, less redundant features and better information preservation. Conversely, a lower entropy reflects concentrated eigenvalue spectra, suggesting that the latent representations may contain redundant information. We compute the entropy over the Gram matrix $\mathbf{K} = \mathbf{h}_t \mathbf{h}_t^\top$ using the matrix-based R\'enyi entropy. For any $\alpha > 0$, this is defined as:
+
+\begin{equation}
+\label{eq:matrix-based-entropy}
+    \operatorname{Entropy}(\mathbf{h}_t) \;=\; \frac{1}{1-\alpha} \,\log \left(\,\sum_{i=1}^{r}\left(\tfrac{\lambda_i(\mathbf{K})}{\mathrm{tr}(\mathbf{K})}\right)^\alpha\right),
+\end{equation}
+where $\lambda_i(\mathbf{K})$ denotes the $i$-th eigenvalue of the Gram matrix $\mathbf{K}$, $r=\text{rank}(\mathbf{K})$ denotes its rank. While we can vary $\alpha$ to get different formulations of matrix entropy, we follow the approach of~\citet{skean2025layer} and choose $\alpha{\rightarrow}1$, which is equivalent to the standard von Neumann entropy.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Effective Rank}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Effective Rank~\citep{wei2024DiffeRank} measures how effectively the model extracts key concepts and reduces noisy features in its latent representations. A higher effective rank implies that the representations contain noisy features, while a lower effective rank indicates better noise reduction. It is defined as follows:
+\begin{equation} 
+\operatorname{EffectiveRank}(\mathbf{h}_t) = \exp{\left( - \sum^K_{i=1} \frac{\sigma_i}{\sum^K_{i=1} \sigma_i}  \log \frac{\sigma_i}{\sum^K_{i=1} \sigma_i} \right)},
+\end{equation}
+where $K = \min \{ L, d \}$, and $\sigma_1,\sigma_2, \dots,  \sigma_{K}$ are the singular values of the matrix $\mathbf{h}_t$.
+
+%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Anisotropy}
+%%%%%%%%%%%%%%%%%%%%%%%
+Anisotropy~\citep{razzhigaev2024shape} measures the non-uniformity of a distribution in the latent space. A higher anisotropy
+suggests that representations are more directed
+in specific orientations, while a lower anisotropy indicates that the representations are spread out more evenly in all directions. It is defined as follows:
+\begin{equation}
+    \operatorname{Anisotropy}(\mathbf{h}_t) = \frac{\sigma_1^2}{\sum_{i=1}^{K} \sigma_i^2}.
+\end{equation}
+where $K = \min \{ L, d \}$, and $\sigma_1,\sigma_2, \dots,  \sigma_{K}$ are the singular values of the matrix $\mathbf{h}_t$.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Intrinsic Dimension}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Intrinsic Dimension~\citep{facco2017estimating,cheng2025emergence} quantifies the minimal number of coordinates required to describe the local geometric structure of the representations without significant information loss. 
+%
+A higher intrinsic dimension indicates a rich, complex latent structure, while a lower intrinsic dimension suggests the representation lies on a simpler manifold.
+%
+Specifically, for the matrix $\mathbf{h}_{t}\in\mathbb{R}^{L{\times}d}$, we can view it as a collection of $L$ points $\mathbf{h}^{i}_{t}$ in the $d$-dimensional space, i.e., $\mathbf{h}_t
+= \{\mathbf{h}^{i}_{t}\}_{i=1}^L$. To calculate the intrinsic dimension, we use the Two-Nearest-Neighbour estimator~\citep{facco2017estimating}: 
+%
+for each point $\mathbf{h}^i_t$, we compute its nearest-neighbor distance $r_{1,i}$ and second-nearest-neighbor distance $r_{2,i}$, and form the ratio
+$\mu_i = r_{2,i}/r_{1,i}$. Sorting $\{\mu_i\}_{i=1}^L$ in ascending order yields $\mu_{(1)},\dots,\mu_{(L)}$, and the empirical cumulative distribution is given by $F_j = j/L$. Each $\mu_{(j)}$ is then mapped to a transformed data point
+$
+(x_j = \log \mu_{(j)}, y_j = -\log(1 - F_j))$. Under mild assumptions, the points $\{(x_j, y_j)\}^{L}_{j=1}$ are theoretically expected to align on a straight line through the origin, and the slope of this line provides an estimation of the intrinsic dimension. 
+%
+Following~\citet{dadapy}, we use the standard Euclidean distance as the distance metric, and introduce a trimming factor $f=0.1$ to discard extremely large values of $\mu_i = r_{2,i} / r_{1,i}$, ensuring robustness against outlier data points that may violate the estimator’s assumptions.
+%
+The detailed algorithm is summarized in Algorithm~\ref{alg:intrinsic_dimension}.
+\input{algorithms/alg_intrinsic_dimension}
+
+\section{Interpretability Analysis of Latent Thoughts}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+To better understand the observed patterns in the correct and incorrect latent thoughts, we provide an interpretability analysis by decoding the latent thoughts at different reasoning steps and examining how they evolve toward (or away from) the correct answer. To make this analysis clear, we use a one-digit arithmetic dataset, where the model must output a single digit answer to an arithmetic question. This setting is ideal for interpretability because the operations are simple and easy to verify, and we can directly inspect how the decoded latent thoughts evolve at the specific token position corresponding to the answer digit. Using the coda module (decoder) from the latent reasoning language model, we decode the latent thought at each thinking step into its top-5 most probable tokens and analyze the progression of latent thoughts and show representative examples with correct and incorrect thinking patterns in Figure~\ref{fig:interpretability_analysis}.
+
+For correct examples, we observe that the correct digit token emerges among the top-k candidates at middle thinking steps, then rises to rank-1 and stabilizes in later steps. In contrast, for incorrect examples, the correct token does not consistently rise in rank, the latent thoughts show fluctuation or drifting behavior and the final step fails to converge to the correct answer. The pattern differences between correct and incorrect latent thoughts demonstrate that the latent reasoning language model encodes meaningful reasoning patterns in its latent thoughts that reflect its thinking processes.
+\begin{figure*}
+\begin{AIBox}{}
+\parbox[t]{\textwidth}{
+\small\begin{alltt}
+\textbf{Example 1 with Correct Thinking Patterns (Answer: 7) }\\
+\\
+Question: What is (1 * 1) + 6? Answer:\\
+Top-5 ranked tokens decoded from latent thoughts at different thinking steps:\\
+Step 16: [-, 1, 3, 2, 4]\\
+Step 32: [1, 7, 6, 2, 8]\\
+Step 48: [7, 6, 1, 8, 2]\\
+Step 64: [7, 6, 1, 8, 2]
+\tcbline
+\textbf{Example 2 with Correct Thinking Patterns (Answer: 5)}\\
+\\
+Question: What is (7 + 2) - 4? Answer:\\
+Top-5 ranked tokens decoded from latent thoughts at different thinking steps:\\
+Step 16: [-, 1, 3, 2, 4]\\
+Step 32: [1, 5, 9, 2, 6]\\
+Step 48: [5, 1, -, 7, 4]\\
+Step 64: [5, 7, 9, 1, -]
+\tcbline
+\textbf{Example 3 with Correct Thinking Patterns (Answer: 7)}\\
+\\
+Question: What is (3 * 2) + 1? Answer:\\
+Step 16: [-, 1, 3, 2, 4]\\
+Step 32: [6, 1, 5, 7, 4]\\
+Step 48: [6, 1, 7, 5, 9]\\
+Step 64: [7, 1, 6, 5, 9]
+\tcbline
+\textbf{Example 4 with Incorrect Thinking Patterns (Answer: 8)}\\
+\\
+Question: What is (8 - 2) + 2? Answer:\\
+Top-5 ranked tokens decoded from latent thoughts at different thinking steps:\\
+Step 16: [-, 1, 2, 3, 4]\\
+Step 32: [6, 4, 1, -, 5]\\
+Step 48: [6, 4, -, 5, 8]\\
+Step 64: [6, 4, 8, -, 1]
+\tcbline
+\textbf{Example 5 with Incorrect Thinking Patterns (Answer: 7):}\\
+\\
+Question: What is (3 - 2) + 6? Answer:\\
+Top-5 ranked tokens decoded from latent thoughts at different thinking steps:\\
+Step 16: [-, 1, 3, 2, 4]\\
+Step 32: [1, -, 5, 2, 3]\\
+Step 48: [3, 4, 5, 2, 1]\\
+Step 64: [4, 5, 6, 3, 2]
+\tcbline
+\textbf{Example 6 with Incorrect Thinking Patterns (Answer: 7):}\\
+\\
+Question: What is (6 - 4) + 5? Answer:\\
+Top-5 ranked tokens decoded from latent thoughts at different thinking steps:\\
+Step 16: [-, 1, 3, 2, 4]\\
+Step 32: [1, -, 2, 4, 3]\\
+Step 48: [2, 1, 3, 4, 6]\\
+Step 64: [1, 2, 3, 5, 4]
+\end{alltt}}
+
+\end{AIBox}
+\caption{Tokens decoded from correct and incorrect latent thoughts at different thinking steps.}
+\label{fig:interpretability_analysis}
+\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Training Details of the Latent Classifier}\label{appendix:training_details_latent_classifier}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+To capture the thinking dynamics of the latent thoughts across different thinking steps, we design a latent classifier that can operate over the sequence of latent representations.
+%
+Specifically, we adopt a 2-layer Transformer~\citep{vaswani2017attention} with Sinusoidal positional encoding to encode the sequence of latent thoughts. The configuration of the latent classifier (hidden dimensionality 5280, number of attention heads 55, and MLP hidden size 17920) follows the configuration of \LRLM. 
+%
+While we observe in our experiments that alternative configurations also bring comparable performance, we use this configuration as the default setting. 
+%
+The output sequences of the Transformer are aggregated with mean pooling over the dimension $T$ (number of thinking steps), followed by a two-layer MLP with ReLU as activation function to produce logits for binary classification. Training is performed with binary cross-entropy loss for 10 epochs using the Adam optimizer~\citep{Diederik2015adam} with a learning rate of $5e-6$.
+
+However, a challenge is that each latent thought $\mathbf{h}_t \in \mathbb{R}^{L \times d}$ is a matrix rather than a vector, and this requires an aggregation over the dimension $L$ before it can be processed by the Transformer. 
+%
+To address this challenge, we experiment with different aggregation strategies in Table~\ref{tab:classifier_performance_different_aggregration_strategies}, and empirically we observe that apply mean pooling over the hidden states corresponding to all the $L$ tokens yields better performance than mean pooling over the hidden states corresponding to the first 10 or the last 10 tokens. Therefore, we choose to apply mean pooling over the dimension $L$ for each latent thought $\mathbf{h}_t$. This design choice is also motivated by the common practices in probing methods, where mean pooling over the sequence dimension is widely adopted as a standard approach for deriving fixed-length representations from variable-length sequences~\citep{hewitt2019structural,tenney2019bert,ren2023outofdistribution}. 
+\input{tables/table_aggregation_strategy}
+%\section{Comparison of Different Aggregation Strategies}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Additional Theoretical Results}\label{appendix:thm_results}
+\subsection{Proof for Theorem~\ref{thm:sample_distribution_solution}}\label{appendix:sample_distribution_solution_proof}
+\begin{theorem}\label{thm:sample_distribution_solution_appendix}
+    Given a sampled set of $\{z_i\}^{N}_{i=1}$ to approximate the policy distribution $\pi^{*}(z|x)$, for each $z_i$, the solution to Equation~\ref{eqn:KL_constrained_reward_optimization} is 
+    $\pi_{r}(z_i|x)=\frac{\piref(z_i\mid x)\exp\left(\frac{1}{\beta}r(x, z_i)\right)}{\sum^{N}_{j=1}\piref(z_j\mid x)\exp\left(\frac{1}{\beta}r(x, z_j)\right)}$.
+\end{theorem}
+\begin{proof}
+Since we are sampling from a discrete set of $\{z_i\}^{N}_{i=1}$, we represent the policy distribution $\pi(z|x)$ as a vector over the set of latent thoughts $\{z_i\}^{N}_{i=1}$. To ensure that $\pi(z|x)$ forms a valid policy distribution, $\pi(z|x)$ should satisfy the constraint $\sum^{N}_{i=1}\pi(z_i|x)=1$. To solve the optimization problem from Equation~\ref{eqn:KL_constrained_reward_optimization} subject to this constraint, we introduce a Lagrange multiplier $\lambda$ and construct the Lagrangian:
+\begin{equation*}
+\mathcal{L}(\pi(z|x),\lambda)=\sum\nolimits^{N}_{i=1}\left[\pi(z_i|x)r(x,z_i)-\beta\pi(z_i|x)\log{\frac{\pi(z_i|x)}{\piref(z_i|x)}}\right]+\lambda\sum\nolimits^{N}_{i=1}(\pi(z_i|x)-1) 
+\end{equation*}
+To find the solution to this problem, since we are optimizing over a probability distribution $\pi(z|x)$, we can compute the partial derivative of the objective $\mathcal{L}(\pi(z|x),\lambda)$ with respect to each coordinate $\pi(z_i|x)$. Setting the partial derivative to zero, for each $z_i$, we have:
+\begin{equation*}
+    \frac{\partial \mathcal{L}(\pi(z|x),\lambda)}{\partial\pi(z_i|x)}=r(x,z_i)-\beta\left(\log{\frac{\pi(z_i|x)}{\piref(z_i|x)}+1}\right)+\lambda=0
+\end{equation*}
+By rearranging this equation, we can get:
+\begin{equation*}
+    \frac{\pi(z_i|x)}{\piref(z_i|x)}=\exp(\frac{r(x,z_i)+\lambda-\beta}{\beta})\Rightarrow\pi(z_i|x)\propto\piref(z_i|x)\exp(\frac{r(x,z_i)}{\beta})
+\end{equation*}
+Plugging in the constraint that $\sum^{N}_{i=1}\pi(z_i|x)=1$, for each $z_i$, we obtain the solution:
+\begin{equation*}
+\pi_{r}(z_i|x)=\frac{\piref(z_i\mid x)\exp\left(\frac{1}{\beta}r(x, z_i)\right)}{\sum^{N}_{j=1}\piref(z_j\mid x)\exp\left(\frac{1}{\beta}r(x, z_j)\right)}
+\end{equation*}
+\end{proof}
+Here we use the subscript notation $\pi_{r}$ to indicate that the policy is derived from the reward function $r(x, z)$. For simplicity, we omit the superscript $*$, but $\pi_{r}$ still represents the optimized policy. 
+
+Intuitively, the optimized policy $\pi_{r}$ reweights the original policy $\piref$ with the exponential reward term $\exp(\frac{1}{\beta}r(x, z))$: latent thinking trajectories with higher reward $r(x,z)$ will have higher probability of being selected, while trajectories with lower reward will have lower probability of being selected. The weight $\beta$ controls how strong this adjustment is: when $\beta$ is small, the policy becomes more ``greedy'' and focuses heavily on the high-rewarded latent thinking trajectories; when $\beta$ is large, it stays closer to the original policy $\piref$.
+\subsection{Proof for Theorem~\ref{thm:sampling_probability}}\label{appendix:sampling_probability_proof}
+\begin{theorem}\label{thm:sampling_probability_appendix}
+    In Algorithm~\ref{alg:latent_probabilistic_sampling}, for each $i$, the probability of $z_i$ being drawn and accepted is $\Pr(z_i|u_i<\phi_i,x)=\pi_{r}(z_i|x)$.
+\end{theorem}
+\begin{proof}
+    In Algorithm~\ref{alg:latent_probabilistic_sampling}, since the distribution $\pi_{r}(z|x)$ is difficult to directly sample from, we would like to draw candidate samples $z$ from the distribution $\piref(z|x)$, and only accept those samples that follow the distribution $\pi_{r}(z|x)$ with probability $\frac{\pi_{r}(z|x)}{M\cdot\piref(z|x)}$. Here $M$ is a constant, and for the acceptance probability to be valid, it must satisfy $\frac{\pi_{r}(z|x)}{M\cdot\piref(z|x)}\leq 1$, that is, $M\geq\frac{\pi_{r}(z_i|x)}{\piref(z_i|x)}$ for each $z_i$. We choose the smallest possible $M$ so that each $z_i$ has the highest chance of being accepted, because a tight 
+$M$ avoids unnecessary rejections and makes the algorithm more efficient. Therefore, the value of $M$ can be calculated as:
+    \begin{align*}
+  M=\max_{1\leq i\leq N}\{\frac{\pi_{r}(z_i|x)}{\piref(z_i|x)}\}&=\max_{1\leq i\leq N}\{\frac{\exp\left(\frac{1}{\beta}r(x, z_i)\right)}{\sum^{N}_{j=1}\piref(z_j\mid x)\exp\left(\frac{1}{\beta}r(x, z_j)\right)}\}\\&=\frac{\exp\left(\frac{1}{\beta}r_{\text{max}}\right)}{\sum^{N}_{j=1}\piref(z_j\mid x)\exp\left(\frac{1}{\beta}r(x, z_j)\right)}
+    \end{align*} where $r_{\text{max}}$ is the maximum reward calculated in Algorithm~\ref{alg:latent_probabilistic_sampling}. Then we can get the acceptance probability $\phi_i$ for each $z_i$:
+    \begin{equation*}
+    \phi_i=\frac{\pi_{r}(z_i|x)}{M\cdot\piref(z_i|x)}=\frac{\exp\left(\frac{1}{\beta}r(x, z_i)\right)}{M\cdot\sum^{N}_{j=1}\piref(z_j\mid x)\exp\left(\frac{1}{\beta}r(x, z_j)\right)}=\exp((r(x, z_i)-r_{\text{max}})/\beta)
+  \end{equation*}
+For each candidate $z_i$ we have:
+\begin{equation*}
+\Pr(z_i,\ u_i<\phi_i\mid x)
+= \piref(z_i\mid x)\cdot \phi_i
+= \piref(z_i\mid x)\cdot \frac{\pi_{r}(z_i|x)}{M\cdot\piref(z_i|x)}
+= \frac{\pi_{r}(z_i|x)}{M}.
+\end{equation*}
+The total probability of acceptance is:
+\begin{equation*}
+\Pr(u_i<\phi_i\mid x)
+= \sum_{j=1}^N \Pr(z_j,\ u_i<\phi_i\mid x)
+= \sum_{j=1}^N \frac{\pi_{r}(z_j|x)}{M}
+= \frac{1}{M}\sum_{j=1}^N \pi_{r}(z_j|x)=\frac{1}{M}.
+\end{equation*}
+Therefore, by Bayes rule, the probability of $z_i$ being drawn and accepted is: 
+\begin{equation*}
+\Pr(z_i \mid u_i<\phi_i, x)
+=\frac{\Pr(z_i,\ u_i<\phi_i,\mid x)}{\Pr(u_i<\phi_i\mid x)}= \frac{\frac{\pi_{r}(z_i|x)}{M}}{\frac{1}{M}}
+= \pi_{r}(z_i|x).
+\end{equation*}
+\end{proof}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Theoretical Analysis on Correctness Rate}\label{appendix:theoretical_analysis_correctness_rate}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+To analyze the expected correctness rate of the \LTO algorithm using the trained latent classifier as \LRM, we first introduce the notion of a \emph{perfect reward model}, which serves as an oracle for evaluating the correctness of latent thinking trajectories. This formalization provides a reference point for quantifying the performance of the latent policy derived from the trained \LRM: 
+\begin{definition}[Perfect reward model]
+A perfect reward model $r^{*}(x, z)$ is a function that always assigns a value of 1.0 if the latent thinking trajectory $z$ is correct for question $x$, and 0.0 if the latent thinking trajectory $z$ is incorrect for question $x$. Using this definition, for a question $x$, the expected correctness rate of a latent policy $\pi$ can be represented as $\mathbb{E}_{z\sim\pi} r^{*}(x,z)$.
+\end{definition}
+Next, we introduce the following theorem to measure how the expected correctness rate of $z\sim\pi_{r}(z|x)$ (the policy derived from the trained \LRM) relates to that of $z\sim\pi_{r^{*}}(z|x)$ (the policy derived from the perfect reward model):
+\begin{theorem}\label{thm:reward_bound_appendix}
+    For a question $x$, for each sample $z_i$, if the error between the trained reward model $r(x,z_i)$ and the perfect reward model $r^{*}(x,z_i)$ is bounded by $\epsilon$, that is, $\left|r(x,z_i)-r^{*}(x,z_i)\right|\leq\epsilon$, then the performance gap of using an imperfect reward model is upper bounded by $\left|\mathbb{E}_{z\sim\pi_{r}(z|x)}r^{*}(x,z)-\mathbb{E}_{z\sim\pi_{r^{*}}(z|x)}r^{*}(x,z)\right|\leq\sqrt{\frac{4\epsilon}{\beta}}$
+\end{theorem}
+\begin{proof}
+The expectation of the performance gap $\Delta$ between using the trained reward model and using the perfect reward model is:
+\begin{align*}
+\Delta &= |\mathbb{E}_{z\sim\pi_{r}(z|x)}r^{*}(x,z)-\mathbb{E}_{z\sim\pi_{r^{*}}(z|x)}r^{*}(x,z)|\\
+&=\sum\nolimits^{N}_{i=1}|\pi_{r}(z_i|x)-\pi_{r^{*}}(z_i|x)|\cdot r^{*}(x,z_i)\\
+&\leq \sum\nolimits^{N}_{i=1}|\pi_{r}(z_i|x)-\pi_{r^{*}}(z_i|x)|\cdot 1
+\end{align*}
+Using Pinsker's inequality~\citep{cover2006elements}, we have:
+\begin{equation*}
+\sum\nolimits^{N}_{i=1}|\pi_{r}(z_i|x)-\pi_{r^{*}}(z_i|x)|\leq \sqrt{2\kldiv\left(\pi_{r}(z|x)||\pi_{r^{*}}(z|x)\right)}
+\end{equation*}
+Recall that in Theorem~\ref{thm:sample_distribution_solution}, we can get the solution $\pi_{r}(z_i|x)=\frac{\piref(z_i\mid x)\exp\left(\frac{1}{\beta}r(x, z_i)\right)}{\sum^{N}_{j=1}\piref(z_j\mid x)\exp\left(\frac{1}{\beta}r(x, z_j)\right)}$, $\pi_{r^{*}}(z_i|x)=\frac{\piref(z_i\mid x)\exp\left(\frac{1}{\beta}r^{*}(x, z_i)\right)}{\sum^{N}_{j=1}\piref(z_j\mid x)\exp\left(\frac{1}{\beta}r^{*}(x, z_j)\right)}$. Therefore, 
+the KL divergence between the policy distributions can be written as:
+\begin{align*}
+   &\kldiv\left(\pi_{r}(z|x)||\pi_{r^{*}}(z|x)\right)\\
+   =&\sum\nolimits^{N}_{i=1}\pi_{r}(z_i|x)\log\frac{\pi_{r}(z_i|x)}{\pi_{r^{*}}(z_i|x)}\\
+    =&\sum\nolimits^{N}_{i=1}\pi_{r}(z_i|x)\log\frac{\frac{\cancel{\piref(z_i\mid x)}\exp\left(\frac{1}{\beta}r(x, z_i)\right)}{\sum^{N}_{j=1}\piref(z_j\mid x)\exp\left(\frac{1}{\beta}r(x, z_j)\right)}}{\frac{\cancel{\piref(z_i\mid x)}\exp\left(\frac{1}{\beta}r^{*}(x, z_i)\right)}{\sum^{N}_{j=1}\piref(z_j\mid x)\exp\left(\frac{1}{\beta}r^{*}(x, z_j)\right)}}\\
+    =&\sum\nolimits^{N}_{i=1}\pi_{r}(z_i|x)\bigg[\log\exp(\frac{1}{\beta}(r(x,z_i)-r^{*}(x,z_i)))-\log\frac{\sum^{N}_{j=1}\piref(z_j\mid x)\exp\left(\frac{1}{\beta}r(x, z_j)\right)}{\sum^{N}_{j=1}\piref(z_j\mid x)\exp\left(\frac{1}{\beta}r^{*}(x, z_j)\right)}\bigg]\\
+    =&\sum\nolimits^{N}_{i=1}\pi_{r}(z_i|x)\bigg[(\frac{1}{\beta}(r(x,z_i)-r^{*}(x,z_i)))\\&-\log\frac{\sum^{N}_{j=1}\piref(z_j\mid x)\exp\left(\frac{1}{\beta}r^{*}(x, z_j)\right)\exp\left(\frac{1}{\beta}(r(x,z_j)-r^{*}(x, z_j))\right)}{\sum^{N}_{j=1}\piref(z_j\mid x)\exp\left(\frac{1}{\beta}r^{*}(x, z_j)\right)}\bigg]\\
+    =&\sum\nolimits^{N}_{i=1}\pi_{r}(z_i|x)\bigg[(\frac{1}{\beta}(r(x,z_i)-r^{*}(x,z_i)))\\&-\log\sum^{N}_{j=1}\left(\frac{\piref(z_j\mid x)\exp\left(\frac{1}{\beta}r^{*}(x, z_j)\right)}{\sum^{N}_{j=1}\piref(z_j\mid x)\exp\left(\frac{1}{\beta}r^{*}(x, z_j)\right)}\right)\exp\left(\frac{1}{\beta}(r(x,z_j)-r^{*}(x, z_j))\right)\bigg]\\
+    =&\sum\limits^{N}_{i=1}\pi_{r}(z_i|x)\bigg[\frac{1}{\beta}(r(x,z_i)-r^{*}(x,z_i))-\log\sum\limits^{N}_{j=1}\pi_{r^{*}}(z_j|x)\exp\!\bigg(\frac{1}{\beta}(r(x,z_j)-r^{*}(x,z_j))\!\bigg)\bigg]
+    \end{align*}
+    Using Jensen's inequality, we have:
+    \begin{align*}
+        &-\log\sum\limits^{N}_{j=1}\pi_{r^{*}}(z_j|x)\exp\!\bigg(\frac{1}{\beta}(r(x,z_j)-r^{*}(x,z_j))\!\bigg)\\
+        &\leq -\sum\limits^{N}_{j=1}\pi_{r^{*}}(z_j|x)\log\exp\!\bigg(\frac{1}{\beta}(r(x,z_j)-r^{*}(x,z_j))\!\bigg)=-\sum\limits^{N}_{j=1}\pi_{r^{*}}(z_j|x)\!\bigg(\frac{1}{\beta}(r(x,z_j)-r^{*}(x,z_j))\!\bigg)
+    \end{align*}
+Therefore, we have:
+\begin{align*}
+    &\kldiv\left(\pi_{r}(z|x)||\pi_{r^{*}}(z|x)\right)\\
+    \leq&\sum\limits^{N}_{i=1}\pi_{r}(z_i|x)\bigg[\frac{1}{\beta}(r(x,z_i)-r^{*}(x,z_i))-\sum\limits^{N}_{j=1}\pi_{r^{*}}(z_j|x)\!\bigg(\frac{1}{\beta}(r(x,z_j)-r^{*}(x,z_j))\!\bigg)\bigg]\\
+    \leq&\sum\limits^{N}_{i=1}\pi_{r}(z_i|x)\bigg[\frac{1}{\beta}|r(x,z_i)-r^{*}(x,z_i)|+\sum\limits^{N}_{j=1}\pi_{r^{*}}(z_j|x)\!\bigg(\frac{1}{\beta}|r(x,z_j)-r^{*}(x,z_j)|\!\bigg)\bigg]\\
+    \leq&\sum\nolimits^{N}_{i=1}\pi_{r}(z_i|x)\left[\frac{\epsilon}{\beta}+\frac{\epsilon}{\beta}\sum\nolimits^{N}_{j=1}\pi_{r^{*}}(z_j|x)\right]
+\end{align*}
+    %\begin{align*}
+    %\leq&\sum\limits^{N}_{i=1}\pi_{r}(z_i|x)\bigg[\frac{1}{\beta}|r(x,z_i)-r^{*}(x,z_i)|+\log\sum\limits^{N}_{j=1}\pi_{r}(z_j|x)\exp\!\bigg(\frac{1}{\beta}(|r(x,z_j)-r^{*}(x,z_j)|)\!\bigg)\bigg]\\
+    %\leq&\sum\nolimits^{N}_{i=1}\pi_{r}(z_i|x)\left[\frac{\epsilon}{\beta}+\log\sum\nolimits^{N}_{j=1}\pi_{r}(z_j|x)\exp(\frac{\epsilon}{\beta})\right]\\
+    %=&\sum\nolimits^{N}_{i=1}\pi_{r}(z_i|x)\left[\frac{\epsilon}{\beta}+\frac{\epsilon}{\beta}+\log\sum\nolimits^{N}_{j=1}\pi_{r}(z_j|x)\right]
+%\end{align*}
+In Theorem~\ref{thm:sample_distribution_solution}, we have the constraint that $\sum^{N}_{j=1}\pi_{r}(z_j|x)=1$, and $\sum^{N}_{j=1}\pi_{r^{*}}(z_j|x)=1$. Therefore, the KL divergence between the policy distributions can be written as:
+\begin{align*}
+\kldiv\left(\pi_{r}(z|x)||\pi_{r^{*}}(z|x)\right)&\leq\sum\nolimits^{N}_{i=1}\pi_{r}(z_i|x)\left[\frac{\epsilon}{\beta}+\frac{\epsilon}{\beta}\sum\nolimits^{N}_{j=1}\pi_{r^{*}}(z_j|x)\right]\\
+&=\sum\nolimits^{N}_{i=1}\pi_{r}(z_i|x)\left[\frac{\epsilon}{\beta}+\frac{\epsilon}{\beta}\right]=1\cdot\frac{2\epsilon}{\beta}=\frac{2\epsilon}{\beta}
+\end{align*}
+Putting all the results together, we get:
+\begin{equation*}
+    |\mathbb{E}_{z\sim\pi_{r}(z|x)}r^{*}(x,z)-\mathbb{E}_{z\sim\pi_{r^{*}}(z|x)}r^{*}(x,z)|\leq\sqrt{\frac{4\epsilon}{\beta}}
+\end{equation*}
+\end{proof}
+This theorem establishes a bound on the expected correctness rate of trajectories $z$ generated using the trained \LRM in comparison to the perfect reward model. As the performance of the classifier improves, the error $\epsilon$ will drop, leading to a tighter bound and higher expected correctness rate.
+%
+Notably, even if the latent policy of the base model is not explicitly optimized, a more accurate \LRM with a smaller $\epsilon$ enables \LTO to more accurately select only the correct latent thinking trajectories, thereby improving the expected correctness rate.
+%
+Empirically, as shown in Section~\ref{sec:training_latent_classifier}, the classifier achieves a very high AUC-ROC, implying that $\epsilon$ is small in practice. 
+%
+From a theoretical perspective, standard generalization bounds for binary classifiers guarantee that the reward error $\epsilon$ is controlled by the classification error on the training set plus a complexity term of order $O(\sqrt{1/S})$ with $S$ being the number of training samples~\citep{bartlett2002rademacher, bartlett2017spectrally}.
+%
+Consequently, with a well-trained classifier as the reward model, this bound guarantees that the expected correctness rate under the trained reward model closely matches that of the perfect reward model.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Experimental Details}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Dataset Details}
+\label{appendix:dataset_details}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+We select five datasets from three domains for a comprehensive evaluation. The details of datasets are described as follows:
+
+$\bullet$ {\it Math Problems}
+
+\begin{itemize}[leftmargin=20px]
+    %\vspace{-0.05in}
+    \item {\bf GSM8K}~\citep{cobbe2021training} is a collection of grade-school math word problems written by human annotators. The dataset is designed to evaluate arithmetic and reasoning skills at the grade-school level and serves as a benchmark for testing the multi-step reasoning capability of LLMs. It is divided into 7,473 training problems and 1,318 test problems, and each problem is paired with a detailed step-by-step solution based on basic arithmetic operations.
+    \item {\bf GSM-Symbolic}~\citep{mirzadeh2025gsmsymbolic} is a more challenging extension of GSM8K that generates diverse math problem variants using symbolic templates. It includes 5,000 test problems but does not provide a training split.
+    \item {\bf SVAMP}~\citep{patel2021nlp} is also a collection of grade-school math word problems. It is constructed by applying systematic variations to seed examples from the ASDiv dataset~\citep{miao2020diverse} to discourage shortcut reasoning patterns. The dataset is split into 35,381 training problems and 1,000 test problems.
+\end{itemize}
+
+
+$\bullet$ {\it Commonsense Reasoning}
+
+\begin{itemize}[leftmargin=20px]
+    %\vspace{-0.05in}
+    \item {\bf CommonsenseQA}~\citep{talmor2019commonsenseqa} is a multiple-choice question answering benchmark dataset designed to evaluate the capability of LLMs to perform commonsense reasoning. It consists of 9,741 training problems and 1,221 test problems.
+\end{itemize}
+
+$\bullet$ {\it Code Generation}
+
+\begin{itemize}[leftmargin=20px]
+    %\vspace{-0.05in}
+    \item {\bf MBPP}~\citep{austin2021program} is a benchmark dataset for evaluating the capability of LLMs to generate programming codes. It consists of Python programming problems covering basic algorithmic and data-processing tasks. Each problem is paired with a natural language description, a reference implementation, and multiple test cases. The generated code is considered correct only if it successful passes all the test cases. The dataset is divided into 374 training problems and 483 test problems.
+\end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Implementation Details}
+\label{appendix:implementation_details}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+To train the latent classifier as the \LRM, we generate multiple latent thinking trajectory-answer pairs for each dataset. 
+%
+For GSM8K, SVAMP, and CommonsenseQA, we sample 5 different latent thinking trajectories and answers per problem from the training split. 
+%
+For MBPP, which contains only 373 training problems, we sample 50 latent thinking trajectories and answers per problem to ensure sufficient training data. 
+%
+The latent classifier is trained to predict the correctness of the answer from the latent thoughts on each dataset. For GSM-Symbolic, which does not include a training split, we use the classifier trained on GSM8K.
+%
+We evaluate the performance of baselines and our approach on the test split of each dataset. For \LTO and the baselines, we allocate a sampling budget of $N{=}20$ per problem. Each method selects a single final solution from these candidates (i.e., the number of required samples $M{=}1$). For baselines, the solution with the highest evaluation score (e.g., verbal evaluation score, confidence score or CoE score) will be selected. We adopt the default setting with sampling budget $N{=}20$ and latent thinking steps $T{=}32$, and the performances with different sampling budget, different $\beta$s and different number of thinking steps are studied in Section~\ref{appendix:performance_sampling_budget}, Section~\ref{appendix:performance_betas} and Section~\ref{sec:performance_thinking_steps}, respectively.
+
+For {\LRM}s on general LLMs, we follow the same training configuration as in Appendix~\ref{appendix:training_details_latent_classifier}. For each LLM, we configure the corresponding \LRM with the same hidden dimensionality, number of attention heads, and MLP hidden size as that LLM, following the training setup in Appendix~\ref{appendix:training_details_latent_classifier}. For example, if an LLM has hidden dimensionality 4096, number of attention heads 32, and MLP hidden size 14336, then the LRM also has the same hidden dimensionality 4096, attention heads 32 and MLP hidden size 14336. The hidden states from all layers are stacked together to form a sequence of latent thoughts. For example, the hidden representation from layer 1 is treated as latent thought step 1, the representation from layer 2 as step 2, and so on. This stacked sequence of latent thoughts from general LLMs serves as the input to the \LRM, and it has exactly the same format as the sequences of latent thoughts from \LRLM. To ensure that general LLMs will generate different latent representations for multiple samples of latent representations, we randomly sample one example (problem-answer pair) from the training split of each dataset, and append this example as an in-context demonstration to the input question. For GSM-Symbolic, which lacks a training set, we instead draw examples from the training set of GSM8K. Because a new example is drawn at each iteration, the input tokens and consequently the latent representations will be different across multiple samples.
+\begin{figure*}
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/classifier_accuracy_gsm8k.pdf}
+    \caption{Accuracy on GSM8K.}
+    \label{fig:classifier_accuracy_gsm8k}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/classifier_roc_auc_gsm8k.pdf}
+    \caption{ROC-AUC on GSM8K.}
+    \end{subfigure}
+    
+    \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/classifier_accuracy_svamp.pdf}
+    \caption{Accuracy on SVAMP.}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/classifier_roc_auc_svamp.pdf}
+    \caption{ROC-AUC on SVAMP.}
+    \end{subfigure}
+
+        %\begin{subfigure}[t]{0.49\textwidth}
+    %\centering
+    %\includegraphics[width=\textwidth]{figures/classifier_f1_gsm8k.pdf}
+    %\caption{F1 on GSM8K.}
+    %\end{subfigure}
+    %\begin{subfigure}[t]{0.49\textwidth}
+    %\centering
+    %\includegraphics[width=\textwidth]%{figures/classifier_f1_svamp.pdf}
+    %\caption{F1 on SVAMP.}
+    %\end{subfigure}
+
+    \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/classifier_accuracy_mbpp.pdf}
+    \caption{Accuracy on MBPP.}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/classifier_roc_auc_mbpp.pdf}
+    \caption{ROC-AUC on MBPP.}
+    \end{subfigure}
+    
+    \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/classifier_accuracy_commonsenseqa.pdf}
+    \caption{Accuracy on CommonsenseQA.}
+    \label{fig:classifier_accuracy_mbpp}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/classifier_ROC_AUC_commonsenseqa.pdf}
+    \caption{ROC-AUC on CommonsenseQA.}
+    \end{subfigure}
+
+        %\begin{subfigure}[t]{0.49\textwidth}
+    %\centering
+    %\includegraphics[width=\textwidth]{figures/classifier_f1_mbpp.pdf}
+    %\caption{F1 on MBPP.}
+    %\end{subfigure}
+    %\begin{subfigure}[t]{0.49\textwidth}
+    %\centering
+    %\includegraphics[width=\textwidth]%{figures/classifier_f1_commonsenseqa.pdf}
+    %\caption{F1 on CommonsenseQA.}
+    %\label{fig:classifier_f1_mbpp}
+    %\end{subfigure}
+
+    \caption{Test-set performance of the latent classifier (measured by Accuracy and ROC-AUC) on the test set trained with varying numbers of latent thinking steps on the SVAMP and MBPP datasets.}
+    \label{fig:classifier_additional_performance_results}
+\end{figure*}
+\begin{figure*}
+    \centering
+\begin{subfigure}[t]{0.19\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/sample_numbers_gsm8k.pdf}
+    \caption{GSM8K}
+    \label{fig:sample_numbers_gsm8k}
+    \end{subfigure}
+        \begin{subfigure}[t]{0.19\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/sample_numbers_gsmsymbolic.pdf}
+    \caption{GSM-Symbolic}
+    \label{fig:sample_numbers_gsmsymbolic}
+    \end{subfigure} 
+    \begin{subfigure}[t]{0.19\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/sample_numbers_svamp.pdf}
+    \caption{SVAMP}
+    \label{fig:sample_numbers_svamp}
+    \end{subfigure} 
+ \begin{subfigure}[t]{0.19\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/sample_numbers_commonsenseqa.pdf}
+    \caption{CQA}
+    \label{fig:sample_numbers_commonsenseQA}
+    \end{subfigure} 
+     \begin{subfigure}[t]{0.19\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/sample_numbers_mbpp.pdf}
+    \caption{MBPP}
+    \label{fig:sample_numbers_mbpp}
+    \end{subfigure} 
+    
+    \caption{Performance of \LTO with different numbers of samples. ``CQA'' refers to the CommonsenseQA dataset. ``Base'' refers to the performance of the base model.}
+    \label{fig:sample_numbers}
+\end{figure*}
+\begin{figure*}
+    \centering
+\begin{subfigure}[t]{0.19\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/beta_gsm8k.pdf}
+    \caption{GSM8K}
+    \label{fig:beta_gsm8k}
+    \end{subfigure}
+        \begin{subfigure}[t]{0.19\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/beta_gsmsymbolic.pdf}
+    \caption{GSM-Symbolic}
+    \label{fig:beta_gsmsymbolic}
+    \end{subfigure} 
+    \begin{subfigure}[t]{0.19\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/beta_svamp.pdf}
+    \caption{SVAMP}
+    \label{fig:beta_svamp}
+    \end{subfigure} 
+ \begin{subfigure}[t]{0.19\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/beta_commonsenseqa.pdf}
+    \caption{CQA}
+    \label{fig:beta_commonsenseQA}
+    \end{subfigure} 
+     \begin{subfigure}[t]{0.19\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/beta_mbpp.pdf}
+    \caption{MBPP}
+    \label{fig:beta_mbpp}
+    \end{subfigure} 
+    
+    \caption{Performance of \LTO with different betas. ``CQA'' refers to the CommonsenseQA dataset. ``Base'' refers to the performance of the base model.}
+    \label{fig:performance_betas}
+\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Additional Experimental Results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Additional Results on the Performance of the Latent Classifier}\label{appendix:additional_results_classifier}
+Additional experimental results on the performance of latent classifier for \LRLM using different thinking steps on different datasets are shown in Figure~\ref{fig:classifier_additional_performance_results}.
+
+Additional experimental results on the performance of latent classifier for general LLMs on different datasets are shown in Table~\ref{tab:classification_performance_general_llms}. In this setting, each {\LRM} is trained with the latent representations from all the layers of each general LLM.
+\input{tables/table_classification_accuracy_general_llms}
+
+We can see that the latent classifier achieves strong performance on the test set for \LRLM and general LLMs across diverse datasets. These results demonstrate that latent thoughts encode appropriate reward signals that can indicate whether they will lead to the correct answer.
+\subsection{Performance with Different Sampling Budget}
+\label{appendix:performance_sampling_budget}
+To investigate the performance of \LTO with different sampling budget $N$, we vary $N$ from $1$ to $20$ and report the performance of \LTO in Figure~\ref{fig:sample_numbers}.
+%
+Performance steadily improves as $N$ increases, as a larger $N$ enhances the diversity of sampled latent thoughts and increases the likelihood that at least one sampled latent thinking trajectory is correct. 
+%
+Moreover, even with a very small budget (e.g., $N=2$), \LTO can still achieve substantial performance improvement compared with the base model, demonstrating that \LTO is sample-efficient without the need for a large sampling budget.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Performance with Different Betas}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{appendix:performance_betas}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+To investigate the performance of \LTO with different $\beta$, we vary $\beta$ from $1e-3$ to $1e-1$ and report the performance of \LTO in Figure~\ref{fig:performance_betas}.
+%
+Across different values of $\beta$, \LTO consistently outperforms the base model, demonstrating that it can reliably improve the latent thinking processes with different choices of the hyperparameter.
+\subsection{Performance with Different Numbers of Thinking Steps}\label{sec:performance_thinking_steps}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{tables/table_thinking_steps}
+
+While most of our evaluation uses a fixed number of latent thinking steps, we also investigate the adaptability of \LTO to latent thinking trajectories of varying thinking steps. 
+%
+Specifically, for each dataset, we train the \LRM with the sampled latent thinking trajectories with varying number of thinking steps. We then test the performance of \LTO using this \LRM trained with varying number of thinking steps. 
+
+From the experimental results in Table~\ref{tab:thinking_steps}, we can see that \LTO achieves a consistent improvement over the base model in all the cases, indicating that \LTO can be flexibly applied to latent thinking trajectories of varying numbers of thinking steps.
+%
+Interestingly, performance slightly declines as the number of steps increases.  This is attributed to the reduced diversity in the sampled latent thoughts and answers when longer thinking steps are used. For example, on SVAMP, when using 16 thinking steps, 427 problems have sampled answers that are all incorrect, 437 problems have sampled answers that are all correct, and 136 problems have both correct and incorrect answers. Therefore, the performance upper bound is $(437+136)/1000=0.573$. By comparison, when using 24 thinking steps, the split becomes $446/468/86$ with the performance upper bound calculated as $(468+85)/1000=0.554$; when using 32 thinking steps, the split becomes $454/486/60$ with the performance upper bound calculated as $(486+60)/1000=0.546$. 
+%
+
+While increasing the number of thinking steps slightly improves the expected correctness rate of the base model, it substantially reduces the diversity of sampled latent thoughts and answers, probably due to overthinking~\citep{sui2025stop}. 
+%
+As a result, fewer problems contain both correct and incorrect answers (i.e., diverse sets), leaving less room for improvement with \LTO. 
+%
+It is possible that there exists an optimal number of thinking steps that balances the expected correctness rate of the base model with the diversity of the latent thoughts and answers, and future work may design adaptive mechanisms to identify such optimal thinking steps and further improve the performance of \LTO.
+\subsection{Performance Comparison on LLM Model Family}
+\input{tables/table_llm_model_family}
+To further validate the effectiveness of \LTO on general LLMs, we conduct an additional experiment evaluating LTO on the widely-used Llama model family~\citep{touvron2023llama2,team2024llama}. The experimental results in Table~\ref{tab:llama_results} show that LTO consistently enhances the reasoning performance across all models, demonstrating its effectiveness in improving the latent thinking processes of the LLM model family.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Performance on More Challenging Benchmarks}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{tables/table_challenging_benchmark}
+To further validate the effectiveness of \LTO on general LLMs, we provide an additional analysis using two more recent LLMs (Llama-3-8B~\citep{team2024llama} and Qwen-3-4B~\citep{yang2025qwen3}) on two broader, frontier benchmarks (MATH~\citep{hendrycks2021measuring} and GPQA~\citep{rein2024gpqa}), which are known to be relatively noisy and pose more challenging reasoning conditions for LLMs. The results in Table~\ref{tab:challenging_benchmarks} show that \LTO consistently enhances the reasoning performance across all models and datasets, demonstrating its effectiveness and robustness in improving the latent thinking processes of the general LLMs on broader benchmarks under noisy and challenging conditions.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Efficiency Analysis}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{appendix:efficiency_analysis}
+We evaluate the efficiency of our framework from two perspectives: the training efficiency of \LRM and the sampling efficiency of \LTO. Our results demonstrate that \LRM requires only modest resources to train, and sampling answers with \LTO brings negligible additional cost during inference.
+\input{tables/table_training_efficiency_analysis}
+\input{tables/table_sampling_efficiency_analysis}
+\paragraph*{Training Efficiency of \LRM}
+%
+We analyze the training efficiency of the \LRM on \LRLM by measuring the total training time and GPU memory usage of \LRM across different datasets and settings. All the experiments are conducted on a single A100 GPU using the default 32 thinking steps. From the experimental results in Table~\ref{tab:training_efficiency_analysis}, we can see that the training of \LRM can be completed within reasonable time and modest memory budgets in all the settings. Such resource cost is significantly lower than that of language-based reward models~\citep{wang-etal-2024-math,lu2024autopsv}. These results demonstrate that reward modeling in the latent space offers a more efficient alternative to reward modeling in the natural language space.
+%
+\paragraph*{Sampling Efficiency of \LTO}
+%
+Compared to standard inference procedure, which directly samples latent thoughts and responses from the base model, \LTO introduces an additional step for latent reward computation. 
+%
+To evaluate the efficiency of this step on \LRLM, we compare the average computation time of the base model inference and
+the latent reward computation per sample across five datasets. 
+%
+All the experiments are conducted on a single A100 GPU using the default 32 thinking steps. 
+%
+From the experimental results in Table~\ref{tab:sampling_efficiency_analysis}, we can see that the computation time of \LRM is orders of magnitude lower than the inference time of the base model, indicating that \LRM is highly efficient and incurs little computation cost. 
+%
+Moreover, since there are not sequential dependencies between the sampled latent thinking trajectories, the sampling process in \LTO can be fully parallelized. 
+%
+Therefore, \LTO incurs only negligible additional inference cost, and its total inference time can be almost the same with direct sampling from the base model when parallel sampling is introduced.
+%
+\input{tables/table_training_efficiency_llama3}
+\input{tables/table_sampling_efficiency_analysis_llama3}
+\paragraph*{Efficiency Analysis on General LLMs}
+{\LRM}s are highly efficient both for general LLMs and \LRLM due to its lightweight architecture with only 2 layers of Transformer encoder. Its training time is small because it only requires a small amount of training data and its inference time is orders of magnitude lower than the inference time of the base LLM. For example, as shown in Table~\ref{tab:training_efficiency_analysis} and Table~\ref{tab:sampling_efficiency_analysis_llama3}, for Llama-3-8B, on a single A100 GPU, \LRM only requires about 1.5 hrs to train and 6.4GB of memory usage, and its reward computation can be completed within about 0.02s which is negligible compared with the inference time of the base LLM.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Limitation Statement}
+\label{appendix:limitation_statement}
+\paragraph*{Direct Optimization over the Latent Thinking Processes}Although \LTO is formulated as an optimization problem, it achieves the optimization objective by selectively sampling correct latent thinking trajectories that follow the optimized distribution, rather than directly modifying or updating the latent thinking policy of the base model. As with the common limitation of test-time scaling methods~\citep{gandhi2025cognitive,setlur2025scaling}, 
+when the latent thinking policy of the base model diverges substantially from the optimized distribution (e.g., when the model lacks the problem-solving ability and generates latent thoughts and answers that are all incorrect), then \LTO cannot improve the latent thinking processes, since every generated latent thinking trajectory remains incorrect. To address this limitation, future works may integrate the reward signals from \LRM into a reinforcement learning-based preference optimization framework~\citep{rafailov2023direct}, enabling direct optimization and refinement of the latent thinking processes.
+
+\paragraph*{Optimization with Multiple Reward Signals}The reward signals derived from \LTO are binary and can only indicate if the latent thinking processes will lead to the correct answer. This restricts reward modeling to the correctness of the answer but may not capture other important dimensions, such as safety or helpfulness. An interesting direction for future work is to investigate whether latent thoughts are separable along these additional dimensions, and to extend the latent classifier to incorporate these criteria for latent reward modeling. Another interesting direction is to extend \LTO into a multi-objective optimization framework~\citep{wang2025map}. This will enable simultaneous optimization of latent thinking processes across multiple reward dimensions and broaden its applicability to more general settings for reward optimization and preference alignment.
+\section{Impact Statement}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{appendix:impact_statement}
+Existing methods for reward modeling and thinking optimization in LLMs are primarily performed in the natural language space~\citep{wang-etal-2024-math,lu2024autopsv}, but may be costly and prone to the overthinking issue~\citep{sui2025stop}. Our research demonstrates that the latent representations of both \LRLM and general LLMs encode appropriate reward signals that can be directly leveraged to optimize the latent thinking processes. Furthermore, we show that reward modeling in the
+latent space can generalize across domains and shows strong
+potential for building a generalist reward model in the latent space.
+Our results demonstrate that reward modeling and scaling test-time thinking with supervision~\citep{muennighoff2025s1,guo2025deepseek,setlur2025scaling} can be performed directly in the latent space, highlighting its potential as a general, efficient, and domain-agnostic approach to improving the thinking processes of LLMs. 
+
+We do not aim to claim that latent reward modeling and latent thinking optimization are better than natural language-based reward modeling and verbal thinking optimization. Instead, we show that they offer efficient and effective alternatives in specific settings and open up promising directions for future works. For example, in resource-constrained settings where training computation is limited and inference efficiency is imperative, \LTO can effectively optimize the thinking processes of LLMs with low computation cost. We hope that our research motivates further exploration of reward modeling and thinking optimization in the latent space---a largely underexplored but highly promising direction for advancing scalable, efficient, and generalist LLM thinking and reasoning.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Ethics Statement}
+\label{appendix:ethics_statement}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+All the datasets used in this research are from public open-access benchmark datasets, which are fully anonymized and do not contain sensitive or private information.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Reproducibility Statement}\label{appendix:reproducibility_statement}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Calculation methods for the representation quality methods are provided in Appendix~\ref{appendix:representation_quality_metrics}. A complete proof of the theorems is provided in Appendix~\ref{appendix:thm_results}. The implementation details and the computational cost of the {\LRM}s are provided in Appendix~\ref{appendix:training_details_latent_classifier} and Appendix~\ref{appendix:efficiency_analysis}, respectively. The implementation details of the baseline methods are provided in Appendix~\ref{appendix:implementation_details}. Our code and datasets are available at \href{https://github.com/ninglab/LTO}{this link}.
+\section{Usage of Large Language Model}
+We do not use large language models as contributors to generate any part of the content or write the paper. Large language models are only used as the investigation object of our study (e.g., observe how large language models think in the latent space).
+\end{document}

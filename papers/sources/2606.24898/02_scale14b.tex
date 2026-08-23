@@ -1,0 +1,113 @@
+% ============================================================================
+\section{1.4B Scale Sanity Check}
+\label{app:scale14b}
+
+The controlled 44M and 129M experiments isolate the mechanism.
+We also ran a near-matched-token Ouro-scale check to ask whether the readout-side diagnostic survives in a larger implementation trained on a modern corpus.
+This appendix reports that check.
+It should be read as scale evidence only: it is not a full 2$\times$2 ablation, not a seeded causal comparison, and not an adaptive-depth speedup result.
+
+We train two Ouro-scale 1.4B models on FineWeb \citep{penedo2024fineweb}: a baseline with the standard normalized readout and a no-readout-normalization variant.
+Both are evaluated after 50{,}000 steps, corresponding to near-matched training token counts: 1.321B tokens for the baseline and 1.303B tokens for the no-readout-norm checkpoint.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.93\linewidth]{figures/scale_sensitivity.png}
+\caption{\textbf{A normalized readout hides hidden-state scale at billion-parameter scale.} We scale the final hidden state of the published Ouro 1.4B checkpoint by $\alpha \in [0.1, 10]$ before the readout and measure cross-entropy. With RMSNorm, CE is essentially unchanged across a $100\times$ range, consistent with Lemma~\ref{lemma:radial}. Without RMSNorm, the same hidden states produce a sharp scale-sensitive curve. This is a direct measurement on a trained checkpoint, not a retraining experiment.}
+\label{fig:scale}
+\end{figure}
+
+\subsection{Mechanism Diagnostic at Near-Matched Tokens}
+\label{sec:scale14b-mechanism}
+
+We first run the readout-scale diagnostic on the two trained 1.4B checkpoints themselves.
+Ouro's remote-code training path computes the loss from an exit-weighted mixture of per-loop logits when labels are supplied, so we separate the training-objective CE from final-readout diagnostics.
+Table~\ref{tab:scale14b-mech} shows that the near-matched-token checkpoints have nearly identical training-objective CE and logit statistics on a WikiText-103 subset, while the final readout's radial gradient differs by roughly three orders of magnitude.
+The normalized baseline remains essentially flat under final-hidden rescaling; the no-readout-norm checkpoint is strongly scale-sensitive (Figure~\ref{fig:scale_trained}).
+
+\begin{table}[h]
+\centering
+\small
+\caption{Near-matched-token 1.4B mechanism diagnostic on 4{,}096 WikiText-103 validation tokens. Training CE and logit statistics are computed on Ouro's label path, which uses exit-weighted logits. Final $r_K$ is the final-loop radial-gradient fraction. Radial gradient and the scale sweep are diagnostic final-readout measurements and are not meant to equal the training-objective CE.}
+\label{tab:scale14b-mech}
+\begin{tabular}{lrrrrr}
+\toprule
+\textbf{Checkpoint} & \textbf{Tokens} & \textbf{Train CE} & \textbf{Entropy} & \textbf{Final $r_K$} & \textbf{Diagnostic final CE} $\alpha=0.1{\to}1$ \\
+\midrule
+Baseline & 1.321B & 4.987 & 5.30 & $3.96{\times}10^{-5}$ & $8.50{\to}8.50$ \\
+No readout norm & 1.303B & 4.999 & 5.27 & $6.80{\times}10^{-2}$ & $11.02{\to}98.36$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At 1.4B parameters, the output interface behaves as predicted: normalized readouts hide the final hidden-state scale from CE, while removing the final readout norm restores a large radial signal.
+The scale-sweep column intentionally reports \emph{final-readout} CE rather than training-objective CE; for Ouro this differs from the label-path objective because the latter uses exit-weighted logits.
+The similar training-objective entropy and top-logit margin (0.91 vs.\ 0.90, not shown) make a simple logit-chasing explanation less likely, but the comparison remains a scale diagnostic rather than a main ablation.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.7\linewidth]{figures/scale_intervention_trained_14b.png}
+\caption{\textbf{Direct scale intervention on trained 1.4B checkpoints.} We multiply the final hidden state by $\alpha$ before the readout and measure cross-entropy. The baseline (RMSNorm readout) is flat across the whole $\alpha$ range. The no-readout-norm variant produces a sharp scale-sensitive curve. This is the same intervention as Figure~\ref{fig:scale}, but on our own trained checkpoints rather than the published Ouro: the readout blind spot persists at billion-parameter scale, and removing the readout normalization restores the loss's view of hidden-state scale.}
+\label{fig:scale_trained}
+\end{figure}
+
+\subsection{Downstream Behavior at Near-Matched Tokens}
+\label{sec:scale14b}
+
+We next evaluate full validation splits from nine multiple-choice tasks using continuation likelihood: BoolQ, WinoGrande, CommonsenseQA, SciQ, PIQA, ARC-Easy, ARC-Challenge, HellaSwag, and OpenBookQA.
+The resulting comparison covers 19{,}169 paired examples.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Near-matched-token downstream evaluation at 1.4B parameters. Both models are evaluated after 50{,}000 training steps: baseline at 1.321B tokens, no-readout-norm at 1.303B tokens. Accuracy metrics are macro averages over nine full validation splits. Score metrics are micro-averages over 19{,}169 paired examples using length-normalized continuation scores; 95\% confidence intervals (CIs) are paired bootstrap intervals.}
+\label{tab:scale14b}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Metric} & \textbf{Baseline} & \textbf{No norm} & \textbf{Change} & \textbf{95\% CI} \\
+\midrule
+Raw accuracy macro (\%) & 32.55 & 32.39 & $-0.16$ & -- \\
+Length-normalized accuracy macro (\%) & 34.72 & 34.56 & $-0.16$ & -- \\
+Candidate negative log-likelihood (NLL) $\downarrow$ & 1.475 & \textbf{1.419} & {\boldmath$-0.056$} & $[-0.066,-0.047]$ \\
+Gold-vs-distractor margin $\uparrow$ & $-0.484$ & {\boldmath$-0.443$} & {\boldmath$+0.040$} & $[+0.025,+0.055]$ \\
+Gold option probability (\%) $\uparrow$ & 31.66 & \textbf{32.14} & {\boldmath$+0.47$} & $[+0.27,+0.69]$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Argmax accuracy is effectively tied, while the paired score metrics favor no-readout-norm: it assigns lower length-normalized NLL to candidate continuations, increases the gold-vs-distractor margin, and assigns higher probability to the gold answer.
+The interpretation is limited: accuracy is similar, while likelihood-style metrics modestly favor the no-readout-norm checkpoint at this early training budget.
+
+\subsection{Fixed-K Inference: Iso-\texorpdfstring{$K$}{K} Quality}
+\label{sec:fixedk-14b}
+
+We measure wall-clock throughput and per-token cross-entropy at fixed $K \in \{1,2,3,4\}$ on the same step-50{,}000 checkpoints, using a held-out FineWeb-tail slice.
+At matched $K$, throughput is essentially identical across readouts; the normalized readout is not an appreciable per-loop runtime cost.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Wall-clock throughput at fixed inference depth $K$ for the 1.4B step-50{,}000 checkpoints (single-GPU timing, 128 timed batches, batch size 2, sequence length 2{,}048, FineWeb-tail validation, bfloat16 (bf16)). At equal $K$ the no-readout-norm checkpoint has lower CE than the baseline. Both checkpoints are nearly $K$-invariant on this slice: CE differs by less than $0.01$ nats across $K{=}2{,}3{,}4$, so this is an iso-$K$ scale check rather than an adaptive-depth speedup result.}
+\label{tab:fixedk-14b}
+\begin{tabular}{llrrr}
+\toprule
+\textbf{Readout} & \textbf{$K$} & \textbf{CE} & \textbf{PPL} & \textbf{Tokens/s} \\
+\midrule
+\multirow{4}{*}{Baseline (RMSNorm)}
+ & 4 & 6.7839 & 883.5 & 11{,}746 \\
+ & 3 & 6.7839 & 883.5 & 15{,}816 \\
+ & 2 & 6.7839 & 883.5 & 24{,}082 \\
+ & 1 & 6.7892 & 888.2 & 48{,}154 \\
+\midrule
+\multirow{4}{*}{No readout norm (raw)}
+ & 4 & \textbf{6.7678} & \textbf{869.4} & 11{,}817 \\
+ & 3 & \textbf{6.7678} & \textbf{869.4} & 15{,}770 \\
+ & 2 & \textbf{6.7678} & \textbf{869.4} & 23{,}741 \\
+ & 1 & \textbf{6.7719} & \textbf{873.0} & 47{,}468 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Both checkpoints are essentially $K$-invariant on this slice (CE varies by less than $0.01$ nats across $K{=}2{,}3{,}4$), which is consistent with Ouro's inter-loop RMSNorm bounding in-loop scale (see also the published-checkpoint analysis in Appendix~\ref{app:ouro}).
+Within this regime, the no-readout-norm checkpoint has modestly lower CE/PPL than the baseline at every measured $K$ while running at indistinguishable throughput.
+This supports the readout-side scale diagnostic at larger size, but it does not establish a user-facing speedup.

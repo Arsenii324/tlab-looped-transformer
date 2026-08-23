@@ -1,0 +1,59 @@
+\begin{table}[t]
+\centering
+\caption{\textbf{Iteration strategies for numerical integration of the ODE \eqref{eq:ode}}.}
+\small
+\setlength{\tabcolsep}{8pt}
+\renewcommand{\arraystretch}{1.5}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}l l c@{}}
+\toprule
+\textbf{Strategy} & \textbf{Update Rule} & \textbf{Forward Passes} \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Naive iteration \& forward Euler}}\\
+\cmidrule(lr){1-3}
+Naive Loop
+  & $x_{k+1} = g(x_k)$
+  & $K$ \\
+Forward Euler~\citep{bai2019deep,bai2020multiscale}
+  & $x_{k+1} = x_k + \frac{1}{K}F_g(x_k)$
+  & $K$ \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Higher-order Runge--Kutta}~\citep{butcher2008numerical}}\\
+\cmidrule(lr){1-3}
+Midpoint (RK2)
+  & $x_{k+1} = x_k + hF_g(x_k + \frac{h}{2}F_g(x_k))$
+  & $2K$ \\
+Heun (RK2)
+  & $x_{k+1} = x_k + \frac{h}{2}(F_g(x_k) + F_g(x_k + hF_g(x_k)))$
+  & $2K$ \\
+RK4
+  & $x_{k+1} = x_k + \frac{h}{6}(\kappa_1 + 2\kappa_2 + 2\kappa_3 + \kappa_4)$
+  & $4K$ \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Fixed-point accelerators}}\\
+\cmidrule(lr){1-3}
+Heavy-ball ($\alpha,\beta$)~\citep{polyak1964heavyball}
+  & $x_{k+1} = x_k + \alpha F_g(x_k) + \beta(x_k - x_{k-1})$
+  & $K$ \\
+Anderson ($m,\beta$)~\citep{walker2011anderson}
+  & $x_{k+1} = (1-\beta)(x_k - (\Delta X_k)\gamma_k^{\star}) + \beta(g(x_k) - (\Delta F_k)\gamma_k^{\star})$
+  & $K$ \\
+Aitken $\Delta^2$~\citep{aitken1926}
+  & $x_{k+1} = x_k - \frac{(d_{1,k})^2}{d_{2,k}}$ \;\;(per-coordinate)
+  & $K$ \\
+Uniform Loop~\citep{lys2026inner}
+  & $x_{k+1} = g\!\left(\frac{1}{k+1}\sum_{i=0}^{k} x_i\right)$
+  & $K$ \\
+\bottomrule
+\end{tabular}}
+\scriptsize\raggedright
+\emph{Notation.} RK4: $\kappa_1 := F_g(x_k)$,
+$\kappa_2 := F_g(x_k + \frac{h}{2}\kappa_1)$,
+$\kappa_3 := F_g(x_k + \frac{h}{2}\kappa_2)$,
+$\kappa_4 := F_g(x_k + h\kappa_3)$.\\
+Anderson:
+$\gamma_k^{\star} := \argmin_\gamma\norm{f_k -(\Delta F_k)\gamma}_2$ with $f_i := g(x_i) - x_i$ and $\Delta X_k, \Delta F_k$ the matrices of the last $m$ residual / state increments, respectively \citep{walker2011anderson}.\\
+Aitken: $d_{1,k} := g(x_k) - x_k$, $d_{2,k} := g(g(x_k)) - 2g(x_k) + x_k$, applied per coordinate; the Steffensen safeguard clips $|x_{k+1} - x_k| \le |d_{1,k}|$ and requires $K$ even.
+\label{tab:strategies}
+\vspace{-1em}
+\end{table}

@@ -1,0 +1,85 @@
+\begin{thebibliography}{16}
+
+\bibitem[Ainslie et~al.(2023)Ainslie, Lee-Thorp, de~Jong, Zemlyanskiy, Lebr\'on, and Sanghai]{gqa2023}
+Joshua Ainslie, James Lee-Thorp, Michiel de~Jong, Yury Zemlyanskiy, Federico Lebr\'on, and Sumit Sanghai.
+\newblock {GQA}: Training generalized multi-query transformer models from multi-head checkpoints.
+\newblock In \emph{Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing (EMNLP)}, 2023.
+
+\bibitem[Blayney et~al.(2026)Blayney, Arroyo, Obando-Ceron, Castro, Courville, Bronstein, and Dong]{blayney2026mechanisticanalysisloopedreasoning}
+Hugh Blayney, Alvaro Arroyo, Johan Obando-Ceron, Pablo Samuel Castro, Aaron Courville, Michael~M. Bronstein, and Xiaowen Dong.
+\newblock A mechanistic analysis of looped reasoning language models, 2026.
+\newblock URL \url{https://arxiv.org/abs/2604.11791}.
+
+\bibitem[Brandon et~al.(2024)]{cla2024}
+William Brandon et~al.
+\newblock Reducing transformer key-value cache size with cross-layer attention.
+\newblock \emph{arXiv preprint arXiv:2405.12981}, 2024.
+
+\bibitem[DeepSeek-AI(2024)]{deepseekv2}
+DeepSeek-AI.
+\newblock Deepseek-v2: A strong, economical, and efficient mixture-of-experts language model.
+\newblock \emph{arXiv preprint arXiv:2405.04434}, 2024.
+\newblock Introduces Multi-head Latent Attention (MLA).
+
+\bibitem[Dehghani et~al.(2019)Dehghani, Gouws, Vinyals, Uszkoreit, and Kaiser]{dehghani2019universal}
+Mostafa Dehghani, Stephan Gouws, Oriol Vinyals, Jakob Uszkoreit, and Lukasz Kaiser.
+\newblock Universal transformers.
+\newblock In \emph{International Conference on Learning Representations (ICLR)}, 2019.
+
+\bibitem[Geiping et~al.(2025)Geiping, McLeish, Jain, Kirchenbauer, Singh, Bartoldson, Kailkhura, Bhatele, and Goldstein]{geiping2025huginn}
+Jonas Geiping, Sean McLeish, Neel Jain, John Kirchenbauer, Siddharth Singh, Brian~R. Bartoldson, Bhavya Kailkhura, Abhinav Bhatele, and Tom Goldstein.
+\newblock Scaling up test-time compute with latent reasoning: A recurrent depth approach.
+\newblock \emph{arXiv preprint arXiv:2502.05171}, 2025.
+
+\bibitem[Hooper et~al.(2024)]{kvquant2024}
+Coleman Hooper et~al.
+\newblock Kvquant: Towards 10 million context length llm inference with kv cache quantization.
+\newblock \emph{arXiv preprint arXiv:2401.18079}, 2024.
+
+\bibitem[Kwon et~al.(2023)Kwon, Li, Zhuang, Sheng, Zheng, Yu, Gonzalez, Zhang, and Stoica]{pagedattention2023}
+Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, Ying Sheng, Lianmin Zheng, Cody~Hao Yu, Joseph~E. Gonzalez, Hao Zhang, and Ion Stoica.
+\newblock Efficient memory management for large language model serving with {PagedAttention}.
+\newblock In \emph{Proceedings of the 29th ACM Symposium on Operating Systems Principles (SOSP)}, 2023.
+
+\bibitem[Liu et~al.(2024)]{minicache2024}
+Akide Liu et~al.
+\newblock Minicache: Kv cache compression in depth dimension for large language models.
+\newblock \emph{arXiv preprint arXiv:2405.14366}, 2024.
+
+\bibitem[Shazeer(2019)]{mqa2019}
+Noam Shazeer.
+\newblock Fast transformer decoding: One write-head is all you need.
+\newblock \emph{arXiv preprint arXiv:1911.02150}, 2019.
+
+\bibitem[Su et~al.(2021)Su, Lu, Pan, Murtadha, Wen, and Liu]{roformer2021}
+Jianlin Su, Yu Lu, Shengfeng Pan, Ahmed Murtadha, Bo Wen, and Yunfeng Liu.
+\newblock {RoFormer}: Enhanced transformer with rotary position embedding.
+\newblock \emph{arXiv preprint arXiv:2104.09864}, 2021.
+
+\bibitem[Sun et~al.(2024)]{yoco2024}
+Yutao Sun et~al.
+\newblock You only cache once: Decoder-decoder architectures for language models.
+\newblock \emph{arXiv preprint arXiv:2405.05254}, 2024.
+
+\bibitem[Vendrell et~al.(2026)Vendrell, Masdemont, Grillo, Ros-Giralt, Behboodi, and Massoli]{vendrell2026melt}
+Victor Conchello Vendrell, Arnau Padres Masdemont, Niccolo Grillo, Jordi Ros-Giralt, Arash Behboodi, and Fabio Valerio Massoli.
+\newblock Memory-efficient looped transformer: Decoupling compute from memory in looped language models.
+\newblock \emph{arXiv preprint arXiv:2605.07721}, 2026.
+
+\bibitem[Xiao et~al.(2024)]{streamingllm2024}
+Guangxuan Xiao et~al.
+\newblock Efficient streaming language models with attention sinks.
+\newblock In \emph{International Conference on Learning Representations (ICLR)}, 2024.
+
+\bibitem[Zhang et~al.(2023)]{h2o2023}
+Zhenyu Zhang et~al.
+\newblock H2O: Heavy-hitter oracle for efficient generative inference of large language models.
+\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS)}, 2023.
+
+\bibitem[Zhu et~al.(2025)Zhu, Wang, Hua, Zhang, Li, Que, Wei, Wen, Yin, Zhang, Huang, Bengio, and Eshraghian]{ouro2024}
+Rui-Jie Zhu, Zixuan Wang, Kai Hua, Tianyu Zhang, Ziniu Li, Haoran Que, Boyi Wei, Zixin Wen, Fan Yin, Ge Zhang, Wenhao Huang, Yoshua Bengio, and Jason Eshraghian.
+\newblock Scaling latent reasoning via looped language models.
+\newblock \emph{arXiv preprint arXiv:2510.25741}, 2025.
+\newblock Ouro/LoopLM; models ByteDance/Ouro-1.4B, Ouro-2.6B-Thinking.
+
+\end{thebibliography}

@@ -1,0 +1,18 @@
+\begin{table*}[t]
+\centering
+\newcommand{\newscriptspace}{\makebox[\widthof{e-0}]{}}
+\newcommand{\newscriptspacebig}{\makebox[\widthof{e-00}]{}} 
+\small
+%\setlength{\tabcolsep}{1.5pt}
+\caption{Comparison of the average computation time (seconds) of the base model inference and the latent reward computation per sample across five datasets.}
+\begin{tabular}{lccccc}
+\toprule
+                       & 
+                       \textbf{GSM8K}&\textbf{GSM-Symbolic}&\textbf{SVAMP} & \textbf{CommonsenseQA}  & \textbf{MBPP}
+\\ \midrule 
+Based Model Inference&\newscriptspace39.5&\newscriptspace43.0&\newscriptspacebig6.0&\newscriptspacebig7.3&\newscriptspace20.4\\
+Latent Reward Computation&7.6e-02&7.6e-02&7.5e-02&7.5e-02&7.6e-02\\
+\bottomrule
+\end{tabular}
+\label{tab:sampling_efficiency_analysis}
+\end{table*}

@@ -1,0 +1,290 @@
+{
+  "null_rep1": {
+    "model_cfg": {
+      "vocab_size": 4096,
+      "hidden_size": 448,
+      "n_heads": 4,
+      "n_kv_heads": 2,
+      "head_dim": 112,
+      "intermediate_size": 1344,
+      "layers_per_loop": 3,
+      "readout_mode": "norm",
+      "convex_gate": false,
+      "fixed_gate": null,
+      "explore_noise": 0.0,
+      "explore_anneal": true,
+      "n_prelude": 0,
+      "n_coda": 0,
+      "rms_norm_eps": 1e-06,
+      "rope_theta": 10000.0,
+      "max_position_embeddings": 512,
+      "truncate_bptt": null,
+      "state_renorm": false,
+      "inject_mode": "additive",
+      "depth_init": true,
+      "n_loop_eff": 24
+    },
+    "train_cfg": {
+      "run_name": "null_rep1",
+      "seq_len": 256,
+      "batch_size": 8,
+      "lr": 0.003,
+      "min_lr": 0.0003,
+      "warmup_steps": 60,
+      "weight_decay": 0.05,
+      "grad_clip": 1.0,
+      "total_tokens": 2500000,
+      "min_train_loops": 4,
+      "max_train_loops": 32,
+      "supervise_k": 5,
+      "norm_penalty": 0.0,
+      "fixed_train_loops": null,
+      "eval_every_tokens": 1250000,
+      "eval_batches": 8,
+      "eval_batch_size": 4,
+      "eval_loop_sweep": [
+        1,
+        2,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        32,
+        48,
+        64
+      ],
+      "seed": 0,
+      "device": "cuda"
+    },
+    "history": [
+      {
+        "step": 610,
+        "val_curve": {
+          "1": 5.833492636680603,
+          "2": 5.80118453502655,
+          "4": 5.774249017238617,
+          "8": 5.759917080402374,
+          "12": 5.760682821273804,
+          "16": 5.766583502292633,
+          "20": 5.774739742279053,
+          "24": 5.783979296684265,
+          "32": 5.803708851337433,
+          "48": 5.843506217002869,
+          "64": 5.881492435932159
+        }
+      },
+      {
+        "step": 1219,
+        "val_curve": {
+          "1": 5.454348921775818,
+          "2": 5.3972243666648865,
+          "4": 5.359117925167084,
+          "8": 5.3402522802352905,
+          "12": 5.33920830488205,
+          "16": 5.343375563621521,
+          "20": 5.349616050720215,
+          "24": 5.356787323951721,
+          "32": 5.372165203094482,
+          "48": 5.403082966804504,
+          "64": 5.432249188423157
+        }
+      }
+    ],
+    "params": 9064608,
+    "elapsed_s": 863.6257402896881
+  },
+  "null_rep2": {
+    "model_cfg": {
+      "vocab_size": 4096,
+      "hidden_size": 448,
+      "n_heads": 4,
+      "n_kv_heads": 2,
+      "head_dim": 112,
+      "intermediate_size": 1344,
+      "layers_per_loop": 3,
+      "readout_mode": "norm",
+      "convex_gate": false,
+      "fixed_gate": null,
+      "explore_noise": 0.0,
+      "explore_anneal": true,
+      "n_prelude": 0,
+      "n_coda": 0,
+      "rms_norm_eps": 1e-06,
+      "rope_theta": 10000.0,
+      "max_position_embeddings": 512,
+      "truncate_bptt": null,
+      "state_renorm": false,
+      "inject_mode": "additive",
+      "depth_init": true,
+      "n_loop_eff": 24
+    },
+    "train_cfg": {
+      "run_name": "null_rep2",
+      "seq_len": 256,
+      "batch_size": 8,
+      "lr": 0.003,
+      "min_lr": 0.0003,
+      "warmup_steps": 60,
+      "weight_decay": 0.05,
+      "grad_clip": 1.0,
+      "total_tokens": 2500000,
+      "min_train_loops": 4,
+      "max_train_loops": 32,
+      "supervise_k": 5,
+      "norm_penalty": 0.0,
+      "fixed_train_loops": null,
+      "eval_every_tokens": 1250000,
+      "eval_batches": 8,
+      "eval_batch_size": 4,
+      "eval_loop_sweep": [
+        1,
+        2,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        32,
+        48,
+        64
+      ],
+      "seed": 0,
+      "device": "cuda"
+    },
+    "history": [
+      {
+        "step": 610,
+        "val_curve": {
+          "1": 5.818535268306732,
+          "2": 5.7879491448402405,
+          "4": 5.76296865940094,
+          "8": 5.750385284423828,
+          "12": 5.751745283603668,
+          "16": 5.757826387882233,
+          "20": 5.7659648060798645,
+          "24": 5.775090873241425,
+          "32": 5.794521808624268,
+          "48": 5.8338141441345215,
+          "64": 5.871405780315399
+        }
+      },
+      {
+        "step": 1219,
+        "val_curve": {
+          "1": 5.435546576976776,
+          "2": 5.382092118263245,
+          "4": 5.346082448959351,
+          "8": 5.330378293991089,
+          "12": 5.331747949123383,
+          "16": 5.3378923535346985,
+          "20": 5.3458221554756165,
+          "24": 5.354471564292908,
+          "32": 5.372325599193573,
+          "48": 5.407045304775238,
+          "64": 5.439323663711548
+        }
+      }
+    ],
+    "params": 9064608,
+    "elapsed_s": 870.8878786563873
+  },
+  "null_rep3": {
+    "model_cfg": {
+      "vocab_size": 4096,
+      "hidden_size": 448,
+      "n_heads": 4,
+      "n_kv_heads": 2,
+      "head_dim": 112,
+      "intermediate_size": 1344,
+      "layers_per_loop": 3,
+      "readout_mode": "norm",
+      "convex_gate": false,
+      "fixed_gate": null,
+      "explore_noise": 0.0,
+      "explore_anneal": true,
+      "n_prelude": 0,
+      "n_coda": 0,
+      "rms_norm_eps": 1e-06,
+      "rope_theta": 10000.0,
+      "max_position_embeddings": 512,
+      "truncate_bptt": null,
+      "state_renorm": false,
+      "inject_mode": "additive",
+      "depth_init": true,
+      "n_loop_eff": 24
+    },
+    "train_cfg": {
+      "run_name": "null_rep3",
+      "seq_len": 256,
+      "batch_size": 8,
+      "lr": 0.003,
+      "min_lr": 0.0003,
+      "warmup_steps": 60,
+      "weight_decay": 0.05,
+      "grad_clip": 1.0,
+      "total_tokens": 2500000,
+      "min_train_loops": 4,
+      "max_train_loops": 32,
+      "supervise_k": 5,
+      "norm_penalty": 0.0,
+      "fixed_train_loops": null,
+      "eval_every_tokens": 1250000,
+      "eval_batches": 8,
+      "eval_batch_size": 4,
+      "eval_loop_sweep": [
+        1,
+        2,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        32,
+        48,
+        64
+      ],
+      "seed": 0,
+      "device": "cuda"
+    },
+    "history": [
+      {
+        "step": 610,
+        "val_curve": {
+          "1": 5.809068441390991,
+          "2": 5.776686787605286,
+          "4": 5.749816656112671,
+          "8": 5.735181272029877,
+          "12": 5.735478937625885,
+          "16": 5.740822911262512,
+          "20": 5.748383104801178,
+          "24": 5.757063210010529,
+          "32": 5.77603143453598,
+          "48": 5.815816640853882,
+          "64": 5.855146944522858
+        }
+      },
+      {
+        "step": 1219,
+        "val_curve": {
+          "1": 5.435815751552582,
+          "2": 5.380021631717682,
+          "4": 5.342558681964874,
+          "8": 5.324849784374237,
+          "12": 5.324228286743164,
+          "16": 5.328492879867554,
+          "20": 5.334726274013519,
+          "24": 5.3418824672698975,
+          "32": 5.357311546802521,
+          "48": 5.388483881950378,
+          "64": 5.417778253555298
+        }
+      }
+    ],
+    "params": 9064608,
+    "elapsed_s": 870.696019411087
+  }
+}

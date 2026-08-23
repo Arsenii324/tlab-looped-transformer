@@ -66,6 +66,12 @@ tokens/sec on MPS implies the full 100M-token run plus screening would blow past
 by a wide margin (see §5 for the actual arithmetic once measured), scaled-up runs move to Kaggle,
 capped to a stated wall-clock budget per job, logged as a deliberate spend in LOG.md.
 
+*Outcome (see LOG.md for the full sequence): this flip condition fired once, correctly, then
+reverted — the early MPS measurement genuinely looked broken, but the actual cause turned out to be
+a training-design issue (dense per-loop supervision's backward-graph cost on MPS), not the hardware.
+By the time that was fixed, Kaggle's own quota was separately exhausted anyway. Final state matches
+the default above: everything ran locally.*
+
 ## 3. Architecture
 
 Base: Qwen3's decoder block, read from the installed `transformers==4.53.3` reference
@@ -174,6 +180,12 @@ this small, that's roughly 5-50k seconds (1.5-14h) for **one** full run — wide
 measurement, not this estimate, decides whether full-budget runs stay local or move to Kaggle, and how
 many configs can afford to reach full budget inside the remaining window.
 
+*Outcome: 2 configs reached full budget as planned (`no_state_renorm`, the clear screening leader, and
+a second run intended for `fixed_loops16` that a config-propagation bug silently turned into a second
+`center` run instead — caught, fixed, and re-run correctly at reduced budget; full account in
+report.md §4.2 and LOG.md). All local MPS, per §2's flip condition never firing for the actual runs.
+See report.md §4 for what each one found.*
+
 ## 6. What I will not do without the user
 
 Push to any GitHub remote or Hugging Face Hub (the task's literal submission targets — his call).
@@ -201,3 +213,34 @@ section — that stays reserved for him.
 Stretch, only if time remains after 6 with margin: early-exit head; eval-time loop sweep well past
 the trained max (does it degrade gracefully or catastrophically past R_train — informative either
 way); a larger-vocab ablation arm.
+
+## 8. Final verification checklist (run twice: before scaling the screening winner to full budget, and again before any claim goes into report.md)
+
+**A. Code correctness**
+- [ ] `test_model.py` re-run fresh at the exact final config, all 5 checks pass (not relying on an earlier pass after further edits)
+- [ ] Param count quoted anywhere is read from the actual instantiated model (`model.num_parameters()`), never the budget-search formula's number
+- [ ] Tokenizer vocab_size/eos_id are the same value in model config, data packing, and eval -- checked, not assumed equal
+- [ ] A saved checkpoint is loaded fresh in a new process and reproduces its own logged eval numbers exactly, not just "loads without erroring"
+
+**B. Data integrity**
+- [ ] train.bin/val.bin token counts match meta.json exactly
+- [ ] Train/val are disjoint by construction (stream position, never re-shuffled after) -- re-state the mechanism, don't just assert it
+- [ ] Tokenizer-training corpus and train/val-packing corpus don't overlap (skip_docs >= tokenizer's actual doc count, checked against the real number, not the rounded-up estimate)
+
+**C. Experimental claims**
+- [ ] Every number in report.md is opened from its actual results file and quoted, not recalled
+- [ ] "Best config" is read from each arm's LAST (most-converged) eval point, not an early lucky one
+- [ ] Any "X beats Y" claim is checked against a same-seed comparison at minimum; if the gap is close to what a second seed could plausibly produce, say so rather than round it to a verdict
+- [ ] Token budget actually achieved (vs the 100M ceiling) is stated as a number with the reason, not implied to be the full budget
+- [ ] A screening-only result (reduced tokens) is labeled as screening, not promoted to a final verdict unless re-checked at scale
+
+**D. Report consistency**
+- [ ] Every claim traces to a specific file/run; a failed prediction is stated as failed, not dropped quietly
+- [ ] The scale-up argument doesn't lean on anything that's a fixed-size, non-reused parameter (the task's own explicit warning) -- specifically re-check `h0` and any adapter aren't accidentally doing the load-bearing work
+- [ ] Limitations section states plainly: local-only compute, Kaggle quota exhaustion (and when), reduced token budget, bounded-subset supervision (not literature-standard dense-all or final-only), single-seed comparisons
+
+**E. Deliverable completeness**
+- [ ] `train.py` and `eval.py` both run end-to-end from a clean checkout, re-verified not assumed
+- [ ] Best checkpoint exists and is loadable
+- [ ] `report.md` has: architecture description, experiments actually run, analysis of *why* results came out as they did, and the scaling argument -- plus a section reserved for the user's own idea narrative, left empty by me
+- [ ] `git status` clean, nothing load-bearing uncommitted

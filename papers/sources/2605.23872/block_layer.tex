@@ -1,0 +1,78 @@
+\begin{table}[ht]
+\centering
+\setlength{\aboverulesep}{0pt}
+\setlength{\belowrulesep}{0pt}
+\caption{\textbf{Window selection for the looping recipe.} \textbf{(a)}~Window-size sweep on Qwen3-1.7B-Base under forward Euler ($K{=}2$): $n{=}4$ is the sweet spot with a sharp cliff at $n{\geq}6$. \textbf{(b)}~The $n{=}4$ choice generalizes across model scales and families. \textbf{(c)}~Block-mode vs.\ layer-mode iteration on MoE backbones at the canonical loop window $[13,16]$ (block $K{=}3$ / layer $K{=}2$): layer-mode yields +0.5 to +1.7 pp on hard MoE benchmarks. Numbers are $\Delta$pp vs.\ baseline. Bold marks the winning variant per row; ``---'' indicates not run.}
+\label{tab:window-combined}
+ 
+\begin{minipage}[t]{0.49\linewidth}
+\centering
+{\small\textbf{(a) Window-size sweep, Qwen3-1.7B-Base}}\par\vspace{3pt}
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{tabular}{@{}c l r r@{}}
+\toprule
+\textbf{$n$} & \textbf{Window} & \textbf{16-task} & \textbf{$\Delta$} \\
+\midrule
+1                  & [14]        & 55.72          & +0.18           \\
+2                  & [13,14]     & 55.60          & +0.06           \\
+3                  & [13,14,15]  & 55.75          & +0.21           \\
+\textbf{4} & [12--15]    & \textbf{56.09} & \textbf{+0.55}  \\
+6                  & [11--16]    & 54.72          & -0.82           \\
+12                 & [8--19]     & 54.91          & -0.63          \\
+28 (all)           & [0--27]     & 27.81          & -27.73          \\
+\bottomrule
+\end{tabular}
+\par\vspace{2pt}
+ 
+\vspace{3pt}
+ 
+{\small\textbf{(b) Looped layer sizes across model scales}}\par\vspace{3pt}
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{tabular}{@{}l r r c@{}}
+\toprule
+\textbf{Model} & \textbf{$n{=}3$ $\Delta$} & \textbf{$n{=}4$ $\Delta$} & \textbf{Winner} \\
+\midrule
+Qwen3-0.6B-Base~[\citenum{qwen3}]            & \textbf{+0.57} & +0.22           & $n{=}3$ \\
+Qwen3-1.7B-Base~[\citenum{qwen3}]            & +0.21          & \textbf{+0.55}  & $n{=}4$ \\
+Qwen3-4B-Base~[\citenum{qwen3}]              & +0.43          & \textbf{+0.85}  & $n{=}4$ \\
+Llama-3.2-3B-Instruct~[\citenum{llama3}]     & +0.23          & \textbf{+0.45}  & $n{=}4$ \\
+\bottomrule
+\end{tabular}
+\end{minipage}\hfill
+%
+\begin{minipage}[t]{0.49\linewidth}
+\centering
+{\small\textbf{(c) Block-mode vs.\ layer-mode (MoE)}}\par\vspace{3pt}
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.18}
+\begin{tabular}{@{}l c c@{}}
+\toprule
+\textbf{Benchmark} & \textbf{block} ($K{=}3$) & \textbf{layer} ($K{=}3$) \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Qwen1.5-MoE-A2.7B~[\citenum{qwen15moe}]}}\\
+\cmidrule(lr){1-3}
+ARC-Challenge & +0.17          & \textbf{+0.85}           \\
+CSQA          & +0.16          & \textbf{+0.33}           \\
+OBQA          & \textbf{+1.00} & -1.40                    \\
+MMLU          & -1.18          & \textbf{\phantom{+}0.00} \\
+SciQ          & \textbf{+0.20} & ---                   \\
+GPQA-Main     & -1.11          & ---                   \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Moonlight-16B-A3B~[\citenum{moonlight}]}}\\
+\cmidrule(lr){1-3}
+ARC-Challenge & -1.45          & \textbf{+0.51} \\
+CSQA          & -0.66          & \textbf{+0.49} \\
+OBQA          & -0.20          & \textbf{+1.20} \\
+MMLU          & \textbf{+0.74} & ---         \\
+SciQ          & \textbf{-0.50} & -0.60          \\
+GPQA-Main     & -2.00          & \textbf{+0.90} \\
+\bottomrule
+\end{tabular}
+\end{minipage}
+\vspace{-0.1cm}
+\end{table}

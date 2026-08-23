@@ -1,0 +1,12 @@
+\subsection{Mixture-of-Experts Language Models}
+Mixture-of-Experts has become a standard approach for scaling LLMs under a controlled compute budget~\cite{lepikhin2020gshard, fedus2022switch, cai2025survey}. Recent systems explore fine-grained experts, shared experts, and auxiliary-loss-free load balancing~\cite{jiang2024mixtral, xue2024openmoe, liu2024deepseek, yang2025qwen3, zeng2025glm}. These architectures all assume standard non-shared per-layer parameters, and their interaction with iterative weight sharing remains largely unexplored. Our work targets exactly this intersection.
+
+
+\subsection{Looped and Weight-Shared Transformers}
+
+Looped and weight-shared architectures decouple parameter count from effective depth by reusing the same parameters for iterative refinement~\cite{hutchins2022block}. Universal Transformer~\cite{dehghani2018universal} ties a single block across depth and applies per-token adaptive halting, whereas ALBERT~\cite{lan2019albert} shares one block across all layers of an otherwise standard encoder purely for parameter efficiency. More recent designs revisit input-dependent depth and halting~\cite{bae2025relaxed,bae2026mixture}, explicit iterative reasoning~\cite{mohtashami2025cotformer}, and conditional modulation of shared weights across iterations~\cite{jeddi2026loopformer}. 
+A closely related line of work also studies latent reasoning through recurrence in the hidden state~\cite{hao2024training, saunshi2025reasoning}.
+A separate line of work~\cite{mcleish2025teaching, zeitoun2026hyperloop, geiping2026scaling} wraps a recurrent middle block with non-looped layers on either side, a prefix-loop-suffix design that we also adopt.
+
+\subsection{Adaptive LayerNorm and Conditional Modulation}
+Conditional modulation~\cite{huang2017arbitrary, perez2018film}, and in particular Adaptive LayerNorm~\cite{peebles2023scalable}, lets shared parameters behave differently under different conditions. It is now standard in diffusion transformers. Looped LLMs face an analogous need across iterations. LoopFormer~\cite{jeddi2026loopformer} conditions on the iteration index, but its condition vector is shared across all tokens in a pass. This is restrictive for language modeling where tokens at different positions warrant different updates~\cite{ainslie2023colt5, heakl2025drllm}. Our proposed IterAdaLN addresses this by conditioning on both the iteration and the per-token state (Section~\ref{sec:method-tadaln}).

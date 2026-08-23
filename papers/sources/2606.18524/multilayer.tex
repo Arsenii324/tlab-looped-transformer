@@ -1,0 +1,90 @@
+\section{Extension to Multi-Layer Blocks}
+\label{sec:multilayer}
+
+\input{sections/Figs/fig_lr_transfer}
+\input{sections/Figs/fig_update_cosine}
+\input{sections/Figs/fig_hidden_norm}
+
+Section~\ref{sec:theory} analyzed a single shared layer; practical looped architectures repeat a block of $L$ distinct layers $N$ times.
+We now extend the scaling analysis to this setting.
+
+\subsection{Setup}
+
+Each layer $\ell$ has its own weight matrix $W_\ell$, but the same $W_\ell$ is reused across all $N$ iterations.
+We index hidden states as $h_{n,\ell}$, where $n\in\{0,\dots,N-1\}$ is the loop iteration and $\ell\in\{0,\dots,L-1\}$ is the layer index within the block.
+The recursion is:
+\begin{equation}
+  \begin{aligned}
+  h_{n,\ell+1}
+  &= h_{n,\ell}+\varepsilon\, W_\ell\,\phi(h_{n,\ell}),\\
+  \ell&=0,\dots,L-1,\qquad n=0,\dots,N-1,
+  \end{aligned}
+  \label{eq:Llayer-recursion}
+\end{equation}
+where the output of the last layer feeds into the next iteration: $h_{n+1,0} = h_{n,L}$, starting from $h_{0,0} = h_0$.
+The model output is $h_{N-1,L}$, equivalently $h_{N,0}$ after the final loop pass; our goal is to determine $\varepsilon$ as a function of both $N$ and $L$.
+
+\subsection{Two-source variance accumulation}
+
+Telescoping the residual additions gives:
+\[
+  h_{\text{out}}
+  =
+  h_0+\varepsilon\sum_{\ell=0}^{L-1}G_\ell,
+  \qquad
+  G_\ell \triangleq W_\ell\sum_{n=0}^{N-1}\phi(h_{n,\ell}).
+\]
+Unlike the single-layer case, the output variance now receives contributions from two distinct sources.
+Within each layer $\ell$, weight sharing produces the same quadratic accumulation as in Section~\ref{sec:theory}: successive activations $\phi(h_{n,\ell})$ are correlated across loop steps, giving $\|G_\ell\|^2=\Theta(N^2 d)$.
+Across the $L$ layers, the independent weight matrices contribute a standard depth-wise random walk, the same mechanism studied for non-shared deep networks~\citep{dey2025completep}.
+The only additional issue is that the $L$ layers are not literally independent: they communicate through the same residual stream.
+The factorized scaling is therefore valid when this communication remains local in strength.
+Informally, after the within-layer loop accumulation has been normalized by $1/N$, changing one unique layer should perturb the other normalized branch outputs only through the total residual size $\varepsilon N$, rather than dragging all layers in a single coherent direction.
+Under this weak cross-layer-coupling picture, the remaining accumulation over $\ell$ is the ordinary depth-wise random walk, giving the extra $1/\!\sqrt{L}$ factor.
+The post-training hidden-norm and cosine diagnostics in Figures~\ref{fig:hidden-norm} and~\ref{fig:update-cosine} are consistent with this picture: the residual stream remains controlled across loop counts, while correlations persist without producing a global layer-wise collapse.
+Writing $\varepsilon=\lambda/(N\!\sqrt{L})$ with a tunable $O(1)$ constant $\lambda$, the following theorem formalizes this intuition.
+
+\begin{theorem}[Multi-layer block scaling; informal]
+\label{thm:Llayer}
+Assume that\textup{:}
+\begin{enumerate}
+\item[\textup{(i)}] each layer's branch output has nondegenerate normalized norm\textup{;}
+\item[\textup{(ii)}] the conditional mean of each layer's branch output, given the other layers' weights, has normalized norm at most $O(\varepsilon N)$\textup{;}
+\item[\textup{(iii)}] replacing any single weight matrix changes other branches' outputs by at most $O(\varepsilon N)$\textup{.}
+\end{enumerate}
+Then $\varepsilon=\lambda/(N\!\sqrt{L})$ yields a residual-stream norm bounded by a function of $\lambda$ alone, independent of both $N$ and $L$.
+For sufficiently small $\lambda$, the bound is tight\textup{:} the unscaled total branch variance is $\Theta(LN^2)$.
+The formal statement and proof are in Appendix~\ref{app:Llayer}, Theorem~\ref{thm:Llayer-formal}.
+\end{theorem}
+
+\subsection{Learning-rate scaling}
+
+Under the factorized scaling, an update $\Delta W_\ell$ to layer $\ell$ is applied at all $N$ loop steps, contributing $O(\varepsilon\eta N)=O(\eta\lambda/\!\sqrt{L})$ to the output change.
+In the worst case, the $L$ layer updates add coherently with norm $O(L)$, giving total output change $O(\eta\lambda\sqrt{L})$.
+Requiring $O(1)$ output change yields:
+\(
+  \eta \lesssim \frac{1}{\lambda\sqrt{L}}.
+\)
+Proposition~\ref{prop:Llayer-lr} (Appendix~\ref{app:Llayer-lr}) formalizes this as a linearized maximal-update bound, sharp under a coherence condition on the layer updates.
+Crucially, $N$ does not appear: once $1/N$ scaling is applied to the residual branch, the learning rate depends only on the unique depth $L$, enabling hyperparameter transfer.
+Table~\ref{tab:recipe} summarizes the resulting scaling recipe; the full per-component parameterization is in Appendix~\ref{app:completep-loop-table}.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Component & Scaling rule \\
+\midrule
+Residual branch & $\times\;\lambda\,N^{-1}\,m_L^{-1/2}$ \\
+Looped stack LR & $\eta_0\,m_L^{-1/2}$ \\
+Embed / Unembed LR & $\eta_0$ \\
+\bottomrule
+\end{tabular}
+\caption{
+Executive scaling recipe for a looped Transformer with $L$ unique layers repeated $N$ times.
+$m_L=L/L_{\mathrm{ref}}$ is the depth multiplier relative to a reference model. $\lambda$ is a tunable $O(1)$ constant.
+}
+\label{tab:recipe}
+\vspace{-0.3cm}
+\end{table}

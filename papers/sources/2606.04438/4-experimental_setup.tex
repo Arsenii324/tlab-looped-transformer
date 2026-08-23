@@ -1,0 +1,55 @@
+\subsection{Data}
+We pre-train all models on the publicly released OLMo-3 pre-training corpus Dolma3Mix~\citep{olmo2025olmo}, a large-scale mixture spanning web documents, code, academic text, and curated high-quality sources. To enable a strictly controlled comparison, all our trained models consume an identical 200B-token subset of this corpus under the same document ordering and packing configuration.
+
+\subsection{Training and Evaluation Setting}
+All models are trained with the AdamW optimizer~\cite{loshchilov2017decoupled} under a cosine learning-rate schedule~\cite{loshchilov2017sgdr} with linear warmup. For MoE layers, we adopt top-$k$ routing with $k{=}6$ together with a shared expert strategy following~\cite{dai2024deepseekmoe}, and this routing configuration is identical between \ourmodel and Vanilla MoE. Our main 3B \ourmodel comprises $6$ unique layers, organized as $2$ prefix layers, a $2$-layer block that is recurrently applied for $4$ iterations with shared weights, and $2$ suffix layers, which yields an effective depth of $12$ layers. The 9B variants follow the same architectural recipe with proportionally scaled hidden dimensions and expert counts. Full hyperparameters for both scales are provided in Appendix~\ref{app:hyperparams}.
+
+\begin{table*}[htbp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\renewcommand{\arraystretch}{1.1}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l c c cc ccc cc cc c}
+\toprule
+& \multicolumn{1}{c}{\textbf{Params}} & \textbf{Train} 
+& \multicolumn{6}{c}{\textbf{Language \& Knowledge}} 
+& \multicolumn{3}{c}{\textbf{Reasoning \& Math}} 
+& \multirow{2}{*}{\textbf{Avg.}} \\
+\cmidrule(lr){4-9} \cmidrule(lr){10-12}
+\textbf{Model} & \textbf{(T/A)} & \textbf{Tokens} 
+& MMLU & HSwag & PIQA & WGrd & TQA & RACE & BBH & GSM8K & MATH & \\
+\midrule
+\multicolumn{13}{l}{\textit{Dense Models}} \\
+Pythia-1.4B$^{\dagger}$        & 1.4B / 1.4B & 200B   & 24.63 & 51.93 & 70.46 & 56.59 & 16.37 & 35.22& 23.71 & 1.90 & 1.80 & 31.30\\
+OLMo2-1B$^{\dagger}$            & 1.0B / 1.0B & 200B   & 24.27 & 58.23 & 73.72 & 59.75 & 26.13 & 33.88& 9.45 & 2.43 & 0.42 & 32.12\\
+Qwen-3-1.7B$^{\star}$           & 1.7B / 1.7B & 36T     & 62.46 & 67.09 & -- & 66.30 & -- & -- & 53.51 & 70.28 & 25.80 & -- \\
+\midrule
+\multicolumn{13}{l}{\textit{Dense Loop / Recursive Models}} \\
+Hyperloop$^{\star}$       &   1B / 1B & 100B     & -- & 46.22 & 68.72 & 53.04 & -- & 33.59 & -- & -- & -- & -- \\
+Griffin$^{\star}$             & 1B / 1B & 300B     & 29.5 & 67.2 & 77.4 & 65.2 & -- & -- &--& -- & -- & -- \\
+Ouro-1.4B-R4$^{\star}$          & 1.4B / 1.4B & 7.7T   & 67.35 & 74.29 & -- & 72.30 & -- & -- & 71.02 & 78.92 & 82.40 & -- \\
+\midrule
+\multicolumn{13}{l}{\textit{MoE Models}} \\
+DeepSeekMoE-2B$^{\star}$       & 2B / 0.3B & 100B   & -- & 54.8 & 72.3 & -- &16.6& -- & --& -- & -- & -- \\
+OLMoE-1B-7B$^{\dagger}$        & 7B / 1B & 200B   & 24.90 & 68.14 & 76.88 & 60.62 & 39.28&35.31& 26.85& 2.82 & 1.66 & 37.38\\
+PowerMoE-3B                & 3B / 0.8B  & 3T     & 43.24 & 73.07 & 79.00 & 64.80& 28.57&35.79& 33.07& 38.21 & 14.94 & 45.63\\
+\midrule
+\multicolumn{13}{l}{\textit{Ours}} \\
+Vanilla MoE     & 3B / 0.8B    & 200B   & \textbf{27.86} & 58.68 & 74.12 & 49.92 & 36.19& 35.00& 26.12& 4.12 & 1.53 & 34.84\\
+\textbf{\ourmodelnospace}         & 3B / 0.8B$^{\ddagger}$    & 200B   & 26.81 & \textbf{60.98} & \textbf{75.22} & \textbf{51.42} & \textbf{37.63} & \textbf{35.77} & \textbf{27.94} & \textbf{5.26} & \textbf{1.88} & \textbf{35.89} \\
+\bottomrule
+\end{tabular}}
+\caption{
+Main results across 9 downstream benchmarks. 
+\textbf{(T/A)}: total / active parameters. 
+$^{\dagger}$ evaluated at the 200B-token intermediate checkpoint for token-matched comparison.
+$^{\star}$ numbers reported from the original paper.
+$^{\ddagger}$ Active parameters are reported as 0.8B to match the FLOPs-per-token of the Vanilla MoE for fair comparison; the actual physical active parameter count of \ourmodel is 0.6B, since shared attention parameters across $K$ loop iterations contribute once to the physical count but $K$ times to per-token FLOPs.
+HSwag = HellaSwag; WGrd = WinoGrande; TQA = TriviaQA.
+Best results between Vanilla MoE and \ourmodel are in \textbf{bold}.
+}
+\label{tab:main_results}
+\end{table*}
+
+To assess downstream performance, we evaluate the models on a suite of $9$ standard benchmarks covering two broad dimensions. The first dimension targets knowledge and language understanding, including MMLU~\cite{hendryckstest2021}, HellaSwag~\cite{zellers2019hellaswag}, PIQA~\cite{bisk2020piqa}, WinoGrande~\cite{sakaguchi2021winogrande}, TriviaQA~\cite{joshi2017triviaqa}, and RACE~\cite{lai2017race}. The second dimension focuses on reasoning and mathematics, covering BBH~\cite{kazemi2025big}, GSM8K~\cite{cobbe2021training}, and MATH~\cite{hendrycksmath2021}. All evaluations are conducted with lm-evaluation-harness~\cite{eval-harness} under the standard zero-shot or few-shot protocols prescribed for each benchmark. The evaluation settings are detailed in Appendix~\ref{app:lm_eval}. For external baselines whose full training exceeds 200B tokens, we report results at their 200B-token intermediate checkpoints when available, so that all numbers reflect a token-matched comparison.

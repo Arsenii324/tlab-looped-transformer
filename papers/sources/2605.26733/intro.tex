@@ -1,0 +1,58 @@
+
+\section{Introduction}
+\label{introduction}
+
+Enhancing the complex reasoning capabilities of Large Language Models (LLMs) through test-time scaling~\citep{zhang2024llm,zhang2025survey}, which involves allocating additional computational resources during inference, has become a prominent research focus.  The dominant paradigm for test-time scaling relies on generating extensive outputs, typically through chain-of-thought reasoning~\citep{wei2022chain} or by sampling multiple candidate solutions and selecting the optimal one~\citep{wang2022selfconsistency,tot}.  Recently, looped language models (LoopLMs)~\citep{geiping2025scaling,zhu2025scaling} have gained attention as a promising alternative paradigm.  By employing depth-recurrence with shared parameters, such models emulate human-like latent reasoning processes~\citep{zhu2025survey}.   Its advantages include improved computational efficiency, as increased reasoning effort does not entail longer context windows during inference.  Moreover, continuous latent representations may offer higher information bandwidth than discrete tokens.   
+Ideally, such architectures should allow for test-time scalable reasoning without expanding the model's parameter count, where increased recurrent iterations lead to progressively refined latent representations~\citep{geiping2025scaling}.
+
+
+\begin{figure}[t] 
+    \centering
+    \includegraphics[width=0.90\linewidth]{fig/intro.pdf}
+   % \caption{Performance of Ouro-1.4B~\citep{zhu2025scaling} on GSM8K~\citep{cobbe2021gsm8k} across different test-time recurrent steps. The results reveal unreliable scaling behavior: performance peaks near the training recurrent step and deteriorates significantly as the step exceeds the training distribution.}
+   \caption{Performance of Ouro-1.4B~\citep{zhu2025scaling} on GSM8K across different recurrent steps.}
+    \label{fig:intro}
+    \vspace{-7mm}
+\end{figure}
+
+However, our study reveals that if improperly designed, the current LoopLMs often suffer from \textbf{unreliable scaling behavior}. Experiments demonstrate that instead of achieving progressive improvements with more computation, performance often exhibits a peak at a certain iteration depth and deteriorates sharply or even collapses entirely as iterations further increase (Figure \ref{fig:intro}). This phenomenon indicates that direct supervised fine-tuning fails to equip the model with a test-time scalable reasoning capability through depth recurrence. Instead, the model tends to overfit to the specific recurrent iteration during training.
+
+% \paragraph{Diagnosis.} 
+To demystify these scaling failures, we pivot to a dynamical systems perspective to conduct a systematic diagnostic study of LoopLM’s latent trajectories.
+This analysis allows us to uncover a fundamental, yet previously overlooked, irreconcilable trade-off between effectiveness and stability in current designs.
+We find that the stability of the latent trajectory is largely determined by where normalization is placed. Internal normalization (e.g., Pre-Norm) maintains information flow (effectiveness) but causes hidden states to grow exponentially, leading to trajectory divergence. Conversely, External normalization (e.g., Post-Norm) ensures bounded states (stability) but often fails to perform deep reasoning. Our experiments show that common remedies, such as auxiliary Prelude/Coda layers, L2 regularization, or random loop sampling, cannot totally resolve this deadlock. 
+
+A key insight of this paper is that test-time scalable latent reasoning must satisfy both effectiveness and stability. We argue that reasoning is an iterative process of reducing uncertainty and refining thoughts. In terms of dynamics, this means the hidden states should converge toward an effective and stable fix point. If a system is effective but unstable, the thoughts become chaotic; if it is stable but ineffective, the thoughts remain shallow. 
+To achieve this, we propose \textbf{STARS} (STAbility-driven Recurrent Scaling), a unified training framework that integrates Jacobian Spectral Radius Regularization (JSRR) with random loop sampling. According to the Lyapunov Linearization Theorem, the stability of a nonlinear system is determined by the spectral radius of its Jacobian matrix. STARS mathematically compels the model to converge toward asymptotically stable fixed points by constraining this spectral radius during training.
+To ensure that the framework is practical for large-scale LLMs, we avoid the prohibitive cost of direct eigenvalue calculation. Instead, STARS employs a lightweight and efficient estimation scheme by combining single-step power iteration with Jacobian-vector products (JVP). By applying random loop sampling, STARS optimizes both effectiveness and stability of latent trajectories on a global scale, enabling more robust test-time scaling.
+
+We evaluate the effectiveness of our proposed method through two experimental setups: basic arithmetic tasks on randomly initialized Transformers~\citep{vaswani2017attention} and fine-tuning pre-trained LoopLM on complex mathematical reasoning tasks. 
+Results show that on arithmetic tasks, our method achieves fully reliable test-time scaling. On mathematical reasoning tasks, it demonstrates more robust performance compared to baselines. For instance, on GSM8K, while Ouro-1.4B experiences a 20.47\% drop from its peak performance after 8 recurrent steps, our method degrades by only 8.26\%. Moreover, our approach improves peak performance by 4.01\% on GSM8K at the same time.
+% Our results demonstrate that models manifest reliable test-time scaling when recurrent iterations are substantially increased. 
+
+
+% According to the Lyapunov Linearization Theorem, the local stability of a nonlinear system is strictly determined by the spectral radius of its Jacobian matrix. To this end, we propose a novel training algorithm: Jacobian Spectral Radius Regularization with random loop. The core idea of this approach lies in mathematically compelling the system to converge toward an asymptotically stable fixed point by constraining the spectral radius of the Jacobian matrix during iterations. Given the prohibitive computational complexity of direct eigenvalue calculation in large-scale neural networks, we ingeniously combine the single-step power iteration method with Jacobian-vector product (JVP) techniques to develop a lightweight, memory-efficient spectral radius estimation scheme. 
+% By integrating JSRR with the random loop technique, the model can optimize the stability of the latent trajectories on a global scale.
+
+
+
+
+% 同时性能也涨了，汇报性能上涨多少
+% Further analysis confirms that our approach decouples reasoning depth from training duration by constraining latent reasoning trajectories toward stable fixed points. We think our work not only enhances the computational robustness of recurrent architectures but also provides a potential path for achieving scalable latent reasoning in large language models.
+
+% Our key contributions are as follows:
+% \begin{itemize}[leftmargin=1.8em,nosep]
+% \item We first observe that current LoopLMs lack robust test-time scaling and propose to analyze this limitation from a dynamical system perspective.
+% \item We derive critical insights into architecture and training strategy design through extensive diagnostic experiments on latent dynamics of the LoopLM.
+% \item We introduce a novel stability-driven training framework that integrates Jacobian Spectral Radius Regularization with random loop. The framework is empirically validated on both synthetic tasks and complex mathematical reasoning, demonstrating superior extrapolation and stable scaling. 
+% \end{itemize}
+
+
+% To uncover the mechanisms underlying this phenomenon, this paper first conducts a systematic diagnostic study of the latent dynamics of LoopLM, addressing the lack of detailed analysis in existing works regarding model architecture design and training strategies. 
+% Stability in recurrent systems is dictated by the structural placement of normalization, rather than the specific operator (e.g., LayerNorm~\citep{ba2016layer}). We categorize these into two types.
+% \textit{external normalization} (e.g. Pre-Norm): Residual connections remain outside the normalization scope. While this facilitates initial information flow, hidden state norms grow exponentially, leading to trajectory divergence; \textit{internal normalization} (e.g. Post-Norm): The residual stream is confined within the normalization. This ensures bounded dynamics but risks trapping the system in undesirable attractors, causing representational degradation.
+%  Even with auxiliary structures such as Prelude and Coda layers, or L2 regularization between hidden states, it remains difficult to fundamentally resolve the intrinsic effectiveness‑stability trade‑off inherent to these architectures. Although strategies like random loop sampling~\citep{geiping2025scaling} can partially alleviate the issue, they still fail to steer the model toward a desirable convergent state during long recurrence.
+
+% To achieve robust reasoning, the hidden states of the LoopLM must converge to stable fixed points within its training. This is based on the principle that effective reasoning should progressively reduce uncertainty, evolving from initial disorder toward a stable attractor~\citep{zhang2025survey}.  
+
+% In contrast to conventional deep stacked architectures, looped models can theoretically strengthen reasoning performance by scaling the number of iterations at test time without expanding the model's parameter count~\citep{geiping2025scaling}.

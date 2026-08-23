@@ -1,0 +1,29 @@
+2048 seqs x 256 tokens; argmin depth mean 21.27 median 7
+
+by position decile (does context accumulation change demand?)
+  pos    0-31   mean argmin  21.60  frac>8 0.454
+  pos   32-63   mean argmin  21.74  frac>8 0.462
+  pos   64-95   mean argmin  21.42  frac>8 0.463
+  pos   96-127  mean argmin  21.27  frac>8 0.464
+  pos  128-159  mean argmin  21.22  frac>8 0.468
+  pos  160-191  mean argmin  21.05  frac>8 0.466
+  pos  192-223  mean argmin  21.11  frac>8 0.469
+  pos  224-255  mean argmin  20.73  frac>8 0.462
+
+by target-token frequency rank (0 = most common)
+      top10: n=  89801  mean argmin  21.12  frac>8 0.455  frac==1 0.239
+     10-100: n= 117073  mean argmin  19.90  frac>8 0.447  frac==1 0.232
+    100-500: n= 140426  mean argmin  21.27  frac>8 0.467  frac==1 0.214
+       rare: n= 176988  mean argmin  22.25  frac>8 0.476  frac==1 0.196
+
+variance of argmin depth: total 630.1
+  between-token (identity-explainable, tokens with n>=20): 32.7 = 5.2% of total
+  -> an UPPER BOUND on what any rule keyed on token identity alone could capture.
+
+per-token gain (CE@1 - CE@argmin): mean 0.5645 nats
+  argmin in [1,2): n= 113478 (21.6%)  mean gain 0.0000
+  argmin in [2,9): n= 167758 (32.0%)  mean gain 0.3827
+  argmin in [9,33): n=  96918 (18.5%)  mean gain 0.8746
+  argmin in [33,65): n= 146134 (27.9%)  mean gain 1.0060
+
+(If deep-wanting tokens have LARGE gains, the headroom is concentrated and worth chasing; if their gains are tiny, the oracle headroom is spread thin and an exiter cannot realistically capture it.)

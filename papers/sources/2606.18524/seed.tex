@@ -1,0 +1,123 @@
+\newif\ifseedonecolumn
+\ifdefined\seedbuildonecolumn
+  \seedonecolumntrue
+\fi
+\ifseedonecolumn
+  \documentclass[]{bytedance_seed}
+\else
+  \documentclass[twocolumn]{bytedance_seed}
+\fi
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{array}
+\usepackage{url}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc,positioning,fit,decorations.pathreplacing}
+
+\setcounter{dbltopnumber}{1}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\ones}{\mathbf{1}}
+\newcommand{\cpos}{\mathcal{C}_{+}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\inner}[2]{\left\langle #1, #2 \right\rangle}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\makeatletter
+\expandafter\let\expandafter\seed@origfigurestar\csname figure*\endcsname
+\expandafter\let\expandafter\seed@endorigfigurestar\csname endfigure*\endcsname
+\expandafter\let\expandafter\seed@origtablestar\csname table*\endcsname
+\expandafter\let\expandafter\seed@endorigtablestar\csname endtable*\endcsname
+
+\newenvironment{seedfigurewide}[1][t]{%
+  \ifseedtwocolumnlayout
+    \seed@origfigurestar[#1]%
+  \else
+    \figure[#1]%
+  \fi
+}{%
+  \ifseedtwocolumnlayout
+    \seed@endorigfigurestar
+  \else
+    \endfigure
+  \fi
+}
+
+\newenvironment{seedtablewide}[1][t]{%
+  \ifseedtwocolumnlayout
+    \seed@origtablestar[#1]%
+  \else
+    \table[#1]%
+  \fi
+}{%
+  \ifseedtwocolumnlayout
+    \seed@endorigtablestar
+  \else
+    \endtable
+  \fi
+}
+
+\expandafter\let\csname figure*\endcsname\seedfigurewide
+\expandafter\let\csname endfigure*\endcsname\endseedfigurewide
+\expandafter\let\csname table*\endcsname\seedtablewide
+\expandafter\let\csname endtable*\endcsname\endseedtablewide
+
+\newcommand{\seedinputappendix}{%
+  \let\seedSavedAppendix\appendix
+  \renewcommand{\appendix}{}%
+  \input{sections/appendix}%
+  \let\appendix\seedSavedAppendix
+}
+\makeatother
+
+\title{On the Residual Scaling of Looped Transformers: Stability and Transferability}
+
+\author[1,2,3]{Shaowen Wang}
+\author[1,2,3]{Bingrui Li}
+\author[2,3]{Ge Zhang}
+\author[2]{\\Wenhao Huang}
+\author[2]{Shen Yan}
+\author[1]{Jian Li}
+
+\affiliation[1]{Tsinghua University}
+\affiliation[2]{ByteDance Seed}
+\affiliation[3]{M-A-P}
+
+\abstract{\input{sections/abstract_body}}
+
+\date{\today}
+\correspondence{\email{wangsw23@mails.tsinghua.edu.cn}, \email{zhangge.eli@bytedance.com}}
+
+\begin{document}
+
+\maketitle
+
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/loop_scaling}
+\input{sections/multilayer}
+\input{sections/experiments}
+\input{sections/conclusion}
+\input{sections/limitations}
+\input{sections/ethics}
+
+\clearpage
+\bibliographystyle{plainnat}
+\bibliography{reference}
+
+\beginappendix
+\seedinputappendix
+
+\end{document}

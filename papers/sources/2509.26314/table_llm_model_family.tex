@@ -1,0 +1,44 @@
+\begin{table*}[t]
+\centering
+\small
+\newcommand{\supscriptspace}{\makebox[\widthof{$^{*}$}]{}} 
+\setlength{\tabcolsep}{4pt}
+\caption{Performance comparison of the Llama model family. 
+The best-performing method for each model is in \textbf{bold}. $*$ indicates the improvement over the best runner-up is statistically significant with $p < 0.05$.}
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Model} & \textbf{Method} & \textbf{GSM8K} & \textbf{GSM-Symbolic} & \textbf{CommonsenseQA} & \textbf{MBPP} \\
+\midrule
+
+\multirow{3}{*}{Llama-2-7B}
+& Base Model                   & 0.223 & 0.204 & 0.399 & 0.189 \\
+& Majority Voting              & 0.275 & 0.302 & 0.493 & 0.193 \\
+& Latent Thinking Optimization 
+& \supscriptspace\textbf{0.389}$^{*}$ 
+& \supscriptspace\textbf{0.316}$^{*}$ 
+& \supscriptspace\textbf{0.606}$^{*}$ 
+& \supscriptspace\textbf{0.237}$^{*}$ \\
+\midrule
+
+\multirow{3}{*}{Llama-2-13B}
+& Base Model                   & 0.306 & 0.273 & 0.398 & 0.247 \\
+& Majority Voting              & 0.417 & 0.379 & 0.501 & 0.263 \\
+& Latent Thinking Optimization 
+& \supscriptspace\textbf{0.534}$^{*}$ 
+& \supscriptspace\textbf{0.442}$^{*}$ 
+& \supscriptspace\textbf{0.650}$^{*}$ 
+& \supscriptspace\textbf{0.322}$^{*}$ \\
+\midrule
+
+\multirow{3}{*}{Llama-3-8B}
+& Base Model                   & 0.784 & 0.736 & 0.742 & 0.560 \\
+& Majority Voting              & 0.801 & 0.796 & 0.786 & 0.570 \\
+& Latent Thinking Optimization 
+& \supscriptspace\textbf{0.859}$^{*}$ 
+& \supscriptspace\textbf{0.821}$^{*}$ 
+& \supscriptspace\textbf{0.790}$^{*}$ 
+& \supscriptspace\textbf{0.600}$^{*}$ \\
+\bottomrule
+\end{tabular}
+\label{tab:llama_results}
+\end{table*}

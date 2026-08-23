@@ -1,0 +1,25 @@
+\section{Implementation Details}
+\label{sec:appendix:implementation_details}
+
+
+The hyperparameter values for our main experiments are shown in Table~\ref{tab:hyperparams_config}. One choice worth highlighting is the value of $\lambda_{\text{align}}$ for each loop count, which was obtained by a sweep over \{0.01, 0.05, 0.1, 0.15, 0.3, 0.4\} to get the optimal performance. The overall increasing trend indicates that larger loop counts yield gradient contributions from a greater number of iterations, potentially strengthening the effective optimization signal and allowing more aggressive alignment of intermediate representations without sacrificing performance. 
+
+For the training runs in Section~\ref{sec:expert}, all hyperparameters remain the same except for gate initializations and optimizer settings. The first and second gates are initialized to $0.55$ and $-3.0$, with each subsequent iteration decreasing by $0.5$. Learning rate (LR) is set to $1.889{\times}10^{-3}$ and weight decay (WD) to $0.132$. 
+
+For LoopFormer, we perform a grid search over WD, warmup ratio, and LR for each loop configuration. The LR is swept over $\{6{\times}10^{-4}, 1.9{\times}10^{-3}, 3.8{\times}10^{-3}\}$, corresponding to the value reported in the original paper, the value used for \textsc{LoopMTP}, and a higher setting. WD is swept over \{0.1, 0.2\} and warmup ratio over \{0.001, 0.08\}, covering both the \textsc{LoopMTP} values and those reported by \citet{jeddi2026loopformer}. This yields 12 configurations per loop count.
+Crucially, LoopFormer's grid search targets \emph{training stability}:
+without the right combination
+training diverges due to gradient explosion. By contrast, \textsc{LoopMTP}
+trains stably across all loop counts under a single fixed
+configuration of stability-critical hyperparameters. The only
+per-loop adjustment is $\lambda_{\text{align}}$, which controls the
+strength of the auxiliary alignment signal: all swept values produce
+stable training runs, and the sweep serves solely
+downstream performance. 
+
+
+\input{tables/hyperparams}
+
+
+
+

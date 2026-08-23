@@ -1,0 +1,21 @@
+
+\section{Variable-Depth Analysis of Ouro 1.4B}
+\label{app:ouro}
+
+We run the published Ouro 1.4B checkpoint \citep{zhu2025ouro} at inference depths $K=1$ through $K=8$ on WikiText-103 validation.
+Perplexity converges by $K=3$ and remains essentially flat from $K=4$ to $K=8$ (Figure~\ref{fig:ouro_depth}).
+Post-norm hidden-state norms are constant by construction, while pre-norm norms remain low because inter-loop RMSNorm resets scale after every loop.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/ouro_variable_depth.png}
+\caption{Variable-depth inference on the published Ouro 1.4B model. Left: perplexity versus inference depth. Right: hidden-state norms before and after inter-loop RMSNorm.}
+\label{fig:ouro_depth}
+\end{figure}
+
+This result is compatible with our analysis.
+Ouro controls recurrent scale by normalizing between loops.
+Our per-loop raw and final-only-normalized configurations instead make intermediate CE losses scale-sensitive, allowing the loss to control scale directly.
+
+
+% ============================================================================

@@ -1,0 +1,8 @@
+{
+  "vocab_size": 4096,
+  "eos_id": 0,
+  "train_tokens": 92000000,
+  "val_tokens": 6000000,
+  "skip_docs": 20000,
+  "dtype": "uint16"
+}

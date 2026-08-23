@@ -1,0 +1,20 @@
+\begin{table*}[t]
+\centering
+\newcommand{\newscriptspacesmall}{\makebox[\widthof{e-}]{}}
+\newcommand{\newscriptspace}{\makebox[\widthof{e-0}]{}}
+\newcommand{\newscriptspacebig}{\makebox[\widthof{e-00}]{}} 
+\small
+%\setlength{\tabcolsep}{1.5pt}
+\caption{Comparison of the average computation time (seconds) of the base model inference and the latent reward computation per sample across different datasets for Llama-3-8B.}
+\begin{tabular}{lccccc}
+\toprule
+                       & 
+        \textbf{GSM8K}& \textbf{CommonsenseQA}  & \textbf{MBPP} & \textbf{MATH} & \textbf{GPQA}
+\\ \midrule 
+Based Model Inference&8.5&8.2&3.0&12.5&21.8\\
+Latent Reward Computation&1.3e-2\newscriptspace&1.6e-2\newscriptspace&5.0e-3\newscriptspace&5.0e-3\newscriptspacesmall&5.0e-3\newscriptspacesmall
+\\
+\bottomrule
+\end{tabular}
+\label{tab:sampling_efficiency_analysis_llama3}
+\end{table*}

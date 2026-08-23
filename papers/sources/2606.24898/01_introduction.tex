@@ -1,0 +1,61 @@
+% ============================================================================
+\section{Introduction}
+\label{sec:intro}
+
+Looped language models reuse the same block across recurrent depth.\footnote{Code: \url{https://github.com/Rituraj003/readout-blind-spot}.}
+This makes test-time depth a natural compute knob: stop after a few loops when the prediction is easy, or continue iterating when additional computation helps.
+Universal Transformers \citep{dehghani2019universal}, Huginn \citep{geiping2025huginn}, Ouro \citep{zhu2025ouro}, LoopFormer \citep{jeddi2026loopformer}, and Elastic Looped Transformer \citep{goyal2026elt} all explore versions of this idea.
+
+Looping changes the role of a hidden state.
+In a fixed-depth transformer, a late hidden state is mostly an interface to the output head.
+In a looped model, the same hidden state is also runtime state: it is decoded for prediction and then reused as input to future computation.
+This makes a simple question unavoidable:
+\emph{which parts of the recurrent state does the supervised loss actually control?}
+
+Dense supervision is the natural answer.
+Apply cross-entropy (CE) at every loop, and each intermediate state receives direct prediction supervision.
+This indeed trains the prediction interfaces: early exits become usable.
+But dense CE does not automatically control every variable carried by the recurrent state.
+It controls what the readout makes visible.
+If an active recurrent variable is hidden by every supervised readout, the model can be trained at every loop while that variable remains underconstrained.
+
+We study this readout blind spot for hidden-state scale.
+In pre-norm residual loops, scale is \emph{active}: the residual skip carries it forward and the learned update can change it.
+With an RMSNorm or LayerNorm readout, scale is \emph{locally invisible}: multiplying the hidden state by a positive scalar leaves the readout unchanged up to the normalizer epsilon, so the immediate CE loss has essentially no radial derivative.
+The result is a visibility--activity mismatch.
+In our looped transformers, per-loop CE through normalized readouts still allows hidden-state norms to drift by orders of magnitude when scale remains active in the recurrent path.
+The model is supervised at every loop, yet every supervised interface hides the variable that is drifting.
+
+This yields the central design rule of the paper:
+\begin{quote}
+    \emph{Per-loop cross-entropy trains exit usability; recurrent scale control requires either making hidden-state scale visible to a loss or removing it from the recurrent path.}
+\end{quote}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/endpoint_scale_quadrant.pdf}
+\caption{\textbf{Exit training and scale control are orthogonal in the core 2$\times$2.}
+The x-axis measures early-exit failure, the cross-entropy gap between the first and fourth recurrent loops, $\mathrm{CE}(K{=}1)-\mathrm{CE}(K{=}4)$, where $K$ is the inference loop count; the axis uses a symlog scale.
+The y-axis measures final-loop norm drift, with $H_K$ denoting the hidden state after $K$ loops.
+Lower is better on both axes.
+Per-loop CE moves models left by making intermediate exits usable, while scale-visible readouts move models down by controlling recurrent scale.
+The desired region requires both interventions; later norm-penalty and final-only-normalization controls show that the effect is not merely a raw-readout artifact.}
+\label{fig:decomp}
+\end{figure}
+
+We support this rule with a compact mechanism and controlled ablations.
+The mechanism has two components.
+Scale-invariant readouts such as RMSNorm or LayerNorm produce zero immediate radial cross-entropy signal, while pre-norm residual recurrence continues to preserve and update scale.
+Future-loop losses can still carry indirect radial information, but that signal weakens at large hidden-state norms.
+The experiments then test the interventions suggested by this mechanism: exposing scale through raw readouts or explicit norm penalties, or removing scale through normalization inside the recurrent path.
+
+Our contributions are:
+\begin{enumerate}
+    \item We introduce the readout blind spot as a visibility--activity mismatch: dense CE controls variables exposed by the readout, not every variable active in recurrence.
+    In 44M- and 129M-parameter looped language models where hidden-state scale remains active in the recurrent path, per-loop cross-entropy through normalized readouts still produces large norm drift.
+    
+    \item We instantiate the blind spot for hidden-state scale. Normalized readouts hide scale from the immediate cross-entropy loss, while pre-norm residual recurrence continues to propagate it. Raw readouts, norm penalties, final-only normalization, gradient diagnostics, and recurrent-scale clamps all support this interpretation.
+    
+    \item We show that scale control improves the variable-depth perplexity--compute frontier. Scale-controlled per-loop models maintain usable exits while achieving lower perplexity than the $K$-invariant RMSNorm baseline at matched inference-depth operating points in our benchmarks.
+\end{enumerate}
+

@@ -1,0 +1,129 @@
+\documentclass{article}
+\usepackage{float}
+\usepackage{siunitx}
+
+\usepackage[preprint]{neurips_2026}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage[table]{xcolor}
+\definecolor{linkblue}{HTML}{005EB8}
+\definecolor{OursRowBg}{HTML}{EBF2FA}
+\usepackage[colorlinks=true,
+  linkcolor=linkblue,
+  citecolor=linkblue,
+  urlcolor=linkblue]{hyperref}
+\usepackage{url}
+
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{multirow} 
+\usepackage{cleveref}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, decorations.pathreplacing, fit, shapes.geometric, calc, backgrounds}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{etoc}
+\tcbset{
+  ourqbox/.style={
+    enhanced jigsaw,
+    breakable,
+    colback=black!6!white,
+    colframe=black!35!white,
+    boxrule=0.5pt,
+    arc=2.5pt,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+  }
+}
+
+\definecolor{blockbg}{HTML}{DCE9F6}
+\definecolor{layerbg}{HTML}{FAE0DC}
+\definecolor{blockdark}{HTML}{1F6FB2}
+\definecolor{layerdark}{HTML}{C0392B}
+
+% \newtcbox{\HiB}{on line, boxsep=0pt, left=2pt, right=2pt, top=1pt, bottom=1pt,
+%                 arc=1pt, colback=blockbg, colframe=blockbg}
+% \newtcbox{\HiL}{on line, boxsep=0pt, left=2pt, right=2pt, top=1pt, bottom=1pt,
+%                 arc=1pt, colback=layerbg, colframe=layerbg}
+
+\definecolor{blockbg}{HTML}{D8E5F3}    % light blue (HiB)
+\definecolor{layerbg}{HTML}{F4DAD8}    % light rose (HiL)
+\definecolor{blockdark}{HTML}{1F4F8A}  % dark blue (text accent)
+\definecolor{layerdark}{HTML}{8B2A2A}  % dark red  (text accent)
+ 
+\setlength{\fboxsep}{2.5pt}
+\newcommand{\HiB}[1]{\colorbox{blockbg}{\strut #1}}
+\newcommand{\HiL}[1]{\colorbox{layerbg}{\strut #1}}
+ 
+\algrenewcommand\algorithmicrequire{\textbf{Input:}}
+\algrenewcommand\algorithmicensure{\textbf{Output:}}
+\algrenewcommand\algorithmiccomment[1]{\hfill\textit{\(\triangleright\)\,#1}}
+
+
+
+\renewcommand{\thealgorithm}{\arabic{algorithm}}
+\crefname{algorithm}{Algorithm}{Algorithms}
+\Crefname{algorithm}{Algorithm}{Algorithms}
+
+\newcommand{\algcomment}[1]{%
+  \textcolor{black!55}{\small\itshape$\triangleright$~#1}}
+\input{macros}
+
+\title{Training-Free Looped Transformers}
+
+\author{%
+  Lizhang Chen\thanks{Equal contribution} \And
+  Jonathan Li\footnotemark[1] \And
+  Chen Liang \And
+  Ni Lao \And
+  Qiang Liu
+}
+
+\begin{document}
+\maketitle
+
+\begingroup
+  \renewcommand{\thefootnote}{}
+  \footnotetext{University of Texas at Austin}
+  \addtocounter{footnote}{-1}
+\endgroup
+
+\begin{abstract}
+\input{content/abstract}
+\end{abstract}
+
+\input{content/intro}
+\input{content/method}
+\input{content/experiment}
+\input{content/related_work}
+\input{content/conclusion}
+
+% \bibliographystyle{plainnat}
+\bibliographystyle{plain}
+\bibliography{references}
+
+\clearpage
+\appendix
+
+\etocsetlocaltop.toc{part}
+\begingroup
+  \etocsetnexttocdepth{subsection}
+  \etocsettocstyle{\section*{Appendix}}{}
+  \localtableofcontents
+\endgroup
+\clearpage
+\input{content/appendix}
+
+% \clearpage
+% \input{checklist}
+
+\end{document}

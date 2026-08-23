@@ -1,0 +1,26 @@
+% ============================================================================
+\section{Residual-Update Decomposition}
+\label{app:residual-update}
+
+Table~\ref{tab:bounded-block-app} reports the direct measurement of the Lemma~\ref{lemma:expansion} terms on trained checkpoints.
+The update magnitude is averaged over loops $k\geq10$, after the initial transient.
+The table is not meant to make Lemma~\ref{lemma:expansion} look deep; it checks that the trained checkpoints enter the large-scale regime where the expansion is informative.
+
+\begin{table}[h]
+\centering
+\small
+\caption{\textbf{Normalized-readout checkpoints learn much larger radial residual updates.} Direct measurement of the residual-update decomposition terms from Lemma~\ref{lemma:expansion}.}
+\label{tab:bounded-block-app}
+\begin{tabular}{llrrrr}
+\toprule
+\textbf{Model} & \textbf{Condition} & $a_{\rad}$ & $\|b_\perp\|_{\rms}$ & $\|b\|_{\rms}$ & $\|b\|_{\rms}/|a_{\rad}|$ \\
+\midrule
+44M  & Per-loop + Raw     & $0.27$    & $0.05$  & $0.28$  & $1.01$ \\
+44M  & Per-loop + RMSNorm & $257.81$  & $15.45$ & $258.27$ & $1.00$ \\
+44M  & Terminal + Raw     & $-0.02$   & $0.06$  & $0.07$  & $3.74$ \\
+44M  & Terminal + RMSNorm & $210.81$  & $5.35$  & $210.88$ & $1.00$ \\
+129M & Per-loop + Raw     & $0.51$    & $0.08$  & $0.51$  & $1.01$ \\
+129M & Per-loop + RMSNorm & $13.99$   & $14.86$ & $20.41$ & $1.46$ \\
+\bottomrule
+\end{tabular}
+\end{table}

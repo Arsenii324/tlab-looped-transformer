@@ -1,0 +1,124 @@
+\input{figures/method_overview}
+
+\section{Training-free looped transformers}
+\label{sec:method}
+
+\subsection{Loop wrapper}
+\label{sec:wrapper}
+
+\input{algs/rk_algs}
+
+Let $f = L_{N-1} \circ \cdots \circ L_0$ denote a pretrained transformer with $N$ decoder layers \citep{vaswani2017attention,qwen3,llama3,deepseekv2,moonlight}, where $L_i$ maps a residual stream of shape $\mathbb{R}^{T \times d}$ to itself. Choose a contiguous \emph{loop window} indexed by $[a, b]$ with $0 \le a \le b \le N-1$ and a loop count $K \ge 1$. The window induces an operator \begin{equation}
+g := L_b \circ L_{b-1} \circ \cdots \circ L_a,
+\qquad g : \mathbb{R}^{T \times d} \to \mathbb{R}^{T \times d}.
+\label{eq:block-op}
+\end{equation}
+The looped wrapper splits the network into pre-loop layers $0, \ldots, a-1$, the looped middle, and post-loop layers $b+1, \ldots, N-1$:
+\begin{equation}
+\hat f(x) =
+\underbrace{\bigl(L_{N-1} \circ \cdots \circ L_{b+1}\bigr)}_{\text{post-loop}}
+\;\circ\; g^{(K)} \;\circ\;
+\underbrace{\bigl(L_{a-1} \circ \cdots \circ L_0\bigr)}_{\text{pre-loop}}(x),
+\label{eq:wrapper}
+\end{equation}
+where $g^{(K)} : \mathbb{R}^{T \times d} \to \mathbb{R}^{T \times d}$ is a $K$-step iteration of $g$. When $a = 0$ or $b = N-1$, the corresponding boundary composition is the identity. The map $g^{(K)}$ depends on an \emph{iteration mode} (Section~\ref{sec:layer-mode}) and a \emph{loop strategy} (Section~\ref{sec:strategy}).
+
+\subsection{Block-mode versus layer-mode iteration}
+\label{sec:layer-mode}
+
+Given the window operator $g = L_b \circ \cdots \circ L_a$ in \eqref{eq:block-op}, there are two natural realizations of $g^{(K)}$, \begin{align}
+\text{block-mode:}\quad
+   &g^{(K)}_{\operatorname{blk}}(x) = (L_b \circ \cdots \circ L_a)^{K}(x), \label{eq:block-mode}\\
+\text{layer-mode:}\quad
+   &g^{(K)}_{\operatorname{lyr}}(x) = L_b^{K} \circ L_{b-1}^{K} \circ \cdots \circ L_a^{K}(x).
+     \label{eq:layer-mode}
+\end{align}
+In other words, block-mode iterates the entire window as one unit, whereas layer-mode iterates each layer before passing to the next (Figure~\ref{fig:method}). For dense models \citep{bae2024relaxed,bae2025mor}, the two yield broadly similar quality. For mixture-of-experts (MoE) layers \citep{deepseekv2,moonlight,csordas2024moeut}, however, block-mode becomes unstable, since at iteration $i$ the gating network of every MoE layer in the window sees a slightly perturbed hidden state and routes to a different subset of experts than at iteration $i-1$, and the accumulated routing-induced noise eventually overpowers the intended refinement. On the other hand, layer-mode iteration computes the gating decision once and applies the same expert mixture $K$ times \citep{csordas2024moeut}, avoiding this failure mode and making it the correct default for MoE backbones.
+
+\subsection{Loop strategies}
+\label{sec:strategy}
+
+We first motivate several loop strategies with a structural observation. A standard pre-norm transformer layer $L$ \citep{vaswani2017attention} implements
+\begin{equation}
+L(x) = x + \operatorname{Attn}(\operatorname{LN}_1(x))+\operatorname{MLP}(\operatorname{LN}_2(x + \operatorname{Attn}(\operatorname{LN}_1(x)))).
+\label{eq:block}
+\end{equation}
+
+The right-hand side is the layer's input plus a residual update. Generalizing this directly to the loop window operator $g$, which may be a single layer $g = L_i$ (the layer-mode case) or a contiguous composition $g = L_b \circ \cdots \circ L_a$ (the block-mode case), we define the \emph{window residual field}
+\begin{equation}
+F_g(x) := g(x) - x.
+\label{eq:F}
+\end{equation}
+
+By construction, $g(x) = x + F_g(x)$, which is exactly a forward Euler step with step size $h{=}1$
+\begin{equation}
+    x_1 = x_0 + h \cdot F_g(x_0)
+\end{equation}
+on the autonomous ODE \citep{bai2019deep,bai2020multiscale}
+\begin{equation}
+\dot{x}=F_g(x). 
+\label{eq:ode}
+\end{equation}
+This holds regardless of whether the window contains one layer or many, and the two modes differ only in what $F_g$ unfolds to. In layer-mode, $F_g$ is just the single-layer residual field \[ F_g(x) = \operatorname{Attn}_i(\operatorname{LN}^i_1(x)) + \operatorname{MLP}_i(\operatorname{LN}^i_2(\cdot)). \]
+In block-mode, telescoping the unrolled chain (proof in Appendix~\ref{app:block-unroll}) gives
+\begin{equation}
+F_g(x) = \sum_{i=a}^{b} F_{L_i}(y_i(x)),
+\qquad y_a(x) := x,\quad y_{i+1}(x) := y_i(x) + F_{L_i}(y_i(x)),
+\label{eq:block-effective-field}
+\end{equation}
+where $F_{L_i}(z) := L_i(z) - z$ is the layer residual field of layer $i$. In both modes, the post-loop layers $L_{b+1}, \ldots, L_{N-1}$ are trained to receive the approximation of $x(t{=}1)$ on $F_g$ implicitly produced by one application of $g$ and not the trajectory at any other time.
+
+\input{figures/toy_mlp_contour}
+
+Naively looping $g$ for $K$ rounds, i.e. $x \leftarrow g(x)$ applied $K$ times \citep{dehghani2019universal,lan2020albert,liu2024looped,yang2025looped,saunshi2025reasoning,xu2025expressive,geiping2025scaling,zhu2025ouro,vonoswald2023transformers,ahn2024transformers,mahankali2024one,gatmiry2024looped,chen2024bypassing}, is a $K$-step forward Euler integration of the window residual field with step size $h{=}1$, which approximates $x(t{=}K)$. But the post-loop layers are not trained to receive the trajectory at $t{=}K$, and empirically, naive $K$-fold looping degrades performance almost universally (Section~\ref{sec:experiments}). Figure~\ref{fig:toy-mlp-contour} illustrates the effect of naive looping vs.\ sub-stepping on a tiny end-to-end trainable network with a $2$-D bottleneck, where the input to the post-loop layers can be directly plotted. The damped sub-step endpoints stay clustered in the trained low-loss valley, while the naive $K$-loop endpoints drift into high-loss regions. Numerically, when averaged over the test set, naive $K{=}2$ looping increases the MSE to 2.88 versus the baseline and sub-step values of 0.015 and 0.36, respectively ($\approx 8\times$ gap); at $K{=}8$ this degrades to a MSE of 335 versus the sub-step value of 1.04 ($\approx 320\times$ gap).
+
+The principled goal of $g^{(K)}$ is therefore not to advance integration to $t{=}K$, but to \emph{better approximate the same endpoint} $x(t{=}1)$ that the unmodified network already targets. To address this challenge, classical numerical analysis suggests to sub-step the same total integration time $[0,1]$ at finer resolution $h = 1/K$. Performing $K$ Euler steps of size $h{=}1/K$ on \eqref{eq:ode} gives the damped update
+\begin{equation}
+x_{k+1}=\left(1-\frac{1}{K}\right)x_k+\frac{1}{K}g(x_k),
+\label{eq:sub-step-euler}
+\end{equation}
+which converges to the true $x(t{=}1)$ at order $O(1/K)$ and strictly improves upon the single-shot $h{=}1$ Euler step that the network implicitly implements at every layer. Because equations~\eqref{eq:F}--\eqref{eq:ode} are mode-agnostic, this principle applies in both layer-mode (sub-stepping the per-layer field $F_g = F_{L_i}$) and in block-mode (sub-stepping the composite field $F_g$ in~\eqref{eq:block-effective-field}).
+
+More generally, we can consider numerical integration strategies beyond the forward Euler method to approximate $x(t{=}1)$. In particular, the damped Euler update~\eqref{eq:sub-step-euler} can be replaced by the $s$-stage explicit Runge--Kutta integrator
+\begin{equation}
+x_1 = x_0 + h\sum_{i=1}^{s} b_i k_i,
+\label{eq:rk-update}
+\end{equation}
+where the $s$ stages are given by
+\begin{equation}
+k_1 = F_g(x_0),\qquad k_2 = F_g(x_0 + h (a_{21} k_1)),\qquad\dots,\qquad k_s = F_g\Par{x_0 + h\sum_{j=1}^{s-1} a_{sj}k_j},
+\label{eq:rk-stages}
+\end{equation}
+with the coefficients $\{a_{ij}, b_i\}$ specified by a Butcher tableau. Algorithms~\ref{alg:rk-block} and~\ref{alg:rk-layer} summarize this family of methods for block-mode and layer-mode implementations, respectively, where the step size is chosen to be $h{=}1$.
+
+\input{algs/2_column_rk}
+
+As a particularly effective example, we choose a specific Butcher tableau so that the RK output becomes an interpolation between the base output and the $K$-step damped Euler updates following~\eqref{eq:sub-step-euler}. Concretely, we set
+\begin{equation}
+h=1,\quad s=K,\quad\text{and}\quad a_{ij}=\frac{1}{K}\ind(j<i),
+\label{eq:rk-euler-chain-aij}
+\end{equation}
+so that the $i^\text{th}$ stage evaluates $F_g$ at the point
+\begin{equation}\label{eq:yi}
+y_i=x_0+\frac{1}{K}\sum_{j=1}^{i-1}k_j
+    = F^{i-1}(x_0),\qquad k_i=F_g(y_i),
+\end{equation}
+where $F(x)\defeq x+\frac{1}{K}F_g(x)$ is the damped Euler update~\eqref{eq:sub-step-euler}. We then choose $\beta\in[0,1]$ and set the output weights as
+\begin{equation}
+b_1=\beta+\frac{1-\beta}{K},
+\qquad
+b_i=\frac{1-\beta}{K},\quad i=2,\ldots,K,
+\label{eq:rk-beta-bi}
+\end{equation}
+which are nonnegative and sum to one. Under these coefficients, the RK output satisfies the identity
+\begin{equation}
+x_1=x_0+\sum_{i=1}^{K} b_i k_i=\beta g(x_0)+(1-\beta)F^{K}(x_0),
+\label{eq:rk-beta-equivalence}
+\end{equation}
+which leads to an efficient implementation (Algorithm~\ref{alg:rk_beta}). The proof is provided in Appendix~\ref{app:block-unroll}.
+
+Algorithm~\ref{alg:rk_beta} can be interpreted as a RK method with a front-loaded quadrature rule controlled by $\beta$. In the extreme cases, $\beta=0$ recovers the $K$-substep forward Euler endpoint, while $\beta=1$ preserves the original output $g(x_0)$. For intermediate values of $\beta$, the method effectively biases the trajectory toward the trained one-step endpoint by placing greater weight on the initial residual direction.
+
+\input{tables/integrators}
+
+Beyond Runge--Kutta methods, there exists a wide range of numerical integration schemes that have been extensively studied in the ODE literature \citep{walker2011anderson,bai2019deep}. These methods are often designed to address specific properties of the underlying dynamics, and we list several prominent examples in Table~\ref{tab:strategies}. These algorithms, which differ in order, accelerator, and step size choices, will form the basis for seven strategies that we evaluate.

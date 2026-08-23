@@ -1,0 +1,9 @@
+name: tlab-node-probe
+desc: interrogate the node (GPU, memory, bf16 support, torch/CUDA) instead of inferring it, and test wandb as a channel that survives attach death
+cmd: python main.py
+env:
+  python3.10:
+    requirements-file: requirements.txt
+  vars:
+    WANDB_API_KEY: REDACTED_SET_VIA_ENV
+cloud-instance-type: gt4.1

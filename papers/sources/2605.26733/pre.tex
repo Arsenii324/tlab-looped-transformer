@@ -1,0 +1,51 @@
+
+
+\section{Preliminaries}
+
+\subsection{Looped Language Models}
+
+In contrast to traditional deep architectures that stack distinct layers, a looped language model leverages weight-sharing by iteratively applying a recurrent block $\mathcal{M}^L$. The architecture is defined as:
+$$\mathcal{F}^{(t)}(\cdot) = \text{lmhead} \circ \text{coda} \circ \underbrace{\mathcal{M}^L \circ \dots \circ \mathcal{M}^L}_{t \text{ iterations}} \circ \text{prelude}(\cdot),$$
+ where $\circ$  denotes function composition and,
+\begin{itemize}[leftmargin=1em,nosep]
+    \item  $\text{prelude}: \mathbb{R}^{M\times|V|} \to \mathbb{R}^{M \times d}$ maps a sequence of $M$ tokens to $d$-dimensional embeddings as a preprocess of the input text.
+    \item  $\mathcal{M}^L: \mathbb{R}^{M \times d} \to \mathbb{R}^{M \times d}$ denotes a stack of $L$ causal transformer layers ($\mathcal{T}_{\theta_L} \circ \dots \circ \mathcal{T}_{\theta_1}$) with hidden size $d$.
+    \item   $\text{coda}: \mathbb{R}^{M \times d} \to \mathbb{R}^d$ transforms the final iterative representations for the output layer.
+    \item  $\text{lmhead}: \mathbb{R}^d \to \mathbb{R}^{|V|}$ projects the output back to the vocabulary of size $V$ for generation.
+\end{itemize}
+For a special case where $t = 1$, the architecture reduces to a standard non-looped model $\mathcal{F}^{(1)} \equiv F$. For a training batch $\mathcal{D} = \{ \mathbf{x}^{(i)} \}_{i=1}^N$, we define the standard cross-entropy loss at $t$ iterations as:
+\begin{equation}
+\mathcal{L}_{\text{SFT}}^{(t)} = \frac{1}{N} \sum_{i=1}^N \sum_{\ell=1}^{M_i - 1} -\log p_{\theta}^{(t)}\big( x_{\ell+1}^{(i)} \mid x_{1:\ell}^{(i)} \big)
+\label{e1}
+\end{equation}
+where the conditional probability is given by $p_{\theta}^{(t)}(\cdot \mid x_{1:\ell}) = \text{softmax}(\text{lmhead}(h_{\ell}^{(t)}))$. Here, $x_{1:\ell}$ represents the prefix of length $\ell$, and $h_{\ell}^{(t)}$ denotes the hidden state at position $\ell$ after $t$ recursive iterations.
+
+\subsection{Latent Reasoning as a Dynamical System}
+The iterative computation in LoopLM naturally defines a discrete-time dynamical system in latent space. For a given input \(\mathbf{x}\), after initial embedding, the recurrent transformation yields the evolution
+\begin{equation}
+\mathbf{h}^{(t+1)} = \Phi_\theta(\mathbf{h}^{(t)}), \quad t = 0,1,2,\dots,
+\end{equation}
+where \(\mathbf{h}^{(t)} \in \mathbb{R}^D\) (\(D = M \cdot d\)) denotes the flattened latent state at iteration \(t\) and \(\Phi_\theta := \mathcal{M}^L\) is the deterministic nonlinear map parametrized by \(\theta\). The trajectory is the sequence $(\mathbf{h}^{(0)},\mathbf{h}^{(1)},\dots)$.
+From this perspective, test-time scaling corresponds to extending the trajectory length of the system, increasing the number of iterations \(t\) without changing parameters. The success of such scaling therefore depends on the long-term behavior of the trajectory.
+
+
+\paragraph{Attractor and fixed points.} In dynamical systems theory, an attractor describes the long‑term evolution of a system. Formally, a set \(\mathcal{A} \subset \mathbb{R}^D\) is an attractor for the dynamics induced by \(\Phi_\theta\) if there exists a neighbourhood \(\mathcal{U} \supset \mathcal{A}\) such that, for every state \(\mathbf{h}^{(t)} \in \mathcal{U}\),
+$
+\lim_{t \to \infty} \operatorname{dist}\bigl(\mathbf{h}^{(t)},\mathcal{A}\bigr)=0,
+$
+where \(\operatorname{dist}(\cdot,\mathcal{A})\) denotes the distance to \(\mathcal{A}\). Intuitively, attractors are regions of latent space toward which the model’s internal representations evolve during reasoning.
+A fixed point is a particularly important type of attractor. A state \(\mathbf{h}^\star \in \mathbb{R}^D\) is a fixed point if
+$
+\Phi_\theta(\mathbf{h}^\star)=\mathbf{h}^\star.
+$
+Once the latent trajectory reaches such a state, further applications of the recurrent block leave the representation unchanged. In LoopLM, fixed points correspond to stable internal representations that signify the completion of the reasoning process.
+A fixed point \(\mathbf{h}^\star\) is locally asymptotically stable if there exists \(\epsilon>0\) such that for every \(\mathbf{h}^{(t)}\) with \(\|\mathbf{h}^{(t)}-\mathbf{h}^\star\|<\epsilon\),
+$
+\lim_{t \to \infty} \mathbf{h}^{(t)}=\mathbf{h}^\star.
+$
+Such stable fixed points are desirable for reasoning tasks, as they guarantee convergence rather than oscillation or divergence when inference is extended.
+
+% \begin{theorem}    
+% Lyapunov linearization theorem
+% \end{theorem}
+

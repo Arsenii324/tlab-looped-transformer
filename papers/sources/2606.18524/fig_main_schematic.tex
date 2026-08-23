@@ -1,0 +1,9 @@
+\begin{figure*}[t]
+  \centering
+  \resizebox{\textwidth}{!}{\input{figures/main_schematic.tikz}}
+  \caption{\textbf{Weight sharing changes how residuals accumulate.}
+  \textbf{(a)}~In a deep network with independent weights, residual updates point in different directions and accumulate like a random walk, with norm $\Theta(\!\sqrt{L})$. Standard scaling $\varepsilon=1/\!\sqrt{L}$ keeps the output bounded.
+  \textbf{(b)}~In a looped network, a single block is reused $N$ times. The shared weights make successive updates align, so their sum grows as $\Theta(N)$---requiring the stronger scaling $\varepsilon=1/N$.}
+  \label{fig:main-schematic}
+\vspace{-0.3cm}
+\end{figure*}

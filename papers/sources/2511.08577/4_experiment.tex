@@ -1,0 +1,456 @@
+\section{Experiment}
+\label{sec:experiment}
+
+\subsection{Setup}
+
+We present key experiment configurations here, with detailed setups in Appendix~\ref{sec:appendix/exp_setup}.
+
+\xhdr{Baselines}
+We compare diverse methods under equal parameter budgets, using Qwen3-\{0.6B,1.7B,4B\}-Base~\citep{yang2025qwen3} as backbones.
+We compare \name over the following baselines:
+(1) \emph{Standard}, which always verbalizes directly and reduces to the standard Qwen model;
+(2) \emph{SoftThink}, a latent optimization method, implemented following the official design~\citep{zhang2025soft} on top of the Standard model;
+(3) \emph{AlwaysThink}, similar to \name, but always iterates twice for all tokens during training and inference;
+(4) \emph{Ouro}, a looped transformer that can scale iteration depths, implemented following the official design~\citep{zhu2025ouro}.
+Unless otherwise specified, \name, Ouro, and AlwaysThink all use a maximum of two iterations, fine-tuned from the same Qwen3 backbone on the same training data and recipe.
+Ouro reaches its highest performance when set to maximum iterations, so we report results under this setup.
+% We also compare with dynamic query routing via matrix factorization~\citep{ong2024routellm}, routing between MobileLLM-R1-360M~\citep{zhao2025mobilellm} and Qwen3-1.7B, as well as between Qwen3-0.6B and Qwen3-4B, to match average parameter sizes of 0.6B and 1.7B.
+% \todo{mention Ouro is the best performing version, since it drops accuracy if iterating soon}
+% For DiT~\citep{kim2025learning}, we follow the official training script, replacing the training data with the Open-R1 dataset.
+% \todo{Add query-level routing setup}
+
+\xhdr{\name setup}
+To match the total parameter count of \name (with LoRA and decider) with that of baselines, we prune one layer from the LLM backbone before training.
+The layer is chosen to minimize the increase in validation loss. 
+We also report results for an unpruned variant, TaH+, which adds less than 3\% extra parameters from LoRA and decider. 
+The detailed parameter composition is shown in Table~\ref{tab:param_composition}. 
+Following~\citep{fu2025r2r}, we set the continuation threshold $c_{\text{threshold}}=0.9$ with about 7\% of tokens being iterated twice.
+The oracle policy $\pi$ uses Qwen3-0.6B, 1.7B, and 4B as reference models, respectively.
+
+\xhdr{Training scheme}
+All models are trained on the balanced Open-R1~\citep{openr1} mixture (math, QA, and code; 100K samples) using supervised fine-tuning. 
+To fit memory and compute limits, we exclude responses longer than 8,192 tokens; 4B models additionally truncate at 4,096 tokens; all other training settings follow the official Open-R1 script.
+% The filtered dataset contains 480M tokens, with 1\% reserved for validation. 
+Each method is sufficiently trained for 5 epochs, and we select the checkpoint with the lowest validation loss as the final model. 
+All backbones are initialized from the corresponding Qwen3-Base model.
+
+
+\phantomsection
+\label{sec:eval_setup}
+\xhdr{Evaluation setup}
+We evaluate across challenging reasoning benchmarks, including GSM8K~\citep{cobbe2021training}, MATH500~\citep{hendrycks2021measuring}, AMC23 (American
+Mathematics Competitions), AIME25 (American Invitational Mathematics Examination), OlympiadBench (denoted as Olympiad)~\citep{he2024olympiadbench}, MBPP++~\citep{mbpp}, HumanEval++ (denoted as HE++)~\citep{humaneval}, GPQA-Diamond (denoted as GPQA)~\citep{rein2023gpqa}, and MMLU-STEM (denoted as MMLU)~\citep{mmlu}.
+The maximum generation length is set to 8,192 tokens for all benchmarks, except GSM8K and MMLU-STEM, which use 4,096 due to their simpler problems and larger size.
+Performance is reported as pass@1 under a zero-shot CoT setting, using a sampling temperature of 0.6.
+We generate one sample per problem for large datasets (MATH500, OlympiadBench, etc.), and eight samples per problem for small datasets (AMC23, AIME25).
+
+\subsection{Performance}
+\label{sec:experiment/performance}
+
+\xhdr{Benchmark evaluation}
+We validate \name's reasoning ability across all nine benchmarks.
+Table~\ref{tab:performance_by_category_transposed} presents performance results for models at 0.6B, 1.7B, and 4B parameter sizes.
+Compared with the strong Standard Qwen3 baselines, we observe that existing approaches (AlwaysThink,
+SoftThink, and Ouro) yield only marginal improvements when fine-tuned from base.
+In contrast, \name achieves consistent gains across benchmarks.
+For 0.6B and 1.7B models, \name delivers average improvements of 3.0\% and 3.8\% over Standard, respectively; TaH+, which adds less than 3\% additional parameters, further pushes these gains to 5.3\% and 6.2\%.
+Compared to the concurrent work Ouro, \name and TaH+ achieve 3.8-4.4\% and 6.1-6.8\% gains, respectively.
+For 4B models, which are trained with a 4K context length due to resource limits, \name and TaH+ also achieve gains of 1.7\% and 2.2\%.
+
+\begin{table*}[t]
+    \caption{Accuracy comparison across benchmarks.
+    Best results are highlighted in bold. $^*$4B models are trained with $\leq$4K lengths due to resource constraints; AlwaysThink is excluded due to Out-Of-Memory (OOM) during training.}
+    \label{tab:performance_by_category_transposed}
+    \centering
+    \setlength\tabcolsep{4pt} % default value: 6pt
+    \begin{tabular}{lcccccccccc}
+    \toprule
+    ~ &
+    AIME25 & Olympiad & AMC23 & MATH500 & GSM8K & GPQA & MMLU & HE++ & MBPP++ & Average \\
+    \midrule
+    \multicolumn{11}{c}{\textit{0.6B}} \\
+    \midrule
+    Standard &
+    1.9 & 15.4 & 22.7 & 39.9 & 58.2 & 31.1 & 54.2 & 16.8 & 28.8 & 29.9 \\
+    SoftThink &
+    \underline{2.9} & 14.0 & 22.2 & 39.6 & 55.9 & 24.7 & 53.0 & 14.3 & 29.5 & 28.5 \\
+    Ouro &
+    2.1 & 14.2 & 19.7 & 37.4 & 56.6 & \textbf{35.4} & 54.0 & 18.9 & 23.5 & 29.1 \\
+    AlwaysThink &
+    1.3 & 12.6 & 21.9 & 37.8 & 52.6 & 30.8 & 51.4 & 9.1 & 13.8 & 25.7 \\
+    \rowcolor{tahgray}
+    TaH &
+    2.1 & \underline{19.1} & \underline{24.1} & \underline{46.2} &
+    \underline{63.6} & 29.0 & \underline{56.4} & \underline{21.6} & \underline{33.9} & \underline{32.9}{\scriptsize$/+3.0$} \\
+    \rowcolor{tahgray}
+    TaH+ &
+    \textbf{4.6} & \textbf{20.6} & \textbf{24.7} & \textbf{51.8} &
+    \textbf{67.6} & \underline{31.3} & \textbf{59.0} & \textbf{22.0} & \textbf{35.1} & \textbf{35.2}{\scriptsize$/+5.3$} \\
+    \midrule
+    \multicolumn{11}{c}{\textit{1.7B}} \\
+    \midrule
+    Standard &
+    10.8 & 33.8 & 39.7 & 67.8 & 80.2 & 30.3 & 74.1 & 39.0 & 51.9 & 47.5 \\
+    SoftThink &
+    5.4 & 30.7 & 40.3 & 64.8 & 80.0 & \underline{33.3} & 73.5 & 43.3 & 49.1 & 46.7 \\
+    Ouro &
+    10.8 & 31.3 & 40.6 & 68.2 & 79.8 & 32.8 & 72.4 & 40.9 & 45.5 & 46.9 \\
+    AlwaysThink &
+    7.5 & 31.0 & 40.9 & 63.2 & 74.2 & 30.5 & 69.6 & 16.4 & 25.6 & 39.9 \\
+    \rowcolor{tahgray}
+    TaH &
+    \underline{13.8} & \underline{37.2} & \underline{40.9} &
+    \underline{71.4} & \textbf{84.8} & \underline{33.3} &
+    \underline{74.8} & \underline{50.0} & \underline{55.3} & \underline{51.3}{\scriptsize$/+3.8$} \\
+    \rowcolor{tahgray}
+    TaH+ &
+    \textbf{15.4} & \textbf{37.6} & \textbf{48.4} &
+    \textbf{72.6} & \underline{84.5} & \textbf{39.4} &
+    \textbf{76.6} & \textbf{51.5} & \textbf{57.5} & \textbf{53.7}{\scriptsize$/+6.2$} \\
+    \midrule
+    \multicolumn{11}{c}{\textit{4B$^*$}} \\
+    \midrule
+    Standard &
+    24.2 & 50.4 & 64.2 & 84.2 & \underline{91.7} &
+    46.2 & 85.4 & 69.2 & 65.9 & 64.6 \\
+    % AlwaysThink &
+    % -- & -- & -- & -- & -- & -- & -- & -- & -- & -- \\
+    SoftThink &
+    25.8 & 50.2 & 63.1 & 85.0 & \textbf{92.5} & \textbf{50.3} & 86.0 & 69.2 & 66.7 & 65.4 \\
+    Ouro &
+    25.0 & \underline{51.4} & 64.4 & 83.8 & 90.7 & \underline{50.0} & 85.9 & \underline{70.7} & 66.7 & 65.4 \\
+    \rowcolor{tahgray}
+    TaH &
+    \underline{27.1} & 50.5 & \textbf{69.7} & \textbf{85.8} & 91.0 & 48.5
+     & \underline{86.2} & 70.1
+     & \underline{67.7} & \underline{66.3}{\scriptsize$/+1.7$}\\
+    \rowcolor{tahgray}
+    TaH+ &
+    \textbf{27.9} & \textbf{52.6} & \underline{68.1} & \underline{85.6} & \underline{91.7} &
+    49.0 & \textbf{86.6} & \textbf{72.0} & \textbf{68.1} & \textbf{66.8}{\scriptsize$/+2.2$} \\
+    \bottomrule
+    \end{tabular}
+\end{table*}
+
+
+\xhdr{Hardware-agnostic efficiency}
+Tables~\ref{tab:token_iter_stats} and~\ref{tab:efficiency_analysis_theo} report the average iteration depth, per-token FLOPs, and memory access of \name.
+On average, \name performs 1.07 iterations per token. It significantly undercuts the 2.08-2.18$\times$ FLOPs and memory access of AlwaysThink, matching the overhead of Standard with only 4-5\% additional overhead. See Appendix~\ref{sec:appendix/exp/theo_eff} for more details.
+
+\begin{table}[tb]
+    \caption{Real-world decoding performance on a single A800 GPU, tested on AIME25 with 8K max token length.}
+    \label{tab:real_world_perf}
+    \centering
+    \setlength\tabcolsep{4pt}
+    \begin{tabular}{lcc>{\columncolor{tahgray}}c}
+    \toprule
+     & Standard & AlwaysThink & \name \\
+    \midrule
+    Avg. Depth & 1.00 & 2.00 & 1.06 \\
+    Memory (GB)        & 4.3   & 6.8   & 4.6   \\
+    Latency (s)        & 210.6 & 747.2 & 301.4 \\
+    Throughput (token/s) & 38.9 & 11.0  & 27.2  \\
+    \bottomrule
+    \end{tabular}
+\end{table}
+
+\xhdr{Real-world efficiency}
+We compare efficiency of 1.7B models at 8K length on a single NVIDIA A800 GPU.
+As shown in Table~\ref{tab:real_world_perf}, \name iterates twice on only 6\% of tokens on AIME25, with 1.48$\times$ lower memory overhead and 2.48$\times$ faster decoding than AlwaysThink, while achieving higher accuracy.
+More detailed efficiency experiment setup and runtime breakdown are shown in Appendix~\ref{sec:appendix/exp/real_world_efficiency}.
+    
+% \todo{add temperature=0 testing}
+
+
+%%% Training dynamics %%%
+% Figure
+% X: training step
+% Y: training loss and evaluation loss
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=0.8\columnwidth]{figure/eval_loss_0_6.pdf}
+    \caption{Training dynamics of the LLM backbone on Qwen3-0.6B-Base. \name converges rapidly and achieves lower perplexity.}
+    \label{fig:training_llm}
+\end{figure}
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=0.8\columnwidth]{figure/iter_decider_acc.pdf}
+    \caption{Iteration-decider accuracy vs. epoch (Qwen3-0.6B).}
+    \label{fig:training_decider}
+\end{figure}
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=0.8\columnwidth]{figure/continuation_threshold.pdf}
+    \caption{GSM8K accuracy with respect to continuation threshold. Numbers in brackets show the percentage of tokens iterated twice.}
+    \label{fig:continuation_threshold}
+\end{figure}
+
+
+\xhdr{Training dynamics}
+During stage~1 (LLM backbone training), \name performs iterations according to the oracle policy. As shown in Figure~\ref{fig:training_llm}, it converges notably faster than the Standard baseline and also achieves much lower validation perplexity.
+During stage~2 (iteration-decider training), the neural decider successfully imitates the oracle strategy. It reaches about 83\% accuracy at predicting the oracle's iteration decisions, as shown in Figure~\ref{fig:training_decider}.
+
+
+\subsection{Design Choice Exploration}
+\label{sec:exp/dse}
+
+We demonstrate the effectiveness and robustness of each design choice of \name through ablation studies.
+All experiments in this section train \name and its variants on the math subset of Open-R1 and evaluate on MATH500, AMC23, and OlympiadBench.
+
+%%% Architecture %%%
+% \begin{table}[tb]
+%     \caption{Ablation study on architecture designs, using 0.6B models. 
+%     % \textit{Causal}: standard causal attention where tokens only attend to depth-1 contexts. 
+%     % \textit{Duo-causal}: our proposed attention allowing tokens to attend to current and all shallower iterations.
+%     }
+%     % \vspace{-8pt}
+%     \label{tab:ablation}
+%     \centering
+%     \begin{tabular}{lll|cccc}
+%     \toprule
+%     \textbf{LoRA}& \textbf{Residual}& \textbf{Attention} & \textbf{MATH500} & \textbf{AMC23}  & \textbf{Olympiadbench} & \textbf{Average}\\
+%     \midrule
+%     \cmark & \cmark & Duo-causal & 51.2 & \textbf{32.5}  & \textbf{23.9} & \textbf{35.9}\\
+%     \midrule
+%     \xmark & \cmark & \multirow{2}{*}{Duo-causal}  & \textbf{51.6} & 29.7  & 22.4& 34.6 {\scriptsize$/-$1.3}\\
+%     \xmark & \xmark & ~ & 49.2 & 22.5  & 21.2& 31.0 {\scriptsize$/-$4.9}\\
+%     \midrule
+%     \cmark & \cmark & \textit{Causal} & 47.8 & 24.4  & 19.4 & 30.5 {\scriptsize$/-$5.4}\\
+%     \bottomrule
+%     \end{tabular}
+% \end{table}
+
+\begin{table}[tb]
+\caption{Ablation study on design choices of TaH-0.6B. Each row varies one aspect from the \name configuration (marked with \colorbox{tahgray}{gray}).}
+\label{tab:ablation}
+\centering
+\footnotesize
+\setlength\tabcolsep{2pt}
+\begin{tabular}{l@{\hskip 0pt}cccc}
+    \toprule
+    \textbf{Variant} & \textbf{MATH500} & \textbf{AMC23} & \textbf{Olympiad} & \textbf{Average} \\
+    \midrule
+    \rowcolor{tahgray}
+    \quad \name & \textbf{51.2} & \textbf{32.5} & \textbf{23.9} & \textbf{35.9} \\
+    \midrule
+    \multicolumn{5}{c}{\textit{Model Architecture}} \\
+    \midrule
+    \multicolumn{5}{l}{\textit{Iteration Depth} (\name: \colorbox{tahgray}{Neural decider})} \\
+    \quad Always-1 & 47.2 & 23.4 & 18.8 & 29.8{\scriptsize$/-$6.1} \\
+    \quad Always-2 & 32.8 & 15.6 & 10.2 & 19.5{\scriptsize$/-$16.4} \\
+    \addlinespace
+    \multicolumn{5}{l}{\textit{Attention} (\name: \colorbox{tahgray}{Duo-causal})} \\
+    \quad Causal@iter1 & 47.8 & 24.4 & 19.4 & 30.5{\scriptsize$/-$5.4} \\
+    \quad Causal@current & 42.0 & 23.8 & 16.4 & 27.4{\scriptsize$/-$8.5} \\
+    \addlinespace
+    \multicolumn{5}{l}{\textit{Depth Adapters} (\name: \colorbox{tahgray}{LoRA + Residual})} \\
+    \quad w/o LoRA & 51.6 & 29.7 & 22.4 & 34.6{\scriptsize$/-$1.3} \\
+    \quad w/o LoRA \& Res. & 49.2 & 22.5 & 21.2 & 31.0{\scriptsize$/-$4.9} \\
+    \midrule
+    \multicolumn{5}{c}{\textit{Training Scheme}} \\
+    \midrule
+    \multicolumn{5}{l}{\textit{Supervision Type} (\name: \colorbox{tahgray}{Token-only})} \\
+    \quad Token+latent & 49.4 & 29.6 & 15.9 & 31.6{\scriptsize$/-$4.3} \\
+    \addlinespace
+    \multicolumn{5}{l}{\textit{Iteration Policy during LLM training} (\name: \colorbox{tahgray}{Oracle policy})} \\
+    \quad Decider-based & 44.8 & 24.1 & 17.3 & 28.7{\scriptsize$/-$7.2} \\
+    \quad Dynamic & 11.0 & 2.8 & 2.7 & 5.5{\scriptsize$/-$30.4} \\
+    \addlinespace
+    \multicolumn{5}{l}{\textit{Discrepancy metric in $\pi$} (\name: \colorbox{tahgray}{Top1 mismatch})} \\
+    \quad Cross-entropy & 47.4 & 21.2 & 20.4 & 29.7{\scriptsize$/-$6.2} \\
+    \quad Entropy & 42.0 & 21.9 & 16.9 & 26.9{\scriptsize$/-$9.0} \\
+    \bottomrule
+\end{tabular}
+\end{table}
+    
+
+
+
+\xhdr{Model architecture}
+% We examine the effectiveness of two key architectural components: LoRA and residual connections for smooth objective transition, and the duo-causal attention pattern for leveraging extended context. 
+(1) \textbf{Iteration Scheme}.
+As shown in Table~\ref{tab:ablation}, decider-based iteration outperforms the \textit{Always-1} and \textit{Always-2} alternatives, confirming the practical benefits of selective iteration, even with imperfect decisions from the neural decider. Note that for \textit{Always-1}, duo-causal attention degenerates to regular causal attention.
+(2) \textbf{Duo-Causal Attention}.
+Replacing duo-causal attention with standard causal attention variants causes significant drops:
+(a) attending only to the first iteration (Causal@iter1) drops by 5.4\%;
+(b) attending only to the current iteration (Causal@current) drops even more, by 8.5\%.
+They confirm duo-causal attention's essential role in cross-depth information flow.
+(3) \textbf{Depth Adapters}.
+Removing LoRA and residual connections leads to consistent drops, confirming their beneficial roles in objective transition across iterations.
+
+% Figure
+% Training scheme (iter decision)
+\xhdr{Training scheme}
+% We examine how supervision types and iteration behavior during backbone training affect performance. 
+(1) \textbf{Supervision type.} 
+Some previous work supervises all iteration depths with next-token labels, while \name only supervises final output tokens.
+As shown in Table~\ref{tab:ablation}, such \textit{token+latent} supervision underperforms \name. This aligns with our intuition that different iterations should focus on their respective objectives.
+(2) \textbf{Iteration policy during LLM training.}
+We compare our static oracle strategy $\pi$ with two alternatives.
+The \textit{decider-based} approach trains the iteration decider first, then uses it during backbone training. It suffers from the coupling challenge discussed in Section~\ref{sec:training}.
+The \textit{dynamic} approach recalculates the oracle using the evolving backbone in Equation~\ref{eq:ours_oracle_depth}, facing the same coupling challenge and causing training collapse. 
+These results support our selection of the static oracle policy.
+(3) \textbf{Discrepancy metric in $\pi$.}
+We compare three discrepancy metrics to trigger latent iteration in $\pi$: top-1 mismatch, entropy, and cross-entropy (detailed definitions in Appendix~\ref{sec:appendix/exp/oracle_label}).
+As Table~\ref{tab:ablation} shows, top-1 mismatch yields the best result, confirming its empirical effectiveness.
+
+\xhdr{Iteration label robustness}
+We further evaluate how sensitive \name is to the quality of its oracle iteration labels.
+For this evaluation, all \name-1.7B variants are trained on the math split while varying only how the iteration depth labels are constructed.
+As shown in Table~\ref{tab:oracle_label_robustness}, labels from a smaller 0.6B reference and labels with 10\% random flips both still improve over Standard-1.7B.
+The clean same-scale 1.7B reference gives the strongest average gain, so we use this label source in the main experiments.
+
+\begin{table*}[t]
+\caption{Robustness of \name-1.7B to imperfect oracle iteration labels. Each robustness row varies the label construction from the main \name configuration (marked with \colorbox{tahgray}{gray}); ``10\% noise'' randomly flips labels generated by the Qwen3-1.7B reference.}
+\label{tab:oracle_label_robustness}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{llcccccc}
+\toprule
+\textbf{Method} & \textbf{Iter. Label} & \textbf{MATH500} & \textbf{GSM8K} & \textbf{AMC23} & \textbf{Olympiad} & \textbf{AIME25} & \textbf{Average} \\
+\midrule
+\multicolumn{8}{l}{\textit{Primary baselines}} \\
+\quad Standard-1.7B & -- & 68.4 & 82.1 & 42.2 & 33.0 & 13.3 & 47.8 \\
+\rowcolor{tahgray}
+\quad \name-1.7B & 1.7B reference & \textbf{74.4} & \textbf{84.5} & \textbf{48.4} & \textbf{38.8} & \textbf{17.9} & \textbf{52.8}{\scriptsize$/+$5.0} \\
+\addlinespace
+\multicolumn{8}{l}{\textit{Label robustness checks}} \\
+\quad \name-1.7B & 0.6B reference & 70.2 & 82.3 & 43.4 & 33.5 & 14.2 & 48.7{\scriptsize$/+$0.9} \\
+\quad \name-1.7B & 1.7B reference + 10\% noise & \underline{73.6} & \underline{83.5} & \underline{46.8} & \underline{36.0} & \underline{14.6} & \underline{50.9}{\scriptsize$/+$3.1} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=0.8\columnwidth]{figure/flow.pdf}
+    \caption{Next-token prediction changes across iterations. Top-2 frequent iterated tokens are visualized.}
+    \label{fig:flow}
+\end{figure}
+
+% \xhdr{Generalizability}\todo{merge with performance; move to 5.3}
+% We further study generalization when TaH is evaluated out of domain (OOD) or trained on broader data mixtures.
+% First, when trained only on math data, TaH+ still improves OOD STEM performance on MMLU-STEM (4.7\% and 2.9\% for 0.6B and 1.7B respectively), indicating that the learned thinking patterns transfer robustly across domains.
+% Second, fine-tuning Qwen3-1.7B-Base on a balanced OpenR1 mixture of math, QA, and code shows that TaH+ yields consistent gains over Standard across all categories, improving the overall average accuracy by 6.8\%.
+% See additional experiment and performance details in Appendix~\ref{sec:appendix/exp/generalization}.
+
+\xhdr{Continuation threshold}
+\name shows robust performance across continuation thresholds and iteration ratios (Figure~\ref{fig:continuation_threshold}).
+We empirically set $c_{\text{threshold}}=0.9$ for all evaluations.
+
+\begin{table*}[t]
+\caption{Performance comparison with larger maximum iteration depths. TaH variants are all 1.7B, trained on the math subset. Brackets show the percentage of tokens executing iterations 2, 3, and 4.}
+\label{tab:max_interation_3}
+\centering
+\small
+\setlength{\tabcolsep}{2pt}
+\newcommand{\iterpct}[1]{\hspace{0.35em}{\scriptsize[#1]}}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llcccccc@{}}
+\toprule
+\textbf{Method} & \textbf{Iter. Policy} & \textbf{MATH500} & \textbf{GSM8K} & \textbf{AMC23} & \textbf{Olympiad} & \textbf{AIME25} & \textbf{Avg.} \\
+\midrule
+Standard & -- & 68.4\iterpct{0.0, 0.0, 0.0} & 82.1\iterpct{0.0, 0.0, 0.0} & 42.2\iterpct{0.0, 0.0, 0.0} & 33.0\iterpct{0.0, 0.0, 0.0} & 13.3\iterpct{0.0, 0.0, 0.0} & 47.8\iterpct{0.0, 0.0, 0.0} \\
+\midrule
+TaH-2 & \multirow{3}{*}{Decreasing} & \underline{74.4}\iterpct{5.6, 0.0, 0.0} & \underline{84.5}\iterpct{7.5, 0.0, 0.0} & 48.4\iterpct{4.2, 0.0, 0.0} & 38.8\iterpct{5.7, 0.0, 0.0} & 17.9\iterpct{6.0, 0.0, 0.0} & 52.8\iterpct{5.8, 0.0, 0.0} \\
+TaH-3 & & \textbf{74.8}\iterpct{6.5, 1.2, 0.0} & 84.0\iterpct{8.6, 1.8, 0.0} & \underline{49.1}\iterpct{6.3, 1.0, 0.0} & \textbf{41.6}\iterpct{5.3, 1.0, 0.0} & \underline{19.6}\iterpct{5.4, 1.0, 0.0} & \underline{53.8}\iterpct{6.4, 1.2, 0.0} \\
+TaH-4 & & \textbf{74.8}\iterpct{4.9, 0.6, 0.6} & \textbf{84.6}\iterpct{7.1, 0.9, 0.8} & \textbf{49.7}\iterpct{4.3, 0.5, 0.4} & \underline{40.7}\iterpct{4.0, 0.5, 0.4} & \textbf{20.4}\iterpct{4.3, 0.5, 0.3} & \textbf{54.0}\iterpct{4.9, 0.6, 0.5} \\
+\midrule
+TaH-3 & Uniform & 70.2\iterpct{29.4, 31.8, 0.0} & 82.5\iterpct{29.5, 35.8, 0.0} & 41.6\iterpct{30.7, 32.9, 0.0} & 34.4\iterpct{30.6, 34.1, 0.0} & 14.2\iterpct{30.4, 35.3, 0.0} & 48.6\iterpct{30.1, 34.0, 0.0} \\
+\bottomrule
+\end{tabular*}
+\end{table*}
+
+
+\xhdr{Deeper iteration depth}
+We train 1.7B variants with larger maximum iteration depths on the math subset.
+TaH-3 and TaH-4 set $D_{\max}=3$ and $D_{\max}=4$, respectively, following the same sparse, decreasing allocation principle as TaH-2: most tokens stop at depth~1, while harder tokens continue through additional latent passes.
+As shown in Table~\ref{tab:max_interation_3}, the average gain over Standard increases from +5.0\% (TaH-2) to +6.0\% (TaH-3) and +6.2\% (TaH-4) with little extra cost.
+We further study the impact of the label distribution by comparing with TaH-3-Uniform, which assigns same number of tokens across depths.
+The weaker result of the uniform variant confirms that sparser allocation of deeper iterations is more effective than forcing frequent use of deeper depths.
+Detailed setup is provided in Appendix~\ref{sec:appendix/oracle_policy}.
+
+
+\xhdr{Restricted inference depth}
+We evaluate whether the benefits of \name persist when the maximum inference depth is below the training maximum.
+Table~\ref{tab:restricted_inference_depth} evaluates 1.7B models trained with $D_{\max}=2$ but forced to verbalize after the first iteration at inference.
+Although weaker than full \name inference, restricted-depth inference still outperforms Standard by 2.1-3.1\% on average, suggesting that \name training also improves first-iteration representations.
+
+\begin{table}[tb]
+    \centering
+    \caption{Performance of 1.7B models under restricted inference depth, grouped by task category.}
+    \label{tab:restricted_inference_depth}
+    \small
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabular}{lllcccc}
+    \toprule
+    \textbf{Method} & \makecell{\textbf{Train.}\\\textbf{Depth}} & \makecell{\textbf{Infer.}\\\textbf{Depth}} & \textbf{Math} & \textbf{Science} & \textbf{Code} & \textbf{Avg.} \\
+    \midrule
+    Standard & 1 & 1 & 46.5 & 52.2 & 45.5 & 47.5 \\
+    \midrule
+    \multirow{2}{*}{\name} & 2 & 2 & 49.6 & \underline{54.1} & \underline{52.7} & \underline{51.3}{\scriptsize$/+$3.8} \\
+     & 2 & 1 & 48.1 & 53.9 & 49.2 & 49.6{\scriptsize$/+$2.1} \\
+    \midrule
+    \multirow{2}{*}{TaH+} & 2 & 2 & \textbf{51.7} & \textbf{58.0} & \textbf{54.5} & \textbf{53.7}{\scriptsize$/+$6.2} \\
+     & 2 & 1 & \underline{50.2} & 52.4 & 49.8 & 50.6{\scriptsize$/+$3.1} \\
+    \bottomrule
+    \end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%% Behavior %%%%%%%%%%%%%%%%%
+
+
+% \begin{figure}[tb]
+%     \centering
+%     \begin{minipage}[b]{0.49\textwidth}
+%         \centering
+%         \begin{tabular}{l l c}
+%         \toprule
+%         \textbf{Training} & \textbf{Inference} & \textbf{Accuracy} \\
+%         \midrule
+%         Standard    & Standard    & 52 \\
+%         \midrule
+%         AlwaysThink & AlwaysThink & 38{\scriptsize$/-$14} \\
+%         AlwaysThink & TaH-Oracle       & 77{\scriptsize$/+$25} \\
+%         \midrule
+%         TaH-Oracle   & TaH-Decider   & 54{\scriptsize$/+$\phantom{0}2} \\
+%         TaH-Oracle   & TaH-Oracle       & 80{\scriptsize$/+$28} \\
+%         \bottomrule
+%         \end{tabular}
+%         \captionof{table}{Impact of iteration strategies on Qwen3-0.6B (first 100 MATH500 samples).}
+%         \label{tab:oracle}
+%     \end{minipage}
+%     \hfill
+%     \begin{minipage}[b]{0.49\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{figure/pie.png}
+%         \captionof{figure}{Next-token prediction accuracies on Qwen3-1.7B fine-tuned variants. Switching from direct reply to uniform think-twice causes more wrong corrections than fixes. Iterating only at hard tokens, identified by errors under the reference direct model, yields substantially more fixes with minimal harm.}
+%         \label{fig:pie}
+%     \end{minipage}
+% \end{figure}
+    
+\subsection{Behavior Analysis}
+
+\xhdr{Token alternation patterns}
+We analyze which tokens \name selects for deeper iteration.
+As shown in Figure~\ref{fig:flow}, \textit{But} and \textit{So} are iterated most frequently.
+These tokens are hard to predict because they mark points of contrast or causality that can redirect subsequent reasoning.
+At such junctures, \name uses additional iterations to refine its reasoning direction.
+See Appendix~\ref{sec:appendix/exp/flow} for details.
+
+\xhdr{Attention pattern}
+We visualize the attention pattern of \name in Figure~\ref{fig:attention} and Appendix~\ref{sec:appendix/exp/attention}. Duo-causal attention focuses on different iterations in different heads, extracting broader contexts from multiple depths.
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=0.67\columnwidth]{figure/landscape.png}
+    \caption{Distribution of token prediction accuracy across iterations for Ouro and \name.}
+    \label{fig:landscape}
+\end{figure}
+
+\xhdr{Accuracy landscape}
+Figure~\ref{fig:landscape} shows NTP accuracy across iterations. Because Ouro trains all iterations to predict all tokens, predictable tokens across depths largely overlap. 
+\name specializes deeper iterations for hard tokens, improving overall coverage under selective iteration.

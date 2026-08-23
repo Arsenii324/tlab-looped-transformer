@@ -1,0 +1,38 @@
+\section{Importance of Weight Decay Value for Looped Models}
+\label{sec:appendix:WD}
+
+
+
+
+
+
+
+
+
+While weight decay (WD) is standard in language model training
+\citep{loshchilov2017decoupled}, it is typically left at its default value.
+Our experiments reveal that WD has a surprisingly large impact on reasoning
+performance for looped models. To isolate this effect, we fix
+$\lambda_\text{align}{=}0.3$ throughout this section.
+
+
+As shown in Figure~\ref{fig:spectral_norm} (Left), low WD leads to rapidly diminishing gradient norms over training, while medium and high WD sustain larger norms throughout. We note that the observed pattern is consistent with the view that weight decay acts less as a classical regularizer than as a modifier of optimization dynamics \citep{d2024we}. We hypothesize this effect is
+amplified in looped architectures: as the function is composed $T$ times,
+the sensitivity introduced by sharp minima compounds across loops.
+
+\input{tables/wd_comparison}
+
+Higher WD also constrains weight norms
+(Figure~\ref{fig:spectral_norm}, Right), reducing layer Lipschitz constants
+\citep{bartlett2017spectrally} and improving stability under repeated
+application. On GSM8K (Table~\ref{tab:wd_comparison}), medium and high WD
+consistently outperform low WD in both looped and non-looped settings, with
+up to 53\% relative improvement. High WD peaks at $T{=}5$ (16.98\% vs.\
+11.44\%) but is surpassed by medium WD at $T{=}9$ (18.12\% vs.\ 18.49\%),
+suggesting excessive decay over-constrains capacity. These results identify
+WD as a surprisingly impactful yet undertuned hyperparameter for looped
+models.
+
+
+
+
