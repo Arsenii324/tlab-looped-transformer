@@ -750,6 +750,71 @@ corruption class documented throughout this project) — the chunking-and-retry 
 resumed from the last good checkpoint, and continued normally, the first time this session that
 recovery path fired on an actual failure rather than being exercised only in the abstract.
 
+### 4.1b The third cell on the normalisation axis — gated injection, and it makes things worse
+
+§4.1 swept `{hard inter-loop RMSNorm, nothing}`. Neither is what the reference implementations
+(Parcae; *Looped Transformers Done Right*) actually use — both choose a **diagonal state-space
+write**, a learned per-channel carry decay that bounds ‖h‖ without projecting the state onto a
+sphere:
+
+```
+h_in = alpha * h + delta * e        replaces  h_in = h + e
+delta = softplus(inj_b)             learned per-channel WRITE strength
+alpha = exp(-delta * exp(inj_a))    learned per-channel CARRY decay, in (0,1)
+```
+
+**+896 params (2·H, 0.0099%)**, zero extra FLOPs. Three in-job arms at 2.5M tokens, config derived
+from the reference checkpoint (§6.0 row 32's rule, after hand-matching a config once cost 727s and
+produced nothing):
+
+| arm | `α` init | CE@1 | CE_best | plateau | mid | `α` learned | channels decaying |
+|---|---|---|---|---|---|---|---|
+| `gi_additive` (control) | — | 5.4952 | **5.4000** @8 | [8,16] | 11.3 | — | — |
+| `gi_gated` | 0.9999939 *(≈additive)* | 5.4733 | 5.3730 @8 | [8,16] | 11.3 | **0.999993** (unchanged) | **0/448** |
+| `gi_gated_a874` | **0.874** *(the field's default)* | 5.7217 | **5.6470** @8 | [8,16] | 11.3 | **0.862** | **448/448** |
+
+> **The near-identity init is a trap, and it is worth naming precisely because it looks like the
+> conservative choice.** `gi_gated` was initialised *at* the additive model (`α → 1`) so the arm
+> would be a strictly-larger hypothesis class — the same discipline as the scale clock's zero-init.
+> It backfires here: `d(α)/d(inj_a) = 6.1e-06` at that point, against `d(δ)/d(inj_b) = 0.63` — **δ is
+> ~103,000× more reachable.** After 2.5M tokens δ moved 1.0 → 1.1137 while α moved <5e-6 and 0/448
+> channels crossed 0.99. That run did not show the model *declining* the decay; it showed the decay
+> was **untrainable from that starting point**, because any smooth map into (0,1) is flat near 1.
+> "Start at the control" and "keep the parameter reachable" cannot both hold for this
+> parameterisation. `gi_gated`'s 0.0270-nat CE_best improvement is real motion, but it is entirely
+> from `δ` (write strength) — the mechanism the field's cell is actually about was never exercised.
+
+**`gi_gated_a874` is the valid test, and the pre-registered primary result — does the mechanism do
+what it claims, independent of CE — is a clear yes:**
+
+| checkpoint | e/h @1 | e/h @8 | e/h @32 | ‖h‖ growth, loop 1→32 |
+|---|---|---|---|---|
+| `gi_additive` | 2.23e-4 | 8.39e-5 | 3.06e-5 *(7.3× collapse)* | 6,459 → 39,762 *(6.2×)* |
+| `gi_gated` (α stuck) | 1.94e-4 | 6.92e-5 | 2.50e-5 *(7.8× collapse)* | 6,879 → 47,088 *(6.8×)* |
+| **`gi_gated_a874`** | 5.61e-5 | 4.28e-5 | **4.56e-5** *(≈flat, non-monotone)* | **22,731 → 26,663 (1.17×)** |
+
+**The state stops growing.** ‖h‖ grows 1.17× over 32 loops against the additive control's 6.2× — the
+carry decay does exactly what the form is supposed to do, bounding the state without a hard
+sphere-projection. And the injection ratio, which §4.3 calls "drowned" under plain addition
+(collapsing 7.3–7.8× here), is **nearly constant** under the real gated arm — the mechanism this
+cell exists to fix is fixed.
+
+**And CE_best gets 0.2470 nats worse — ~4.7× the 0.0527 same-config replicate floor (§4.15), clearly
+resolvable, and the wrong direction.** The band does not move (`[8,16]`, mid 11.3, unchanged in all
+three arms) — this is not a relocation the way §4.6/§4.10/§5.0's nulls are; it is a real regression at
+the same useful depth. **The field's own choice, correctly implemented and confirmed to do what it
+claims, hurts this architecture at this scale.** A candidate reading, not established here: bounding
+‖h‖ removes exactly the radial escape §4.3 identifies as this model's actual (non-contracting,
+non-converging) mode of operation — the state was never trying to explode, so a mechanism built to
+prevent explosion may simply be fighting the trajectory the model wants.
+
+*Scope.* One seed, 2.5M tokens — this project's own three-instance regularity (§4.6b, exact-ZOH,
+Done Right's own optimizer table) says small-budget effects in looped LMs can shrink or reverse with
+scale, so a 0.247-nat regression at 2.5M is not evidence about what this cell does at 90M. It is,
+however, unambiguous at the budget it was measured on, and it belongs in §5's "tested to
+destruction" table: a published architectural choice, tested at the setting it was designed for,
+that measurably fails here.
+
 ### 4.2 Full-budget run
 
 `no_state_renorm` — the screening leader by a wide margin, and the result that contradicted the
@@ -4183,6 +4248,7 @@ that shared direction keeps rotating. Their result is on 12-layer models; ours h
 > | **Scale clock** (feed `log‖h‖` back to the block) | reviewer proposal, §4.19 | Predicted failure fired **exactly as predicted**: multiplicative positive feedback, **+1.36 nats (≈20× the floor)**, ‖w‖=1.34 proving the model *took* the parameter, and the state diverging to non-finite by **loop 39**. Its motivating premise (a fixed point in `u`) was separately shown false |
 > | **Five label-free exit-rule families** | §4.7, §4.7b | Not "the rules were bad" but a **structural reason they must fail**: total path length has **cv 0.068** while per-token oracle depth has **cv 0.798** — the rules condition on a quantity with almost no cross-token variance. Confirmed to survive on an *annealed* checkpoint (§4.7a), which kills the literature's own explanation |
 > | **Convex gate / damped sub-stepping** | arXiv 2605.23872 | Ran the retrofit literature's central intervention in the one regime where **its stated objective does not exist** — there is no frozen `t=1` endpoint to return to in pretraining. The null is the mechanism's prediction (§4.10) |
+| **Gated (diagonal state-space) injection** | Parcae; *Looped Transformers Done Right* | The field's own choice for the normalisation axis — a learned per-channel carry decay — **does exactly what it claims** (‖h‖ growth 6.2× → 1.17×, injection ratio stops collapsing) and costs **+0.2470 nats, ~4.7× the replicate floor** (§4.1b). Confirmed to be doing its job and still the wrong choice here |
 >
 > Each row names a hypothesis or a published method, states the regime, and gives the reason. That is
 > the shape this section is in; the heading now says so.

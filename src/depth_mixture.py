@@ -52,12 +52,18 @@ FLOOR = 0.0527   # §4.15, largest pairwise |dCE_best| across the n=3 same-confi
 
 
 @torch.no_grad()
-def ce_of(model, states, w, y):
-    """CE of the readout applied to sum_t w_t * h_t. `w` is a convex weight vector over depths."""
+def ce_of(model, states, w, y, normalize=False):
+    """CE of the readout applied to sum_t w_t * h_t.
+
+    `normalize`: divide each h_t by its own norm BEFORE mixing. THIS IS NOT COSMETIC. ||h|| grows
+    18-26x across depth (sec4.3), so a raw uniform mixture over [1,16] is dominated by h_16 and is
+    effectively the deepest single state wearing a mixture's clothes -- which would make a null
+    result an artifact of the parameterisation rather than a fact about depth mixing. Both are
+    reported; if they disagree, the disagreement is the finding."""
     h = torch.zeros_like(states[0])
     for wt, ht in zip(w, states):
         if wt:
-            h = h + wt * ht
+            h = h + wt * (ht / ht.float().norm(dim=-1, keepdim=True).clamp_min(1e-8) if normalize else ht)
     lg = model.readout(h)
     return F.cross_entropy(lg.reshape(-1, lg.size(-1)), y.reshape(-1)).item()
 
@@ -85,6 +91,8 @@ def main():
     def note(tag, v):
         acc.setdefault(tag, []).append(v)
 
+    NORM = True
+
     for _ in range(args.batches):
         ix = rng.integers(0, len(val) - args.seq - 1, size=args.batch_size)
         x = torch.from_numpy(np.stack([val[i:i + args.seq] for i in ix]).astype(np.int64))
@@ -100,14 +108,14 @@ def main():
                 if b <= a or b > R: continue
                 w = [0.0] * R
                 for t in range(a, b + 1): w[t - 1] = 1.0 / (b - a + 1)
-                note(f"uniform[{a},{b}]", ce_of(m, st, w, y))
+                note(f"uniform[{a},{b}]", ce_of(m, st, w, y)); note(f"NORM_uniform[{a},{b}]", ce_of(m, st, w, y, True))
         for tau in (2.0, 4.0, 8.0, 16.0):                           # exponential tilt toward deep
             raw = np.exp(np.arange(1, R + 1) / tau); raw /= raw.sum()
-            note(f"exp_tilt_tau{tau:g}", ce_of(m, st, raw.tolist(), y))
+            note(f"exp_tilt_tau{tau:g}", ce_of(m, st, raw.tolist(), y)); note(f"NORM_exp_tilt_tau{tau:g}", ce_of(m, st, raw.tolist(), y, True))
         for p, q in itertools.combinations((4, 8, 12, 16, 24, 32), 2):   # equal-weight pairs
             if q > R: continue
             w = [0.0] * R; w[p - 1] = w[q - 1] = 0.5
-            note(f"pair({p},{q})", ce_of(m, st, w, y))
+            note(f"pair({p},{q})", ce_of(m, st, w, y)); note(f"NORM_pair({p},{q})", ce_of(m, st, w, y, True))
 
     mean = {k: float(np.mean(v)) for k, v in acc.items()}
     singles = {k: v for k, v in mean.items() if k.startswith("single@")}
