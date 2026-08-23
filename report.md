@@ -679,7 +679,7 @@ sparse subset of loops for most of training and to the final loop only for the l
 | **no inter-loop norm** (`state_renorm=False`) | RMSNorm between loops | **≈ −0.68 nats token-corrected** (−0.744 nominal, before §4.1's token-ratio correction), the largest single effect in the project; the normalised variant contracts and goes inert (§4.3) |
 | **no prelude/coda** | the sandwich every reference implementation uses | at a fixed 10M budget a prelude buys 0.355 nats *and makes the model depth-inert over the entire swept range* [1,96] (§4.5). It wins the metric by removing the reason to iterate |
 | **deep loop schedule** | `U[4,32]`, or a fixed small `r` | useful depth is ≈ a fixed fraction of trained depth (§4.11, §4.16b): dense 0.57–0.71·μ_rec, terminal-only 0.98–1.09·μ_rec, across three schedules and two devices |
-| **supervision annealing** | dense supervision throughout; or constant terminal-only | ⚠ **CE advantage over dense WITHDRAWN at n=4** (2 of 4 seeds negative, mean −0.0460 inside the 0.0541 floor — see the block below); still widens the useful band at every seed checked, and still beats constant terminal-only on the *depth-vs-CE* comparison (§4.17) — that half does not depend on the withdrawn number. *Measured at μ_rec = 18; at the μ_rec = 40 schedule this method actually specifies, the comparison against dense is a trade — see the block below* |
+| **supervision annealing** | dense supervision throughout; or constant terminal-only | ⚠ **CE advantage over dense WITHDRAWN at n=4** (2 of 4 seeds negative, mean −0.0460 inside the 0.0541 floor — see the block below; **a fifth point at 10M tokens, +0.1119, has since taken the mean to −0.0144**, §4.23e); still widens the useful band at every seed checked, and still beats constant terminal-only on the *depth-vs-CE* comparison (§4.17) — that half does not depend on the withdrawn number. *Measured at μ_rec = 18; at the μ_rec = 40 schedule this method actually specifies, the comparison against dense is a trade — see the block below* |
 
 **Why the loss schedule is the part that matters, and why the dynamics are not.** Three independent
 interventions on how the state *traverses* — inference-time radial clamping (§4.6), a learned convex
@@ -4880,6 +4880,8 @@ mean +0.0125). So the pre-registered claim holds for `sw90` and fails for `sw75`
 > that, so comparing a paired quantity to an unpaired floor is too conservative. Their proposed
 > replacement: a t-interval on the four paired differences, withdraw if it covers zero. **Run:**
 > mean −0.0460, sd **0.0640**, SE 0.0320, 95% t-interval **[−0.1478, +0.0558]** — covers zero,
+> *(and a fifth seed at 4× the budget has since added **+0.1119**, taking the mean to **−0.0144**;
+> §4.23e. The withdrawal below was decided at n=4 and the fifth point only strengthens it.)*
 > **withdraw**. Their argument assumed the seed-to-seed spread was ~0.0143 (the n=2 value); the actual
 > n=4 sd is **4.5× larger**, so the effect sits **1.44 SE** from zero rather than the ~10 SE they
 > projected. The better-specified test gives the same verdict, which is the useful outcome: the
@@ -4912,7 +4914,7 @@ mean +0.0125). So the pre-registered claim holds for `sw90` and fails for `sw75`
 > coming apart under measurement.
 
 > **Both triggers fired.** The four values straddle zero — seed 2 is positive, `sw90` is *worse* than
-> its own dense control there. And the n=4 mean is **−0.0460**, inside the 0.0541 CUDA terminal
+> its own dense control there. And the n=4 mean is **−0.0460** (n=5: **−0.0144**), inside the 0.0541 CUDA terminal
 > floor. Under the pre-registration this recommendation is **withdrawn to "not resolved at this
 > budget."** What survives: `sw90` still beats `sw75` on the seed-stability question raised earlier in
 > this section (`sw75` was already worse-or-reversed at 2 of 2 seeds; `sw90` is negative at 3 of 4)
@@ -5830,6 +5832,64 @@ accident of launch order: at 10M the annealed arm is 0.11 nats worse.
 (`rec_sw90_s2_last.pt`), at 10M rather than 90M. The 90M annealed run was never launched, and with the
 CE result above there is no longer a case for spending the remaining quota on one.*
 
+### 4.24 The scope condition on the central finding, measured rather than assumed
+
+The report's spine is *every loss-lowering intervention delivers 78–101% of its gain at a single
+loop.* Before that carries any weight it should be asked **at what budgets it was measured**, since
+this project's own regularity is that effects shrink ~12× between screening and full scale. An
+external reviewer suggested the question is answerable retrospectively from stored curves. **It is
+answerable, and the answer is unfavourable: it cannot be closed from stored data.**
+
+**Every paired intervention in this project sits at 2.5–3.5M tokens.** Extracting the r=1 share for
+every arm that lowers CE against its own in-job control, with each arm's budget attached:
+
+| budget | arms lowering CE | r=1 shares |
+|---|---|---|
+| **2.5M** | LoRA ×5, XSA ×2, depth gate, pinned-branch ×2 | 67, 84, 84, 85, 88, 89, 91, 95, 96, 101 |
+| **3.5M** | duo-causal W=3 ×2 | 78, 101 |
+| **>3.5M** | **none** | — |
+
+**There is no budget leverage in the data at all.** A correlation of share against budget over these
+arms spans 2.5M → 3.5M — a 1.4× range against the 36× range that separates screening from the
+headline run. Any regression on it is meaningless and none is reported.
+
+**And the arms sit exactly where the loop is worth least.** Loop gain (`CE@1 − CE_best`) measured
+across every arm with a recorded token count:
+
+| budget | n | median loop gain |
+|---|---|---|
+| ≤ 3M | 104 | **0.1084** |
+| 3–12M | 27 | **0.1470** |
+| 40M (`df_mu40_sw75`) | 1 | 0.5577 |
+| **90M control** | 1 | **0.3023** *(dense 1..64 grid)* |
+
+**The loop's own contribution roughly triples between the budget where every intervention was measured
+and the budget of the released model.** That is the threat stated precisely: at 2.5M an intervention
+has ~0.11 nats of loop-specific room to work in, and at 90M it has ~0.30. **"78–101% of the gain is at
+r = 1" is measured only in the regime where the denominator is smallest.**
+
+**Both readings are live and I am not picking one.**
+- *The pattern is budget-invariant.* Then the finding stands, and it is strengthened rather than
+  weakened by the loop gain growing: the block improvements stay at `r = 1` even as the loop's own
+  contribution triples around them.
+- *The pattern is a screening-scale artifact.* Then at 90M an intervention might place a materially
+  larger share of its gain at depth, and the report's central sentence would be a statement about
+  2.5M-token models rather than about looped transformers.
+
+**Nothing in this project distinguishes them, and one arm is the entire probe:** the Kaggle
+`tlab-lora-scaleup` run, 12M tokens per arm — ~5× the screening budget, one seed, one mechanism.
+
+> **A second limit, which bounds what even that arm can settle.** The r=1 share is noisy *at fixed
+> budget*: XSA gives **84% and 91%** at two seeds, duo-causal W=3 gives **78% and 101%**. So
+> seed-to-seed spread on this statistic is ±7 to ±12 points, and a budget effect smaller than that is
+> unreadable from a single-seed comparison. **The honest ceiling on what the 12M arm can show is
+> "shifted a lot" or "did not shift a lot" — not a measurement of how the share scales.**
+
+*This section exists because the alternative was to let the strongest sentence in the report carry an
+unstated scope condition. §5's rule — an instrument that has not passed a null cannot retire a
+hypothesis — has a counterpart here: a regularity measured at one budget cannot be asserted at
+another, and saying so is cheaper than being corrected on it.*
+
 ## 5. Methods tested to destruction — what was claimed, what was measured, why it broke
 
 > **This section was titled "What didn't work", and that title was costing it.** A *null* says "we
@@ -6477,7 +6537,7 @@ not evidence the loop improved. §4.17's annealing result initially looked like 
 configuration where the two move *together*: dense throughout, then terminal-only for the final
 **10%** of steps, beat its in-job dense control on CE at both seeds tested (−0.0811, −0.0609). **A
 same-budget n=4 extension (seeds 2/3, harvested 2026-08-23) reverses this**: seed 2 gives **+0.0482**
-(sw90 worse than dense), and the four-seed mean −0.0460 sits inside the 0.0541 CUDA terminal
+(sw90 worse than dense), and the four-seed mean −0.0460 — five-seed **−0.0144** — sits inside the 0.0541 CUDA terminal
 replicate floor. **The CE-improvement half of this claim is withdrawn to "not resolved at this
 budget"** (§3.5). What survives unaffected by seed count: the useful-depth band still widens
 (plateau midpoint 11.3 → 13.9, both of the original seeds) and loop gain still rises at those two

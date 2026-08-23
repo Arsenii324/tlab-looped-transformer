@@ -93,6 +93,15 @@ report, and it is not about looping at all.*
 *That dissociation is the answer to the brief's sentence: low perplexity and «за счет большого
 количества лупов» come apart under measurement.*
 
+> **The scope condition, stated because it is the strongest objection to the above (§4.24).** **Every
+> one of these paired interventions was measured at 2.5–3.5M tokens** — there is no budget leverage in
+> the data. And loop gain itself **roughly triples** between that regime and the released model's
+> (median **0.1084** at ≤3M against **0.3023** for the 90M control), so the r=1 share is measured
+> exactly where the loop is worth least. **Both readings are live:** the pattern is budget-invariant
+> (in which case the finding strengthens as loop gain grows around it), or it is a screening-scale
+> artifact. One arm probes it — Kaggle `tlab-lora-scaleup` at 12M/arm — and seed noise on the share is
+> already ±7–12 points at fixed budget, which bounds what that arm can settle.
+
 ### One prediction that fired
 
 Not every entry above is a null found after the fact. **XSA's outcome was written down before the arm

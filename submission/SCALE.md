@@ -17,7 +17,7 @@ not of the model.
 > missing, and a reader of this document alone would have got a scale argument for a claim whose main
 > half no longer stands.* Supervision annealing's **CE advantage over dense supervision was withdrawn
 > at n = 4** by a criterion registered before the data existed: seeds 2 and 3 gave **+0.0482** and
-> −0.0902, the four-seed mean (−0.0460) sits inside the 0.0541 floor, and the paired t-interval
+> −0.0902, the four-seed mean (−0.0460) sits inside the 0.0541 floor — **a fifth point at 4× the budget has since added +0.1119, taking the mean to −0.0144** — and the paired t-interval
 > **[−0.1478, +0.0558] covers zero.** **What survives is the depth half** — the useful band widens at
 > **5 of 5 seeds**, with the *same* edge decomposition (onset 8 → 8, end 16 → 24) at **2.5M and at
 > 10M tokens**, including at the seeds that reverse the CE claim. A fifth CE point at 4× the budget
