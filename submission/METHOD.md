@@ -35,11 +35,14 @@ training compute was spent (`src/test_model.py`, 13 checks).
 | **`1/√(2·n_loop_eff)` output scaling at init** | off | a real, moderate margin (§4.1). **Known defect:** `n_loop_eff` is fixed at 24 while schedules ran at mean 18 and 40 — in-job pairs cancel it exactly, cross-schedule comparisons carry it (§6.0b) |
 
 **The block is deliberately the simplest member of its family, and that is a result rather than an
-omission.** Ten interventions from the literature were tested on it — inter-loop norm, gated
-(diagonal state-space) injection at the field's own α, a scale clock, radial clamping, convex gating,
-ε = λ/(N√L) residual scaling, a norm penalty, loop-cycled LoRA, exclusive self attention, duo-causal
-attention. **Two lower the loss; none widens the useful band.** Elaborating the block was measured and
-did not pay in the way the brief asks for.
+omission.** **Eleven mechanisms** were tested on it — inter-loop norm, gated (diagonal state-space)
+injection at the field's own α, a scale clock, radial clamping, convex gating, ε = λ/(N√L) residual
+scaling, a norm penalty, loop-cycled LoRA, exclusive self attention, duo-causal attention, and a
+per-token depth-mixture gate — plus one lever on the loss schedule. **Five lower the loss; none
+widens the useful band; three of the five narrow it.** And **four of the five deliver 78–101% of that
+gain at a single loop where their own mechanism is inert**, so they improve the block rather than the
+looping (`RESULTS.md` §2). Elaborating the block was measured and did not pay in the way the brief
+asks for.
 
 ## 2. The training recipe, which is where the report's positive results live
 

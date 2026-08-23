@@ -13,12 +13,13 @@ Last updated 2026-08-23 18:22.
 
 | # | task | state |
 |---|---|---|
-| **T21** | **Fix the 12 findings from the adversarial read of `submission/`** — full list with quotes in `OPS.md` §0-PRE A1. **Three are HIGH and all three are in `README.md`**: it contradicts itself on the intervention count 21 lines apart, omits XSA (−0.216, zero params) from the five-sentence answer, and carries a superseded LoRA figure with none of its deflations. **Finding 7 misattributes §1 to the author when it is now agent-written** — the costly direction | **NEXT** |
-| **T22** | **`EXPERIMENTS.md` claims 113 arms and is missing six** the folder itself cites (`xsa_on_s0`, `xsa_control_s0`, `dv_lora_r4_s0`, `dv_lora_fixed0_s0`, `pin_lora_b2_s0`, `dc_w2_s0`). Their `results.json` are in `/tmp/ds_*`, not `checkpoints/`. Copy them in, re-run `src/make_inventory.py` | open |
-| **T23** | **Fold tonight's results into `submission/RESULTS.md` §5** (it has slots) and `report.md` §4.7d/§4.22: duo-causal W=2 null, W=3 gain-but-mechanism-inert, `dg_norm` null with a PASSING gate | open |
-| **T24** | **Harvest the four still-running jobs** — `divx-s1`, `xsa-s1`, `recmethod-s2`, Kaggle (~21:52). `./harvest_duocausal.sh` | open |
-| T7 | §8 writing: W5 decomposition tables. W1/W2/W4 done → §8.0d | open |
+| **T24** | **Harvest `tlab-divx-s1`** (capacity-vs-diversity, 3 arms in one job, seed 1) and **Kaggle `tlab-lora-scaleup`** (12M/arm, ~21:52 — the only scale check on the LoRA positive). Both drop into slots that exist: `report.md` §4.23c and `RESULTS.md` §5.2 | **NEXT** |
+| **T25** | **Nobody has read the CURRENT `submission/` end to end.** It changed substantially 20:06–20:52 (count convention, XSA at n=2, annealing's 5th seed, the loop-specific/generic split). The last end-to-end read of a same-shape document found 12 defects, 3 serious, none grep-reachable | open — **the highest-value remaining action** |
+| T7 | §8 writing: W5 decomposition tables. W1/W2/W4 done → §8.0d. §8's synthesis block re-derived 20:47 | open |
 | T1 | Read remaining project `.md`s in full | partial |
+
+**Closed 20:06–20:52:** T21 (all 12 submission findings), T22 (EXPERIMENTS' six missing arms + the
+coverage block is now *generated*), T23 (tonight's four jobs written up as report §4.23a–e).
 
 ## Blocked on the user
 

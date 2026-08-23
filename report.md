@@ -41,7 +41,7 @@ tangential step stays roughly constant, so the readout-visible angular step deca
 motion is **fully visible to the readout** (gain flat at 207→226 while ‖Δu‖ falls 117×) and still
 useless — the direction the model keeps moving in stops being an improvement.
 
-**Seven interventions on the *dynamics*; not one widens the useful band, and none raises the
+**Seven interventions on the *dynamics* alone; not one widens the useful band, and none raises the
 ceiling.** *(Stated that way deliberately: two of them do **move** the band, and both move it the
 wrong way — the norm penalty **narrows** it, [6,17] → [6,14], and the scale clock drags its onset
 shallower, 8 → 4. "Not one moves it" would be false, and the accurate claim is the one that matters:
@@ -6412,24 +6412,34 @@ significant but ~35× smaller effect than the 0.46-nat improvement in absolute l
 span (§4.2, paired). This report
 therefore reproduces and measures the saturation problem the task poses; it does not solve it.
 
-> **One intervention does lower the loss, and it is worth naming here because it sharpens the sentence
-> above rather than softening it (§4.21, added 2026-08-23 18:05).** Loop-cycled LoRA branches at rank
-> ≥ 4 improve best CE in **four in-job pairs across three platforms and two seeds** — mean **−0.0857**,
-> 95% t-interval **[−0.1322, −0.0393]**, excluding zero. It is the only CE claim in this report that
-> survives multi-platform replication.
+> **FIVE interventions lower the loss, and naming them here sharpens the sentence above rather than
+> softening it (§4.21, §4.23b–d; this block re-derived 20:47 from the raw curves).** The five are
+> loop-cycled LoRA at rank ≥ 4 (**−0.0936**, n=5, three platforms), exclusive self attention
+> (**−0.2162 / −0.2633**, two seeds, **zero parameters** — the largest), duo-causal attention at W = 3
+> (−0.0871 / −0.0394), the unnormalised depth gate (−0.2950), and the norm penalty (−0.030).
 >
-> **Both deflations belong here and not only in §4.21, because this is the synthesis section and a
+> **Four of the five deliver 78–101% of that gain at a *single* loop, where their own mechanism is
+> provably inert** — depth gate **96%**, XSA **84–91%**, LoRA **67–95%**, duo-causal W=3 **78–101%**.
+> The fifth, the norm penalty, is the mirror image: it wins perplexity while `ΔCE@1 = +0.2263`, so
+> **88% of its apparent loop-gain advantage is loop-1 damage.**
+>
+> **The deflations belong here and not only in their own sections, because this is the synthesis and a
 > reader who stops here would otherwise get the unqualified version.** *(Added 19:31 after an
-> independent read found §8 carrying neither.)* **First: the `rank ≥ 4` restriction is post hoc, and
-> over all five arms the interval covers zero** — mean −0.0498, 95% CI **[−0.1545, +0.0549]** — with
-> no dose–response above the threshold (rank 8 sits inside rank 4's spread). **Second: ~90% of the
-> gain is already present at `r = 1`**, where `branch = 0 mod 4` and the cycling is *logically inert*
-> — so it improves the **block**, not the **looping**.
+> independent read found §8 carrying neither LoRA caveat; extended 20:47.)* **LoRA
+> `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]`: the `rank ≥ 4` restriction is post hoc and over
+> all six arms the interval covers zero**, there is no dose–response above the threshold, and a branch
+> pinned to one index — identical parameters, **zero** diversity — recovers **82%** in-job, so it is a
+> *capacity* result. **XSA `[XSA-AT-R1]`: two seeds, one budget**, and its band claim did not survive
+> the second. **Duo-causal W = 3: its registered mechanism check FAILED** — the arm's loop increments
+> are no less parallel than the control's — so the CE gain is not evidence for duo-causal attention.
+> **The depth gate: an instrument failure**, a hard argmax that could not express a mixture (§4.22).
 >
-> **And the useful band is identical to its own control in all
-> five pairs, including the two where CE improves by over 0.10 nats.** So the corrected form of this
-> report's synthesis is: **eight interventions, one lowers the loss, none widens the useful band** —
-> which is a *stronger* statement of the dissociation than "zero raise the ceiling" was, because it
+> **And no arm widens the useful band; three of the five narrow it** — the norm penalty
+> ([6,17] → [6,14]), duo-causal W = 3 ([8,20] → [8,16], both seeds) and XSA ([8,20] → [8,16] at seed
+> 1). So the corrected form of this report's synthesis is: **twelve interventions, five lower the loss,
+> none widens the useful band, and every one of the five is either a block improvement or a loop-1
+> injury** — which is a *stronger* statement of the dissociation than "zero raise the ceiling" was,
+> because it
 > now holds even on the intervention that works. It costs +4.51% of the parameter budget at rank 4,
 > reverses sign at rank 2, and has no full-budget replication.
 
