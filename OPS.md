@@ -76,61 +76,140 @@ result arriving at 04:30.
 
 ## STATUS — full state as of 2026-08-23 **17:30** (rewritten against a second compaction)
 
-### 0-PRE. POST-COMPACTION GUIDE — rewritten 2026-08-23 20:16. READ THIS FIRST.
+### 0-PRE. POST-COMPACTION GUIDE — rewritten 2026-08-23 20:30. READ THIS FIRST, ALL OF IT.
 
-**Deadline 23:59 MSK today. `submission/` is the deliverable a grader reads; `report.md` is evidence.**
+**Deadline 23:59 MSK today. `submission/` (7 docs) is what a grader reads; `report.md` (6,400 lines)
+is the evidence base. Both are pushed to a private GitHub that the author makes public at submission.**
 
-**Read order:** `submission/README.md` → `reviewer_answers/24` (latest state + what is unchecked) →
-this §0-PRE → `TASKS.md` → `RUNS.md` (job IDs + every pre-registration).
+Read order: this §0-PRE → `reviewer_answers/24` → `TASKS.md` → `RUNS.md` (job IDs + every
+pre-registration and its outcome).
 
-#### The five things that will cause a mistake in the first ten minutes
+---
 
-1. **PARTIAL ARMS IN LIVE LOGS PRODUCE SPECTACULAR FAKE NUMBERS.** Seen twice in one hour: `dc_w3`
-   showed **+1.117** and `dv_lora_fixed0` **+0.8985** — both were arms with 1 eval compared against
-   controls with 5–7. **Always check eval counts / step numbers match before differencing.**
-2. **Three claims were withdrawn earlier today and MUST NOT be re-asserted** — annealing's CE
-   advantage (n=4), §4.20's degenerate collapse (shared-residual artifact), §3.5's deep half
-   (`tlab-deep-full` mid 22.6). Plus, added tonight: **§4.7e's 11.7× was corrected to 3.1×** at the
-   representation level (most of the raw gap is per-layer projection randomness).
-3. **DataSphere `outputs:` must name every file EXPLICITLY. Globs return nothing** (§6.0 row 34).
-   Confirmed working twice tonight (70.8 MB and 107 MB returned, all `.pt` present).
-4. **Attaches die silently.** I killed `ds_watchdog.sh` at 18:40 for chasing a finished job and by
-   20:08 three attach logs were frozen while jobs ran on. **Harvest by `download-files --id`, never
-   trust an attach log's step count without checking its mtime.**
-5. Prefix every DataSphere call with `GRPC_DNS_RESOLVER=native`. A DS **ERROR** status can be
-   cosmetic *or* real — the discriminator is `grep "Error while processing file" <logdir>/log.txt`.
+#### A. THE OPEN WORK — this is what to do next
 
-#### State as of 20:16
+**A1. Twelve findings from an adversarial read of `submission/` are UNFIXED. Three are HIGH and all
+three are in `README.md`, the file most likely to be read alone.**
 
-**Submission is LIVE (private; the author will make both public at submission):**
-GitHub `Arsenii324/tlab-looped-transformer` (only `main`, 0 tags, secret-scan clean over 121 commits)
-· HF `Arsen4ikVar/tlab-looped-transformer` (identity gate passes **against the downloaded artifact**,
-|diff| 0.0020 vs chance 8.3178). Push with `git push origin review:main`. **NEVER push `submission`
-branch** (stale + historical wandb key) and **never `--tags`** (1.83 GB of >100MB blobs).
+1. **HIGH — four different intervention counts across four files, and `README.md` contradicts itself
+   21 lines apart** (line ~33 says "Nine interventions… one lowers the loss"; line ~54 says "all
+   twelve"). `NEGATIVE_RESULTS.md` §1 says "nine" over an 11-row table; `METHOD.md` says "Ten";
+   `RESULTS.md` says "Twelve… Two lower the loss." **Pick one convention and apply it everywhere.**
+   The `RESULTS.md` table has 12 rows = 11 model-side + 1 loss-side lever (annealing); LoRA appears at
+   two ranks, so there are 10 distinct model-side *mechanisms*. State whichever you choose.
+2. **HIGH — `README.md`'s five-sentence answer omits XSA entirely** (−0.216, **zero parameters**, the
+   largest loss-lowering result). It names only LoRA (−0.086, +4.51% params).
+3. **HIGH — `README.md` carries a superseded LoRA figure and none of its deflations.** It says −0.086
+   (the n=4 mean); n=5 is **−0.0936**. It omits: rank ≥ 4 is **post hoc**, the all-arms interval
+   **covers zero**, a pinned single branch recovers **82%** (capacity, not diversity).
+4. **MED-HIGH — `EXPERIMENTS.md` calls itself complete (113 arms) and is missing six** the folder
+   itself cites: `xsa_on_s0`, `xsa_control_s0`, `dv_lora_r4_s0`, `dv_lora_fixed0_s0`, `pin_lora_b2_s0`,
+   `dc_w2_s0`. **Cause: their `results.json` live in `/tmp/ds_*`, not `checkpoints/`, so
+   `src/make_inventory.py` cannot see them.** Fix by copying the results.json into `checkpoints/` and
+   re-running `python src/make_inventory.py`.
+5. **MED-HIGH — `SCALE.md` §5 leads with the corrected-away "11.7×" in bold, above its own
+   correction**, and its table shows only pre-correction key ranks. Lead with the **projection**
+   argument; the 3.1× number is the weaker half.
+6. **MED — "88–95% of the gain at r=1" drops a 67% arm.** True per-arm: T4 r4 89%, Kaggle r8 95%,
+   Kaggle sw90 88%, **MPS r4 67%**. Range is **67–95%**.
+7. **MED — `README.md` says §1 is the author's. §1 is now agent-written** (from the dated record, with
+   a disclosure banner). This misattributes in the direction the task's warning makes costly. **Fix.**
+8. **MED — `RESULTS.md` says "Two lower the loss" over a table with three negatives** (LoRA −0.094,
+   XSA −0.216, norm penalty −0.030). Defensible if the penalty is judged unresolvable — say so.
+9. **MED — `METHOD.md` §2 says "convergent nulls license the positive claim" three lines above a block
+   headed "the CE half is WITHDRAWN."**
+10. LOW-MED — `SCALE.md` §5 consequence 3 is a *representation* claim the correction narrowed to keys.
+11. LOW — `NEGATIVE_RESULTS.md`'s "positives are 0.07–0.09, negatives are 0.25–1.36" is stale now XSA
+    is −0.216.
+12. LOW — two different `|diff|` values for "the gate" (0.045/0.043 Kaggle vs 0.0020 shipped) read as
+    the same check.
+**Also: `report.md` §1 says "nine expectations were measured false" over a TEN-row table.**
 
-**§1 is WRITTEN** (from the dated record, authorship disclosed in a banner). `submission/` has all
-seven docs; `METHOD.md`/`RESULTS.md` were written at 20:06 — they had not existed while README listed
-them.
+**A2. Fold tonight's landed results into `submission/RESULTS.md` §5** (it has a "still landing" table
+with slots) and into `report.md` §4.7d / §4.22.
 
-**Results landed tonight (all in `LOG.md` with timestamps):**
-- **XSA (arXiv 2603.09078), ZERO params: ΔCE_best −0.2162**, ~14× floor, band [8,16] **unmoved**.
-  84% of the effect at `r = 1`. **n = 1**; `tlab-xsa-s1` running.
-- **Duo-causal W=2: clean null**, both seeds (+0.0093 / −0.0115, sign reverses), band identical.
-- **Capacity vs diversity: ~82% capacity.** In-job: control 5.3765, cycled −0.1251, pinned-branch
-  −0.1031. `§4.21 is a capacity result` on three independent lines.
-- **§4.7e**: depth keys span **~1.6 of 32**; untied *keys* 31.83/33 but untied *states* only 4.36/33 —
-  **the mechanism is that distinct per-layer projections decorrelate a collinear stream for free, and
-  a tied loop has one `W_K`.** Structural, holds at any width.
+**A3. Run `python src/check_caveats.py`** before shipping — it greps every reader-facing file for a
+deflated claim's number and flags any file carrying the number without its caveat token. **Currently
+0 missing.** Tokens: `[WITHDRAWN-ANNEAL-CE]` `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]`
+`[XSA-N1]` `[RANK-PROJECTION]`.
 
-**Running (harvest `./harvest_duocausal.sh`, IDs in `RUNS.md`):** `tlab-duocausal-s0/-s1` (W=3 then
-**`dg_norm`** ~20:40) · `tlab-divx-s1` (~20:45) · `tlab-xsa-s1` (~20:45) · `tlab-recmethod-s2` (~21:00)
-· Kaggle `tlab-lora-scaleup` (arm 2 from ~20:17, done **~21:52**).
+---
 
-**`dg_norm` is the highest-stakes cell.** Registration at `RUNS.md` 19:22 is **untouched since §4.7e
-gave a reason to expect one branch** — do not amend it. Gate: **effective-loops-mixed ≥ 1.5 BEFORE any
-CE reading**; below that it is a selector and the CE is uninterpretable. **If it gains, check whether
-the gain sits at `r = 1`** — a gate at r=1 mixes one state and is inert, so a gain concentrated there
-means block-not-looping again and does **NOT** refute §4.7e.
+#### B. FIVE TRAPS THAT WILL BITE IN THE FIRST TEN MINUTES
+
+1. **PARTIAL ARMS IN LIVE LOGS PRODUCE SPECTACULAR FAKE NUMBERS.** Seen three times: `dc_w3` showed
+   **+1.117**, `dv_lora_fixed0` **+0.8985**, `pin_lora_b2` **+0.0426** — all were arms with fewer evals
+   than the control they were differenced against. **Always check step/eval counts match.**
+2. **Do not re-assert these withdrawals:** annealing's CE advantage (n=4); §4.20's degenerate collapse
+   (shared-residual artifact); §3.5's deep half (`tlab-deep-full` mid 22.6); **§4.7e's "11.7×"
+   (corrected to 3.1× at the representation level — most of the raw gap is per-layer projection
+   randomness)**.
+3. **DataSphere `outputs:` must name every file EXPLICITLY — globs return nothing** (§6.0 row 34).
+   Confirmed working four times tonight.
+4. **Attaches die silently.** `ds_watchdog.sh` was killed at 18:40; by 20:08 three attach logs were
+   frozen while jobs ran on. **Harvest with `download-files --id`; never trust an attach log's step
+   count without checking its mtime.**
+5. `GRPC_DNS_RESOLVER=native` on every DataSphere call. A DS **ERROR** may be cosmetic or real —
+   discriminate with `grep "Error while processing file" <logdir>/log.txt`.
+
+---
+
+#### C. RESULTS — every number, with what it means
+
+**Headline (unchanged):** 90M control **CE 3.6599 / ppl 38.86 / bpb 1.5829**, band [6,17] dense 1..64,
+**9,064,608 params**, 90.0M tokens. Norm penalty 37.52 but 88% loop-1 damage → **the control ships**.
+
+**THE CENTRAL FINDING, now with four independent instances:**
+> **Every intervention here that lowers the loss delivers 78–101% of its gain at a SINGLE loop, where
+> its own mechanism is inert or irrelevant.** LoRA ~90% · XSA 84% · duo-causal W=3 78–101%.
+> **Not one widens the useful band; duo-causal W=3 narrows it.** The one lever that moves the band
+> (supervision annealing, 4/4 seeds, zero params) **does not lower the loss.**
+
+**Tonight's arms (all in-job paired, all with the pre-registration in `RUNS.md`):**
+
+| arm | result | reading |
+|---|---|---|
+| **XSA** (2603.09078, **0 params**) | **−0.2162**, ~14× floor, band [8,16] **unmoved**, 84% at r=1 | **n=1**; `tlab-xsa-s1` running. Original 19:15 prediction CONFIRMED; my 19:20 amendment REFUTED |
+| **duo-causal W=2** | +0.0093 / −0.0115, **sign reverses** | not reported; band identical to the digit |
+| **duo-causal W=3** | −0.0871 / −0.0394, sign **agrees**, 4.2× floor | **but GATE 2 says the mechanism did not engage** (cos 0.9962/0.9991/0.9998/0.9999 vs control 0.9978/0.9993/0.9998/0.9999) and **78–101% of the gain is at r=1 where duo-causal is provably inert**. Band **NARROWS** [8,20]→[8,16] both seeds |
+| **`dg_norm`** (scale-invariant gate) | **−0.0012 / +0.0023**, sign reverses = **null at n=2** | **GATE 1 PASSED**: effective loops mixed **7.58/8, 14.96/16, 29.84/32**, zero tokens >0.99. A *working* mixture gains nothing ⇒ **§4.7e CONFIRMED by the one test that could have killed it** |
+| **capacity vs diversity** | in-job: control 5.3765, cycled **−0.1251**, pinned **−0.1031** | **pinned recovers 82%** ⇒ **§4.21 is a CAPACITY result**, on three independent lines |
+
+**§4.7e (the mechanism under the whole depth-mixing family):** a token's depth keys span **~1.6 of 32**
+(mean cos 0.91–0.97); present **at initialisation**; **training makes it worse** (2.73→1.83); operator
+diversity raises it by **0.01–0.08**. Untied *keys* 31.83/33 **but untied states only 4.36/33** vs tied
+1.40/33 — **most of the raw gap is per-layer projection randomness.** The surviving mechanism:
+**distinct per-layer projections decorrelate a collinear state stream for free; a tied loop has one
+`W_K` and cannot, at any width.**
+
+**`dg_norm`'s band [12,24]/[12,32] must NEVER enter the band tables** — pre-registered 17:40 as
+**mixture-window size, not depth**.
+
+---
+
+#### D. STILL RUNNING (harvest `./harvest_duocausal.sh`; IDs in `RUNS.md`)
+
+`tlab-divx-s1` (capacity-vs-diversity, **all 3 arms in one job**, seed 1 — removes the cross-job
+confound) · `tlab-xsa-s1` (second seed for −0.216) · `tlab-recmethod-s2` (the recommended config's own
+weights) · **Kaggle `arsen4ikvar/tlab-lora-scaleup`** (12M/arm; arm 1 control finished ~20:17 at
+min **4.5000@r12**; whole job **~21:52**; Kaggle returns output ONLY on completion).
+
+---
+
+#### E. SUBMISSION STATE
+
+GitHub **`Arsenii324/tlab-looped-transformer`** — push with `git push origin review:main`. **NEVER push
+the `submission` BRANCH** (stale + historical wandb key) and **never `--tags`** (1.83 GB of >100MB
+blobs). HF **`Arsen4ikVar/tlab-looped-transformer`** — identity gate passes **against the downloaded
+artifact**, |diff| 0.0020 vs chance 8.3178. Both private; **author makes them public at submission**.
+
+**§1 is WRITTEN** (agent-authored from the dated record, disclosure banner at its head).
+**Still the author's:** rotating the wandb key, the visibility flip, D3 (my recommendation: the
+control).
+
+**Gates, all green:** `test_model.py` 13 ✓ · `test_plateau.py` 8 ✓ · `headline.py check` ✓ ·
+`check_tokenizer_identity.py` on the shipped checkpoint ✓ · `make_inventory.py --check` 113 arms ·
+`check_caveats.py` 0 missing.
 
 ### 0. If you read one thing
 The deliverable is `report.md` (~3,900 lines, 0 placeholders, §1 reserved for the user). The method is
