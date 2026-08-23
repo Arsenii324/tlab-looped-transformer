@@ -1,28 +1,18 @@
-# ⚠ STALE — written 15:40, and the project moved after it. `report.md` is authoritative.
+# The final architecture — RE-ISSUED 2026-08-23 18:45
 
-**Do not read this as the current state.** It is kept, not deleted, because this project's rule is
-retraction-with-the-superseded-claim-visible. But it was written **before** three things it does not
-know about, and its own preamble ("if something is not in this document, treat it as something we are
-not doing") is exactly the sentence that makes it dangerous to leave unmarked:
+**One-off write, re-issued.** The 15:40 version of this file asserted a useful band "near 40 loops"
+that was **withdrawn at 17:23**, so it has been brought current rather than left with a warning on it.
+`report.md` remains authoritative for anything contested; this is the standalone summary the task's
+*"описание финальной архитектуры"* asks for, and every claim below is cited to a report section.
 
-1. **§3.5's DEEP HALF WAS WITHDRAWN at 17:23.** This document's table still says the useful band is
-   *"near 40 loops"* at `U[32,48]` (line ~165). The full-budget artifact `tlab-deep-full` (30.0M
-   tokens) returned plateau midpoint **22.6** against a pre-registered trigger of "near 22", and
-   `mid/μ_rec = 0.57` sits in the **dense** range, not terminal-only. **The recommended schedule is
-   `U[4,32]`, not `U[32,48]`.**
-2. **Operator diversity became this project's first replicated CE positive** (§4.21): loop-cycled
-   LoRA at rank ≥ 4, four in-job pairs across three platforms and two seeds, mean −0.0857, 95%
-   t-interval excluding zero — **and the useful band does not move in any of the five pairs.**
-3. **The learned depth gate was measured unable to express its own hypothesis** (§4.22): its logits
-   are `w·h_t` on the raw state, so the softmax saturates to a hard argmax (effective loops mixed
-   **1.0 of r**). The per-token headroom is therefore **untested** by that instrument, not refuted.
+**The three changes since 15:40, so the delta is visible rather than silently absorbed:**
+1. **The deep half is withdrawn.** `tlab-deep-full` (30.0M tokens, the only ≥32-loop artifact)
+   returned plateau midpoint **22.6** against a pre-registered trigger of "near 22", and
+   `mid/μ_rec = 0.57` sits in §4.16b's **dense** range. **The recommended schedule is `U[4,32]`.**
+2. **Operator diversity is the project's first replicated CE positive** (§4.21) — and moves no band.
+3. **The learned depth gate cannot express its own hypothesis** (§4.22): its softmax saturates to a
+   hard argmax, so the per-token headroom is **untested** by it, not refuted.
 
-**Read `report.md` §0 (abstract), §3.5 (the method) and §6.0 (all 34 errors) instead.**
-This file is retained as the 15:40 snapshot only.
-
----
-
-# The final architecture — state as of 2026-08-23 ~15:40
 
 **One-off report.** Written because the task asks for it directly and the answer was scattered across
 `report.md`. Everything the project is actually doing should be in here; if something is not in this
@@ -185,8 +175,8 @@ many loops**. Those are two targets, and this architecture serves them at two se
 
 | target | schedule | supervision | result |
 |---|---|---|---|
-| **lowest perplexity** | `U[4,32]` | dense | **ppl 37.52–38.86**, useful band [6,17] |
-| **most useful loops** | `U[32,48]` | annealed | useful band near **40 loops**, still within 0.01 nats of best at **64 loops** — 1.33× beyond anything it trained on |
+| **lowest perplexity** | `U[4,32]` | dense | **ppl 38.86** (control, the shipped artifact) / **37.52** (norm penalty, but 88% loop-1 damage and a narrower band); useful band **[6,17]** on the dense 1..64 grid |
+| **deepest useful band measured** | `U[32,48]` | annealed `sw75`, 30.0M tokens | band **[16,32]**, midpoint **22.6** — CE still improving to loop 24, graceful to 128. **NOT "near 40": that was a 2.5M screen and its falsifier fired at full budget (§3.5)** |
 
 Same architecture; only the loop schedule and the loss schedule differ.
 
@@ -206,16 +196,13 @@ is in flight (§5).
 
 ---
 
-## 5. What is running right now
+## 5. What is running right now (18:45)
 
-| stream | what it tests | state |
-|---|---|---|
-| **DS `tlab-anchor-tokenkey`** (`bt1hp97su48dc6096sqn`) | (a) **§4.18's own falsifier**: `sw90` at k=5/3/2 + in-job dense control. The anchor account says band depth depends on unanchored *duration*, **not** on dense-phase density — all three should give the same band. If they order with k, §4.18 is withdrawn. (b) **token-keyed vs fraction-keyed** annealing at 10M — decides §4's weak joint | EXECUTING |
-| **Kaggle `tlab-seed-extension`** | the (sw90 − dense) paired difference at **seeds 2 and 3**. Seeds 0,1 give −0.0811, −0.0609; n=4 gives an interval on the number §3 rests on. **Pre-registered: if the four straddle 0, or their mean falls inside the 0.0541 floor, the annealing recommendation is withdrawn to "not resolved at this budget"** | pushed |
-| **DS `tlab-deep-full`** | the deep artifact at μ_rec=40. Returns curves only (its config predates the `outputs:` fix) | EXECUTING, ~step 8100/19531. **It is `sw75`, which §3 has since narrowed away from** — pre-registered read in `RUNS.md` |
-| **local: gated injection** | the **third cell on the normalisation axis**. §2 tested hard RMSNorm vs *nothing*; the field's actual choice is neither — a soft learned per-channel decay `α⊙z + δ⊙W_in·v` (Parcae, Done Right). ~896 params for the gates | running |
-
----
+| stream | what |
+|---|---|
+| DS `tlab-duocausal-s0` / `-s1` | duo-causal attention `kv_window` 2 and 3 (**zero added params**) + a scale-invariant depth gate, 4 in-job arms × 2 seeds, 3.5M tok/arm. Read pre-registered in `RUNS.md` 18:19 **before any data existed** |
+| DS `tlab-recmethod-s2` | 2 in-job arms × 10M tok — **the weights for the method this document describes, which did not exist** |
+| Kaggle `tlab-lora-scaleup` | operator diversity at 12M tok/arm, ~5× its screening budget — the check §4.21 names as the one that would decide it |
 
 ## 6. Work that is not architecture — and most of the project is this
 
