@@ -3940,6 +3940,17 @@ mean +0.0125). So the pre-registered claim holds for `sw90` and fails for `sw75`
 > | **2** | **+0.0482** |
 > | 3 | −0.0902 |
 >
+> **The criterion was challenged, tested against the challenge, and the withdrawal survives it.** A
+> reviewer objected — correctly in principle — that 0.0541 is the run-to-run spread of an *absolute*
+> CE from two accidental replicates, and that a **paired** in-job difference already cancels most of
+> that, so comparing a paired quantity to an unpaired floor is too conservative. Their proposed
+> replacement: a t-interval on the four paired differences, withdraw if it covers zero. **Run:**
+> mean −0.0460, sd **0.0640**, SE 0.0320, 95% t-interval **[−0.1478, +0.0558]** — covers zero,
+> **withdraw**. Their argument assumed the seed-to-seed spread was ~0.0143 (the n=2 value); the actual
+> n=4 sd is **4.5× larger**, so the effect sits **1.44 SE** from zero rather than the ~10 SE they
+> projected. The better-specified test gives the same verdict, which is the useful outcome: the
+> withdrawal is not an artifact of an over-conservative yardstick.
+>
 > **Both triggers fired.** The four values straddle zero — seed 2 is positive, `sw90` is *worse* than
 > its own dense control there. And the n=4 mean is **−0.0460**, inside the 0.0541 CUDA terminal
 > floor. Under the pre-registration this recommendation is **withdrawn to "not resolved at this
