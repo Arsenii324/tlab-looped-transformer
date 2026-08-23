@@ -364,7 +364,30 @@ nothing here is asserted without a measurement behind it.*
 **no prelude and no coda**, **no inter-loop normalisation**, additive re-injection of the embedded
 input at every loop, and `1/√(2·n_loop_eff)` output-projection scaling at init. Trained at a **deep
 loop schedule** (every step samples `r ~ U[32,48]`, so no step is shallow), with a **loss applied to a
-sparse subset of loops for most of training and to the final loop only for the last ~10–25% of steps**
+sparse subset of loops for most of training and to the final loop only for the last **~10%** of steps** — *specifically* `supervise_switch_frac = 0.90`, not a range.
+
+> **The range this used to state (~10–25%) was an overclaim, and the wider end fails.** Decomposed
+> against the in-job dense control at both seeds (`anneal_rep2_results.json`, CUDA, 2.5M tokens):
+>
+> | pair | ΔCE_best | ΔCE@1 | verdict |
+> |---|---|---|---|
+> | `sw90` seed 0 | **−0.0811** | **−0.0416** | depth-driven |
+> | `sw90` seed 1 | **−0.0609** | **−0.0277** | depth-driven |
+> | `sw75` seed 0 | −0.0656 | **+0.0185** | damage-driven |
+> | `sw75` seed 1 | **+0.0906** | +0.2629 | **worse on CE_best outright** |
+>
+> Only `sw90` improves the ceiling *and* leaves loop 1 undamaged, and only `sw90` does it at both
+> seeds. `sw75` — the other end of the range the text used to recommend — is damage-driven at one
+> seed and simply worse at the other. **The switch fraction is not a soft dial with a tolerant
+> window; between 0.90 and 0.75 the intervention changes character.** The headline pair (−0.081,
+> −0.061) always was `sw90`; the text generalised it into a range that the measurements do not
+> support.
+>
+> *Cross-device replication, new 2026-08-23.* A local MPS `sw75` seed-0 run against its own in-job
+> dense control gives **ΔCE_best −0.0514, ΔCE@1 +0.0156** against CUDA's **−0.0656 / +0.0185** —
+> same signs, magnitudes inside the MPS replicate floor (0.031–0.068). Annealing's *sign structure*
+> therefore reproduces across devices, which is worth having given how much of this report's
+> screening is MPS and how much of its confirmation is CUDA.
 — *supervision annealing*. 9.06M parameters, of which 89% sit in the reused block.
 
 **The four choices that are actually load-bearing, each with the measurement that decided it.**
