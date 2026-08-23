@@ -1369,6 +1369,21 @@ aligned at `cos → 0.9999`, so motion accumulated from `t` to `T` is `Σ C/s �
 **diverges**. The state travels a fixed angular distance per *doubling* of loop count, indefinitely.
 It still moves 0.18 rad between loops 129 and 384, long after CE has stopped improving.
 
+> **UNTRAINED CONTROL — log-drift is architectural, and this qualifies the claim.** Same config, no
+> training, same batch: **C = 0.3084, log-drift R² 0.9999 against a power law's 0.8426** (trained:
+> C = 0.1549, R² 0.9951 vs 0.8388). **The untrained model does not converge either — it drifts twice
+> as fast.** So non-convergence is a property of this *architecture*, present before any gradient, and
+> it does **not** distinguish a trained model from a random one. What training does is *slow* the
+> drift (0.308 → 0.155), not create or remove it.
+>
+> This is the same lesson as §4.20's degenerate collapse, and it was found the same way — by running
+> the null the instrument needed. §2's rebuttal to the DEQ premise still stands (this model does not
+> converge, so "computation becomes pointless after convergence" does not bite), but the rebuttal is
+> **architectural, not a property of what was learned**, and the report should not imply otherwise.
+> *(Separately: an ad-hoc ρ measured at the anchor `h₀+e` gives 533 trained / 5.8 untrained — that is
+> a different evaluation point from §4.3's table, which evaluates after one block application, and the
+> two must not be compared. Recorded because I nearly did.)*
+
 **This is the strongest available form of §2's claim, and it is a positive demonstration rather than
 a failure to reject.** "Saturation without convergence" previously rested on `ρ ≳ 1` — a marginal
 reading inside an estimator's bias. Here non-convergence is shown *by construction*: there is no `u*`
