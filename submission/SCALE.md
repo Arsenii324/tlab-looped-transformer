@@ -92,7 +92,7 @@ a point. The lower anchor crosses a device *and* a validation-shard boundary; th
 (46→90M, same platform, same shard, same protocol) gives the **higher** figure. **No conclusion in
 this report changes anywhere in that interval** — re-derived at both ends.
 
-**Against external numbers, the honest arithmetic.** At 90M tokens and 9.06M parameters this model
+**Against external numbers, the arithmetic.** At 90M tokens and 9.06M parameters this model
 sits at **D/N ≈ 9.9**, against a Chinchilla-optimal ratio near 20 — trained at roughly *half* the
 tokens its size wants, because the task caps the budget. Published entries this would be compared
 against are **data-unconstrained** and train on the order of **~7B tokens, roughly 70× this budget**.
@@ -160,8 +160,8 @@ weight-tied loop has one `W_K` and cannot buy that at any width.**
    claim is the one the correction above leaves standing, and it is also the sufficient one: an
    unshared stack does **not** need diverse representations for depth attention to work, because its
    diverse projections manufacture a near-orthogonal key set out of a collinear state stream. A tied
-   loop has one `W_K`. That is a structural trade, not a tuning problem, and it is the sharpest
-   scaling statement this project can make.
+   loop has one `W_K`. That is a structural trade rather than a tuning problem, and it is the
+   strongest scaling statement this project can make.
    *Not claimed:* that an untied stack builds richer depth **representations**. Measured, it barely
    does — 4.36 vs 1.40 of 33, both collinear.
 

@@ -89,7 +89,7 @@ The two patterns above are cautionary. This one is **actionable**: it names a ch
 *before* a number becomes a claim.
 
 **A real statistic, measured in one space, read as a claim about a different space.** Five instances,
-and the sharpest three happened within two hours of each other on the final evening:
+and three of them happened within two hours of each other on the final evening:
 
 | the number | what it really measured | the claim it was read as |
 |---|---|---|
@@ -177,7 +177,7 @@ silent on a real curve.
   each recorded with the superseded claim **visible** rather than deleted.
 - **Instruments are required to pass a null**, and two geometry findings survived theirs only in
   narrowed form — one lost its headline reading 90 minutes after it was written.
-- **The sharpest errors came from outside questions, not introspection** — *"what is n?"*, *"has
+- **The costliest errors came from outside questions rather than introspection** — *"what is n?"*, *"has
   anyone looked at what it writes?"*, *"does diversity break it?"*
 
 ---

@@ -117,7 +117,7 @@ loop 39, with the model *taking* the parameter (‖w‖ = 1.34) rather than decl
 > trajectory moves.** 78–101% of the gain is at `r = 1`, where there is no previous loop to attend to.
 > **A CE gain whose mechanism check fails is not evidence for the mechanism** — this is the mirror of
 > the gated-injection row above, where the mechanism check *succeeded* and the loss got worse. Both are
-> reported the same way, which is the point.
+> reported the same way.
 >
 > **the unnormalised depth gate (−0.295):** an **instrument failure**, not a result — it saturates to a
 > hard argmax and cannot express a mixture at all (§4). Its replacement, which demonstrably mixes,

@@ -55,7 +55,7 @@ failed. This is the report's central negative:
 |---|---|
 | static readout mixture over depths (raw and normalised) | best **−0.0023** against a 0.0527 floor — null |
 | learned per-token depth gate, unnormalised | **instrument failure** — saturates to a hard argmax, mixes 1.01–1.05 of `r` |
-| **scale-invariant depth gate** (`dg_norm`) | **genuinely mixes** — 7.58/8, 14.96/16, 29.84/32 — and gains **−0.0012 / +0.0023**. Null at two seeds |
+| **scale-invariant depth gate** (`dg_norm`) | **mixes** — 7.58/8, 14.96/16, 29.84/32 — and gains **−0.0012 / +0.0023**. Null at two seeds |
 | oracle-depth ragged KV cache | **−0.0096**, reverses sign by query depth 24 — null |
 | loop-cycled LoRA (a different operator per depth) | a **capacity** result, not a diversity one; a zero-diversity pin *beats* it; dead at 12M |
 | duo-causal attention (attend to the previous loop's KV) | W=2 null; W=3 lowers CE but its **registered mechanism check failed** |
@@ -274,7 +274,7 @@ learned temperature) and a **joint** falsifier was registered at 19:22, *before 
 | no | either | instrument failure again; **nothing is decided** |
 
 **Result, two seeds, in-job paired.** GATE 1 **passed**: effective loops mixed **7.58/8, 14.96/16,
-29.84/32**, with **zero** tokens above 0.99 top-weight — the gate genuinely mixes, where its
+29.84/32**, with **zero** tokens above 0.99 top-weight — the gate mixes, where its
 predecessor did not. CE: **−0.0012 and +0.0023.** The sign reverses; both are two orders of magnitude
 inside the 0.0150 floor.
 

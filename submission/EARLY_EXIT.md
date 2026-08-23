@@ -1,12 +1,12 @@
 # Early loop-exit: implemented, measured, and it does not pay — with the reason underneath
 
 *The brief lists early loop-exit as an optional component: «опционально реализовать ранний выход из
-лупа». It was implemented and measured rather than skipped, and the outcome is a **negative with a
-mechanism**, which the brief rates explicitly as a good result. This document is the whole case: that
+лупа». It was implemented and measured, and the outcome is a **negative with a mechanism**, which
+the brief rates explicitly as a good result. This document is the case: that
 the demand is real, that eight rules across five instrument classes cannot reach it, why, and what the
 one test built to overturn that explanation returned.*
 
-**The short version.** Per-token depth demand in this model is large (**0.3084 nats** of oracle
+Per-token depth demand in this model is large (**0.3084 nats** of oracle
 headroom on the calibration/test split; 0.3083 on the full set), reliable (split-half **+0.866** against a null of **+0.0007**), and **unreachable**: the
 best of eight exit rules captures **0.1%** of it. The reason is measured, not assumed — **the depths a
 rule would have to tell apart span an effective rank of ~1.6 out of 32.** There is almost nothing to
@@ -131,7 +131,7 @@ learned temperature, **+450 parameters** — and a **joint falsifier registered 
 | no | either | instrument failure again; **nothing is decided** |
 
 **It mixes.** Effective loops mixed **7.58 / 8, 14.96 / 16, 29.84 / 32**, with **zero** tokens above
-0.99 top-weight. *This is a genuinely working per-token soft mixture over depths, and it is the first
+0.99 top-weight. *This is a working per-token soft mixture over depths, and it is the first
 one this project built.*
 
 **And it gains nothing.** Two seeds, in-job paired: **−0.0012 and +0.0023.** The sign reverses and

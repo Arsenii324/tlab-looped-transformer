@@ -28,7 +28,7 @@ tokens* — 3.6% of that budget — and §4.24 shows loop gain roughly **triples
 - **No downstream task of any kind.** No LAMBADA, no cloze, no probing suite, nothing. **Every claim
   here is next-token cross-entropy.** The phrase "the model is better" always means "CE went down".
 - **No held-out test set** distinct from the validation shard used for every decision in the project.
-  Split-half checks exist within it (§4.7); a genuinely untouched split does not.
+  Split-half checks exist within it (§4.7); an untouched split does not.
 - **No human evaluation.** Generation was sampled once as a sanity check (`RESULTS.md` §5.3) and is
   explicitly not a claim.
 - **One validation shard, one position in one stream.** If it is unrepresentative every number moves
@@ -171,7 +171,7 @@ has one seed.
 **Nothing else was started.** At the time of writing, a 12M scale test costs ~3.1 h against ~1.5 h
 remaining, and this project's own §6.0 has two rows about launching under time pressure — including
 one from tonight, where a job went out 24 minutes after we learned what its missing `outputs:` line
-would cost. *Naming the runs and their prices is the honest deliverable here; starting one that
+would cost. *Naming the runs and their prices is the deliverable here; starting one that
 cannot land is not.*
 
 ## 8. What would change our mind fastest, if a reviewer has budget
