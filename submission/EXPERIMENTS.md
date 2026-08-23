@@ -11,18 +11,22 @@ number standing for two independent quantities** — how far the model keeps *im
 long before degradation exceeds tolerance (end). Compare `mid` only within a shared `grid`: grid
 choice alone moves it 17%.
 
-**Comparisons are only meaningful within a source file.** Each `*_results.json` is one job, so arms
-sharing a source share a data shard, tokenizer and seed and are *in-job paired*. Across sources this
-project measures 0.0074–0.0334 nats of drift, which is larger than several effects claimed here.
+**Comparisons are only meaningful within a source file — and this is a hard rule, not a tolerance.**
+Each `*_results.json` is one job, so arms sharing a source share a data shard, tokenizer and seed and
+are *in-job paired*. **Across sources the vocabulary itself differs**: every DataSphere job trains its
+own 4096-token BPE from a fresh FineWeb stream (§4.27), so absolute CEs in different source files are
+not on the same scale. Measured directly — the same control configuration, same seed, same 1,219
+steps, in three different jobs gives **5.3765 / 5.3052 / 5.2851, a spread of 0.0914 nats**, about 3×
+the 0.0074–0.0334 within-tokenizer drift band this report quotes elsewhere. **Read the `best CE`
+column down a source file, never across one.**
 
 ## Coverage — checked mechanically, and it is not perfect
 
-Of the 135 arms, **78 appear in `report.md` by their internal identifier and 116 by their best-CE value; 127 by one or the other.** **8 appear by neither:**
+Of the 135 arms, **79 appear in `report.md` by their internal identifier and 117 by their best-CE value; 128 by one or the other.** **7 appear by neither:**
 
 | arm | best CE | why it is absent, and whether that is a defect |
 |---|---|---|
 | `as_10M_sw90` | 4.3938 | §4.17 reports its **ΔCE_best = −0.0764** against the in-job control, not its absolute |
-| `pin_control_s0` | 5.3052 | not cited in `report.md` by identifier or by value — the arm's **conclusion** is reported in its section, the absolute number only here |
 | `sc_final_only_s1` | 5.0624 | §4.6b reports its **Δ** (−0.5165), not its absolute |
 | `trainL16_s1` | 4.6202 | §4.9's seed-1 replication reports the **re-zeroed mean curve** and the per-arm shape spread, never the five absolute bests. The conclusion (the collapse fails its pre-registered seed test) is reported; the raw column is not |
 | `trainL2_s1` | 4.4566 | §4.9's seed-1 replication reports the **re-zeroed mean curve** and the per-arm shape spread, never the five absolute bests. The conclusion (the collapse fails its pre-registered seed test) is reported; the raw column is not |

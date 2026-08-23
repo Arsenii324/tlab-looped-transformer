@@ -2994,3 +2994,28 @@ is stable in `tol`.*
 evidence was spread across §4.7/§4.7a–e/§4.8/§4.22/§4.23. And a 12-defect end-to-end read (see the
 commit message) including two `0.2008` vs `0.3084` figures both called "oracle headroom" on
 *different checkpoints*, and my own "nine rules" over an eight-row table.
+
+## 21:24–21:32 — a broken artifact quarantined, the param-count trap explained correctly, and generation verified
+
+**A fork's dense-grid re-eval was a VOCABULARY MISMATCH and was caught by reading raw CE against
+chance.** `a1_dense_grid_10M.json` reported best CE **9.2692 / 9.4278** against chance
+`ln(4096) = 8.3178`, optimum at the last grid point. **Cause: the DataSphere kernel trains its own BPE
+and does not return `tokenizer.json`** (`/tmp/ds_rec2/` holds only two `.pt`, `results.json`, logs), so
+local eval against the shipped vocabulary reports near-chance and looks like a broken model. Nothing
+had been written from it; the shipped tokenizer is unmodified and its gate re-passes at |diff| 0.0020.
+**§4.23e is unaffected** — its numbers are the in-job `val_curve`. Renamed `BROKEN_…` with a README
+rather than deleted. **Consequence: the denser-grid check on annealing's `end 16 → 24` cannot be run
+locally on those checkpoints**, and that is recorded rather than silently dropped.
+
+**The 9,065,056 param discrepancy: three explanations, two wrong, and the third is mine corrected.**
+The audit blamed `depth_gate_head` (contributes 0). I blamed unconditional allocation (`loop_norm` is
+conditional). **The truth is that `Config()`'s dataclass default is `state_renorm=True` — the arm this
+report rejects at +0.744 nats.** `Config(state_renorm=False)` gives exactly 9,064,608. Verified, and
+the `state_dict`'s 10,899,616 is the tied embedding under two keys (9,064,608 + 4096×448, checked
+exactly).
+
+**Generation checked directly rather than asserted.** Three prompts, temp 0.8, n_loops=10: output is
+**syntactically well-formed English and semantically incoherent** — exactly what 9.06M params on 90M
+tokens should give. Added to `RESULTS.md` §5.3 as a sanity check with the samples quoted, explicitly
+*not* as a capability claim. **This is the "has anyone looked at what it writes?" question that
+`FAILURES.md` records as decisive, asked of our own artifact before a grader asks it.**

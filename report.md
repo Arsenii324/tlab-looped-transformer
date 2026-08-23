@@ -6151,6 +6151,55 @@ this report shares `supervise_k` and is **batch-identical throughout** — duo-c
 one axis: give `get_batch` its own `rng`, independent of the supervision and loop-count draws. Recorded
 in §6.0b as an inherited design that was never examined.*
 
+### 4.27 Every DataSphere job trains its own tokenizer, so cross-job absolute CE is not comparable at all
+
+Found while trying to run a cheap re-evaluation (below), and it corrects the scope of a figure this
+report quotes in three places.
+
+**The DataSphere kernel calls `train_tokenizer()` at start-up** (`runs_frozen/*/main.py:982`) and
+packs its own train/val shards from a fresh FineWeb stream. **A BPE retrained from a live stream is
+not byte-identical to `configs/tokenizer.json`, nor to another job's.** So:
+
+- **Within a job, everything is sound.** All arms share one tokenizer, one shard and one seed, which
+  is exactly what "in-job paired" claims. **Every ΔCE in §4.21–§4.26 is a within-job difference and is
+  unaffected by this.**
+- **Across jobs, absolute CE is on a different vocabulary**, and the report's cross-job drift figure
+  **0.0074–0.0334 is a *within-tokenizer* estimate** that does not bound it.
+
+**Measured, on the arms that make the comparison possible** — the same control configuration, same
+seed, same 1,219 steps, in three different jobs:
+
+| arm | job | best CE |
+|---|---|---|
+| `dv_control_s0` | `tlab-diversity-control` | 5.3765 |
+| `pin_control_s0` | `tlab-pin2-control` | 5.3052 |
+| `xsa_control_s0` | `tlab-xsa` | 5.2851 |
+
+**Spread 0.0914 nats — about 3× the quoted cross-job drift band, for an identical configuration.**
+(`dc_control_s0` at 5.1577 is excluded: 1,707 steps, a different budget.)
+
+**What this changes.** Nothing in the ΔCE columns. What it corrects is the *licence* to compare
+absolute CEs across jobs, which this report has occasionally leaned on informally — the pin-2 band
+observation of §4.23c is the clearest case, and it was already retracted once for cross-job
+unreliability before an in-job run reinstated a narrower version. **The rule "compare only within a
+source file" is stronger than the drift number suggested, and it should be read as a hard rule rather
+than a tolerance.**
+
+> **And it makes the returned checkpoints locally un-reevaluable, which is a real reproducibility
+> gap.** The planned cheap check — re-evaluate the 10M annealing pair on a *dense integer* grid to
+> test whether "end 16 → 24" is a real edge or one grid interval — **cannot be run on the returned
+> artifacts**, because the jobs return `.pt` files and `results.json` but **not the tokenizer or the
+> val shard that produced them.** Attempting it gives CE ≈ 9.3 against a chance level of 8.3178, and
+> `src/eval.py`'s above-chance guard fires on every depth — the guard working exactly as designed.
+> **The fix for any future job is one line in the kernel's `outputs:` — return `tokenizer.json` and
+> the val shard alongside the weights.** This is the same class as §6.0 rows 20 and 26 (weights
+> shipped without the vocabulary that produced them), reappearing on a surface where it had not been
+> looked for.
+
+*The dense-grid question therefore stays open, and `SUBMISSION_STATE.md` lists it as the top unrun
+check: the annealing band claim's `end` edge moves 16 → 24 on a grid whose only points there are
+{16, 20, 24}.*
+
 ## 5. Methods tested to destruction — what was claimed, what was measured, why it broke
 
 > **This section was titled "What didn't work", and that title was costing it.** A *null* says "we

@@ -237,6 +237,34 @@ report sections named; nothing here is still a placeholder.
 | `tlab-duocausal-s0/-s1` | duo-causal W=2/3 and the scale-invariant depth gate | **LANDED.** §4.23, §4.23b |
 | Kaggle `tlab-lora-scaleup` | does the LoRA positive survive ~5× budget (12M/arm) — **the only budget probe of the r=1 pattern (§4.24)** | running, ETA ~21:52 |
 
+## 5.3 What the model actually writes
+
+*Included because `FAILURES.md` records that the sharpest errors in this project were surfaced by
+outside questions, and one of them was simply **"has anyone looked at what it writes?"** — asked after
+a capability verdict had been printed over empty strings. Perplexity alone does not distinguish a
+working small model from a degenerate one.*
+
+Greedy-free sampling, temperature 0.8, `n_loops=10` (the released checkpoint's optimum), seed 0:
+
+> **"The city of"** → *"The city of Mediterranean. The study examines the new country of the South
+> Africa and its cultural species and plans to increase its strengths. In the recognition and
+> development of the Normans, USA's Cent"*
+
+> **"In 1945, the"** → *"In 1945, the National Operational Organization is going to help focus on
+> theisms in the region for the city of the Northwestern continent. Our goal is to enable the housing
+> drivers to outperform the region's g"*
+
+> **"Water is"** → *"Water is the perfect remodel. It works fine in shape to dry air. Expressed shape
+> is made up of a dirtie, covered with white onions, constructed washing and darkening."*
+
+**Read this as a sanity check, not as a capability claim.** The output is **syntactically well-formed
+English** — agreement, articles, subordinate clauses, plausible noun phrases — and **semantically
+incoherent**. That is exactly what 9.06M parameters trained on 90M tokens should produce, and it is
+the honest characterisation: *the model has learned the shape of the language and not its content.*
+**No claim in this submission depends on generation quality**; every result is teacher-forced
+cross-entropy. This is here so a reader does not have to take "CE 3.66" on faith that something
+non-degenerate is behind it.
+
 ## 6. Verification
 
 ```
