@@ -27,37 +27,67 @@ band, the only arm that converges, and an unresolvable clipping confound.
 
 ## 2. Every intervention, and the pattern across them
 
-ΔCE_best against each arm's **own in-job control**. Negative = better.
+**Twelve interventions: eleven mechanisms on the model, one lever on the loss schedule** (`README.md`
+states the convention). Two mechanisms were run at two settings each, so this table has thirteen rows.
+ΔCE_best is against each arm's **own in-job control**; negative = better.
 
-| intervention | ΔCE_best | band | params |
-|---|---|---|---|
-| inter-loop RMSNorm | **+0.744** | saturates at 4 | 0 |
-| scale clock | **+1.36** *(non-finite by loop 39)* | onset 8→4 | +448 |
-| gated (diagonal state-space) injection, α = 0.874 | **+0.247** | unmoved | +896 |
-| loop-cycled LoRA, **rank 2** | **+0.094** | unmoved | +204k |
-| radial clamp | ~0 *(ceiling invariant to 0.006)* | relocates | 0 |
-| convex gate / fixed-`g` sweep | null | unmoved | +66k |
-| ε = λ/(N√L) residual scaling | null *(its "shift" was a 0.0001-nat argmin flip)* | unmoved | 0 |
-| **duo-causal attention, W = 2** | **+0.0093 / −0.0115** *(sign reverses, 2 seeds)* | **unmoved, to the digit** | **0** |
-| norm penalty λ=0.01 (90M) | −0.030 *(wins ppl)* | **narrows** [6,17]→[6,14] | 0 |
-| **loop-cycled LoRA, rank ≥ 4** | **−0.094** ⚠ | **unmoved (5 of 5)** | +409k (+4.51%) |
-| **exclusive self attention (XSA)** | **−0.216** ⚠ | **unmoved** [8,16] | **0** |
-| **supervision annealing** | CE **withdrawn at n=4** | **band widens 4/4 seeds** | **0** |
+| # | intervention | ΔCE_best | band | params |
+|---|---|---|---|---|
+| 1 | inter-loop RMSNorm | **+0.744** | saturates at 4 | 0 |
+| 2 | scale clock | **+1.36** *(non-finite by loop 39)* | onset 8→4 | +448 |
+| 3 | gated (diagonal state-space) injection, α = 0.874 | **+0.247** | unmoved | +896 |
+| 4a | loop-cycled LoRA, **rank 2** | **+0.094** | unmoved | +204k |
+| 4b | **loop-cycled LoRA, rank ≥ 4** | **−0.0936** ⚠ | **unmoved (5 of 5)** | +409k (+4.51%) |
+| 5 | radial clamp | ~0 *(ceiling invariant to 0.006)* | relocates | 0 |
+| 6 | convex gate / fixed-`g` sweep | null | unmoved | +66k |
+| 7 | ε = λ/(N√L) residual scaling | null *(its "shift" was a 0.0001-nat argmin flip)* | unmoved | 0 |
+| 8 | norm penalty λ=0.01 (90M) | **−0.030** *(wins ppl)* ⚠ | **narrows** [6,17]→[6,14] | 0 |
+| 9a | duo-causal attention, **W = 2** | +0.0093 / −0.0115 *(sign reverses, 2 seeds)* | **unmoved, to the digit** | 0 |
+| 9b | **duo-causal attention, W = 3** | **−0.0871 / −0.0394** ⚠ | **narrows** [8,20]→[8,16], both seeds | 0 |
+| 10 | **exclusive self attention (XSA)** | **−0.2162** ⚠ | **unmoved** [8,16] | **0** |
+| 11a | per-token depth gate, unnormalised | **−0.2950** ⚠ | *(gate saturates — see below)* | +449 |
+| 11b | per-token depth gate, **scale-invariant** | **−0.0012 / +0.0023** *(sign reverses, 2 seeds)* | *n/a — see §5* | +450 |
+| 12 | **supervision annealing** *(loss-side)* | CE **withdrawn at n=4** `[WITHDRAWN-ANNEAL-CE]` | **band widens 4/4 seeds** | **0** |
 
-> **⚠ The two rows that lower the loss both carry caveats `[POSTHOC-LORA-RANK]` `[XSA-N1]`, and both improve the block rather than the
-> looping.** **LoRA:** the `rank ≥ 4` restriction is **post hoc** — over all six arms the interval
-> **covers zero** — there is no dose–response above the threshold, **~90% of the gain sits at `r = 1`**
-> where the cycling is *logically inert*, and a branch pinned to one index (identical params, zero
-> diversity) recovers **82%** of it in-job. **XSA:** **one seed**, 2.5M tokens, second seed running;
-> **84% of its effect is at `r = 1`**. Full detail in `NEGATIVE_RESULTS.md`.
+### The pattern, which is the report's central finding
 
-**The pattern, which is the report's central finding.** **Twelve interventions. Two lower the loss.
-Not one widens the useful band.** And both loss-lowering ones deliver 84–90% of their gain at a
-*single* loop — they improve the **block**, not the **looping**. The one lever that moves the band
-(supervision annealing, 4/4 seeds, zero parameters) **does not lower the loss.**
+**Five of the twelve lower the loss. Four of the five deliver 78–101% of that gain at a *single*
+loop, where their own mechanism is provably inert or irrelevant.**
+
+| loss-lowering arm | ΔCE@1 | ΔCE_best | **share of the gain already present at r = 1** | why the mechanism cannot be acting at r = 1 |
+|---|---|---|---|---|
+| depth gate, unnormalised | −0.2830 | −0.2950 | **96%** | the softmax runs over a **single** state; the mixture *is* that state |
+| exclusive self attention | −0.1826 | −0.2162 | **84%** | *(one seed)* |
+| loop-cycled LoRA, rank ≥ 4 | — | −0.0936 | **67–95%**, median 88% *(5 arms)* | branch index is `0 mod 4`; cycling is inert — verified max\|diff\| = 0.000e+00 at r=1 |
+| duo-causal attention, W = 3 | −0.0682 / −0.0399 | −0.0871 / −0.0394 | **78% / 101%** | with one loop there is no previous loop's KV to attend to |
+
+**The fifth is the mirror image and is worth stating separately, because it fails the brief the other
+way round.** The norm penalty lowers best CE by 0.030 and **wins perplexity outright** (37.52 vs
+38.86) — but `ΔCE@1 = +0.2263`, so **88% of its apparent loop-gain advantage is loop-1 damage**, and
+its band *narrows*. It buys loop gain by making loop 1 worse rather than by making depth worth more.
+
+**Not one of the twelve widens the useful band. Two narrow it** (norm penalty, duo-causal W = 3). The
+one lever that moves the band outward — supervision annealing, 4/4 seeds, zero parameters — **does not
+lower the loss.**
 
 *That dissociation is the answer to the brief's sentence: low perplexity and «за счет большого
 количества лупов» come apart under measurement.*
+
+> **⚠ The caveats belong beside the numbers, not in a footnote.**
+> **LoRA `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]`:** the `rank ≥ 4` restriction is **post hoc** — over all six arms the interval
+> **covers zero** — there is no dose–response above the threshold, and a branch pinned to one index
+> (identical params, **zero** diversity) recovers **82%** of the gain in-job. It is a **capacity**
+> result, and it costs **+4.51%** of the parameter budget.
+> **XSA `[XSA-N1]`:** **one seed**, 2.5M tokens; a second seed was running at the time of writing.
+> **Duo-causal W = 3:** the CE gain is real and agrees in sign at both seeds, **but the registered
+> mechanism check says the mechanism did not engage** — `cos(Δu_t, Δu_{t−1})` is 0.9962/0.9991/0.9998
+> against a control's 0.9978/0.9993/0.9998, i.e. indistinguishable. A CE gain whose mechanism check
+> fails is **not evidence for the mechanism**, and 78–101% of it sits where the mechanism is inert.
+> **Depth gate, unnormalised:** it **could not express its own hypothesis** — logits are `w·h_t` on the
+> **unnormalised** state, which grows 1.8–4.0× within a forward pass, so the softmax saturates to a
+> hard argmax (effective loops mixed **1.01–1.05 of r**). Its −0.2950 is dense supervision by another
+> name, not depth selection. **This is reported as an instrument failure, not a result** (§4.22).
+> Full detail on all of these in `NEGATIVE_RESULTS.md`.
 
 ## 3. Depth: what a looped model here actually does
 
@@ -91,18 +121,50 @@ randomness**: at the *representation* level the untied stack is 4.36/33 against 
 projections decorrelate a collinear state stream for free, and a tied loop has one `W_K` and cannot.**
 (§4.7e — corrected 20:01 after the confound was raised.)
 
-## 5. Still landing tonight
+## 5. The registered joint test, and what was still running at submission
 
-Marked rather than omitted; this file is updated as each lands.
+### 5.1 `dg_norm` — the one experiment that could have refuted §4.7e, and did not
 
-| arm | what it decides | ETA |
+§4.7e explains the entire per-token-depth family with one fact: a token's depth keys span an effective
+rank of ~1.6, so there is nothing for a mixing mechanism to discriminate between. That explanation is
+only worth anything if it was **exposed to refutation**, because the previous depth gate failed for a
+*different* reason — it saturated and could not mix at all (§2, row 11a). A rank explanation cannot be
+tested by an instrument that never mixes.
+
+So a **scale-invariant** gate was built (`F.normalize` on the state before the gate head, plus a
+learned temperature) and a **joint** falsifier was registered at 19:22, *before the arm existed*:
+
+| the gate mixes (GATE 1) | CE gain | verdict registered in advance |
 |---|---|---|
-| `dg_norm` (scale-invariant depth gate) | **the highest-stakes cell.** Registered joint test: mixing engaging with no gain confirms the rank collapse as the binding constraint; a real gain means §4.7e is **wrong** | ~20:30 |
-| duo-causal **W = 3** | dose-response against W = 1, 2 | ~20:30 |
-| `tlab-divx-s1` | capacity-vs-diversity, all three arms **in one job**, seed 1 | ~20:45 |
-| `tlab-xsa-s1` | second seed for the −0.216 result | ~20:45 |
-| `tlab-recmethod-s2` | the recommended configuration's own weights | ~20:50 |
-| Kaggle `tlab-lora-scaleup` | does the LoRA positive survive ~5× budget (12M/arm) | ~21:45 |
+| yes | **no** | **§4.7e confirmed** — the collapse is the binding constraint |
+| yes | **yes** | **§4.7e is WRONG** — per-token headroom is reachable after all |
+| no | either | instrument failure again; **nothing is decided** |
+
+**Result, two seeds, in-job paired.** GATE 1 **passed**: effective loops mixed **7.58/8, 14.96/16,
+29.84/32**, with **zero** tokens above 0.99 top-weight — the gate genuinely mixes, where its
+predecessor did not. CE: **−0.0012 and +0.0023.** The sign reverses; both are two orders of magnitude
+inside the 0.0150 floor.
+
+**A working mixture over a collapsed representation buys nothing. §4.7e stands, decided by the test
+that could have killed it.** *Scope: 2.5M tokens, two seeds, one width.*
+
+> **One number from this arm must not be read as a depth result.** `dg_norm`'s plateau is [12,24] and
+> [12,32], deeper than its control's [8,20] — and it is **excluded from every band table in this
+> submission**, by a decision recorded at 17:40 *before* the arm ran. The gate mixes over a window of
+> `r` states, so a deeper plateau measures **how wide the mixture window is**, not how deep the useful
+> computation goes. Reporting it as a band would be the project's characteristic error — a statistic
+> read as a claim about a space it does not live in.
+
+### 5.2 Still running at submission
+
+Marked rather than omitted. Each has its falsifier registered in `../RUNS.md` before it ran.
+
+| arm | what it decides | state |
+|---|---|---|
+| `tlab-divx-s1` | capacity-vs-diversity, all three arms **in one job**, seed 1 — removes the cross-job confound and pin-0's branch-specialisation confound at once | running |
+| `tlab-xsa-s1` | second seed for the −0.216; **this project has withdrawn two claims for exactly the n=1 failure** | running |
+| `tlab-recmethod-s2` | the recommended configuration's own weights, which no full-budget checkpoint currently is (`METHOD.md` §4) | running |
+| Kaggle `tlab-lora-scaleup` | does the LoRA positive survive ~5× budget (12M/arm) | running |
 
 ## 6. Verification
 
