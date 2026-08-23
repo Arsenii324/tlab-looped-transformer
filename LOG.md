@@ -2622,3 +2622,44 @@ post-hoc restriction still decides significance, unchanged.
 **A trap avoided twice today:** `dv_lora_fixed0` (pin-0) is at step 244 with 1 eval; against a
 completed control it shows a fake **+0.8985**. Same shape as the `dc_w3` +1.117. Partial arms are
 excluded by checking eval counts, not by noticing the number looks wrong.
+
+## 2026-08-23 19:47 — the rank collapse is WEIGHT TYING, not smallness. 11.7x, both models untrained.
+
+The one thing sec4.7e could not answer, raised as an unknown-unknown by an independent pass: is
+rank ~1.6/32 a property of weight tying, or of 448 hidden units with 4 heads? It decides how far the
+negative reaches.
+
+**Both untrained, identical hidden size / heads / head_dim / init, 33 depths each** -- so training
+quality cannot explain it and the only variable is tied-vs-untied:
+
+| | effective rank | mean pairwise cos |
+|---|---|---|
+| weight-tied, one block x 33 applications | **2.73 / 33** | **0.8022** |
+| untied, 33 distinct layers, same width | **31.80 / 33** | **-0.0029** |
+
+**11.7x, with smallness held fixed by construction.** So:
+1. sec4.7e's negative is **not** a small-model artifact and generalises to weight-tied looped models.
+2. **MoD-Attention's positive is explained rather than contradicted** -- 24/48 UNSHARED layers have
+   the near-orthogonal depth-key set; their gain is a property of distinct layers, now MEASURED.
+3. The trade this whole report circles gets sharper: weight tying buys parameter efficiency and pays
+   in **depth distinguishability**. The same block applied twice cannot produce two different views,
+   and every depth-mixing mechanism needs exactly that.
+
+## 2026-08-23 19:47 — pin2 SUCCESS, and sec6.0 row 34's fix is VALIDATED against a finished job
+
+`download-files` returned **3 files, 70.8 MB -- including BOTH `.pt` checkpoints.** The explicit
+per-filename `outputs:` works where the glob returned `results.json` alone this morning. **First
+positive confirmation of the row-34 remedy on a job that actually completed.**
+
+Final (step 1219, complete): `pin_control_s0` best 5.3052 band [8,20] mid 12.6 · `pin_lora_b2_s0`
+best 5.2237 **dCE_best -0.0815**, band **[8,16] mid 11.3**.
+
+**Reading, with the confound stated.** Cycled LoRA is -0.1251 (diversity job); branch pinned to 2,
+identical params, zero diversity, is **-0.0815**. So **~65% of the CE gain is pure capacity**, and
+diversity's own contribution is **~0.044** -- only just above the measured cross-job drift band
+(0.0074-0.0334), and this is a cross-job difference-of-differences at one seed.
+
+**One asymmetry worth flagging rather than smoothing:** the cycled arm keeps its control's band
+([8,20] -> [8,20]) while the pinned arm **narrows** it ([8,20] -> [8,16]). If that holds, capacity
+buys CE at the cost of band while diversity preserves it -- but it is single-seed, cross-job, and one
+grid point, so it is recorded as an observation, not a result.

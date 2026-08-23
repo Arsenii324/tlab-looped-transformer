@@ -73,3 +73,26 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def tied_vs_untied(D: int = 33, batch: int = 2, seq: int = 128):
+    """Is the depth-key rank collapse WEIGHT TYING, or just a small model?
+
+    Both models UNTRAINED and identical in width/heads/head_dim/init, so training quality cannot
+    explain the difference and the only variable is tied-vs-untied. Answers the one question sec4.7e
+    could not: whether its negative generalises to looped models at any size, or is an artifact of
+    448 hidden units with 4 heads.
+
+    Measured 2026-08-23 19:44:  tied 2.73/33 (cos 0.8022)  vs  untied 31.80/33 (cos -0.0029), 11.7x.
+    """
+    import numpy as np, torch, torch.nn.functional as F
+    from model import LoopedTransformer, Config, DecoderLayer, RotaryEmbedding
+    cfg = Config(state_renorm=False)
+    val = np.memmap(ROOT / "data" / "val.bin", dtype=np.uint16, mode="r")
+    x = torch.from_numpy(val[: batch * seq].astype(np.int64)).view(batch, seq)
+    torch.manual_seed(0); m = LoopedTransformer(cfg); m.eval()
+    caps = []
+    hk = m.block.layers[0].register_forward_pre_hook(lambda mod, inp: caps.append(inp[0].detach()))
+    with torch.no_grad(): m(x, n_loops=D, supervise_idx={D - 1})
+    hk.remove()
+    return caps, m, cfg, x

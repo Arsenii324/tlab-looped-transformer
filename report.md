@@ -2917,6 +2917,40 @@ same scope §4.3's log-drift finding carries. And **training makes it worse**: e
 2.73 → 1.83 and mean cosine rises 0.80 → 0.91. *The model does not learn to differentiate its depths;
 it learns to make them more interchangeable.*
 
+> ### Is this WEIGHT TYING, or just a small model? Weight tying — and the margin is 11.7×
+>
+> **The obvious objection to everything above**: 448 hidden units, 4 heads, 3 distinct layers is not
+> much to differentiate with, so perhaps depth keys collapse because the model is *small*, not because
+> it is *tied*. That distinction decides how far the negative reaches — if it is smallness, the
+> depth-mixing family reopens at scale and this section is a statement about 9M parameters; if it is
+> tying, **the negative generalises to weight-tied looped models at any size.**
+>
+> Measured directly. **Both models untrained**, identical hidden size, heads, head_dim and
+> initialisation, 33 depths each — so training quality cannot explain the difference and the **only**
+> variable is tied-vs-untied:
+>
+> | | effective rank | mean pairwise cos |
+> |---|---|---|
+> | **weight-tied** — one block applied 33 times | **2.73 / 33** | **0.8022** |
+> | **untied** — 33 distinct layers, same width | **31.80 / 33** | **−0.0029** |
+>
+> **An untied stack at identical scale has essentially full-rank, near-orthogonal depth keys. The tied
+> loop has 2.7 of 33.** A ratio of **11.7×**, with smallness held fixed by construction.
+>
+> **So the collapse is weight tying, and three things follow.** (i) §4.7e's negative is **not** a
+> small-model artifact — it is a property of the mechanism this whole report is about, and it
+> generalises. (ii) **MoD-Attention's published positive is explained rather than contradicted**: they
+> run 24 and 48 *unshared* layers, where the depth-key set is the near-orthogonal one measured above,
+> so depth attention has something real to attend over. Their gain is a property of **distinct
+> layers**, and this is now *measured* rather than argued. (iii) It sharpens the trade the whole
+> report circles: weight tying buys parameter efficiency and **pays for it in depth
+> distinguishability** — the same block applied twice cannot produce two different views, and every
+> depth-mixing mechanism needs exactly that.
+>
+> *Cost: one forward pass of each, no training. Scope: one width and one depth count; the ratio at
+> other widths is untested, though the mechanism — identical weights produce identical maps — does not
+> obviously depend on width.*
+
 **This unifies four separate results that were previously four separate nulls:**
 
 - **§4.7c** — no static mixture over depths beats the best single depth. Of course: it is averaging
