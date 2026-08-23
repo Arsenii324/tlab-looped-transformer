@@ -13,82 +13,79 @@ looks like a cap violation — see "Counting the parameters" below.*
 
 ## The result
 
-**The trajectory never converges and saturates anyway. The depths a weight-tied loop visits are
-near-indistinguishable — and when we gave the architecture the capacity to avoid that, training
+The trajectory never converges and saturates anyway. The depths a weight-tied loop visits are
+near-indistinguishable, and when we gave the architecture the capacity to avoid that, training
 collapsed it again. We built the experiment that could have refuted the mechanism, registered its
-criterion before the data existed, and it held.**
+criterion before the data existed, and it held.
 
-The task asks for low perplexity **by exploiting many loops.** Those come apart here, and the
-contribution is not the dissociation but **the measured reason for it**: a token's 32 depth keys span
-an effective rank of **~1.6 out of 32**, present at initialisation and worse after training. A
-weight-tied loop has **one** key projection where an unshared stack has one per layer and gets
-decorrelation for free — so there is almost nothing for any depth-mixing or early-exit mechanism to
-discriminate between.
+The task asks for low perplexity *by exploiting many loops*. Those two come apart here, and what this
+submission adds is the measured reason: a token's 32 depth keys span an effective rank of **~1.6 out
+of 32**, present at initialisation and worse after training. A weight-tied loop has one key projection
+where an unshared stack has one per layer and gets decorrelation for free, so there is almost nothing
+for a depth-mixing or early-exit mechanism to discriminate between.
 
-**The last experiment of the project tested whether that is fixable by architecture. It is not.**
-Given four distinct key projections — **+10.0% of the parameter budget** — rank starts at **8.818/32**
-and **trains back down to 1.74**, against a tied control's 1.66. *The collapse is not only what a tied
-architecture is stuck with; it is what this objective drives the representation toward even when the
-architecture can avoid it.* That predicts, falsifiably, that no purely architectural fix in this
-family will hold — and it explains the published positives in the depth-mixture family, which are
-measured on unshared stacks, rather than contradicting them.
+The last experiment tested whether that is fixable by architecture, and it is not. Given four distinct
+key projections, costing **+10.0%** of the parameter budget, rank starts at **8.818/32** and trains
+back down to **1.74**, against a tied control's **1.66**. The collapse is what this training objective
+drives the representation toward, even where the architecture can avoid it. That predicts no purely
+architectural fix in this family will hold, and it accounts for the published positives in the
+depth-mixture family, which are measured on unshared stacks.
 
-*That experiment was built to decide something else — whether the rank collapse **causes** the
-depth-mixing failure — and its registered gate required the trained rank to exceed ~4. It came back at
-1.74, so **the causal question is undecided and is reported that way** (`LIMITATIONS.md`); what is
-measured is the collapse-under-training above. One seed, 3.5M tokens.*
+That experiment was built to decide a different question: whether the rank collapse *causes* the
+depth-mixing failure. Its registered gate required the trained rank to exceed ~4. It came back at
+1.74, so the causal question is undecided and `LIMITATIONS.md` reports it as an open absence. What is
+measured is the collapse under training. One seed, 3.5M tokens.
 
 ## The answer to the brief, in five sentences
 
 1. **The brief's own diagnosis does not hold here.** It attributes saturation to DEQ-style
-   convergence. This model's state **never converges** — the unit drifts *logarithmically* (R² 0.986
-   on one parameter against a convergent power law's 0.748; ρ > 1 at every measured depth; 0.18 rad
-   still accumulating between loops 129 and 384) — **and it saturates at loop ~8 anyway.** The drift
-   is architectural: an untrained model of the same shape drifts *faster*.
+   convergence. This model's state never converges: the unit drifts *logarithmically* (R² **0.986** on
+   one parameter against a convergent power law's **0.748**; ρ > 1 at every measured depth; 0.18 rad
+   still accumulating between loops 129 and 384). It saturates at loop ~8 regardless. The drift is
+   architectural, since an untrained model of the same shape drifts *faster*.
 
-2. **What actually binds is that the depths are not distinguishable.** A token's 32 depth keys span an
-   **effective rank of ~1.6**, present **at initialisation** and worse after training. The cause is
-   **projection asymmetry**: an unshared stack manufactures a near-orthogonal key set from a state
-   stream that is *just as collinear* as the tied one (4.36 vs 1.40 of 33), purely because each layer
-   owns a `W_K` `[RANK-PROJECTION]`. **Buying that back architecturally does not work** — see *The
-   result* above and §4.30.
+2. **What binds is that the depths are not distinguishable.** A token's 32 depth keys span an
+   effective rank of **~1.6**, present at initialisation and worse after training. The cause is
+   projection asymmetry: an unshared stack manufactures a near-orthogonal key set from a state stream
+   that is *just as collinear* as the tied one (**4.36** vs **1.40** of 33), because each layer owns a
+   `W_K` `[RANK-PROJECTION]`. Buying that back architecturally does not work; see *The result* above
+   and §4.30.
 
-3. **We built the experiment that would have refuted that, and registered the criterion before the arm
-   existed.** A *scale-invariant* depth gate that **demonstrably mixes** — 7.58/8, 14.96/16, 29.84/32
-   effective loops, zero tokens above 0.99 top-weight, where the project's earlier gate saturated to a
-   hard argmax — with the falsifier written first: *mixes and gains ⇒ the explanation is wrong.*
-   **It mixes. It returns −0.0012 / +0.0023 at two seeds.** A working mixture over a collapsed
-   representation buys nothing. *Mixture-over-depths was tested seven ways in all; every one is null, an
-   instrument failure, or a gain whose own mechanism check failed (`RESULTS.md` §1b).*
+3. **We built the experiment that would have refuted it, and registered the criterion before the arm
+   existed.** A scale-invariant depth gate that mixes for real, **7.58/8, 14.96/16, 29.84/32**
+   effective loops with zero tokens above 0.99 top-weight, where the project's earlier gate saturated
+   to a hard argmax. The falsifier was written first: *mixes and gains ⇒ the explanation is wrong.* It
+   mixes, and it returns **−0.0012 / +0.0023** at two seeds. A working mixture over a collapsed
+   representation buys nothing. Mixture-over-depths was tested seven ways; every one is null, an
+   instrument failure, or a gain whose own mechanism check failed (`RESULTS.md` §1b).
 
 4. **Twelve interventions. Five lower the loss. Not one widens the useful band**, at any tolerance
-   tested. Four of the five put
-   **67–101%** of their gain at a *single* loop where their own mechanism is provably inert — LoRA
-   67–95% `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]`, XSA 84–91% `[XSA-AT-R1]`, duo-causal W = 3
-   78–101%, the saturating depth gate 96%. **They improve the block, not the looping.** The fifth is
-   the mirror image: the norm penalty wins perplexity (37.52 vs 38.86) by *damaging* loop 1
-   (`ΔCE@1 = +0.2263`). **And the only one that replicated across three platforms vanishes at 5× the
-   budget**: −0.0936 at 2.5M against **+0.0077** at 12M, in a config-identical pair.
-   **This project has no replicated CE improvement at scale.** *(§4.29; `RESULTS.md` §1b for what
-   that leaves standing.)*
+   tested. Four of the five put **67–101%** of their gain at a single loop where their own mechanism is
+   provably inert: LoRA 67–95% `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]`, XSA 84–91%
+   `[XSA-AT-R1]`, duo-causal W = 3 78–101%, the saturating depth gate 96%. They improve the block, not
+   the looping. The fifth inverts that: the norm penalty wins perplexity (**37.52** vs **38.86**) by
+   damaging loop 1 (`ΔCE@1 = +0.2263`). And the one that replicated across three platforms vanishes at
+   5× the budget, **−0.0936** at 2.5M against **+0.0077** at 12M in a config-identical pair. **This
+   project has no replicated CE improvement at scale.** (§4.29; `RESULTS.md` §1b for what survives.)
 
 5. **One lever moves depth, costs zero parameters, and survives the two tests the others failed.**
-   Supervision annealing widens the band at **5 of 5 seeds**, with the same edge decomposition at
-   2.5M and at 10M, and on an **every-integer sweep of depths 12–32** the annealed arms hold within
-   tolerance over **2.1× and 2.0× as many depths as their controls**. It is the only band claim here
-   that is robust to the plateau tolerance, resolved to ±1 loop, and replicated across seeds.
-   **It does not lower the loss** — that half of the claim is withdrawn.
-   *(`METHOD.md` §2 for the withdrawal and its five seeds; §4.25c for the sweep.)*
+   Supervision annealing widens the band at **5 of 5 seeds**, with the same edge decomposition at 2.5M
+   and at 10M. On an every-integer sweep of depths 12–32 the annealed arms hold within tolerance over
+   **2.1× and 2.0×** as many depths as their controls. It is the only band claim here that is robust to
+   the plateau tolerance, resolved to ±1 loop, and replicated across seeds. **It does not lower the
+   loss**; that half of the claim is withdrawn. (`METHOD.md` §2 for the withdrawal and its five seeds;
+   §4.25c for the sweep.)
 
-**Per-token depth demand is real and unreachable, and that is the whole of `EARLY_EXIT.md`.** The
-evidence for "real" is the split-half reliability — **0.866 against a null of 0.0007** — *not* the
-0.3084-nat oracle headroom, whose two nulls are **mis-specified**: they destroy the per-token curves'
-smoothness (4.6× rougher) and produce *more* headroom than the real data (0.3877, 0.4110). Eight rules
-across five instrument classes capture at most **0.1%** of it, for the reason in sentence 2.
+Per-token depth demand is real and unreachable, which is the subject of `EARLY_EXIT.md`. The evidence
+for "real" is the split-half reliability, **0.866** against a null of **0.0007**, and not the
+0.3084-nat oracle headroom, whose two nulls are mis-specified: they destroy the per-token curves'
+smoothness (4.6× rougher) and produce *more* headroom than the real data (**0.3877**, **0.4110**).
+Eight rules across five instrument classes capture at most **0.1%** of it, for the reason in
+sentence 2.
 
 The brief states that *«отсутствие положительного результата при хорошем анализе всех негативных —
-хороший результат»*. This submission is largely that: a negative with a measured mechanism, one
-lever that works on the axis it works on, and an explicit account of what was tried and failed.
+хороший результат»*. This submission is largely that: a negative with a measured mechanism, one lever
+that works on the axis it works on, and an account of what was tried and failed.
 
 ## The eight documents
 
@@ -107,46 +104,45 @@ lever that works on the axis it works on, and an explicit account of what was tr
 
 ## Reading notes
 
-*Housekeeping a grader needs but should not have to read first.*
+*Housekeeping, placed here rather than above it.*
 
-### Counting the parameters — the obvious way gives the wrong answer
+### Counting the parameters: the obvious way gives the wrong answer
 
-Summing the checkpoint's `state_dict` returns **10,899,616** — *over the cap*. That is a counting
-artifact of **weight tying, this architecture's central feature**: `lm_head` and `embed` are the same
-`nn.Parameter` under two names, so `state_dict()` counts the tied embedding twice while
-`.parameters()` de-duplicates. The difference is exactly `vocab × hidden = 4096 × 448 = 1,835,008`,
-and `10,899,616 − 1,835,008 = **9,064,608**`. **Verify with
-`sum(p.numel() for p in model.parameters())`**, which is what every number here uses. *Stated because
-a grader checking the hardest constraint in the brief the obvious way would conclude the model is
-disqualified.* (`report.md` §6.0 row 27.) A bare `Config()` also prints 9,065,056, because its default
-`state_renorm=True` is the arm this report rejects; the shipped model is `state_renorm=False`.
+Summing the checkpoint's `state_dict` returns **10,899,616**, which is over the cap. That is an
+artifact of weight tying: `lm_head` and `embed` are the same `nn.Parameter` under two names, so
+`state_dict()` counts the tied embedding twice while `.parameters()` de-duplicates. The difference is
+exactly `vocab × hidden = 4096 × 448 = 1,835,008`, and `10,899,616 − 1,835,008 = 9,064,608`. Verify
+with `sum(p.numel() for p in model.parameters())`, which is what every number here uses. A grader
+checking the brief's hardest constraint the obvious way would otherwise conclude the model is
+disqualified (`report.md` §6.0 row 27). A bare `Config()` prints **9,065,056**, because its default
+`state_renorm=True` is the arm this report rejects; the shipped model sets `state_renorm=False`.
 
 ### How interventions are counted, so every document agrees
 
-**Twelve interventions: eleven mechanisms on the model, one lever on the loss schedule.** **Three** of
-the eleven ran at two settings each — LoRA at rank 2 and rank ≥ 4; duo-causal attention at W = 2 and
-W = 3; the per-token depth gate unnormalised and scale-invariant — so `RESULTS.md` §2 has more *rows*
-than there are mechanisms. **The unnormalised depth gate is reported as an instrument failure rather
-than a result** (it saturates to a hard argmax and cannot express a mixture at all), which is why it
-is a row but not a claim. Where a count appears in this folder it is this one.
+**Twelve interventions: eleven mechanisms on the model, one lever on the loss schedule.** Three of the
+eleven ran at two settings each (LoRA at rank 2 and rank ≥ 4; duo-causal attention at W = 2 and W = 3;
+the per-token depth gate unnormalised and scale-invariant), so `RESULTS.md` §2 has more rows than
+there are mechanisms. The unnormalised depth gate is reported as an instrument failure rather than a
+result, since it saturates to a hard argmax and cannot express a mixture at all, which is why it is a
+row but not a claim. Where a count appears in this folder it is this one.
 
 ### Three terms, defined once
 
-- **useful band** — the contiguous run of loop counts whose validation CE is within **0.01 nats** of
+- **useful band**: the contiguous run of loop counts whose validation CE is within **0.01 nats** of
   that model's best. Computed by `src/plateau.py`; the report also calls the measured object a
-  *plateau*. **Every band figure is a `tol = 0.01` statement** unless marked otherwise, and §4.25
-  sweeps that tolerance.
-- **replicate floor** — run-to-run variation between *same-config* arms, measured per device and per
-  configuration: **0.0150** (CUDA, dense supervision), **0.0541** (CUDA, terminal-only) and **0.0527** (MPS, n = 3; MPS run-to-run spread is 0.031–0.068). Where this
-  folder says "inside the floor", it means smaller than that. *Both were measured at 2.5M tokens and
-  are applied to 90M claims; `LIMITATIONS.md` §3 says so.*
-- **loop gain** — `CE@1 − CE_best` for one model: how much the looping is worth to it. Distinct from
-  **ΔCE_best**, which compares *two* models at their own optima.
+  *plateau*. Every band figure is a `tol = 0.01` statement unless marked otherwise, and §4.25 sweeps
+  that tolerance.
+- **replicate floor**: run-to-run variation between same-config arms, measured per device and per
+  configuration. **0.0150** (CUDA, dense supervision), **0.0541** (CUDA, terminal-only) and **0.0527**
+  (MPS, n = 3; MPS run-to-run spread is 0.031–0.068). "Inside the floor" means smaller than that. All
+  were measured at 2.5M tokens and are applied to 90M claims; `LIMITATIONS.md` §3 says so.
+- **loop gain**: `CE@1 − CE_best` for one model, i.e. what the looping is worth to it. Distinct from
+  **ΔCE_best**, which compares two models at their own optima.
 
 ### Comparability
 
-Both caps are respected with margin. **Perplexity is tokenizer-dependent** (vocab 4096), so bits/byte
-is the only externally comparable figure — and `SCALE.md` explains why even that is not like-for-like
+Both caps are respected with margin. Perplexity is tokenizer-dependent (vocab 4096), so bits/byte is
+the only externally comparable figure, and `SCALE.md` explains why even that is not like-for-like
 against published numbers, which train on roughly 70× the tokens.
 
 ## Verifying this yourself
@@ -179,11 +175,11 @@ live in this repository until it was caught; see `FAILURES.md`.
 
 ## What is not here, and one disclosure
 
-- **`../report.md` §1 — the idea narrative — is written by the coding agent, not by the author**, from
-  the project's own dated record, at the author's instruction. It says so in a banner at its own head.
-  The task grades idea generation separately and warns against LLM-sourced ideation, so this is stated
-  here rather than left to be inferred: **§1 is an account of what happened, not a claim of authorship
-  over the ideas.** Where an idea came from an external reviewer, §4.18 and §4.22 name it in place.
+- **`../report.md` §1, the idea narrative, is written by the coding agent from the project's dated
+  record, at the author's instruction**, and says so in a banner at its own head. The task grades idea
+  generation separately and warns against LLM-sourced ideation, so it is stated here rather than left
+  to be inferred: §1 is an account of what happened, not a claim of authorship over the ideas. Where
+  an idea came from an external reviewer, §4.18 and §4.22 name it in place.
 - Absolute perplexity is not competitive with data-unconstrained work; `SCALE.md` gives the token
   arithmetic rather than leaving it to be discovered.
 - Several results are single-seed, and each says so where it appears.
