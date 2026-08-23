@@ -687,3 +687,56 @@ seeing which cell fired would be precisely §6.0 rows 5 and 16.
 `tlab-recmethod-s2` **bt1s4mag4kdvsvts536m** · `tlab-diversity-control-s0` **bt1ps6o54qhrecg40etf** ·
 `tlab-pin2-control-s0` **bt1b76se42lip6987fb9** · `tlab-xsa-s0` **bt15egv862odi4o20qtn** ·
 Kaggle **arsen4ikvar/tlab-lora-scaleup**. Harvest all six: `./harvest_duocausal.sh`.
+
+---
+
+## `tlab-untie-s0` — registered 2026-08-23 21:48 MSK, BEFORE the job was submitted
+
+**The question.** §4.7e says the depth-mixing family fails because a token's depth keys span an
+effective rank of ~1.6 of 32. §4.23's `dg_norm` supports it: a *working* soft mixture (7.58/8,
+14.96/16, 29.84/32 effective loops) gains **−0.0012 / +0.0023** — nothing. **But that is a
+correlation between low rank and no gain.** §4.28 shows rank is `≈1.6 × (number of distinct
+projections)` and prices the fix. **This job is the causal test: raise the rank, keep the gate, see if
+the gate acts.**
+
+**Arms — three, in one job** (so §4.27's 0.0914 cross-job drift cannot touch the comparison):
+
+| arm | config | params |
+|---|---|---|
+| `ut_ctrl_s0` | tied `W_K`, no gate | 9,064,608 |
+| `ut_b4_s0` | `W_K` in **4** loop-index buckets, no gate | **9,967,776** |
+| `ut_b4_gate_s0` | 4 buckets **+ scale-invariant depth gate** | 9,968,226 |
+
+Seed 0, 3.5M tokens/arm, μ_rec 18 (`U[4,32]`), `supervise_k=5`, T4.
+
+**Pre-launch gates, all verified before submission:**
+- `kv_untie_buckets=1` is **bit-identical** to the unpatched frozen kernel: max\|diff\| = **0.000e+00**.
+- Buckets 0 and 1 produce **different** keys (max\|diff\| 1.223e-01) — the mechanism is wired.
+- Parameter counts measured by instantiating, not computed: all **under the 10M cap**.
+- `outputs:` names every file explicitly, no globs (§6.0 row 34).
+
+**FALSIFIERS, written before any data exists.**
+
+**GATE A — did untying do what §4.28 predicts?** Measure the trained `ut_b4_gate_s0`'s depth-key
+effective rank with `src/depth_key_rank.py`. **It must exceed ~4.** If it comes back near 1.6, the
+buckets did not take and **nothing below is decided** — instrument failure, not a result.
+
+**GATE B — the causal claim.** Let `Δgate_hi = CE(ut_b4_gate) − CE(ut_b4)` (the gate's contribution
+*at high rank*) against the already-measured `Δgate_lo = −0.0012 / +0.0023` (its contribution at rank
+1.6, §4.23).
+
+| outcome | what it decides |
+|---|---|
+| GATE A passes **and** `Δgate_hi` is materially negative (beyond the 0.0150 floor) | **§4.7e is confirmed CAUSALLY.** The rank collapse was the binding constraint, and it is fixable |
+| GATE A passes **and** `Δgate_hi` is null like `Δgate_lo` | **§4.7e is INCOMPLETE.** Rank is not what binds; the explanation the report leans on is at best partial |
+| GATE A fails | nothing decided |
+
+**GATE C — where does any gain sit?** If `ut_b4` or `ut_b4_gate` lowers CE, decompose
+`Δgain = ΔCE@1 − ΔCE_best`. **On this report's own regularity (§4.24) I predict 78–101% at `r = 1`,
+i.e. capacity rather than depth-mixing** — the same shape as LoRA, XSA and duo-causal. **If instead
+the gain concentrates past `r = 8` and the useful band widens, that is the first genuine depth
+mechanism in this project and the report's central negative is wrong.**
+
+**Stated cost, so this is not read as free:** the untied arms spend **+10.0%** of the parameter budget
+on `W_K` alone. Even a positive result here is *not* a recommendation for the submitted architecture —
+it would be a mechanism finding, and §4.28 records that 8 buckets does not fit at this budget at all.

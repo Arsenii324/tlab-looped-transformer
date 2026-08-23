@@ -6264,10 +6264,17 @@ effective rank of the resulting depth-key stream.
 |---|---|---|
 | depth **states**, no projection at all | **1.690** | — |
 | **tied `W_K`** — what this model has | **1.603** | 0 |
-| `W_K` in **2** loop-index buckets | **3.097** | +100,352 (+1.1%) |
-| `W_K` in **4** buckets | **5.742** | +301,056 (+3.3%) |
-| `W_K` in **8** buckets | **10.646** | +702,464 (+7.7%) |
-| `W_K` fully untied (32) | **30.863** | +3,110,912 (+34.3%) |
+| `W_K` in **2** loop-index buckets | **3.097** | +301,056 (+3.3%) → 9,365,664 |
+| `W_K` in **4** buckets | **5.742** | +903,168 (+10.0%) → **9,967,776** |
+| `W_K` in **8** buckets | **10.646** | +2,107,392 (+23.2%) → **over the 10M cap** |
+| `W_K` fully untied (32) | **30.863** | +9,331,776 (+102.9%) → far over the cap |
+
+> **Corrected 21:46, and the correction was caught by building the arm rather than by re-reading the
+> table.** An earlier version of this row priced **one** layer's `W_K` at +100,352. **The block has
+> three layers, each with its own attention**, so every extra bucket costs **3 × 100,352 = 301,056**.
+> Verified by instantiating the model, not by arithmetic: nb=2 → 9,365,664, nb=4 → **9,967,776**.
+> **This materially changes the recommendation**: 4 buckets is not "+3.3%, comfortably affordable" but
+> **+10.0%, sitting 32,224 parameters under the cap**, and **8 buckets is impossible at this budget.**
 
 **Depth-key rank is very nearly `1.6 × (number of distinct projections)`** — 3.1, 5.7, 10.6, 30.9 for
 2, 4, 8, 32. **The mechanism is now a dose–response with a price attached**, which is a stronger form
@@ -6282,8 +6289,9 @@ the number of distinct projections applied to it.*
    construction.** That is exactly what the projection-confound correction said, now measured as a
    curve instead of a single contrast.
 2. **It prices the intervention the evidence points at.** `EARLY_EXIT.md` §6 recommends partial
-   untying as the cheapest lever; this says **4 buckets buys 3.6× the depth-key rank for +3.3% of the
-   parameter budget** — which would still fit under the 10M cap (9.37M).
+   untying as the cheapest lever; this says **4 buckets buys 3.6× the depth-key rank for +10.0% of the
+   parameter budget**, landing at **9,967,776** — under the 10M cap with 32,224 to spare, and **2
+   buckets buys 1.9× for +3.3%**. Anything past 4 buckets does not fit.
 3. **It does NOT show that more rank buys lower loss, and that is the open question.** Everything here
    is a property of *representations*, measured with random projections on a frozen checkpoint. **The
    causal claim — that the rank collapse is *why* depth-mixing fails — is still supported only by
