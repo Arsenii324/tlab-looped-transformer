@@ -550,3 +550,27 @@ non-screening budget; (b) the paired ΔCE_best is a **third budget point** for a
 withdrawn at n=4 and is read as such, not as a resolution; (c) the band is read grid-matched against
 its own in-job control. **It is not a perplexity headline** — 10M tokens against the shipped 90M
 checkpoint, ~0.5-0.8 nats behind by this report's own scaling interval, by construction.
+
+### 2026-08-23 18:53 — HARD INSTRUMENT GATES added to the 18:19 pre-registration, still before the data
+
+Raised by an external reviewer and adopted, because it is **this project's own §5 house rule applied
+to the instruments I just caught failing**: *no hypothesis may be retired or confirmed by an
+instrument that has not itself passed a null.* The running arms can each produce a CE number that
+would be uninterpretable, and without these gates it would be interpreted anyway.
+
+**GATE 1 — the scale-invariant depth gate (`dg_norm`).** Its CE is **uninterpretable as a mixture
+result** unless the mixing actually happens. Registered threshold: **effective loops mixed
+`exp(H(gate_weights))` ≥ 1.5**, measured on the returned checkpoint the same way §4.22 measured the
+broken one (which came back at **1.01–1.05 of r**, 95–98% of tokens above 0.99 top-weight).
+- **< 1.5 ⇒ it is a hard selector again**, scale was not the binding constraint, and **no CE claim is
+  made from that arm** — it reports as a second instrument failure, not as a depth result.
+- **≥ 1.5 ⇒ the instrument works** and its CE and band are readable as a per-token mixture test.
+
+**GATE 2 — duo-causal (`dc_w2`, `dc_w3`).** The primary read is **`cos(du_t, du_{t−1})` against
+§4.3's 0.9999**, not CE. If the cosine does not move, the block did not use the history it was given,
+and **a CE null is a null on a mechanism that did not engage — not a null on the hypothesis.** Those
+are different findings and only the second is worth anything.
+
+**Why this is registered rather than applied afterwards:** both gates can only *disqualify* an arm's
+CE, never rescue it, so writing them down now removes the option of reading a favourable CE from an
+arm whose mechanism is inert. That option is exactly what §6.0 rows 3, 5 and 16 are about.
