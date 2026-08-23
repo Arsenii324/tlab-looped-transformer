@@ -2518,6 +2518,30 @@ further from 1.0 on **both** statistics (0.9744 vs 0.9871; 0.9874 vs 1.0033). Bu
 directionally real and 2.6% in magnitude is not a mechanism this project can build on, and saying so
 is more useful than reporting the sign alone.
 
+> **A second probe measures the same question a different way and finds something §4.8a's statistic
+> could not see.** §4.8a compares *populations at a fixed depth* (shallow-oracle vs deep-oracle
+> tokens, both evaluated at depth 20) and finds them within 2.6%. A complementary probe
+> (`src/token_depth_conflict_probe.py`) instead compares *each token against its own oracle state* —
+> `cos(h_20, h_{d*})` and `‖h_20‖/‖h_{d*}‖`, which is a within-token quantity:
+>
+> | group | n | cos(h₂₀, h_d*) | ‖h₂₀‖ / ‖h_d*‖ |
+> |---|---|---|---|
+> | shallow-oracle (d\* ≤ 8) | 16,931 | **0.9424** | **3.40×** |
+> | mid | 2,940 | 0.9960 | 1.46× |
+> | deep-oracle (d\* ≥ 16) | 12,897 | **0.9983** | 0.76× |
+>
+> **Shallow-oracle tokens are pushed a long way from their own optimum by depth 20** — cos 0.9424
+> against deep-oracle tokens' 0.9983, and a 3.4× norm inflation. So the two probes are consistent and
+> answer different questions: relative to *each other* the two populations look alike at depth 20
+> (§4.8a), while relative to *its own best state* a shallow token is substantially displaced. The
+> displacement is mostly **radial** — 3.4× in norm against a cosine still above 0.94 — which is §4.3's
+> radial-escape mode operating on exactly the tokens that had no use for it.
+>
+> **What this does not establish.** That the displacement *harms* the tokens attending to them.
+> §4.8's grid says a ragged cache is nearly free and §4.8b says oracle-depth caching buys nothing, so
+> whatever this displacement is, downstream tokens appear insensitive to it. Recorded as a measured
+> asymmetry with no demonstrated cost, not as a mechanism.
+
 **Why it matters that this was asked separately.** §4.8's grid holding does *not* answer it — the
 reviewer was right that these are different questions — and it would have been easy to treat one as
 covering the other. It also means §4.8's "ragged cache is nearly free" survives a second, harder test
@@ -4576,6 +4600,7 @@ someone re-read raw output that a summary line had already reported as fine.*
 | 29 | **A two-batch smoke run of `eval.py` destroyed the dense 1..64 sweep the headline plateau is read from.** The output path is fixed per checkpoint, so `--max-loops 8 --n-batches 2` overwrote `eval_full_control90_kaggle.json` with an 8-loop curve. | noticed immediately in the run's own output; recovered with `git checkout` because the file happened to be tracked | **this is the failure mode of every fixed-path results file in this repo and it was one `.gitignore` line away from being unrecoverable.** `eval.py` now refuses to replace a wider stored sweep with a narrower one and names the `--max-loops` needed to regenerate it, with `--force` to override deliberately |
 | 30 | **`eval.py` reported `exp(min(CE, 20))` silently**, so a broken vocabulary or a dead forward pass came back as a number (e²⁰) rather than an error — while `train.py` raises on exactly that condition mid-training. | repo review for infra practices | now prints a loud warning naming any loop whose CE exceeds chance (`ln(vocab)`) by 0.5, pointing at `check_tokenizer_identity.py`. The clamp stays for values that are merely bad |
 | 31 | **`eval.py::contraction_estimate` hand-rolls the loop and omits the convex-gate branch**, so on a gated checkpoint it would measure a different dynamical system than the model computes — and its docstring justified the duplication with a claim that is false (`forward()` accepts `h0_noise` and `return_states`). | repo review | **never triggered** — no gated checkpoint was ever passed to it, verified. Left in place because every published contraction number came from it (§3's no-refactor rule), with a `NotImplementedError` added so a gated checkpoint can never silently go through it, and the false justification corrected in the docstring |
+| 32 | **Two new probes paired oracle-depth labels with the wrong tokens.** Both read per-token oracle depths from the exit dump — which was computed on `data/frozen_eval_set.npz` — and then indexed tokens as *sequential slices of `val.bin`*. The frozen set's own `starts` are 219, 494, 2630, …, not 0, 256, 512, so `oracle_d[b,j]` described a different token than `X[b,j]`. | checked the frozen set's `starts` array against the sequential-slice assumption before trusting either probe's output | **fixed in both, and both re-run.** The conflict probe was insensitive to it (0.9419 → 0.9424) because it is a *within-token* comparison that survives shuffling; the cache probe's conclusion also held. **The lesson is that both survived by luck of statistic, not by design** — a by-group statistic on scrambled labels would have been silently wrong, and neither probe's output looked suspicious |
 | 21 | **My own first version of that gate cried wolf.** It used a fixed 0.02 tolerance on 4 batches — ~1k tokens, whose sampling noise is 0.07–0.11 nats — and FAILED two checkpoints whose vocabulary is provably fine. | the failure was implausible, so the instrument was checked before the checkpoints were | re-specified with two tolerances (vocab-vs-chance, protocol-vs-SEM); a gate that fires on noise is worse than no gate, because it trains you to ignore it |
 | 19 | **A sweep died on its first arm and took the paired control with it** (CUDA OOM at 72 loops). | the job's terminal state | lost the μ_rec=56 pair; a per-arm OOM guard now records the failure in 94s instead |
 
