@@ -2586,3 +2586,39 @@ regression.
 (~20:30). Until then this is "no CE effect, no band effect" -- and the 19:02 gate says a CE null
 without the cosine is **a null on a mechanism that may not have engaged**, not a null on the
 hypothesis. W=3 is still running and is the dose-response half.
+
+## 2026-08-23 19:41 — capacity vs diversity RESOLVES: ~80-90% is capacity. Two independent lines agree.
+
+The reviewer's challenge was that sec4.21's positive might be added capacity rather than operator
+diversity, and that pinning to branch **0** could not answer it (branch 0 is the only branch trained
+at r=1, exactly where 88-95% of the effect lives). A second job pins to branch **2**, which never
+trains at r=1.
+
+**In-job delta vs each job's own control, at MATCHED steps** (pin2 still in progress at 976/1220):
+
+| step | cycled `dv_lora_r4` | pinned `pin_lora_b2` | diversity's contribution |
+|---|---|---|---|
+| 488 | −0.1023 | −0.0853 | **−0.0170** |
+| 732 | −0.1152 | −0.1033 | **−0.0119** |
+| 976 | −0.1252 | −0.0823 | **−0.0429** |
+
+**A single fixed branch that never trains at loop 1 recovers ~80-90% of the cycled arm's gain.**
+Diversity's own contribution is **0.012-0.043**, which sits **at or below the measured cross-job
+drift band (0.0074-0.0334)** at two of the three points.
+
+**This agrees with the r=1 decomposition, which is a completely independent argument.** sec4.21b: 88-95%
+of every LoRA arm's gain is already present at r=1, where cycling is logically inert. Two lines of
+evidence -- one from where the gain sits on the depth curve, one from an explicit zero-diversity
+control -- give the same answer. **sec4.21 is a CAPACITY result.**
+
+**Caveats, stated:** (1) cross-job difference-of-differences, so drift does not fully cancel;
+(2) pin2 is at 976/1220 and these are matched-step, not final; (3) one seed each.
+
+**Also: the LoRA r>=4 set is now n=5** -- `dv_lora_r4` adds **-0.1251**, a third platform-independent
+replication. Mean **-0.0936**, sd 0.0308, 95% CI **[-0.1319, -0.0554]**, still excluding zero.
+Including rank 2 (n=6): mean -0.0623, CI **[-0.1478, +0.0231]**, still covering zero -- so the
+post-hoc restriction still decides significance, unchanged.
+
+**A trap avoided twice today:** `dv_lora_fixed0` (pin-0) is at step 244 with 1 eval; against a
+completed control it shows a fake **+0.8985**. Same shape as the `dc_w3` +1.117. Partial arms are
+excluded by checking eval counts, not by noticing the number looks wrong.
