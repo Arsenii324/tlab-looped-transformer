@@ -173,7 +173,9 @@ deflated claim's number and flags any file carrying the number without its cavea
 | **duo-causal W=2** | +0.0093 / −0.0115, **sign reverses** | not reported; band identical to the digit |
 | **duo-causal W=3** | −0.0871 / −0.0394, sign **agrees**, 4.2× floor | **but GATE 2 says the mechanism did not engage** (cos 0.9962/0.9991/0.9998/0.9999 vs control 0.9978/0.9993/0.9998/0.9999) and **78–101% of the gain is at r=1 where duo-causal is provably inert**. Band **NARROWS** [8,20]→[8,16] both seeds |
 | **`dg_norm`** (scale-invariant gate) | **−0.0012 / +0.0023**, sign reverses = **null at n=2** | **GATE 1 PASSED**: effective loops mixed **7.58/8, 14.96/16, 29.84/32**, zero tokens >0.99. A *working* mixture gains nothing ⇒ **§4.7e CONFIRMED by the one test that could have killed it** |
-| **capacity vs diversity** | in-job: control 5.3765, cycled **−0.1251**, pinned **−0.1031** | **pinned recovers 82%** ⇒ **§4.21 is a CAPACITY result**, on three independent lines |
+| **capacity vs diversity** | **s0** control 5.3765 / cycled −0.1251 / pin-0 −0.1031 · **s1** control 5.4231 / cycled **−0.0261** / pin-2 **−0.1470** | **at s1 the ZERO-DIVERSITY arm BEATS cycling 5.6×.** Two-seed average: pinning −0.1251 vs cycling −0.0756. **Diversity has no measurable benefit.** Cycled ranges −0.0261…−0.1251 = **4.8× seed spread** |
+| **XSA seed 1** | −0.2633 (s0 was −0.2162), 91% at r=1, band **[8,20]→[8,16]** | **CE replicates — largest positive in the project. BAND CLAIM WITHDRAWN**; token is now `[XSA-AT-R1]` |
+| **`recmethod-s2`** (10M, 4× budget) | band onset 8→8, end 16→24, mid 11.3→13.9 — **identical to 2.5M**; ΔCE_best **+0.1119** | annealing band **5/5 seeds**; CE mean now **−0.0144**. The **dense** control ships, now evidenced at the recipe's own budget |
 
 **§4.7e (the mechanism under the whole depth-mixing family):** a token's depth keys span **~1.6 of 32**
 (mean cos 0.91–0.97); present **at initialisation**; **training makes it worse** (2.73→1.83); operator
@@ -187,12 +189,23 @@ diversity raises it by **0.01–0.08**. Untied *keys* 31.83/33 **but untied stat
 
 ---
 
-#### D. STILL RUNNING (harvest `./harvest_duocausal.sh`; IDs in `RUNS.md`)
+#### D. STILL RUNNING — ONE JOB (as of 21:03)
 
-`tlab-divx-s1` (capacity-vs-diversity, **all 3 arms in one job**, seed 1 — removes the cross-job
-confound) · `tlab-xsa-s1` (second seed for −0.216) · `tlab-recmethod-s2` (the recommended config's own
-weights) · **Kaggle `arsen4ikvar/tlab-lora-scaleup`** (12M/arm; arm 1 control finished ~20:17 at
-min **4.5000@r12**; whole job **~21:52**; Kaggle returns output ONLY on completion).
+**Kaggle `arsen4ikvar/tlab-lora-scaleup`** — 2 in-job arms × 12M tok, ETA **~21:52**. Kaggle returns
+output ONLY on completion. **This is the entire budget probe of §4.24** (every paired loss-lowering
+arm in the project is at 2.5–3.5M). Seed noise on the r=1 share is already ±7–12 points at fixed
+budget, so it can show "shifted a lot" or "did not", not how the share scales.
+
+**All four DataSphere jobs LANDED and are written up** — `duocausal-s0/-s1` (§4.23, §4.23b),
+`xsa-s1` (§4.23d), `recmethod-s2` (§4.23e), `divx-s1` (§4.23c).
+
+**Two harvest traps hit tonight, both caught:**
+1. **A grep for a job id returned the WRONG job** (`bt1ps6o5…` is the seed-**0** divx job; the seed-1
+   job is **`bt1attom37m9m5ahnhj5`**). The download looked fine and was numerically identical to an
+   already-harvested job. **Check `train_cfg.seed` on every download.**
+2. **A DS `ERROR` status was cosmetic** — discriminate with
+   `grep "Error while processing file" <dir>/log.txt` and check stdout's last lines for the kernel's
+   own completion banner.
 
 ---
 
