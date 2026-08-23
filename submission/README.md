@@ -1,7 +1,7 @@
 # A looped transformer on FineWeb — submission
 
 **Start here.** `../report.md` is the complete record (6,600+ lines) and is *evidence*, not reading
-material. This folder is the readable submission: six documents plus this index, each answering one
+material. This folder is the readable submission: seven documents plus this index, each answering one
 thing the task asks for, each linking into the report for the measurement behind it.
 
 ---
@@ -54,19 +54,21 @@ two goals and this architecture does not deliver them together.
    10M tokens (onset 8 → 8, end 16 → 24) — but its effect on the *ceiling* was withdrawn at n=4 by a
    criterion registered before the data existed, and a fifth point at 4× the budget is the worst yet
    (**+0.1119**) `[WITHDRAWN-ANNEAL-CE]`.
-5. **Per-token depth demand is real** (oracle headroom 0.20 nats, split-half reliability 0.866
-   against a null of 0.0007) **and unreachable** — and we can now say why: **a token's 32 depth keys
-   span an effective rank of ~1.6.** There is almost nothing for a mixing or selection mechanism to
+5. **Per-token depth demand is real** (oracle headroom **0.3084 nats** on the 46M checkpoint,
+   split-half reliability 0.866 against a null of 0.0007) **and unreachable by eight rules across five
+   instrument classes — the best captures 0.1%.** We can now say why: **a token's 32 depth keys span
+   an effective rank of ~1.6.** There is almost nothing for a mixing or selection mechanism to
    discriminate between. **The one test that could have refuted that explanation was run and did not:**
-   a *scale-invariant* depth gate that demonstrably mixes (7.6/8, 15.0/16, 29.8/32 effective loops)
-   returns **−0.0012 / +0.0023** at two seeds — a working mixture over a collapsed representation
-   buys nothing `[RANK-PROJECTION]`.
+   a *scale-invariant* depth gate (a different arm from the saturating one in sentence 3) that
+   demonstrably mixes — 7.6/8, 15.0/16, 29.8/32 effective loops — returns **−0.0012 / +0.0023** at two
+   seeds. A working mixture over a collapsed representation buys nothing `[RANK-PROJECTION]`.
+   **`EARLY_EXIT.md` is the whole case.**
 
 The brief states that *«отсутствие положительного результата при хорошем анализе всех негативных —
 хороший результат»*. This submission is largely that: a negative with a measured mechanism, one
 lever that works on the axis it works on, and an explicit account of what was tried and failed.
 
-## The six documents
+## The seven documents
 
 | file | answers |
 |---|---|
@@ -75,6 +77,7 @@ lever that works on the axis it works on, and an explicit account of what was tr
 | **`EXPERIMENTS.md`** | *«подробное описание всех экспериментов»* — every trained arm, generated from artifacts, with a mechanical coverage check |
 | **`SCALE.md`** | *«почему ваш метод будет работать хорошо и на большем скейле»* — the scale argument and its one weak joint |
 | **`NEGATIVE_RESULTS.md`** | every method tested to destruction, with the mechanism for each failure |
+| **`EARLY_EXIT.md`** | *«опционально реализовать ранний выход из лупа»* — it was implemented and measured; the demand is real, eight rules across five classes cannot reach it, and the reason is measured |
 | **`FAILURES.md`** | criterion 2: every error that reached a number, how it was caught, what it cost |
 
 `../report.md` remains the full evidence base; every document here cites into it by section.
@@ -100,6 +103,7 @@ python src/test_plateau.py     # 8 checks on the depth statistic, incl. a delibe
 python src/headline.py check   # verifies every headline number still matches the artifact it came from
 python src/make_inventory.py --check   # verifies the experiment inventory against the stored JSON
 python src/check_caveats.py --strict   # every deflated claim carries its caveat in every file stating it
+python src/check_crossref.py --strict  # every figure quoted in submission/ appears in report.md
 ```
 
 **Do not run `src/train_tokenizer.py` before evaluating a released checkpoint** — it overwrites

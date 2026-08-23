@@ -20,7 +20,7 @@ against the artifact it came from. Cells still running are marked and dated rath
 figure**, and even that is against FineWeb, not FineWeb-Edu (§2.1).
 
 **Finishing the token budget bought 0.39–0.42 nats. Every architectural intervention bought
-0.002–0.22.** That is the report's most practically useful sentence.
+0.002–0.26.** That is the report's most practically useful sentence.
 
 **Why the control ships and not the 37.52 arm:** see `METHOD.md` §4 — 88% loop-1 damage, a narrower
 band, the only arm that converges, and an unresolvable clipping confound.
@@ -82,7 +82,7 @@ its band *narrows*. It buys loop gain by making loop 1 worse rather than by maki
 **Not one of the twelve widens the useful band. Three of the five loss-lowering arms narrow it** —
 the norm penalty ([6,17]→[6,14]), duo-causal W = 3 ([8,20]→[8,16], both seeds), and XSA
 ([8,20]→[8,16] at seed 1, unmoved at seed 0). The one lever that moves the band *outward* —
-supervision annealing, 4/4 seeds, zero parameters — **does not lower the loss.**
+supervision annealing, **5/5 seeds**, zero parameters — **does not lower the loss.**
 
 **So the honest count is sharper than "twelve interventions, five lower the loss", and it is not
 kinder:** *eleven loop-specific mechanisms were tested; not one widens the useful band; the four that
@@ -155,8 +155,11 @@ zero-parameter* operator is worth more than the same pattern restated over arms 
 
 ## 4. Per-token depth demand: real, large, and unreachable — with a measured reason
 
-Oracle headroom **0.2008–0.2032 nats**, split-half reliability **0.866** against a null of **0.0007**;
-**27.9%** of tokens want depth > 32. **Five instrument classes fail to capture more than 0.1%.**
+Oracle headroom **0.3084 nats** on the 46M checkpoint, split-half reliability **0.866** against a null
+of **0.0007**; **27.9%** of tokens want depth > 32. **Nine rules across five instrument classes fail
+to capture more than 0.1%.** *(A separate, smaller figure — **0.2008–0.2032** — appears in §4.7a and is
+a different model: the matched dense/annealed 2.5M pair. Same quantity, different checkpoint; the two
+are not comparable and the report labels them as such.)* **Full case: `EARLY_EXIT.md`.**
 
 **Why**, and this is the part that is a mechanism rather than a list of nulls: **a token's 32 depth
 keys span an effective rank of ~1.6**, mean pairwise cosine 0.91–0.97. There is almost nothing for any
@@ -171,7 +174,7 @@ randomness**: at the *representation* level the untied stack is 4.36/33 against 
 projections decorrelate a collinear state stream for free, and a tied loop has one `W_K` and cannot.**
 (§4.7e — corrected 20:01 after the confound was raised.)
 
-## 5. The registered joint test, and what was still running at submission
+## 5. The registered joint test, and the last arm outstanding
 
 ### 5.1 `dg_norm` — the one experiment that could have refuted §4.7e, and did not
 
@@ -205,9 +208,10 @@ that could have killed it.** *Scope: 2.5M tokens, two seeds, one width.*
 > computation goes. Reporting it as a band would be the project's characteristic error — a statistic
 > read as a claim about a space it does not live in.
 
-### 5.2 Still running at submission
+### 5.2 The arms this section was written to hold open — four landed, one outstanding
 
-Marked rather than omitted. Each has its falsifier registered in `../RUNS.md` before it ran.
+Each had its falsifier registered in `../RUNS.md` before it ran. Landed results are in §2 and in the
+report sections named; nothing here is still a placeholder.
 
 | arm | what it decides | state |
 |---|---|---|
@@ -224,5 +228,6 @@ src/test_model.py                  13 checks — ALL PASS
 src/test_plateau.py                8 checks incl. a deliberate falsification probe — ALL PASS
 src/headline.py check              every headline number matches its artifact — consistent
 src/check_tokenizer_identity.py    on the SHIPPED checkpoint — PASS, |diff| 0.0020 vs chance 8.3178
-src/make_inventory.py --check      113 trained arms accounted for
+src/make_inventory.py --check      every trained arm accounted for (count generated, not transcribed)
+src/check_crossref.py --strict     every figure quoted here appears in report.md
 ```

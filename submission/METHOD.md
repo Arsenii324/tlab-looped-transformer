@@ -102,6 +102,14 @@ parameters grow — does not apply; there is no table to outgrow. The **honest w
 rule is stated as a *fraction of steps* while the mechanism is keyed to an *absolute token count*
 (§3.5), and those coincide at exactly one budget.
 
+**And read that argument knowing what it is an argument *for*.** It defends a mechanism whose **CE
+claim is withdrawn** `[WITHDRAWN-ANNEAL-CE]` — what scales here is *the band effect at zero parameter
+cost*, not a perplexity gain. A scale argument attached to the withdrawn half would be worthless, and
+this project has made that exact mistake once already (`SCALE.md` §1 defended annealing for two hours
+without stating the withdrawal). **The architecture's own scale argument is separate and does not
+depend on annealing at all:** the reused block is ~80% of the budget and scales the ordinary way,
+and the tied vocabulary's share *shrinks* as the block widens.
+
 ## 4. The released artifact, and how it differs from the recommendation
 
 **Shipped:** the 90M **control** — `U[4,32]`, `supervise_k=5`, **no annealing**.
@@ -129,4 +137,8 @@ python src/train.py                     # the center config
 python src/eval.py checkpoints/<ckpt> --max-loops 64
 # verify a released checkpoint against the tokenizer that produced it:
 python src/check_tokenizer_identity.py checkpoints/full_control90_kaggle --expect-ce1 3.9622
+# the three consistency gates, all of which must pass before anything here is quoted:
+python src/headline.py check            # headline numbers vs their artifacts
+python src/check_caveats.py --strict    # every deflated claim carries its caveat
+python src/check_crossref.py --strict   # every figure in submission/ appears in report.md
 ```

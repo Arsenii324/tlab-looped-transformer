@@ -98,7 +98,7 @@ tokens its size wants, because the task caps the budget. Published entries this 
 against are **data-unconstrained** and train on the order of **~7B tokens, roughly 70× this budget**.
 Quoting a bits/byte gap without that ratio attached misrepresents both numbers.
 
-## 5. The scale question — ANSWERED at 19:47, and the answer is weight tying
+## 5. Does the depth-key collapse generalise past this model? Yes — and the mechanism is weight tying
 
 *This section previously read "the scale question this project cannot answer". It proposed running the
 effective-rank probe on a larger weight-tied checkpoint to decide whether the depth-key collapse is a

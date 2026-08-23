@@ -117,9 +117,14 @@ depth, some σ > 0 should help; if the coherence is *load-bearing*, noise degrad
 **The second happened.** The near-perfect increment alignment (`cos → 0.9999`) is the mechanism doing
 the work, not a pathology to break up.
 
-## 3. The per-token depth family — five instrument classes, and then the reason underneath
+## 3. The per-token depth family — eight rules, five instrument classes, and the reason underneath
 
-Per-token depth demand is **real**: oracle headroom **0.2008–0.2032 nats**, split-half reliability
+*This section is the summary; **`EARLY_EXIT.md` is the full case**, because the brief names early exit
+as an optional deliverable and it deserves a document rather than a subsection.*
+
+Per-token depth demand is **real**: oracle headroom **0.2008–0.2032 nats** *on the matched
+dense/annealed 2.5M pair* (**0.3084** on the 46M checkpoint — same quantity, different model, and the
+two are not comparable), split-half reliability
 **0.866** against a null of **0.0007**, and 27.9% of tokens want depth > 32, gaining ~1 nat each.
 
 | # | instrument | result |
