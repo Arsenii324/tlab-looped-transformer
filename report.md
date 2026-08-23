@@ -3091,15 +3091,31 @@ plateau midpoint:
 > hypothesis is the same error as a broken metric retiring one.* The null took one forward pass and it
 > cost this section its headline reading 90 minutes after it was written.
 
-**The budget rises by ~1.4× at both seeds, and the step sizes barely move.** Terminal-only is not
-spending a fixed allowance more slowly — if anything its steps are marginally *larger* at both ends.
-It has more useful computation to do.
+> ~~**The budget rises by ~1.4× at both seeds, and the step sizes barely move.** Terminal-only is not
+> spending a fixed allowance more slowly — if anything its steps are marginally *larger* at both ends.
+> It has more useful computation to do.~~
+>
+> ~~**This gives §3.5 a mechanism rather than a correlation:** *three interventions change the rate;
+> one changes the budget.*~~
+>
+> **↑ WITHDRAWN — both paragraphs, and they should not have survived the corrections directly above
+> them.** This is the second time in this report a retraction banner was followed immediately by the
+> retracted claim restated in bold; it is recorded rather than quietly deleted because the pattern is
+> the point. Every clause above is dead: **1.4×** was a range confound (correction (a): ~1.2×); *"it
+> has more useful computation to do"* is refuted by the untrained control, which travels **4.5×
+> further with zero capability** (correction (b)); and **the sign itself reverses** when the path is
+> sampled per-layer instead of per-loop — arc gives **0.80**, not 1.20 (correction (c)), so
+> terminal-only travels *less* arc, not more.
 
-**This gives §3.5 a mechanism rather than a correlation, and it sharpens the report's spine into a
-single sentence:** *three interventions change the rate; one changes the budget.* Radial clamping,
-convex gating and residual scaling all relocate where depth is spent while leaving the ceiling alone —
-consistent with a fixed budget traversed at a different speed. Supervision is the only lever measured
-here that changes how much there is to traverse.
+**What survives, stated at its real strength.** Supervision changes the *geometry* of the trajectory
+in a way the three rate-interventions do not — that much reproduces at both seeds and across the
+chord/arc reversal, because a reversal is still a difference. What it does **not** license is any
+statement about *how much useful computation* there is, in either direction: path length is not
+merit, and the untrained control settles that. The measured residue is **within-loop curvature**
+(arc/chord 3.42 / 3.48 dense against 2.26 / 2.34 terminal-only), which is a property of what the
+block learned, measured with an instrument that cannot separate it from ordinary pre-norm block
+structure. §3.5's spine therefore rests on the **plateau shift and the CE decomposition**, which are
+measured against in-job controls — not on this quantity.
 
 **The readout mode changes this quantity by an order of magnitude, which puts supervision's 1.2× in
 perspective.** The same measurement on §4.6b's four readout arms (2.5M tokens, seed 0, identical
