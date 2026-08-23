@@ -1779,6 +1779,38 @@ improvement.** It composes with `cos(du_t, du_{t−1}) → 0.9999` — the state
 straight ray, and past loop 8 that ray points somewhere that raises CE (§4.3's reading (B)). Nothing
 here is hidden; it is aimed wrong.
 
+> **A published prediction tested against loop index — direction confirmed, magnitude too small to
+> be the mechanism.** XSA (arXiv **2603.09078**, verified in `papers/sources/`) names an *attention
+> similarity bias*: attention output `y_i` acquires high cosine with the token's **own** value vector
+> `v_i`, which is *"unnecessary, because the information of the current position has a direct residual
+> path to the following [FFN]; and … harmful, because it creates a competition between modeling the
+> contextual vs point-wise feature"* (`main.tex:126`). Their Figure 1 reports the cosine **rising with
+> layer index** at 1.3B. **In a weight-tied loop, layer index is loop index**, so this is a prediction
+> about depth: attention should progressively re-add what the residual already carries.
+>
+> Measured on the 90M control (`src/attn_self_bias.py`, one forward pass, prediction and falsifier in
+> the docstring before running):
+>
+> | loop | layer 0 | layer 1 | layer 2 |
+> |---|---|---|---|
+> | 1 | 0.8201 | 0.2956 | 0.2081 |
+> | 2 | 0.5423 | 0.2949 | 0.2857 |
+> | 8 | 0.5589 | 0.3230 | 0.3090 |
+> | 32 | 0.5439 | 0.3449 | 0.3335 |
+> | 64 | 0.5510 | 0.3553 | 0.3502 |
+>
+> **The trend holds from loop 2 onward in all three layers** — monotone, +0.009 / +0.060 / +0.065
+> across loops 2→64. Layer 0's headline swing (0.82 → 0.55) is a **loop-1 artifact**, not a decline:
+> at `t = 1` the state is `h₀ + e` with almost no context to attend to, so attention is nearly all
+> self by construction. Reading the 0.82 as a falling trend would be the same error as §4.20's.
+>
+> **But the magnitude does not support the stronger reading, and this is stated against the account
+> rather than for it.** It was proposed that this supplies a *causal* mechanism for
+> `cos(du_t, du_{t−1}) → 0.9999` — attention ceasing to do context work. **The cosine rises to 0.35,
+> not toward 1.** Attention is not becoming dominated by its own value vector; it drifts modestly in
+> that direction. So this is **a real phenomenon reproducing in a regime its authors did not test**,
+> and it is **not** the explanation for this section's drift result. Both halves are the finding.
+
 **The direct test: the unit state does not converge — it drifts logarithmically.** ρ is an indirect
 instrument, a linearisation whose deep-loop readings sit inside their own estimator bias. The direct
 question is whether `u_t = h_t/‖h_t‖` settles, and `u` is worth asking about because it is the
