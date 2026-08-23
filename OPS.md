@@ -195,18 +195,20 @@ argmins) · `gain_decomp.py` (Δgain = ΔCE@1 − ΔCE_best; 49 in-job pairs) ·
 (+fixed-range +untrained control) · `intraloop_states.py` · `cumulative_exit.py` ·
 `check_tokenizer_identity.py` · `tl_seed_check.py` · `normpen_compare.py` · `ds_harvest.py`
 
-### 6. Live compute — as of 2026-08-23 17:30
+### 6. Live compute — as of 2026-08-23 18:47
 
 | stream | state |
 |---|---|
-| DS `tlab-deep-full` | **DONE 17:23, harvested.** Falsifier fired (mid 22.6). Artifact at `checkpoints/deep_full_results.json`. Curves only — predates the `outputs:` fix |
-| DS `tlab-anchor-tokenkey` | **DONE, harvested.** ERROR status was cosmetic; all 6 arms completed |
-| Kaggle `tlab-seed-extension` | **DONE, harvested** — produced the n=4 withdrawal |
-| local `run_operator_diversity` | arm 4/4 (`od_depth_gate`) running. **Read pre-registered in `RUNS.md` 17:40** with two caveats: it zero-inits to a *uniform mixture* not the control, and its eval curve mixes over loops 1..r so **its plateau is over mixture-window size, not depth** — do not put it in the band tables |
-| DS `tlab-operator-diversity` | **CORRECTED 17:45 — it WAS relaunched and is EXECUTING.** Live job `bt1sglqurmj6frrmsfrk` (16:45:59); the errored one is `bt1l7dotao5hf25tvcuh` (16:40). Arms 1–2 done (`ds_od_control`, `ds_od_lora_r4`), arm 3 `ds_od_depth_gate` mid-run. **Watch the program stream in `stdout.txt`, NOT `system.log`** — `system.log` is the setup log and goes quiet at 16:49 while the job runs on |
-| agy jobs A/B | returned, **unverified except 3 sampled findings**; job C (citation cross-check) never ran — substitute audit done by hand, in `VERIFICATION.md` |
+| DS `tlab-duocausal-s0` **bt1qvi35v7gsejmvn1it** / `-s1` **bt1lkbri6cqj6q9fssoa** | **EXECUTING.** 4 in-job arms each (control, duo-causal W=2, W=3, scale-invariant depth gate), 3.5M tok/arm, seeds 0+1. Arm 1 done 1371s; `dc_w2` running. **Read pre-registered `RUNS.md` 18:19 before any data existed**, 4 falsifiers. ETA ~20:30 |
+| DS `tlab-recmethod-s2` **bt1s4mag4kdvsvts536m** | **EXECUTING.** 2 in-job arms × 10M tok — the weights for the method §3.5 recommends, which do not otherwise exist. ETA ~20:50 |
+| Kaggle `arsen4ikvar/tlab-lora-scaleup` | **RUNNING** since 18:42. 2 in-job arms × 12M tok, the full-budget check §4.21 names. **Kaggle returns output only on completion.** ETA ~21:45 |
+| **harvest** | `./harvest_duocausal.sh` — written 18:46 before the data, does all three jobs + reads (a)–(d) + read (b) |
 
-**Nothing else is queued. Local GPU frees up when arm 4/4 finishes.**
+**SUBMISSION IS LIVE (18:43), both private, both verified:**
+GitHub `Arsenii324/tlab-looped-transformer` — only `main`, **0 tags**, `submission` never pushed,
+secret scan clean over 121 commits. HF `Arsen4ikVar/tlab-looped-transformer` — model.pt +
+tokenizer.json + model.py + card. **The gate passed against the DOWNLOADED artifact**, |diff| 0.0020
+vs chance 8.3178. **Visibility flip is the user's.**
 
 ### 7. BLOCKED, with causes (see QUEUE.md B1–B3)
 
