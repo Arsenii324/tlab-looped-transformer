@@ -4612,7 +4612,7 @@ supervision scheme rather than of that schedule, the useful band should move wit
 *Every row of this table is an **in-job** pair — terminal and dense at each μ_rec ran in the same job,
 so the difference column is not exposed to cross-job drift. That matters more at deep schedules than
 it did at μ_rec = 18: the **same** dense config (k=5, U[32,48], 2.5M tokens, seed 0) came out at
-**5.4170** in one job and **5.4658** in another, a drift of **0.0488** — well above the 0.0074–0.0334
+**5.4170** in one job and **5.4658** in another, a drift of **0.0488** — well above the 0.0074–0.0334 *(and see §4.27: a deliberate three-way measurement gives **0.0914**)*
 measured for μ_rec = 18 dense arms in §4.15. Deep schedules are noisier across jobs, which is
 consistent with §4.15's finding that the floor is configuration-dependent, and it is why the
 annealing comparison in §4.17 had to be re-derived against its own in-job control.*
@@ -5543,7 +5543,7 @@ the restriction the block immediately below shows the claim depends on.
 > *"capacity, not diversity"* **and** with *"branch 0 is special because it owns loop 1."* A second
 > job pins to branch **2**, which never trains at `r = 1` — identical parameter count, zero
 > diversity, no specialisation. *Residual confound, stated: the two pins are in different jobs, so
-> comparing them is a difference-of-differences; measured cross-job drift is 0.0074–0.0334 against a
+> comparing them is a difference-of-differences; measured cross-job drift is 0.0074–0.0334 — **and §4.27 measures 0.0914 on three identical controls** — against a
 > ~0.10 effect.*
 
 **(2) The useful band does not move. In any of the five pairs. Not by one grid point.** [8,16]→[8,16],
@@ -6199,6 +6199,53 @@ than a tolerance.**
 *The dense-grid question therefore stays open, and `SUBMISSION_STATE.md` lists it as the top unrun
 check: the annealing band claim's `end` edge moves 16 → 24 on a grid whose only points there are
 {16, 20, 24}.*
+
+### 4.27 Cross-job drift is 0.0914, not 0.0074–0.0334 — measured on three identical controls
+
+The report's cross-job drift band (**0.0074–0.0334**) is quoted in five places and every
+"×the floor" statement leans on the related in-job replicate floors (0.0150 dense, 0.0541
+terminal-only). **Three of tonight's jobs each contain a control arm with an identical training
+configuration**, which makes a direct measurement possible for the first time, at no cost.
+
+| arm | job | best CE |
+|---|---|---|
+| `dv_control_s0` | `tlab-diversity-control` | **5.3765** |
+| `pin_control_s0` | `tlab-pin2-control` | **5.3052** |
+| `xsa_control_s0` | `tlab-xsa-s0` | **5.2851** |
+
+**Config verified identical, not assumed:** same `seed=0`, `total_tokens=2,500,000`,
+`supervise_k=5`, `lr=0.003`, same 1,219 steps, same architecture. The only `model_cfg` differences
+are inert defaults (`xsa: None` vs `False`, `cond_fixed_branch: None` vs `False` — both meaning "off"
+in the kernel that wrote them; see the note below).
+
+**Spread = 0.0914 nats — 6.1× the 0.0150 in-job dense floor and 2.7× the top of the quoted
+cross-job band.** The earlier 0.0074–0.0334 figure came from accidental replicate pairs found while
+auditing something else; **this is the first deliberate three-way measurement and it is much worse.**
+
+**What this does and does not touch.**
+- **It does not touch any claim in §4.23.** Every arm there is differenced against a control **in its
+  own job**, which is exactly the design this result vindicates.
+- **It does touch pooled cross-job statistics.** The LoRA `rank ≥ 4` mean of −0.0936 pools arms from
+  five different jobs across three platforms. Each Δ is in-job, so the *differences* are sound — but
+  any statement comparing an absolute CE across jobs, or treating the five Δs as draws from one tight
+  distribution, inherits a drift this large.
+- **It sharpens `EXPERIMENTS.md`'s rule** from a caution into a hard one: **compare down a source
+  file, never across one.**
+
+*Cause not established. Candidates: shard ordering, non-deterministic CUDA kernel selection, and
+driver/allocator differences between job launches. Three points is enough to measure the spread and
+not enough to attribute it.*
+
+> **A related hazard found in the same check, with no result affected.** `dv_lora_r4_s0`'s stored
+> `model_cfg` carries `cond_fixed_branch=False`. In the **frozen kernel that actually ran it**
+> (`runs_frozen/ds_diversity/main.py:99,724`) that field is a **`bool`** and the logic is
+> `0 if flag else t`, so `False` means **cycled** — which is what §4.23c reports, correctly. But
+> `src/model.py` declares the same field `int | None` and branches on `is not None`, where `False`
+> would select **branch 0** and silently turn a cycled arm into a pinned one. **Two implementations of
+> one field with incompatible semantics, and a stored config that is only interpretable against the
+> kernel that wrote it.** `src/model.py` now **raises** on a bool rather than guessing
+> (verified: the guard fires; all 13 correctness checks still pass). *No number changes — this is a
+> trap disarmed, not a retraction.*
 
 ## 5. Methods tested to destruction — what was claimed, what was measured, why it broke
 

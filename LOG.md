@@ -3049,3 +3049,16 @@ produced them.** Same class as §6.0 rows 20/26, on a surface nobody had looked 
 **The fix for any future job is one line:** put `tokenizer.json` and the val shard in `outputs:`.
 
 *The dense-grid question stays open and is the top entry in `SUBMISSION_STATE.md`'s ablation queue.*
+
+## 21:33 — both monitors stopped, with their functions named (OPS §7b #29)
+
+`bkrzq9sh6` (DataSphere terminal-state watcher) and `bmp8ght9i` (new-arXiv-in-Downloads watcher)
+stopped. **Per the rule this project wrote at 20:12 after killing `ds_watchdog.sh` and replacing it
+with nothing, here is what now covers each:**
+
+- **DS watcher:** all four DataSphere jobs (`duocausal-s0/-s1`, `xsa-s1`, `recmethod-s2`, `divx-s1`)
+  have landed and been harvested; **no DS job is pending.** It also structurally could not see the one
+  job still running, which is on **Kaggle**. If another DS job is launched, re-arm it.
+- **arXiv watcher:** a new paper appearing 2.5 h before the deadline is not actionable — nothing could
+  be read, implemented and measured in the time left.
+- **Kaggle `tlab-lora-scaleup`:** polled directly from here.

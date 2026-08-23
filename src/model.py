@@ -731,6 +731,16 @@ class LoopedTransformer(nn.Module):
                         log_rms0 = torch.log(
                             h.float().pow(2).mean(-1, keepdim=True).sqrt().clamp_min(1e-8)).detach()
                     h_in = self._clock(h_in, h, log_rms0)
+                # `cond_fixed_branch` is int|None HERE, but the frozen DataSphere kernels declare it
+                # as `bool` and branch on `0 if flag else t` -- so a stored model_cfg written by one
+                # of those jobs carries False meaning CYCLED, which `is not None` would read as
+                # "pinned to branch 0" and silently change the mechanism. Reject the bool rather than
+                # guess which convention a config came from. (§6.0; caught 2026-08-23 21:38.)
+                if isinstance(self.cfg.cond_fixed_branch, bool):
+                    raise ValueError(
+                        "cond_fixed_branch is a bool -- this config was written by a frozen "
+                        "DataSphere kernel, where False means CYCLED and True means pinned to 0. "
+                        "Translate it explicitly: False -> None, True -> 0.")
                 branch_idx = ((self.cfg.cond_fixed_branch
                                if self.cfg.cond_fixed_branch is not None else t)
                               if self.cfg.cond_mode == "lora_cycle" else None)
