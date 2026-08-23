@@ -1804,6 +1804,25 @@ here is hidden; it is aimed wrong.
 > at `t = 1` the state is `h₀ + e` with almost no context to attend to, so attention is nearly all
 > self by construction. Reading the 0.82 as a falling trend would be the same error as §4.20's.
 >
+> **UNTRAINED CONTROL — and it INVERTS the reading. This is the informative half.**
+>
+> | | loop 2 | loop 8 | loop 64 | trend 2→64 |
+> |---|---|---|---|---|
+> | trained 90M control | 0.5423 / 0.2949 / 0.2857 | 0.5589 / 0.3230 / 0.3090 | 0.5510 / 0.3553 / 0.3502 | **+0.009 / +0.060 / +0.065** |
+> | **untrained, same config** | 0.3985 / 0.4335 / 0.4710 | 0.6938 / 0.6949 / 0.6949 | **0.8474 / 0.8281 / 0.8427** | **+0.449 / +0.395 / +0.372** |
+>
+> **An untrained model shows the attention-similarity bias far more strongly and accumulates it far
+> faster** — reaching cos ≈ 0.85 by loop 64 against the trained model's 0.35. So the phenomenon is
+> **architectural**, and **training actively suppresses it**, by a wide margin. That is the opposite
+> of an account in which the bias accumulates over depth and crowds out context modelling: **the
+> trained model is already doing most of the work XSA's operator does.**
+>
+> **This is the third null of this kind in this report and the three do not agree, which is the
+> interesting part.** Training *slows* the logarithmic drift (C 0.308 → 0.155, §4.3), *suppresses*
+> the self-attention bias (0.85 → 0.35, here) — and yet **reduces** depth-key diversity (effective
+> rank 2.73 → 1.83, §4.7e). **The one property training makes worse is precisely the one that would
+> let a model use its own depth.**
+
 > **But the magnitude does not support the stronger reading, and this is stated against the account
 > rather than for it.** It was proposed that this supplies a *causal* mechanism for
 > `cos(du_t, du_{t−1}) → 0.9999` — attention ceasing to do context work. **The cosine rises to 0.35,

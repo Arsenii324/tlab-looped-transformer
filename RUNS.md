@@ -647,3 +647,21 @@ changing what attention writes.
 `xsa=True` changes the forward (2.38); parameter count unchanged to the digit (9,064,608 both); and
 the operator is verified against the paper's equation directly — after projection
 **`cos(z, v) = 2.85e-09`** and `max|⟨z,v⟩| = 2.2e-06`, i.e. the self-value direction really is removed.
+
+### 2026-08-23 19:20 — `tlab-xsa-s0` prediction SHARPENED by its own null, before any result exists
+
+The arm launched 19:15; this null was measured 19:20; its results land ~20:05. **Amending the
+registered prediction now, with the timestamps stated, rather than reinterpreting afterwards.**
+
+`src/attn_self_bias.py` on an **untrained** model of the same config: `cos(y_i, v_i)` reaches
+**0.83–0.85** by loop 64, against the trained model's **0.35**. The attention-similarity bias is
+**architectural, and training already suppresses most of it.**
+
+**So the sharpened prediction is that XSA is near-NULL ON CE TOO, not merely on the band** — there is
+much less self-value component left for its operator to remove than the untrained geometry (or the
+1.3B model in their Figure 1) would suggest. The original registration said "CE down, band unmoved";
+**the null says the CE half is now doubtful and the band half is unchanged.**
+
+- **Near-null on both** ⇒ consistent, and the *reason* is measured rather than assumed.
+- **CE down anyway** ⇒ the original prediction, ninth instance of the dissociation.
+- **Band widens** ⇒ still the most interesting outcome available, unchanged.
