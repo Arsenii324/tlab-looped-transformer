@@ -135,6 +135,22 @@ corrections.** Every item costs one re-derivation, and budgeting for one means a
 will not survive it. *That is still cheap relative to shipping a mislabelled statistic in the
 abstract, which is what it caught.*
 
+## The instrument defect found last, and it is the same shape as the first
+
+**`plateau(curve, tol)` replaced `argmin` because argmin was decided within noise — and then its own
+free parameter went unswept for the entire project.** Every band claim inherits `tol = 0.01`, a
+constant set once. Swept at 0.005 / 0.01 / 0.02 / 0.05 over the stored curves (§4.25): **four of
+eleven paired band verdicts change**, and **0.01 is tighter than the 0.0150 CUDA-dense replicate
+floor** — the tolerance is smaller than the noise it exists to absorb.
+
+**What it cost:** three narrowing claims made on the project's final evening, withdrawn within the
+hour. **What it did not cost:** the two claims the report leans on — annealing widens the band, LoRA
+does not move it — are robust at 3/3, and the central dissociation is untouched.
+
+*The general rule this yields: **an instrument with a free parameter needs a sensitivity sweep in the
+same way an instrument needs a null.** `src/test_plateau.py`'s 8 checks verify that the statistic
+computes what it claims; not one of them asked whether the answer is stable in `tol`.*
+
 ## What the process caught, and what caught the process
 
 - **Three claims were withdrawn on the final day by pre-registered falsifiers** — criteria written
