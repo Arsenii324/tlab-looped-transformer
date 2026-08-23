@@ -151,6 +151,28 @@ does not move it — are robust at 3/3, and the central dissociation is untouche
 same way an instrument needs a null.** `src/test_plateau.py`'s 8 checks verify that the statistic
 computes what it claims; not one of them asked whether the answer is stable in `tol`.*
 
+## The last one, caught at 21:24 on the final evening — and it is the second pattern exactly
+
+**A guard that only fires inside one function is not a guard on the quantity, it is a guard on that
+function.** `src/eval.py` has checked CE against chance for weeks: a vocabulary mismatch does not
+raise, it reports CE ≈ `ln(4096) = 8.3178`, so the check exists precisely because the failure is
+silent. **It did not stop the failure it was written for.** A one-off analysis script re-evaluated
+DataSphere checkpoints locally, never went through `eval.py`, got best CE **9.2692** — *above chance* —
+and wrote a plausible-looking JSON that sat in `checkpoints/` looking like a result.
+
+**Caught by reading the raw number against chance**, not by any status field, and before anything was
+derived from it. Quarantined rather than deleted
+(`checkpoints/BROKEN_a1_dense_grid_10M__VOCAB_MISMATCH.json`).
+
+**Root cause, which is the more useful finding:** every DataSphere job here trains its own BPE and
+**does not return `tokenizer.json`**, so *none* of those checkpoints can be evaluated against the
+shipped vocabulary. The fix is one line in a job's `outputs:`. *I knew this at 21:24 and still
+launched a job at 21:48 without it — recorded in `RUNS.md` rather than quietly corrected.*
+
+**Now structural:** the check lives in `src/chance_guard.py` as the quantity's own function, importable
+by any script, and `eval.py` delegates to it. Verified to fire on the quarantined artifact and stay
+silent on a real curve.
+
 ## What the process caught, and what caught the process
 
 - **Three claims were withdrawn on the final day by pre-registered falsifiers** — criteria written

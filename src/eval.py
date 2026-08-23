@@ -103,14 +103,10 @@ def perplexity_curve(model, val: np.memmap, max_loops: int, seq_len: int, n_batc
     # a vocabulary mismatch, or a degenerate checkpoint. Silently reporting e^20 hands back a number
     # where an exception belongs, which is the opposite of what train.py's degenerate-step guard
     # does. Flag it loudly and keep the clamp for the values that are merely bad.
-    _chance = math.log(model.cfg.vocab_size)
-    _broken = {r: v for r, v in ce.items() if v > _chance + 0.5}
-    if _broken:
-        print(f"  ⚠ CE ABOVE CHANCE ({_chance:.4f}) at loops {sorted(_broken)}: "
-              f"{ {r: round(v, 4) for r, v in sorted(_broken.items())[:8]} } -- this is not a "
-              f"quality result, it is a broken vocabulary or a broken forward pass. Check the "
-              f"tokenizer with src/check_tokenizer_identity.py before reading anything below.",
-              flush=True)
+    # Delegates to the quantity's own check (src/chance_guard.py) rather than repeating it here --
+    # this guard used to live only inside this function, and a one-off script that never called
+    # eval.py produced a CE-9.27 artifact on 2026-08-23 with nothing raising.
+    assert_not_chance(ce, model.cfg.vocab_size, warn_only=True)
     ppl = {r: float(np.exp(min(v, 20))) for r, v in ce.items()}
     ent = {r: v / (n_batches * batch_size) for r, v in entropy_sum.items()}
     return ce, ppl, ent
