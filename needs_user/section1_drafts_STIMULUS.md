@@ -1,5 +1,22 @@
 > **Dated working record — not a maintained document.** Last committed 2026-08-23; the text itself may be older. Kept intact rather than rewritten, because this project's rule is that superseded statements stay visible with their corrections. **Current numbers are in [`submission/`](submission/) and [`report.md`](report.md); where this file disagrees with them, they win.** See the repository README's *How to read this repository* table.
 
+> ## ⚠ RESOLVED 2026-08-23 — read this before the file below, which is now historically superseded
+>
+> **This file argues that §1 must be the author's and that the agent should not write it. That is not
+> what happened, and leaving the argument unmarked in a public repository would contradict the
+> submission's own authorship disclosure.**
+>
+> **What actually happened, in order:** the agent declined to write §1 (that refusal is the file
+> below, and its reasoning still stands on its own terms). The author then asked for §1 to be written
+> from the project's dated record. The agent wrote it, and it carries an **authorship banner at its
+> own head** stating that it is *the coding agent's reconstruction from artifacts — not the author's
+> account of their own reasoning*. `submission/README.md` states the same thing.
+>
+> **So the drafts below were never used**: §1 was written fresh from `LOG.md`, §6.0's rows and
+> `RUNS.md`'s pre-registrations, not by editing any of them into place. **Kept rather than deleted,
+> because this project does not delete superseded work** — and because the sequence itself is the
+> honest record on the point the task treats most sensitively.
+
 # Three §1 drafts — STIMULUS ONLY, not for the report
 
 **Read this first.** You asked for these after I declined once, so here they are — but the reason I
