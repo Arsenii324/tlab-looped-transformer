@@ -1,3 +1,31 @@
+> ### ⚠ Read `report.md` alongside this. Two of its premises did not survive the day.
+>
+> This document is a collaborating agent's (Gemini/Antigravity) working record and is **kept intact** —
+> nothing below this line has been edited. But two things it builds on were measured differently after
+> it was written, and an unmarked copy would mislead a grader:
+>
+> - **§4.20's "directional collapse" is substantially a MEASUREMENT ARTIFACT.** The cross-layer cosine
+>   compares layer *outputs*, which in a pre-norm stack all share the same residual. Comparing each
+>   layer's own *contribution* gives **cos ≈ 0.14–0.18**, not 1.0. Per-loop scalar diversity and
+>   per-loop LoRA operator diversity (168 tensors randomized) both leave cos@64 unchanged — which is
+>   what shows the statistic was not measuring what it was named for. So "breaking the collapse" is
+>   not what the operator-diversity arms did, whatever else they did.
+> - **"State-conditioned depth gating eliminates late-loop degradation" is true arithmetic and an
+>   empty mechanism.** §4.22 measures the gate's softmax saturating to a **hard argmax** — effective
+>   loops mixed **1.01–1.05 of r**, 95–98% of tokens above 0.99 top-weight — because its logits are
+>   `w·h_t` on the raw state whose norm grows 1.8–4.0× per pass. A hard selector's curve is flat
+>   across `r` **by construction**, and its plateau [8,64] is over *mixture-window size, not depth*
+>   (pre-registered as excluded from the band tables before the run). Further, **96% of that arm's
+>   −0.2950 is already present at r = 1**, where the gate is provably inert.
+>
+> **What DID survive, and it is this document's real contribution:** loop-cycled LoRA at rank ≥ 4 is
+> the project's **first replicated CE improvement** — §4.21, four in-job pairs, three platforms, two
+> seeds, mean −0.0857, 95% t-interval [−0.1322, −0.0393] excluding zero. Its band does not move in any
+> of the five pairs, and it costs +4.51% of the parameter budget. That is a real positive with a real
+> price, and it is stronger stated that way than as a collapse fix.
+
+---
+
 # Final Handover Briefing for Claude (Opus)
 
 **Timestamp:** 2026-08-23 17:48 MSK  
