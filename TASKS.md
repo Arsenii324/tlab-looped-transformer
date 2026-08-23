@@ -13,6 +13,7 @@ Last updated 2026-08-23 ~15:05.
 
 | # | task | from | state |
 |---|---|---|---|
+| T15 | **§4.20's retraction needs propagating** — it was cited as spine material in `reviewer_answers/13` and possibly elsewhere; the 'all layers collapse architecturally' line is retracted (shared-residual artifact) | self, 17:15 | §4.20 itself fixed; check §2/§8/summary boxes |
 | T13 | **§6.0b sentence owed**: `n_loop_eff` fixed at 24 while schedules ran at mean 18/40 (depth_init ratios 1.15x/0.77x). In-job pairs unaffected; cross-schedule comparisons carry it | verified 17:05 | one sentence, not written |
 | T14 | **Learned depth gate** (`gate_scalar` +32 / `gate_state` +14,336) — restored as the best remaining candidate for a positive after correcting the 'E1 is E2's upper bound' error (E1 is a LOWER bound; a global weighting cannot reach a per-token signal) | reviewers x2 | **not launched**, local GPU busy with od arms |
 | ~~T11~~ | **Gemini's `tlab-operator-diversity` DS job errored on `ModuleNotFoundError: tokenizers`** — its `cmd` installs it but `system.log` shows the install never ran. Local run produced only `od_control`. **Decide: relaunch or drop.** Note `lora_cycle` costs +408,576 params (4.51%) and is a fixed per-branch table — if it wins, §3.5's zero-param scale argument does not cover it | Gemini session, 16:23 | **not relaunched** |

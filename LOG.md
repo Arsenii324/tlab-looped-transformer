@@ -2214,3 +2214,19 @@
   0.77x). In-job pairs unaffected (both arms share the same wrong init); cross-schedule comparisons
   carry it as a limitation. 6.0b sentence owed.
   reviewer_answers/14 written.
+2026-08-23 17:30 — the batch's best suggestion was free and it rewrote 3.5.
+  PLATEAUS AT SEEDS 2/3 (reviewer's suggestion, minutes of work): band shift is +2.5/+2.5/+2.5/+7.2
+  at seeds 0/1/2/3 -- widens at ALL FOUR, never negative, three identical. Seed 2, which REVERSES
+  the CE claim, shows the same +2.5. So 3.5's claim is now "annealing relocates the band robustly
+  (4/4) and does not move the ceiling (CE straddles zero at n=4)" -- the report's CE-vs-loop-utility
+  disjointness demonstrated on its own recommended intervention, ceiling half withdrawn by
+  pre-registration. Better paragraph than the one it replaces.
+  MoE exclusion strengthened with their loop-count argument (every paper in the family demonstrates
+  at 2-4 loops, none shows loops paying at r=32) + the omission they caught (top-k FFN sparsity buys
+  ~2x loops per wall clock). MoDr figures relayed, flagged UNVERIFIED.
+  PG comparison gains the ~7B-token / ~70x ratio.
+  Two of their points were STALE: T10 is closed (verified, 8 remaining mentions are raw per-seed
+  data), and the "no public <=50M loss-vs-loop curve" empty-cell claim is not in this report.
+  Disagreed on skipping the oracle cache -- already run, null as they predicted, but it closes the
+  FOURTH independent instrument class against 4.7's headroom, which is why the negative is strong.
+  reviewer_answers/15 written.
