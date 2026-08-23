@@ -117,7 +117,7 @@ restated so it rests on the structural claim (past the optimum the final layer i
 rather than on an exhaustive literature sweep.
 
 ## 2606.20075 — VERIFIED FROM SOURCE 2026-08-23 (was blocked/unobtainable)
-Tarball arrived in ~/Downloads mid-session; extracted to `papers/sources/2606.20075/`.
+Tarball arrived in ~/Downloads mid-session; extracted to arXiv 2606.20075 source.
 Title (from `icml_latex.tex`): *"What Makes Effective Supervision in Latent Chain-of-Thought: An
 Information-Theoretic Analysis"*. Numbers read from `Tables/1_table_sec4.tex`, quotes from
 `Sections/1_Intro.tex` and `Sections/4.tex`:
@@ -129,7 +129,7 @@ Used in §4.18. **No number is quoted that was not read in the source** — the 
 73%/85% retraction (§6.0 row 22).
 
 ## 2604.11791 — VERIFIED FROM SOURCE 2026-08-23 (arrived mid-session)
-*A Mechanistic Analysis of Looped Language Models.* Extracted to `papers/sources/2604.11791/`.
+*A Mechanistic Analysis of Looped Language Models.* Extracted to arXiv 2604.11791 source.
 Quote from `sections/appendices/additional_soi_results.tex` line 104; macros resolved from
 `looped_llms.tex` lines 553-555 (`\ouro`→Ouro, `\raven`→Huginn-0125, `\rllama`→Retrofitted Llama).
 - **Causal ablation**: zeroing the layer-2 MLP output responsible for massive activations in the
@@ -150,7 +150,7 @@ do NOT claim the bias causes saturation. Implemented as `src/anchor_response.py`
 scales the Jacobian inversely with activation norm. **The specific claim has NOT been located in the
 source yet**, so nothing in the report cites it. Logged as obtained-but-unverified.
 
-## Citation audit, 2026-08-23 ~18:00 — every arXiv id in report.md vs papers/sources/
+## Citation audit, 2026-08-23 ~18:00 — every arXiv id in report.md vs the papers' own sources
 `agy` job C (independent citation cross-check) never ran; this is the cheap substitute, done directly.
 
 - **28 arXiv-shaped strings cited**; 2 are regex false positives (`2567.9355`, `3675.1917` are not
