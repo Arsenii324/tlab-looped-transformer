@@ -128,11 +128,11 @@ place throughout but is easier to hold as a table:
 | claim family | measured on |
 |---|---|
 | headline CE / ppl / bpb / band [6,17] | **90M control** (`full_control90_kaggle`) — the shipped artifact |
-| trajectory geometry: drift law, readout gain, ρ, radial clamp | **46M** `no_state_renorm` |
-| per-token depth demand, the eight exit rules, ragged KV cache | **46M** `no_state_renorm` |
+| trajectory geometry: drift law, readout gain, ρ, radial clamp | **46M** `full_no_state_renorm_kaggle` |
+| per-token depth demand, the eight exit rules, ragged KV cache | **46M** `full_no_state_renorm_kaggle` |
 | depth-key rank, and the tied-vs-untied contrast | **2.5M** screening checkpoints, plus untrained models |
 | every paired intervention in §4.23 | **2.5–3.5M** in-job pairs |
-| annealing's band result | **2.5M** (seeds 0–3) and **10M** (seed 2) |
+| annealing's band result | **2.5M** (seeds 0–3) and **10M** (two arms: `as_10M_sw90`, `rec_sw90_s2`) — 6 of 6 |
 
 ## 7. What we would run next, costed from measured wall-clock
 

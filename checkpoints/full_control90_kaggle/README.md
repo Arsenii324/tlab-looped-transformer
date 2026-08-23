@@ -21,6 +21,18 @@ prediction. T-Lab test task submission. Run `full_control90_kaggle`, 90.0M token
 Perplexity is **tokenizer-dependent** and this model uses its own 4096-token BPE, so it
 is not comparable across submissions; bits/byte is the figure that survives a change of tokenizer.
 
+## These weights are the DENSE control, not the recipe the report recommends
+
+**`METHOD.md` §2 recommends supervision annealing** — dense supervision for most of training, then
+terminal-loop-only for the final ~10% of steps. **These weights do not implement it.** They are the
+**dense control**: `supervise_k = 5` throughout, no `supervise_k_final`, no `supervise_switch_frac`.
+
+That is deliberate. The annealing recommendation is about **where depth stays useful** — the useful
+band widens at 6 of 6 seeds — and **not** about the loss: its CE half was withdrawn at n = 4, and the
+six-point mean is −0.0247, inside the replicate floor. So the recipe that buys depth and the
+checkpoint that gives the lowest loss are different arms, and the lowest-loss one ships. A 10M-token
+checkpoint of the annealed recipe exists (`rec_sw90_s2`); no 90M one does. See `METHOD.md` §4.
+
 ## Why this checkpoint, when the report contains a better perplexity
 
 **A reader who finds 37.52 in the report and 38.86 here should know this was a decision, not an
