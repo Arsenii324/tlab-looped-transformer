@@ -86,7 +86,10 @@ loop 39, with the model *taking* the parameter (‖w‖ = 1.34) rather than decl
 > **loop-cycled LoRA (−0.094, n=5 at rank ≥ 4):**
 > 0. **It does not survive 5× the budget.** −0.0733…−0.1251 at 2.5M against **+0.0077 at 12M**,
 >    in-job, sign reversed and inside the floor (§4.29). This was the only CE claim in the report that
->    replicated across three platforms.
+>    replicated across three platforms. **The like-for-like pair is exact** — `ds_od_lora_r4` at 2.5M
+>    is config-identical to the 12M arm — so this is a budget effect, not a configuration difference.
+>    *Bounded honestly: the 12M run used **dense** supervision, so **rank 8** and **LoRA combined with
+>    annealing** (the largest 2.5M positive, −0.1172) were never tested at scale in their own form.*
 > 1. **The `rank ≥ 4` restriction is post hoc.** Over all six arms the 95% interval **covers zero**
 >    ([−0.148, +0.023]); rank 2 is **+0.094**, i.e. worse. There is **no dose–response** above the
 >    threshold — rank 8 sits inside rank 4's spread.

@@ -6483,9 +6483,31 @@ counted it among the interventions "that lower the loss" is counting a 2.5M-toke
 > and supervision annealing's band widening (which replicates at 5/5 seeds across a **4× budget
 > range**, §4.23e — the one depth claim that has been tested across budgets and held).
 
-*Scope: one arm, one seed, one rank, one platform. A single 12M pair does not establish that the
-effect is zero at scale; it establishes that the effect measured at 2.5M is not reproduced at 12M,
-which is enough to withdraw the claim as stated.*
+> **Is the 12M arm the same intervention that showed the positive? Checked field-by-field, and the
+> answer is "for one of them exactly, for two of them not".**
+>
+> | 2.5M arm | ΔCE_best | how it differs from the 12M arm, besides budget |
+> |---|---|---|
+> | `ds_od_lora_r4` | −0.1011 | **nothing. Identical config.** |
+> | `dv_lora_r4_s0` | −0.1251 | only `cond_fixed_branch` `None` vs `False`, which mean the **same thing** (cycled) in the kernel that ran it (§4.27) |
+> | `kg_od_lora_r8_s1` | −0.0733 | **rank 8**, seed 1 |
+> | `kg_od_lora_r4_sw90` | −0.1172 | **runs supervision annealing** (`supervise_k_final=1`, `switch_frac=0.9`); the 12M arm is dense throughout |
+>
+> **So the withdrawal is clean where it matters and bounded where it does not.** `ds_od_lora_r4` is a
+> like-for-like pair with the 12M arm — same rank, same seed, same supervision, same loop schedule,
+> same LR — and it goes **−0.1011 → +0.0077** on budget alone. *That is a genuine budget effect and it
+> is enough to withdraw the claim as stated.*
+>
+> **But two of the five positives were never tested at scale in their own form: rank 8, and — the
+> larger one — LoRA combined with supervision annealing.** The 12M run used **dense** supervision.
+> **So "loop-cycled LoRA does not survive scale" is established for rank 4 under dense supervision,
+> and the LoRA × annealing combination at 12M is simply unmeasured.** It is named here rather than
+> folded into the negative, because §4.17 found annealing and LoRA were the only two things in this
+> project that improved *both* endpoints, and their interaction is exactly the cell nobody has filled.
+
+*Scope: one arm, one seed, one rank, one platform, dense supervision. A single 12M pair does not
+establish that the effect is zero at scale; it establishes that the like-for-like effect measured at
+2.5M is not reproduced at 12M, which is enough to withdraw the claim as stated.*
 
 ## 5. Methods tested to destruction — what was claimed, what was measured, why it broke
 
