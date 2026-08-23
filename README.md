@@ -1,8 +1,26 @@
 # tlab-loop-transformer
 
-A looped (weight-tied) transformer, ≤10M parameters, pretrained on FineWeb next-token prediction in
-≤100M tokens, built to keep benefiting from many loops rather than saturating after ~10. T-Lab test
-task. Design rationale and decision log: `PLAN.md`, `LOG.md`. Write-up: `report.md`.
+**T-Lab test task submission.** A looped (weight-tied) transformer pretrained from scratch on FineWeb
+next-token prediction.
+
+| | |
+|---|---|
+| **The write-up (the deliverable)** | **[`report.md`](report.md)** |
+| **Released weights** | **[Arsen4ikVar/tlab-looped-transformer](https://huggingface.co/Arsen4ikVar/tlab-looped-transformer)** |
+| parameters | **9,064,608** (cap: 10M) |
+| training tokens | **90.0M** (cap: 100M) |
+| val perplexity | **38.86** (CE 3.6599 at 10 loops) |
+| bits/byte | **1.5829** |
+| useful-depth band | **loops 6–17** (dense 1..64 eval grid) |
+
+Perplexity is tokenizer-dependent (this model has its own 4096-token BPE), so **bits/byte is the
+figure comparable across submissions.**
+
+**Start with [`report.md`](report.md).** §0 is an abstract; §3.5 is the final method; §4 is the
+experiment set; **§6.0 is the complete log of every error that reached a number, how each was caught,
+and what it cost** — the task asks for that explicitly and it is in the body, not an appendix.
+
+Design rationale and decision log: `PLAN.md`, `LOG.md`.
 
 ## Layout
 
@@ -25,7 +43,8 @@ src/
   baseline_nonlooped.py compute-matched non-looped baseline (report.md sec 4.4) -- N distinct decoder
                          layers, no weight tying, FLOPs-matched to the winning config's best loop count
   run_second_seed.py    seed=1 replication check on the winning axis (report.md sec 4.1)
-  upload_checkpoint.py  Hugging Face upload (not run -- reserved for the user's decision)
+  upload_checkpoint.py  Hugging Face upload; ships tokenizer.json + model.py + a generated card,
+                         and raises rather than uploading an unverifiable artifact
 kaggle/
   main.py               self-contained full-budget training kernel for a Kaggle T4 (everything inlined
                          -- Kaggle script kernels can't import sibling files); actually used this
@@ -49,8 +68,14 @@ configs/                 tokenizer.json
 # --- evaluating a released checkpoint (the normal path) ---
 python src/data.py                        # uses the SHIPPED configs/tokenizer.json; does not retrain
 python src/test_model.py                  # 9 correctness gates; must pass
-python src/check_tokenizer_identity.py checkpoints/<ckpt> --expect-ce1 <CE@1 from the model card>
-python src/eval.py checkpoints/<ckpt> --max-loops 64
+python src/check_tokenizer_identity.py checkpoints/full_control90_kaggle --expect-ce1 3.9622
+python src/eval.py checkpoints/full_control90_kaggle --max-loops 64
+
+# --- or verify the RELEASED weights, downloaded, without trusting this repo's copy ---
+huggingface-cli download Arsen4ikVar/tlab-looped-transformer --local-dir /tmp/hfcheck
+python src/check_tokenizer_identity.py /tmp/hfcheck/model.pt --expect-ce1 3.9622 \
+       --tok /tmp/hfcheck/tokenizer.json
+#   verified 2026-08-23: PASS, |diff| = 0.0020 against a chance level of 8.3178
 
 # --- reproducing the whole pipeline from scratch (produces a DIFFERENT tokenizer) ---
 python src/train_tokenizer.py             # overwrites configs/tokenizer.json
