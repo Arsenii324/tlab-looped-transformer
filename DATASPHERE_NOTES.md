@@ -248,3 +248,40 @@ now that `attach` is known to work, because attach needs a live local process an
 file — the 18-config / 18-commit leak in §6.0. It now reads `REDACTED_SET_VIA_ENV`.
 **Rule: generate any job dir that carries a key into the scratchpad and launch from there. Never
 into the repo.**
+
+## ⚠ TRAP 3 (2026-08-23): `outputs:` does NOT glob. Name every file literally.
+
+Costs weights silently, has cost them here **twice**, and the second time was *after* the fix.
+
+**There is no globbing in the DataSphere CLI** — neither `*` nor `**`, client- or server-side. Worse,
+output paths **skip the existence check at submit** (`config.py:495` runs `p.exists()` only when
+`is_input`), so a non-resolving output declaration is accepted **silently** and fails at upload, when
+the container is already going away.
+
+| form | result |
+|---|---|
+| `outputs: - "*_last.pt"` | ❌ `* *_last.pt (Error while processing file)` — job `bt1sglqurmj6frrmsfrk`, all 3 arms trained, **0 checkpoints returned** |
+| `outputs: - results/**` | ❌ same, job of 2026-08-22 23:21. **This is the form recommended in `ccm-intro/docs/compute-yandex-datasphere.md:194,472` and copied to line 72 above — it has never worked here** |
+| `outputs: - results/exitdump_full_no_state_renorm_kaggle.npz` | ✅ `ds_exit`, returned the 563 MB npz. A **subdirectory is fine**; the wildcard is what breaks |
+
+**Rule: enumerate output filenames explicitly.** Run names are known when the config is authored, so
+this is mechanical:
+
+```yaml
+outputs:
+  - results.json
+  - ds_od_control_last.pt
+  - ds_od_lora_r4_last.pt
+  - ds_od_depth_gate_last.pt
+```
+
+**Detection, because the failure is invisible in the usual places:** a failed output upload **marks the
+job ERROR** even though the experiment succeeded, `stdout.txt` ends with a normal completion line, and
+`stderr.txt` is clean. The evidence is in a **third** file:
+
+    grep "Error while processing file" <job-log-dir>/log.txt
+
+Run that before believing either "ERROR means it failed" *or* "ERROR is cosmetic". Both readings are
+wrong for this failure. **22 of 26 `ds_*/config.yaml` in this repo still carry the glob** — they are
+left as-is (no further job runs before the deadline, and untestable edits to submission artifacts are
+their own risk), so anyone reusing one must fix its `outputs:` first.

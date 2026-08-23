@@ -14,6 +14,57 @@ checkpoint: **[Hugging Face URL — to be filled on publication]**.*
 
 ---
 
+## 0. Abstract
+
+*This is not §1. §1 is the author's account of how the approach was arrived at, which the task grades
+separately as idea generation. This is what the document contains and what it measured.*
+
+A **9,064,608-parameter** weight-tied looped transformer — one 3-layer Qwen3-style block applied `r`
+times, no prelude, no coda, no inter-loop normalisation — trained on **90M FineWeb tokens** reaches
+**38.86 validation perplexity (1.5829 bits/byte)**, with useful depth spanning **loops 6–17**. Both
+caps are respected with margin. This report asks what sets that range.
+
+**The trajectory does not converge.** The unit state drifts *logarithmically* — a one-parameter
+log-drift model fits at R² 0.986 against a convergent power law's 0.748 with two, 0.18 rad of real
+angular motion still accumulates between loops 129 and 384, and `ρ(∂F/∂h) = 1.62` at loop 2
+corroborates it. An untrained model of the same shape drifts *faster*, so **non-convergence is
+architectural, present before any gradient.** Yet cross-entropy stops improving at loop ~8. That is
+**saturation without convergence**, and it contradicts the premise the task itself advances — that
+fast convergence is what makes further compute pointless. Here convergence never happens and the
+compute stops paying anyway. The mechanism is geometric dilution: ‖h‖ grows linearly while the
+tangential step stays roughly constant, so the readout-visible angular step decays as `1/t`. Late
+motion is **fully visible to the readout** (gain flat at 207→226 while ‖Δu‖ falls 117×) and still
+useless — the direction the model keeps moving in stops being an improvement.
+
+**Seven interventions on the dynamics; zero raise the ceiling.** Inter-loop normalisation (+0.744
+nats), a scale clock (+1.36, diverging to non-finite by loop 39), gated injection at the field's own
+α = 0.874 (+0.247), loop-cycled LoRA, radial clamping, convex gating, and `ε = λ/(N√L)` residual
+scaling. The gated-injection row is decisive: its **pre-registered mechanism check succeeded**
+(‖h‖ growth 6.2× → 1.17×) and the loss got worse anyway. The only perplexity winner is a norm penalty
+— the single arm whose map actually converges (ρ < 1), the regime the report argues against — and 88%
+of its apparent loop-gain advantage is loop-1 damage.
+
+**One lever moves the useful band: where the loss is applied.** Supervision annealing — dense for most
+of training, terminal-only for the last ~10% — **relocates the band at 4 of 4 seeds** (+2.5/+2.5/+2.5/
++7.2 grid points) at **zero parameter cost**. Its effect on the *ceiling* was withdrawn at n=4 by a
+criterion pre-registered before the data existed. So the two halves of "low perplexity **by exploiting
+many loops**" come apart under measurement, and that dissociation — documented five separate ways — is
+this report's most-replicated finding.
+
+**Per-token depth demand is real and unreachable.** Oracle headroom is 0.2008–0.2032 nats with
+split-half reliability **0.866** against a null of 0.0007, and 27.9% of tokens want depths past 32.
+Four independent **readout-side** instrument classes fail to capture more than 0.1% of it; a fifth,
+a learned per-token gate, turned out unable to express the hypothesis it was built to test. The
+structural reason: rules condition on total path length, whose cross-token **cv is 0.068**, while
+oracle depth's **cv is 0.798**.
+
+**The result is a negative with a mechanism and one measured lever**, which the brief explicitly rates
+as a good outcome (*«отсутствие положительного результата при хорошем анализе всех негативных — хороший
+результат»*). §6.0 lists all **34** errors that reached a number, how each was caught, and what it
+cost — including three claims withdrawn on the final day by their own pre-registered falsifiers.
+
+---
+
 ## 1. The idea
 
 *Reserved for the author's own account of how the approach was arrived at — the task explicitly

@@ -108,7 +108,10 @@ Context was just compacted; the sections below are the durable state. Read in th
 - Prefix every DataSphere call with `GRPC_DNS_RESOLVER=native`, or it fails with a DNS error that
   looks like a network outage and is not.
 - A DataSphere job reporting **ERROR** may have completed fine — stderr from pip/wandb marks the job
-  ERROR. **Read the raw stdout before believing the status.** This happened THREE times today — most recently `tlab-operator-diversity`, which reported ERROR having completed all three arms ("ALL DONE in 3286.9s") with one HF-Hub warning on stderr.
+  ERROR. **Read the raw stdout before believing the status.** ⚠ **But stdout+stderr are NOT sufficient,
+  and this rule gave the wrong verdict on 2026-08-23 18:40:** a *failed output upload* also marks a job
+  ERROR while stdout says "ALL DONE" and stderr is clean. **The discriminator is a THIRD log file:
+  `grep "Error while processing file" log.txt`.** This happened THREE times today — most recently `tlab-operator-diversity`, which reported ERROR having completed all three arms ("ALL DONE in 3286.9s") with one HF-Hub warning on stderr.
 - Local Python is **anaconda base**, not `barannikov-work/.venv` (§7).
 - Before writing any fork's or agent's number into the report, **re-measure it**. Two probes handed
   to me today paired oracle depths with the wrong tokens; both conclusions happened to survive, by
@@ -211,8 +214,14 @@ argmins) · `gain_decomp.py` (Δgain = ΔCE@1 − ΔCE_best; 49 in-job pairs) ·
 > `tlab-operator-diversity` (`bt1sglqurmj6frrmsfrk`) declared `outputs: [results.json, "*_last.pt"]`,
 > completed all three arms, wrote all three `.pt` files (`main.py:886`, unconditional), and
 > `download-files` returned **1 file, 11.5KB — `results.json` alone.**
-> **A glob in `outputs:` returns nothing.** Likely because DataSphere resolves those paths against the
-> local working dir at *submit* time, when no `*_last.pt` exists yet.
+> **A glob in `outputs:` returns nothing, and there is no globbing anywhere in the CLI.** The cause is
+> in the job's **`log.txt`** (line 1549) — a third log file, not `stdout.txt` or `stderr.txt`:
+> `[ERROR] Some output files were not uploaded due to errors: * *_last.pt (Error while processing file)`.
+> Output paths **skip the existence check at submit** (`config.py:495` validates `p.exists()` only when
+> `is_input`), so a non-resolving output passes silently and fails server-side at upload.
+> **`results/**` fails identically** — that form came from `ccm-intro/docs/compute-yandex-datasphere.md`
+> and is in `DATASPHERE_NOTES.md:72`. Jobs that DID return files name **literal paths**
+> (`ds_exit` declared `results/exitdump_....npz` and got its 563 MB back).
 > **RULE: list every output file EXPLICITLY by name. Never by glob.**
 > **22 of 26 `ds_*/config.yaml` here use the glob**, so the fix recorded as protecting every future
 > job protects none of them. It was written into two documents and never tested end-to-end — the same

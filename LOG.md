@@ -2476,3 +2476,45 @@ themselves**, which are this report's main evidence of honesty.
 
 **Operationally it cuts the other way and is good news: the deadline is 23:30, so there are ~5.5h
 left, not the ~4.4h I had been planning against.**
+
+## 2026-08-23 18:45 — CORRECTION to 18:40. My mechanism was wrong, and the ERROR was NOT cosmetic.
+
+A fork checked the missing-outputs claim against the CLI source and the job's **`log.txt`** -- a file
+I never opened, because I had checked `stdout.txt` and `stderr.txt` and stopped. It states the cause
+verbatim:
+
+    [ERROR] - Some output files were not uploaded due to errors:
+    [ERROR] -   * *_last.pt (Error while processing file)
+    [INFO]  - downloading 1 files (11.5KB) ...
+    [INFO]  - job completed successfully
+
+Verified myself: the two ERROR lines are at `log.txt:1549-1550`.
+
+**Two corrections to what I wrote at 18:40.**
+
+1. **Mechanism.** I wrote that DataSphere "resolves `outputs:` paths against the local working
+   directory at submit time." **It does not.** `config.py:495` runs `validate_path(v, is_input)` and
+   checks `p.exists()` **only when `is_input`** -- output paths skip the existence check entirely, so
+   a non-resolving output passes submission **silently** and fails server-side at upload. There is no
+   globbing anywhere in the CLI. Same operational rule, wrong reason.
+
+2. **The ERROR status was NOT cosmetic this time, and my rule in OPS sec0-PRE gave the wrong verdict.**
+   I applied "ERROR may be cosmetic -- read the raw stdout" and concluded the job was fine. The
+   experiment *was* fine; the **job** was not, and the ERROR was **caused by** the failed output
+   upload. Reading stdout+stderr is exactly what cannot distinguish the two, because stderr held only
+   the HF-Hub warning. **The discriminator is `grep "Error while processing file" log.txt`.**
+   Contrast `tlab-anchor-tokenkey`, which logged `downloading 4 files (79.6KB)` and zero output
+   errors -- that ERROR genuinely was unrelated. Two different failures were sharing one rule.
+
+**And the inherited remedy never worked either.** `outputs: [results/**]` is the form recommended in
+`ccm-intro/docs/compute-yandex-datasphere.md:194,472` and copied into `DATASPHERE_NOTES.md:72`. A job
+on 2026-08-22 23:21 logged `* results/** (Error while processing file)`. `**` is no more expanded
+than `*`. **Jobs that DID return files name literal paths** -- `ds_exit/config.yaml` declares
+`outputs: - results/exitdump_full_no_state_renorm_kaggle.npz` and returned the 563 MB npz. A
+subdirectory path is fine; the wildcard is what breaks.
+
+**Not rewriting the 22 configs.** No further DS job will run before the deadline, and editing 22
+submission-artifact files at 18:45 with no way to test them is the failure mode this project has
+already paid for twice. The rule is documented in `DATASPHERE_NOTES.md`, `OPS.md` sec7 and sec6.0 row 34
+instead. **This correction is itself the third meta-pattern in action: I closed a fix on the edit
+rather than on the artifact, and then closed a diagnosis on two of the three log files.**
