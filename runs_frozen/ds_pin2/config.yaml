@@ -1,0 +1,24 @@
+name: tlab-pin2-control-s0
+desc: "Clean capacity-vs-diversity control: LoRA r=4, 4 branches, index PINNED TO 2 -- a branch that never trains at loop 1, unlike pin-0. Identical params, zero diversity. vs in-job control, 2.5M tok/arm, seed 0."
+cmd: >
+  date +%s;
+  python -c "import torch,sys; sys.exit(0 if torch.cuda.is_available() else 1)" 2>/dev/null
+  && echo "TORCH_PREINSTALLED_OK skipping pip"
+  || pip install -q --root-user-action=ignore torch --index-url https://download.pytorch.org/whl/cu121;
+  pip install -q --root-user-action=ignore tokenizers datasets;
+  date +%s;
+  python main.py
+env:
+  docker:
+    image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
+  python:
+    type: manual
+    version: "3.11"
+    requirements-file: requirements.txt
+    local-paths:
+      - main.py
+outputs:
+  - results.json
+  - pin_control_s0_last.pt
+  - pin_lora_b2_s0_last.pt
+cloud-instance-type: gt4.1

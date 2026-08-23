@@ -1,0 +1,26 @@
+name: tlab-duocausal-s0
+desc: "Recurrence-side depth mixing: duo-causal attention W=2,3 (zero params) + scale-invariant depth gate, vs in-job control. Seed 0, 3.5M tokens/arm, Tesla T4."
+cmd: >
+  date +%s;
+  python -c "import torch,sys; sys.exit(0 if torch.cuda.is_available() else 1)" 2>/dev/null
+  && echo "TORCH_PREINSTALLED_OK skipping pip"
+  || pip install -q --root-user-action=ignore torch --index-url https://download.pytorch.org/whl/cu121;
+  pip install -q --root-user-action=ignore tokenizers datasets;
+  date +%s;
+  python main.py
+env:
+  docker:
+    image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
+  python:
+    type: manual
+    version: "3.11"
+    requirements-file: requirements.txt
+    local-paths:
+      - main.py
+outputs:
+  - results.json
+  - dc_control_s0_last.pt
+  - dc_w2_s0_last.pt
+  - dc_w3_s0_last.pt
+  - dg_norm_s0_last.pt
+cloud-instance-type: gt4.1

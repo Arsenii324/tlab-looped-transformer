@@ -601,3 +601,20 @@ pretrained 1.7B backbone with LoRA adapters**, not from scratch at 9M parameters
 the pathway has **zero dedicated capacity** here, so the model must repurpose existing weights to use
 it. **A null at this budget therefore bounds "windowed duo-causal, from scratch, at 3.5M tokens, with
 no depth marker and no added parameters" — not the mechanism.**
+
+## RUN -> CODE provenance (recorded 19:09; the frozen drivers are archived IN the repo)
+
+DataSphere jobs carry a **frozen inlined copy** of `src/model.py`, so a job is immune to later
+edits of the tree — which is why the 18:57 change of `cond_fixed_branch` from bool to int could
+not affect the already-running diversity job (verified: its frozen driver pins to branch 0, the
+pin2 driver pins to 2, each self-consistently). Archiving the drivers so a run can be re-derived.
+
+| job | id | driver md5 | archived at |
+|---|---|---|---|
+| `ds_dc_s0` | bt1qvi35v7gsejmvn1it | `3cc015eb5307` | `runs_frozen/ds_dc_s0/` |
+| `ds_dc_s1` | bt1lkbri6cqj6q9fssoa | `67376853c404` | `runs_frozen/ds_dc_s1/` |
+| `ds_recmethod` | bt1s4mag4kdvsvts536m | `8be2244e2ab8` | `runs_frozen/ds_recmethod/` |
+| `ds_diversity` | bt1ps6o54qhrecg40etf | `038d23fe5509` | `runs_frozen/ds_diversity/` |
+| `ds_pin2` | pending | `18bc3ef487bc` | `runs_frozen/ds_pin2/` |
+
+Tree SHA at archive time: `b218613`. `src/model.py` at that SHA is the source the last of these was generated from.

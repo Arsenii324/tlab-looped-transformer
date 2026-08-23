@@ -1,0 +1,24 @@
+name: tlab-recmethod-s2
+desc: "Artifact run for the method sec3.5 recommends: U[4,32] + supervision annealing sw90, vs in-job dense control. 10M tokens/arm, seed 2. Produces the WEIGHTS that do not currently exist for the recommended configuration."
+cmd: >
+  date +%s;
+  python -c "import torch,sys; sys.exit(0 if torch.cuda.is_available() else 1)" 2>/dev/null
+  && echo "TORCH_PREINSTALLED_OK skipping pip"
+  || pip install -q --root-user-action=ignore torch --index-url https://download.pytorch.org/whl/cu121;
+  pip install -q --root-user-action=ignore tokenizers datasets;
+  date +%s;
+  python main.py
+env:
+  docker:
+    image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
+  python:
+    type: manual
+    version: "3.11"
+    requirements-file: requirements.txt
+    local-paths:
+      - main.py
+outputs:
+  - results.json
+  - rec_dense_s2_last.pt
+  - rec_sw90_s2_last.pt
+cloud-instance-type: gt4.1
