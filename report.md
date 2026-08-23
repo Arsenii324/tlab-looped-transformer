@@ -1248,6 +1248,39 @@ growth with a roughly constant step.
 > oscillates rather than converging for a complex-dominant eigenvalue, which 12 iterations cannot
 > detect; that caveat is unresolved.
 
+**The direct test: the unit state does not converge — it drifts logarithmically.** ρ is an indirect
+instrument, a linearisation whose deep-loop readings sit inside their own estimator bias. The direct
+question is whether `u_t = h_t/‖h_t‖` settles, and `u` is worth asking about because it is the
+*entire* input to the block (RMSNorm is scale-invariant) and the *entire* input to the readout. Two
+hypotheses fit to `‖u_t − u_T‖` over loops 8–256 at `T = 384`, fixed 4×256 validation batch
+(`src/angular_convergence.py`):
+
+| model | power law `A·t^−b` *(convergent, 2 params)* | `C·ln(T/t)` *(log-drift, 1 param)* | angular motion, loops 129→384 |
+|---|---|---|---|
+| 90M control | t^−0.657, R² **0.748** | C = 0.1539, R² **0.986** | **0.1836 rad** |
+| 46M no-renorm | t^−0.651, R² **0.744** | C = 0.1508, R² **0.983** | **0.1816 rad** |
+
+**Log-drift wins decisively, with half the free parameters.** The mechanism is this section's own two
+measurements composed: the per-loop angular step decays as `1/t` **and** consecutive steps stay
+aligned at `cos → 0.9999`, so motion accumulated from `t` to `T` is `Σ C/s ≈ C·ln(T/t)` — which
+**diverges**. The state travels a fixed angular distance per *doubling* of loop count, indefinitely.
+It still moves 0.18 rad between loops 129 and 384, long after CE has stopped improving.
+
+**This is the strongest available form of §2's claim, and it is a positive demonstration rather than
+a failure to reject.** "Saturation without convergence" previously rested on `ρ ≳ 1` — a marginal
+reading inside an estimator's bias. Here non-convergence is shown *by construction*: there is no `u*`
+to converge to, because the remaining path from any loop is unbounded.
+
+> **It also refutes an attractive alternative account, which is why it was run.** The alternative:
+> the model *does* converge in `u` — the only coordinate the readout can see — while the diverging
+> `‖h‖` hides that convergence from every h-space diagnostic, so `u*` would be a fixed point of the
+> induced sphere map `G(u) = F(u)/‖F(u)‖`. It is a clean story and it predicts `‖u_t − u*‖ ~ t^−1`.
+> **Measured: the *consecutive-step* exponent is −1.005 / −1.247 / −0.993 — that is the `1/t` this
+> section already reports — while the *distance-to-limit* exponent is ≈ −0.6 and is not a power law
+> at all (R² 0.75).** Conflating the step with the distance is what makes the fixed-point reading
+> look supported; separating them is what kills it. This model has no fixed point in `u`, and any
+> intervention motivated as "break the fixed point" is aimed at something that is not there.
+
 *Reproducibility, because it bounds how much the numbers carry.* An independent implementation
 (different power-iteration details and ε) reproduced the qualitative conclusion exactly — σ_max > 1
 at every loop for `no_state_renorm`, < 1 for `center`, same monotone decay — and agreed closely on
