@@ -2096,3 +2096,29 @@
   is the ONLY claim carrying an in-job control + two seeds + a 4x-budget replication + a pre-registered
   read + a ΔCE_best/ΔCE@1 decomposition — each control existing because some OTHER claim here failed
   for want of it. Still a defence about process, not about the number; §3.5 stays provisional.
+
+2026-08-23 13:05 — reviewer's five unknowns all MEASURED, four report fixes landed.
+  Q1 grid: headline [6,17] is dense every-integer 1..64; all three headline rows share it (valid).
+     Same checkpoints on the sparse grid read [8,16]/[8,12]/[8,12] — the difference vanishes. Grid
+     now named in the headline table; "a plateau without its grid is not a number".
+  Q2 norms: §4.3's 6630@8/30097@64 are 46M-specific. 90M control 2334/12424 (2.4-2.8x lower),
+     normpen 17.5/89.4 (~380x lower). Relative dilution survives (18.2x/26.6x/20.3x). CONSEQUENCE:
+     §4.6's radial-clamp levels {|h1|,|h8|,|h16|} are 46M-derived and must not be quoted against the
+     shipped checkpoint without re-derivation.
+  Q3 annealed run: was launched and was producing NOTHING for 727s. eval_every_tokens typed as
+     1_250_000 vs reference 312_500 -> only save site 610 steps out vs ~250 steps/chunk -> no save,
+     no resume, every chunk restarted at step 0 (steps_logged=0 last_step=-1 x3). FIXED two ways:
+     train.py now checkpoints on the max_seconds break (so chunk length can never invalidate a run);
+     run_anneal_local.py derives its config FROM the reference checkpoint instead of re-typing it.
+     Relaunched 12:42. This is the second instance of the task statement's own "forget to save a
+     checkpoint" prediction.
+  Q4 mu=40: §3.5 stated the 0.030-nat cost but not the decomposition. Added ΔCE@1 +0.0749/+0.1749 vs
+     ΔCE_best -0.0264/-0.0192; both ΔCE_best INSIDE the 0.0541 CUDA terminal floor, both ΔCE@1
+     outside. Deeper band is bought, not free. Recommendation now schedule-conditional.
+  Q5 §1: unchanged placeholder, user-owned.
+  tlab-hyper-screen harvested: lr 3e-3 optimal (1e-3 costs .1033, 6e-3 costs .0732); wd 0.01 beats
+     0.05 by .0190; wd0 worse by .0243. Dgain null across all six arms, onset=8 for all five
+     well-trained arms -> hyperparameters buy absolute loss, not depth exploitation. Into §6.0b.
+  Also: GRPC_DNS_RESOLVER=native is required for every datasphere call (it is in DATASPHERE_NOTES'
+     own invocation block; I dropped it and misdiagnosed it as a machine-level network outage —
+     curl returned HTTP 404 in 48ms at the same moment).

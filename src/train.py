@@ -200,6 +200,17 @@ def run(model_cfg: ModelConfig, train_cfg: TrainConfig, log_path: pathlib.Path |
         torch.manual_seed(train_cfg.seed)
         rng = np.random.default_rng(train_cfg.seed)
 
+    def save_ckpt(step, tokens_seen):
+        torch.save({"model": model.state_dict(),
+                    # optimizer.state_dict() deliberately not saved -- see the resume-load
+                    # comment above; it is never read back.
+                    "rng_state": rng.bit_generator.state,
+                    "torch_rng_state": torch.get_rng_state(),
+                    "model_cfg": dataclasses.asdict(model_cfg),
+                    "train_cfg": dataclasses.asdict(train_cfg),
+                    "step": step, "tokens": tokens_seen},
+                   ckpt_path)
+
     t0 = time.time()
     tokens_seen = start_step * tokens_per_step
 
@@ -207,6 +218,15 @@ def run(model_cfg: ModelConfig, train_cfg: TrainConfig, log_path: pathlib.Path |
         if max_seconds is not None and time.time() - t0 > max_seconds:
             print(f"max_seconds ({max_seconds:.0f}s) reached at step {step}/{total_steps}, stopping",
                   flush=True)
+            # Checkpoint on the way out, so the chunk's work survives. Without this, a run whose
+            # eval interval is longer than one chunk can never save: the only other save site is
+            # inside the eval block, `resume` stays False because no checkpoint exists, and every
+            # chunk silently retrains from step 0 forever. Measured, not hypothetical --
+            # local_anneal_sw75_s0 burned 727s across three chunks that each restarted at ~step 250
+            # (eval_every_steps=610 against ~250 steps per 240s chunk) and logged nothing. The
+            # chunk length is a hardware workaround; it must not be able to invalidate a run.
+            if step > start_step:
+                save_ckpt(step - 1, tokens_seen)
             break
         lr = lr_at(step, total_steps, train_cfg)
         for g in opt.param_groups:
@@ -269,15 +289,7 @@ def run(model_cfg: ModelConfig, train_cfg: TrainConfig, log_path: pathlib.Path |
                                  state_norm_first=state_norms[0], state_norm_last=state_norms[-1]))
             if log_path:
                 log_path.write_text(json.dumps(history, indent=2))
-            torch.save({"model": model.state_dict(),
-                        # optimizer.state_dict() deliberately not saved -- see the resume-load
-                        # comment above; it is never read back.
-                        "rng_state": rng.bit_generator.state,
-                        "torch_rng_state": torch.get_rng_state(),
-                        "model_cfg": dataclasses.asdict(model_cfg),
-                        "train_cfg": dataclasses.asdict(train_cfg),
-                        "step": step, "tokens": tokens_seen},
-                       ckpt_dir / "last.pt")
+            save_ckpt(step, tokens_seen)
             if train_cfg.device == "mps":
                 torch.mps.empty_cache()  # release cached-but-unused memory; other sessions share this machine
 

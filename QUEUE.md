@@ -187,3 +187,17 @@ three false "gaps" purely from markdown-sensitive patterns, so check the text, n
 Right, the layer-band idea) were never recorded. **That was wrong** — they are in `REVIEW_NOTES.md`,
 which has tracked reviewer claims since the start, including a "Papers surfaced but NOT yet read"
 list of six. The ledger above and `REVIEW_NOTES.md` are complementary, not duplicative.
+
+
+## Ledger, continued — the arc/chord retraction + five unknowns (2026-08-23 13:05)
+*Answered in `reviewer_answers/10_five_answers_and_run_state.md`. All five were MEASURED, not recalled.*
+
+| # | point | state | where |
+|---|---|---|---|
+| R48 | **Reviewer retracts the arc/chord mechanism** (4 objections: within-block vs between-loop are different objects; pre-norm attn/MLP anti-correlation is a static block property; the ρ derivation assumed equal-length layer steps; the arc is confounded with the ‖h‖ trajectory) | **accepted — and nothing was built on it.** The only report change from the arc work was §4.3's scope, already in. The efficiency ratio, the ρ numbers and the `3/√3` null are not in the report and will not be | §4.3 scope note |
+| R49 | Q1: which grid produced the headline plateau [6,17]? | **done — dense every-integer 1..64.** All three headline rows share it, so [6,17] vs [6,14] is valid. On the sparse grid the same checkpoints read [8,16]/[8,12]/[8,12] and the difference vanishes. Grid now named in the headline table | §.headline table |
+| R50 | Q2: do §4.3's norms (6630@8, 30097@64) transfer to the 90M artifact? | **done — NO, and the reviewer was right.** 90M control is 2334@8 / 12424@64 (2.4–2.8× lower); normpen is 17.5 / 89.4 (~380× lower). Relative dilution survives (18.2×/26.6×/20.3× growth); absolute norms do not. **§4.6's radial-clamp levels are 46M-specific** and must be re-derived before being quoted against the shipped checkpoint | §4.3 transfer note |
+| R51 | Q3: was the local annealed run launched? | **done — launched, was silently producing nothing, fixed, relaunched 12:42.** `eval_every_tokens` typed as 1_250_000 vs the reference's 312_500 put the only checkpoint-save site 610 steps out against ~250 steps per chunk, so no save → no resume → every chunk restarted at 0. Two fixes: `train.py` saves on the `max_seconds` break; `run_anneal_local.py` derives its config from the reference checkpoint | R45's missing cell |
+| R52 | Q4: does §3.5 overclaim at μ_rec=40? | **done — partially.** §3.5 already stated the 0.030-nat cost, but not the decomposition. Added: ΔCE@1 **+0.0749/+0.1749** against ΔCE_best −0.0264/−0.0192, and both ΔCE_best sit **inside** the 0.0541 CUDA terminal replicate floor while both ΔCE@1 clear it. The deeper band is bought, not free | §3.5 decomposition block |
+| R53 | Q5: what is in §1? | the reserved placeholder, unchanged. User-owned (U1) | §1 |
+| R54 | **wd/lr screen landed** — 3e-3 optimal; wd 0.01 beats inherited 0.05 by 0.0190 (just clear of the 0.0150 floor); wd0 worse by 0.0243. **Δgain null across all six arms (±0.02), onset=8 for all five well-trained arms** | **done** | §6.0b screen block |

@@ -24,6 +24,7 @@ Outcomes, both worth having and neither assumed:
 """
 from __future__ import annotations
 import json, pathlib, sys
+import torch
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from model import Config as ModelConfig
 from train import TrainConfig
@@ -33,18 +34,35 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 LAYER_APPS_PER_S = 1100.0 * 18 * 3      # measured MPS throughput at mu_rec=18
 
 
+REF = "sd_dense_k5_s0"   # the dense-supervised half of the pair; already trained and local
+
+
 def main():
-    tok = 2_500_000
-    mcfg = ModelConfig(state_renorm=False)
+    # Derive the config FROM the reference checkpoint rather than re-typing it. Hand-matching got
+    # this wrong once in a way that cost 727s and produced nothing: `eval_every_tokens` was typed as
+    # 1_250_000 against the reference's 312_500, which at batch_size=8 puts the only checkpoint-save
+    # site 610 steps away while a chunk reaches ~250 -- so the run never saved, never resumed, and
+    # restarted from zero every chunk. Deriving makes every axis except the intervention identical
+    # by construction, which is also exactly what "matched pair" is supposed to mean.
     name = "local_anneal_sw75_s0"
-    tcfg = TrainConfig(run_name=name, batch_size=8, seq_len=256, device="mps",
-                       total_tokens=tok, eval_every_tokens=1_250_000, eval_batches=6,
-                       warmup_steps=40, supervise_k=5,
-                       supervise_k_final=1, supervise_switch_frac=0.75,
-                       min_train_loops=4, max_train_loops=32, seed=0)
+    ref = torch.load(ROOT / "checkpoints" / REF / "last.pt", map_location="cpu", weights_only=False)
+    mcfg = ModelConfig(**ref["model_cfg"])
+    tc = dict(ref["train_cfg"])
+    tc.update(run_name=name, supervise_k_final=1, supervise_switch_frac=0.75)
+    tcfg = TrainConfig(**tc)
+    tok = tcfg.total_tokens
+
+    # The chunking workaround must not be able to starve the save site (see train.py's max_seconds
+    # branch). Stated as a check rather than a comment because it is cheap and it already failed.
+    steps_per_eval = tcfg.eval_every_tokens // (tcfg.batch_size * tcfg.seq_len)
+    assert steps_per_eval <= 200, (
+        f"eval_every_steps={steps_per_eval} is too sparse for 240s chunks (~250 steps); "
+        f"the run would never checkpoint")
+    diff = {k: (v, tc[k]) for k, v in ref["train_cfg"].items() if tc[k] != v}
+    print(f"PRE-FLIGHT  {name} derived from {REF}; differs only in: {diff}", flush=True)
+
     cap = tok * 18 * 3 / LAYER_APPS_PER_S * 2.2
-    print(f"PRE-FLIGHT  {name}: k=5 -> 1 at 75% of steps, {tok:,} tokens, cap {cap/60:.0f} min",
-          flush=True)
+    print(f"  k=5 -> 1 at 75% of steps, {tok:,} tokens, cap {cap/60:.0f} min", flush=True)
     print(f"  matched to the existing local dense checkpoint sd_dense_k5_s0 "
           f"(same shape/schedule/tokens/seed; supervision is the only difference)", flush=True)
     out = ROOT / "checkpoints" / "anneal_local_results.json"

@@ -391,6 +391,23 @@ architecture is the same for both — only the *loss schedule and the loop sched
 μ_rec = 18 the annealed setting gives both at once (better CE than its control *and* a deeper band).
 At μ_rec = 40 it costs 0.030 nats to move the useful band from ~23 loops to 32–64.
 
+> **The μ_rec = 40 setting is a trade, and the decomposition says which way.** The sentence above
+> states the cost; it does not state what buys it, and the two are different claims. Decomposed
+> against the in-job dense control (2.5M tokens, seed 0, CUDA, `deep_anneal_mu40_results.json`):
+>
+> | arm | CE@1 | CE_best | plateau | ΔCE_best | ΔCE@1 |
+> |---|---|---|---|---|---|
+> | `da_mu40_dense` | 5.6513 | 5.4658 @24 | [16,40] mid 25.3 | — | — |
+> | `da_mu40_sw90` | 5.7262 | 5.4394 @32 | [24,48] mid 33.9 | −0.0264 | **+0.0749** |
+> | `da_mu40_sw75` | 5.8263 | 5.4466 @48 | [32,64] mid 45.3 | −0.0192 | **+0.1749** |
+>
+> Both ΔCE_best values fall **inside** this project's measured CUDA terminal-arm replicate floor
+> (0.0541, §4.15); both ΔCE@1 values clear it. So at μ_rec = 40 the ceiling improvement **is not
+> resolvable against noise** while the loop-1 damage is — the deeper band is *bought*, not free.
+> This is outcome B on the schedule axis, and it applies at exactly the schedule the task's premise
+> is about. The favourable reading at μ_rec = 18 (−0.081/−0.061 with ΔCE@1 also negative) does not
+> extend to μ_rec = 40, and this recommendation should be read as schedule-conditional.
+
 **Why the benefit does not die at scale — against the task's own counter-example.** The task names a
 large trainable value-embedding table as the kind of trick whose *"польза… быстро умрет при
 скейлинге"*, because its benefit is a fixed-size lookup that stops mattering as parameters grow. The
@@ -710,11 +727,20 @@ would silently invalidate them.
 > the headline moves.** The comparison below is now apples-to-apples — `src/eval.py`, same val shard,
 > same chunked protocol that produced the 46.0M figure:
 >
-> | run | tokens | CE | **val ppl** | bits/byte | plateau | loop gain |
+> | run | tokens | CE | **val ppl** | bits/byte | plateau *(grid)* | loop gain |
 > |---|---|---|---|---|---|---|
-> | previous headline | 46.0M | 4.0071 | 54.99 | 1.7330 | [5,14] | 0.2509 |
-> | **90M control** *(the config §3.5 describes)* | 90.0M | **3.6599** | **38.86** | **1.5829** | [6,17] | 0.3047 |
-> | **90M + norm penalty** *(best perplexity)* | 90.0M | **3.6250** | **37.52** | **1.5678** | [6,14] | 0.5611 |
+> | previous headline | 46.0M | 4.0071 | 54.99 | 1.7330 | [5,14] *(dense 1..64)* | 0.2509 |
+> | **90M control** *(the config §3.5 describes)* | 90.0M | **3.6599** | **38.86** | **1.5829** | [6,17] *(dense 1..64)* | 0.3047 |
+> | **90M + norm penalty** *(best perplexity)* | 90.0M | **3.6250** | **37.52** | **1.5678** | [6,14] *(dense 1..64)* | 0.5611 |
+>
+> **The grid is named in the table because the plateau statistic is grid-conditional and the swing is
+> large enough to change the story.** All three rows come from `src/eval.py`'s every-integer sweep, so
+> they are mutually comparable — which is what licenses reading [6,17] against [6,14]. On the sparse
+> `{1,2,4,8,12,16,24,32}` grid used elsewhere in this report the *same three checkpoints* read [8,16],
+> [8,12] and [8,12]: identical onsets, and the control-vs-penalty difference disappears entirely.
+> `src/plateau.py` documents a 17% midpoint swing from grid choice alone on the 46M curve. **A plateau
+> quoted without its grid is not a number**, and plateaus from different grids in this report are not
+> to be compared.
 >
 > **The best validation perplexity this project achieved is `exp(3.6250) = 37.52`**, on the
 > norm-penalty arm at 90.0M tokens. The plain configuration reaches **38.86**. Both re-score ~0.04
@@ -939,6 +965,25 @@ checkpoint; `u_t = h_t/‖h_t‖` is the unit state, the only thing `readout()` 
 | 16 | 10633 | 1.198 | 1.085 | 0.407 | 0.0105 | 0.9990 | 4.0212 |
 | 32 | 17513 | 1.198 | 1.088 | 0.404 | 0.0051 | 0.9998 | 4.0682 |
 | 64 | 30097 | 1.256 | 1.098 | 0.394 | 0.0026 | 0.9999 | 4.1579 |
+
+> **Does this transfer to the shipped 90M artifact? The shape does; the absolute numbers do not.**
+> Asked by the reviewer, and it was a fair challenge — the table above is the 46M model, and §3.5
+> describes a different checkpoint. Measured on a fixed 4×256 validation batch, all three:
+>
+> | checkpoint | ‖h‖@1 | ‖h‖@8 | ‖h‖@64 | @64/@1 |
+> |---|---|---|---|---|
+> | 46M no-state-renorm *(the table above)* | 1659.5 | 6639.7 | 30270.8 | 18.2× |
+> | **90M control** *(the artifact §3.5 describes)* | 466.6 | **2334.4** | **12424.4** | 26.6× |
+> | 90M norm-penalty | 4.4 | 17.5 | 89.4 | 20.3× |
+>
+> The dilution account is *relative* — ‖Δh‖/‖h‖ falling while ‖h‖ grows — and that survives in all
+> three arms (18–27× growth over the same range). What does **not** transfer is any absolute norm:
+> the 90M control sits 2.4–2.8× below this table, and the norm-penalty arm ~380× below it, which is
+> the penalty doing exactly what it is for. **Consequence for §4.6:** the radial-clamp levels were
+> chosen as `{‖h₁‖, ‖h₈‖, ‖h₁₆‖}` *on the 46M model*; applying those same absolute levels to the
+> shipped checkpoint would clamp it to roughly 2.5× its own natural scale. The clamp result is a
+> statement about the 46M model and is not to be quoted against the shipped one without re-deriving
+> the levels from that checkpoint's own norms.
 
 Three things follow, and none of them is contraction.
 
@@ -3465,6 +3510,33 @@ recalled.*
 - **Weight decay (0.05) was never screened at all.** It is not one of the five ablation axes and was
   never varied. For a block whose parameters are reused up to 48 times per step, that is a
   first-class axis, not a detail.
+
+  > **Both gaps are now closed by a screen, and the result is a useful null.** `tlab-hyper-screen`,
+  > six in-job arms at 2.5M tokens on one T4, ~875 s each, all sharing the sparse eval grid
+  > (`/tmp/ds_hyper/results.json`):
+  >
+  > | arm | lr | wd | CE@1 | CE_best | onset | ΔCE_best | ΔCE@1 | **Δgain** |
+  > |---|---|---|---|---|---|---|---|---|
+  > | `hp_wd0.01` | 3e-3 | 0.01 | 5.4532 | **5.3502** | 8 | **−0.0190** | −0.0179 | +0.0011 |
+  > | `hp_wd0.1` | 3e-3 | 0.1 | 5.4652 | 5.3686 | 8 | −0.0005 | −0.0059 | −0.0053 |
+  > | `hp_ref` *(inherited)* | 3e-3 | 0.05 | 5.4711 | 5.3692 | 8 | — | — | — |
+  > | `hp_wd0` | 3e-3 | 0.0 | 5.4821 | 5.3935 | 8 | +0.0243 | +0.0110 | −0.0132 |
+  > | `hp_lr6e-3` | 6e-3 | 0.05 | 5.5308 | 5.4424 | 12 | +0.0732 | +0.0597 | −0.0135 |
+  > | `hp_lr1e-3` | 1e-3 | 0.05 | 5.5545 | 5.4725 | 4 | +0.1033 | +0.0834 | −0.0199 |
+  >
+  > **LR:** 3e-3 is optimal of the three — 1e-3 costs 0.1033 and 6e-3 costs 0.0732. The inherited
+  > value is vindicated rather than merely defensible, which retires the "most likely cheap win" line
+  > above. **Weight decay:** 0.01 beats the inherited 0.05 by 0.0190, just clear of the 0.0150
+  > CUDA-dense replicate floor (§4.15); wd=0 is clearly worse (+0.0243), so decay is doing real work
+  > and 0.05 was not badly chosen. A ~0.02-nat win is available and was not taken, because re-running
+  > the 90M headline for it would cost more than it returns at this budget.
+  >
+  > **The column that matters for this report is Δgain, and it is null.** Every arm sits within
+  > ±0.02 of zero, and **onset is 8 for all five well-trained arms** — only the badly undertrained
+  > lr=1e-3 arm moves it (to 4, downward). Learning rate and weight decay buy *absolute loss* and do
+  > not touch *depth exploitation*. That is worth stating in both directions: it is a negative result
+  > about hyperparameter tuning as a route to the task's actual objective, and it is reassurance that
+  > the inherited LR was not quietly setting the depth conclusions this report is built on.
 - **No gradient checkpointing anywhere.** Activations are retained across every loop, which is why
   memory — not compute — is what bounds the deep schedules (§4.16b: μ_rec = 56 and 44 both OOM'd on a
   14.75 GiB card; 40 fits). Checkpointing every recurrent step is what Huginn does, and it would have
