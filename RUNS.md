@@ -878,3 +878,20 @@ before launch — width-independent — holds as far as the data goes and is not
 
 *A rerun would put the 896 arm in its own job. Not attempted: the deadline has passed and this is
 follow-up work.*
+
+## `tlab-w896-s0` — POST-DEADLINE follow-up, registered before launch
+
+`tlab-width-s0`'s 896 arm OOM'd sharing a T4 with two smaller arms. This runs it **alone at half the
+batch** (4 rather than 8), 2.5M tokens, seed 0, same tied control config.
+
+**It closes one gap and only that one.** §4.31 measures the collapse flat across hidden 224–896 **at
+initialisation** (12× parameters). `tlab-width-s0` measured it **trained** at 224 → **1.57** and
+448 → **1.59**. The 896 point is the top of the range and is missing trained.
+
+**Falsifier, unchanged from `tlab-width-s0`:** trained rank in **~1.5–1.9** ⇒ width-independent
+trained across the full 12×; **rising materially with width** (say > 2.5) ⇒ the collapse is partly a
+small-model effect and §4.7e's reach shrinks toward this model's size. **Prediction: 1.5–1.9**,
+recorded so it can be wrong.
+
+**32.6M parameters, far over the task's 10M cap — a diagnostic arm. No number from it is a result of
+this project's model.**

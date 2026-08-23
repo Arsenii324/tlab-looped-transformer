@@ -116,6 +116,13 @@ account of what was tried and failed.
 
 `../report.md` remains the full evidence base; every document here cites into it by section.
 
+**Figures — [*Where Loops Stop Paying*](https://claude.ai/code/artifact/0d9a564a-59c8-4604-ac4a-9ca942d6557f)** *(added after the 23:59 submission deadline; the
+submitted state is `main` at that timestamp).* Four charts of the three findings above: the released
+model's loop curve with its useful band, the annealing pair plotted against each arm's own optimum,
+depth-key rank against the number of distinct projections, and where each intervention's gain lands.
+**It introduces no claim that is not already here** — every value recomputes from arrays taken from
+these documents.
+
 **Русская версия:** [`ru/`](ru/) — **машинный перевод** восьми из девяти документов
 (`EXPERIMENTS.md` не переведён: его таблица генерируется из артефактов). **Авторитетной версией
 являются английские документы в этой папке**; при расхождении верна английская. Все числовые

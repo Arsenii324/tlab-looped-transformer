@@ -1,0 +1,23 @@
+name: tlab-w896-s0
+desc: "sec4.31 follow-up, second attempt: the 896-hidden arm alone at half batch. It OOM'd sharing a T4 in tlab-width-s0. Closes whether the TRAINED depth-key collapse is width-independent at the top of the 12x range. POST-DEADLINE."
+cmd: >
+  date +%s;
+  python -c "import torch,sys; sys.exit(0 if torch.cuda.is_available() else 1)" 2>/dev/null
+  && echo "TORCH_PREINSTALLED_OK skipping pip"
+  || pip install -q --root-user-action=ignore torch --index-url https://download.pytorch.org/whl/cu121;
+  pip install -q --root-user-action=ignore tokenizers datasets;
+  date +%s;
+  python main.py
+env:
+  docker:
+    image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
+  python:
+    type: manual
+    version: "3.11"
+    requirements-file: requirements.txt
+    local-paths:
+      - main.py
+outputs:
+  - results.json
+  - w896_s0_last.pt
+cloud-instance-type: gt4.1

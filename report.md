@@ -15,7 +15,9 @@ Released checkpoint: **https://huggingface.co/Arsen4ikVar/tlab-looped-transforme
 >
 > **What the submitted state is, since commits continue after the deadline.** The submission is
 > **`main` as of 23:59 MSK on 2026-08-23**. Anything committed after that timestamp is post-deadline
-> follow-up work and is marked as such where it appears — currently one item: `tlab-width-s0`
+> follow-up work and is marked as such where it appears. **Two items so far.** A figure page,
+> [*Where Loops Stop Paying*](https://claude.ai/code/artifact/0d9a564a-59c8-4604-ac4a-9ca942d6557f), linked from `submission/README.md` and carrying no claim not
+> already in these documents. And `tlab-width-s0`
 > (`bt1osf7htipu0t57puuc`), a three-width training run launched at 23:12 with its falsifier registered
 > in `RUNS.md` **before** submission, which cannot land before the deadline. *Its result is not part of
 > the submitted claim set.*
