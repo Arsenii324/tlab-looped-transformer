@@ -143,3 +143,27 @@ do NOT claim the bias causes saturation. Implemented as `src/anchor_response.py`
 *LayerNorm as Implicit Gain Control in Looped Transformers.* Extracted; relayed as claiming LayerNorm
 scales the Jacobian inversely with activation norm. **The specific claim has NOT been located in the
 source yet**, so nothing in the report cites it. Logged as obtained-but-unverified.
+
+## Citation audit, 2026-08-23 ~18:00 — every arXiv id in report.md vs papers/sources/
+`agy` job C (independent citation cross-check) never ran; this is the cheap substitute, done directly.
+
+- **28 arXiv-shaped strings cited**; 2 are regex false positives (`2567.9355`, `3675.1917` are not
+  arXiv ids — they appear in other contexts).
+- **15 verifiable from tarball on disk**: 2311.12424, 2502.05171, 2509.26314, 2510.25741, 2511.08577,
+  2604.11791, 2605.23872, 2606.04438, 2606.18524, 2606.20075, 2606.24898, 2607.15456, 2607.16051,
+  2607.27656, 2608.18230.
+- **11 NOT on disk**: 2503.08524, 2602.14759, 2603.15031, 2603.19714, 2603.21365, 2604.18839,
+  2605.09165, 2606.04678, 2606.22325, 2607.14427, 2608.11233. **All 11 are already flagged
+  second-hand / relayed / unverified within ±6 lines of their citation** — checked mechanically, not
+  by memory. No claim in this report rests on an unflagged unverifiable source.
+
+**2511.08577 (Think-at-Hard) re-verified from source**, since §6.0 row 22's retraction was about this
+exact paper: `3_method.tex:206` reads *"over 73\% of next-tokens are correctly predicted at the first
+iteration"* — the reviewer's figure, not the 85% a summarising web fetch produced. The report's other
+quote from it is also verbatim at `3_method.tex:207`.
+
+**2608.09444** (relayed claim that heterogeneous exit depths create OOD attention) is **not cited
+anywhere in report.md**, so there is nothing to flag. Had it been used, the reconciliation with
+§4.8/§4.8b would be: our ragged cache is safe *because* the per-depth states are nearly identical in
+the directions attention reads — which is the same dilution (§4.3) that kills depth utility. That
+unifies §4.3 and §4.8 rather than threatening either.
