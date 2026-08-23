@@ -450,6 +450,44 @@ as an open one in §6: whether the effect's magnitude survives more tokens — t
 −0.366 nats at 2.5M and only −0.030 at 90M, so a 2.5M-token effect is not evidence about a 90M-token
 model, and a 10M-token replication is running for exactly this reason.
 
+> **The sharper scale threat is not the magnitude — it is that the rule is stated as a *fraction*,
+> and the mechanism is keyed to *tokens*.** This is the one place where §3.5's recommendation may not
+> transfer, and the arithmetic is unambiguous:
+>
+> - §3.5 recommends `supervise_switch_frac = 0.90`: dense for 90% of **steps**, terminal-only for the
+>   last 10%.
+> - §4.18's account says what matters is that the trajectory is **formed** before the anchor is
+>   released, and §4.12 measures trajectory formation directly: **loop gain emerges with training and
+>   saturates at ~10–15M tokens** — an *absolute* token quantity, not a fraction of anything.
+>
+> The two rules therefore coincide at exactly one budget and diverge everywhere else:
+>
+> | budget | `sw90` switches at | vs gain saturation (~10–15M) |
+> |---|---|---|
+> | **2.5M** *(where all the annealing evidence lives)* | 2.25M | **before gain has emerged at all** |
+> | 10M *(the one replication)* | 9M | roughly **at** saturation |
+> | **90M** *(the artifact)* | **81M** | **long after** saturation |
+>
+> **So the fraction rule was validated in a regime where it switches pre-saturation, and §3.5
+> extrapolates it to a regime where it switches deep post-saturation. Those are not the same
+> intervention.** A token-keyed form — *dense until loop gain flattens, terminal-only thereafter* —
+> would put the switch at ~10–15M in every budget, which at 90M means terminal-only for the last
+> **~83%** of training rather than the last 10%. That is a different recipe, not a reparameterisation.
+>
+> **The one piece of evidence bearing on it points the wrong way for the fraction rule.** Across the
+> only two budgets measured in-job, as the switch point moves from pre-saturation to at-saturation,
+> ΔCE_best holds (−0.0710 → −0.0764) while **the loop-1 margin erodes by nearly 4×**
+> (−0.035 → −0.0092). Extrapolating that trend to a switch at 81M predicts ΔCE@1 crosses into
+> positive — i.e. **damage-driven, outcome B** — which is precisely what is already observed at
+> μ_rec = 40 (ΔCE@1 +0.0749 / +0.1749).
+>
+> **Stated as the honest status: the scale argument in this section defends the *mechanism* (zero
+> parameters, nothing to outgrow) and does NOT defend the *parameterisation*.** The token-keyed form
+> is the version this report would recommend for a larger budget, and it is **untested** — the
+> discrimination was pre-registered (`RUNS.md`, 12:40) but the run that would settle it did not fit
+> the window. A reader scaling this up should key the switch to loop-gain saturation and treat
+> `frac = 0.90` as an artifact of a 2.5M-token screen.
+
 ## 4. Experiments
 
 **What the nineteen experiments below are collectively evidence for, stated once so they read as an
