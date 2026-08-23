@@ -1366,6 +1366,34 @@ The likely reading is that the table's column is displacement from `h₀` rather
 increment — in which case it is mislabelled — but that has **not** been verified and no claim here
 depends on it.
 
+**Is the late motion invisible to the readout? No — and that eliminates the most attractive
+explanation for why usefulness ends at loop 8.** The trajectory never settles (below), yet CE stops
+improving around loop 8. A natural reconciliation: late motion drifts into a subspace the output head
+cannot see, so the model keeps computing and the readout stops registering it. The head is
+`final_norm(h)` into the **tied** embedding, and `E` is 4096×448 — its row space is therefore *all* of
+ℝ⁴⁴⁸, so "project the increment onto the head's row space" is 100% by construction. The testable
+version is whether late motion lands where `E` has **small singular values**, measured as the readout
+gain `‖Δlogits‖ / ‖Δu‖`:
+
+| loop | 90M control ‖Δu‖ | ‖Δlogits‖ | **gain** | | norm-penalty ‖Δu‖ | ‖Δlogits‖ | **gain** |
+|---|---|---|---|---|---|---|---|
+| 2 | 0.29987 | 62.11 | **207.1** | | 0.48680 | 157.66 | **323.9** |
+| 8 | 0.02559 | 5.47 | **213.6** | | 0.03267 | 10.21 | **312.4** |
+| 32 | 0.00520 | 1.13 | **216.3** | | 0.00516 | 1.69 | **326.6** |
+| 64 | 0.00257 | 0.58 | **226.2** | | 0.00213 | 0.68 | **319.9** |
+
+**The gain is flat.** It rises 9% over loops 2→64 in the control and does not rise at all in the
+norm-penalty arm, while `‖Δu‖` falls **117×**. A unit of angular motion at loop 64 moves the logits
+by as much as a unit of motion at loop 2 — `E`'s condition number is only 132, so there is no
+large null-ish subspace for the trajectory to hide in.
+
+**So late computation is fully visible to the readout and still useless.** That is a stronger and less
+comfortable statement than the invisibility account would have been: the problem is not that the model
+computes something the head cannot read, it is that **the direction it keeps moving in stops being an
+improvement.** It composes with `cos(du_t, du_{t−1}) → 0.9999` — the state travels an almost perfectly
+straight ray, and past loop 8 that ray points somewhere that raises CE (§4.3's reading (B)). Nothing
+here is hidden; it is aimed wrong.
+
 **The direct test: the unit state does not converge — it drifts logarithmically.** ρ is an indirect
 instrument, a linearisation whose deep-loop readings sit inside their own estimator bias. The direct
 question is whether `u_t = h_t/‖h_t‖` settles, and `u` is worth asking about because it is the
