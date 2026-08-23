@@ -40,10 +40,10 @@ statistic; use `src/plateau.py`, and compare midpoints only across a shared eval
 |---|---|---|
 | `DECISIONS.md` | every choice with a provenance tag (MEASURED / INHERITED / ASSUMED / UNEXAMINED) + 4 uncomfortable questions | a blind-spot pass; found that the MLP ratio was never screened and that 3 architecture axes rest on a retracted sweep |
 | `QUEUE.md` | **open points** (blocked / in-flight / deferred / user-owned) **and the R1–R47 reviewer-points ledger** | I twice audited only the newest reviewer message; the ledger is cumulative so that cannot recur |
-| `reviewer_answers/00–08` | one file per reply to the external reviewer | **files are sent at creation time and NOT re-sent after editing — corrections must be NEW numbered files** (learned via `05_RETRACTION_73_percent.md`) |
+| `reviewer_answers/00–27` | one file per reply to the external reviewer (**27 files as of 21:58**) | **files are sent at creation time and NOT re-sent after editing — corrections must be NEW numbered files** (learned via `05_RETRACTION_73_percent.md`) |
 | `papers/sources/` | LaTeX of 16 cited papers + `TASK_STATEMENT_ru.txt` | so citations can be checked, not trusted. Exists because I once "corrected" a relayed number from a summarising web fetch and was wrong |
 | `rebuild_review.sh` | regenerates branch `review` as ONE squashed commit | `/code-review` reviews the most recent commit, not the branch range. **Run before any review** |
-| `needs_user/` | one file per item blocked on the user | currently: wandb key rotation, §1 stimulus drafts |
+| `needs_user/` | one file per item blocked on the user | currently: wandb key rotation. *(The §1 stimulus drafts are moot — §1 was written by the agent.)* |
 | `src/plateau.py` + `test_plateau.py` | the useful-depth band; **replaces argmin everywhere** | 63/82 stored curves have argmin margins below the noise floor |
 | `src/gain_decomp.py` | Δgain = ΔCE@1 − ΔCE_best | separates "depth improved" from "loop 1 got worse"; the 90M norm penalty is 88% the latter |
 | `src/angular_budget.py` | angular path length, fixed-range + **untrained control** | the untrained control refuted my own interpretation of it |
@@ -69,7 +69,7 @@ statistic; use `src/plateau.py`, and compare midpoints only across a shared eval
 ## DELIVERABLE
 | file | what |
 |---|---|
-| `report.md` | **§1 is reserved for the user's own idea narrative — I must not write it.** §2–§8 are mine. |
+| `report.md` | **§1 is AGENT-WRITTEN, and says so in a banner at its own head.** *(Corrected 21:58. This line previously read "§1 is reserved for the user's own idea narrative — I must not write it." That instruction was superseded when the author asked for §1 to be written from the dated record; leaving the old line stood as a visible contradiction of the disclosure, on the single point the task grades most sensitively.)* §1 is the coding agent's **reconstruction from artifacts** — not the author's account of their own reasoning. §2–§8 are also the agent's. |
 
 ## STALE (superseded; kept for history, do not trust on conflicts)
 `BRIEFING.md` (predates the Lemma-2 attribution and the clamp result), `HANDOFF.md` (replaced by `OPS.md`).
@@ -100,12 +100,12 @@ statistic; use `src/plateau.py`, and compare midpoints only across a shared eval
 | file | what it prevents |
 |---|---|
 | `monitor_kaggle.sh` | A wrong slug making a live run look dead. Reads `KAGGLE_SLUGS.txt`; auto-downloads output on any terminal state. |
-| `ds_watchdog.sh` | A dead local attach silently losing a job's **completion download**. Re-attaches on staleness, not on an error string. Fired 4× today. |
+| `ds_watchdog.sh` | ~~A dead local attach silently losing a job's completion download.~~ **KILLED 18:40** for re-attaching an already-finished job; by 20:08 three attach logs had frozen with nothing covering it (`OPS.md` §7b #29). Harvest via `download-files --id`, never an attach log's step count. |
 | `monitor_failures.sh` | Alert fatigue: reports each distinct failure signature **once**, replacing a monitor that re-fired stale terminal states every cycle. |
 | `run_eval90.sh` | Swapping the headline on a cross-protocol comparison. Waits for GPU idle, then re-scores both 90M checkpoints under the protocol that produced the current headline. |
 
 ## Standing rules that outlive any session
-- `report.md` §1 is the user's. Do not write it.
+- `report.md` §1 **is agent-written** (from `LOG.md`, §6.0's rows and `RUNS.md`'s pre-registrations, at the author's instruction) and carries an authorship banner. **Do not describe it as the author's anywhere.**
 - Nothing pushed to GitHub/HF without explicit say-so.
 - Never overwrite a published `eval_*.json` — back up, restore, verify md5.
 - Budget arms by **tokens**, not wall clock.

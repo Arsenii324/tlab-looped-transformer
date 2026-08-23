@@ -100,6 +100,14 @@ moved was the band, not the ceiling.
 >
 > **So the recommendation is: anneal if you want the useful band deeper; do not expect it to lower the
 > loss.**
+>
+> **And one qualifier on the word "in-job paired" as it applies to these arms specifically.** The
+> kernel's `sample_supervise_idx` consumes **zero** RNG draws at `k = 1`, so an annealed arm stops
+> advancing the shared random stream at its switch point and sees **different batches** from its dense
+> control for the final ~10% of training (§4.26). Not a bias — both draw i.i.d. from the same shard —
+> **but it is added variance on precisely the comparison whose CE claim was withdrawn for variance.**
+> It does not touch the band result, which reproduces the same two edges at five seeds and two
+> budgets. *Every other paired comparison in this submission is batch-identical throughout.*
 
 **A second recipe-level lead, and it is n = 1.** Keying the switch to an absolute token count rather
 than a step fraction wins by **−0.2208** at 10M — ~4× the floor and the largest supervision effect

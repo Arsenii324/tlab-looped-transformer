@@ -5,6 +5,16 @@
 specific predicted mechanism**, the regime it was tested in, and **why it failed** — a null with a
 mechanism, not "we tried it and nothing moved".*
 
+> **One qualifier on "in-job paired", and it applies to exactly one family of comparison here.**
+> Arms in one job share a shard, a tokenizer and a seed, and for every comparison in this document
+> they also draw **identical batches**. **The exception is the supervision-annealing pairs**: the
+> kernel's `sample_supervise_idx` makes a zero-size draw at `k = 1`, which consumes no RNG state, so
+> an annealed arm stops advancing the shared stream at its switch point and sees different batches
+> from its dense control for the final ~10% of training (§4.26). **It is not a bias** — both arms draw
+> i.i.d. from the same shard — **but it is added variance, and it lands on the one comparison that was
+> withdrawn for variance.** Every other pair here — LoRA, XSA, duo-causal, the depth gates, the pins —
+> is batch-identical throughout.
+
 **Two framing facts, because they decide how much these are worth.** The largest effects in this
 project are **negative**: 0.25, 0.74 and 1.36 nats, against positives of 0.03–0.30 — measured against
 **in-job controls** (arm and control in the same job, same shard, same tokenizer, same seed), with a

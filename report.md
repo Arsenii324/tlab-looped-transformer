@@ -6277,6 +6277,38 @@ auditing something else; **this is the first deliberate three-way measurement an
 driver/allocator differences between job launches. Three points is enough to measure the spread and
 not enough to attribute it.*
 
+> ### The objection that these are three different quantities, and why it does not apply — but a
+> sharper fact does `[RANK-PROJECTION]`
+>
+> **The objection, raised at 21:50:** each job trains its own BPE, so a different vocabulary gives a
+> different per-token entropy; those three numbers would then be *three different quantities* rather
+> than three noisy measurements of one, and quoting a spread would invite an invalid comparison.
+>
+> **Checked, and it does not apply to these three.** Every DataSphere kernel here trains its
+> tokenizer by the same deterministic procedure — first 5,000 documents of a fixed non-shuffled
+> stream, fixed vocab size, fixed special tokens. **The `train_tokenizer` function is byte-identical
+> across all four frozen kernels** (`runs_frozen/{ds_diversity,ds_pin2,ds_dc_s0,ds_recmethod}`,
+> md5 `1dab774d…`). **So all DataSphere jobs share one vocabulary, the three controls measure the same
+> quantity, and 0.0914 is genuine drift.**
+>
+> **The sharper fact the objection points at, which IS true and is more useful.** The DataSphere
+> vocabulary is **not** the shipped one: the kernel applies an **NFKC normalizer** and
+> `BPE(unk_token="<unk>")` over 5,000 documents, while `src/train_tokenizer.py` applies **no
+> normalizer** and collects by character budget. **That is why a DataSphere checkpoint evaluated
+> against `configs/tokenizer.json` reports CE ≈ 9.3 against a chance level of 8.3178** — the failure
+> that produced tonight's quarantined artifact. **Absolute CE and bits/byte are therefore not
+> comparable between DataSphere arms and local/Kaggle arms at any magnitude**, and no correction
+> factor makes them so.
+>
+> **And the converse, verified rather than assumed: Kaggle's tokenizer IS the shipped one.**
+> `kaggle/main.py` saves its tokenizer beside the checkpoint, and the file returned by
+> `tlab-seed-extension` is **byte-identical** to `configs/tokenizer.json` (same md5, 4,096 of 4,096
+> token-id pairs equal). **So Kaggle arms and local arms are absolute-comparable, and Kaggle
+> checkpoints can be re-evaluated locally** — which is what makes §4.25c possible at all.
+>
+> **The rule this yields, replacing the vaguer one:** *in-job Δ always; absolute CE only within a
+> tokenizer family — {local, Kaggle} is one family, DataSphere is another.*
+
 > **A related hazard found in the same check, with no result affected.** `dv_lora_r4_s0`'s stored
 > `model_cfg` carries `cond_fixed_branch=False`. In the **frozen kernel that actually ran it**
 > (`runs_frozen/ds_diversity/main.py:99,724`) that field is a **`bool`** and the logic is
@@ -6613,6 +6645,7 @@ config change that was never run against a job that finished.*
 | 19 | **A sweep died on its first arm and took the paired control with it** (CUDA OOM at 72 loops). | the job's terminal state | lost the μ_rec=56 pair; a per-arm OOM guard now records the failure in 94s instead |
 | 33 | **Nobody had read this report end to end — including me — across three same-day retractions.** Propagation after each withdrawal was *targeted*: grep the withdrawn **number**, fix every site that quotes it. That catches numbers and misses **claims restated in words**. | the first end-to-end read, 2026-08-23 17:40–17:50 | **Twelve defects, three of them serious, none findable by grep.** §3.5 restated *both* withdrawn claims ("better CE than its control", "band from ~23 loops to 32–64") four lines below their own withdrawal blocks; §8 still carried `+0.022 nats` — the **cross-job** control §4.17 had explicitly replaced with an in-job one that *reverses the sign* to −0.0264; §4.2's "three readings" still said loop gain was **flat** 120 lines after its own paired re-measurement overturned exactly that. Also: a false `iff` on `σ_max` contradicting §2 and its own correction block; the retracted unseeded **1.70** quoted as live ten lines after being retracted; a plateau quoted with no grid in the §3.5 table, violating this report's own rule; a stale "the `.npz` was lost" caveat on numbers that had since become load-bearing (re-verified from the artifact — all match); one argmin count printed as two different totals in five places; a broken table row and a duplicated clause. **The lesson is specific: a retraction needs a *prose* pass, not a *number* pass** |
 | 34 | **The fix for row 23 does not work, and was recorded as done in two documents.** Row 23's remedy was to add the checkpoint to `outputs:` in 23 DataSphere configs. It was added **as a glob**, `"*_last.pt"`. `tlab-operator-diversity` (`bt1sglqurmj6frrmsfrk`) then completed all three arms, wrote all three `.pt` files (`main.py:886`, unconditional), and `download-files` returned **1 file, 11.5 KB — `results.json` alone.** | pulling a finished job's outputs and finding the weights absent *again* | **22 of 26 `ds_*/config.yaml` use that glob**, so the protection believed to cover every future job covered none. The likely mechanism is that DataSphere resolves `outputs:` against the local working directory at *submit* time, when no `*_last.pt` exists yet — unconfirmed, and the rule does not depend on it: **list every output file explicitly by name, never by glob.** Cost here is concrete: the DS depth-gate weights were the measurement that would have settled whether that arm's −0.2950 is real, and they are gone. **Same shape as row 26 one level over** — there a fix landed in the README while the path stayed broken; here it landed in the config and was never run against a job that finished. *A fix that has not produced the artifact it was meant to produce is a hypothesis* |
+| 35 | **A guard that only fires inside one function is not a guard on the quantity.** `src/eval.py` has checked CE against chance for weeks — a vocabulary mismatch does not raise, it reports CE ≈ `ln(4096) = 8.3178`, which is exactly why the check exists. A one-off analysis script re-evaluated DataSphere checkpoints locally, **never called `eval.py`**, obtained best CE **9.2692** and **9.4278** — *above chance* — with the optimum at the last grid point, and wrote a plausible-looking JSON into `checkpoints/`. | reading the raw minimum against chance before deriving anything from it, 2026-08-23 21:24 | **Nothing had been written from it** and the shipped tokenizer was unmodified (gate re-run: PASS, \|diff\| 0.0020). Root cause: **every DataSphere kernel trains its own BPE — NFKC normalizer, `unk_token`, 5,000 docs — and returns weights WITHOUT `tokenizer.json`**, so those checkpoints cannot be evaluated against `configs/tokenizer.json` at all (§4.27). Quarantined, not deleted. **Then the same omission was repeated**: `tlab-untie-s0` was launched at 21:48, 24 minutes later, still without `tokenizer.json` in its `outputs:` — recorded in `RUNS.md` rather than corrected retroactively. The structural fix is `src/chance_guard.py`: the check now belongs to the **quantity**, importable by any script, with `eval.py` delegating to it. *Verified to fire on the quarantined artifact and stay silent on a real curve.* |
 
 **The pattern, stated once.** Four of the five most expensive errors (#1, #3, #4, #5) share a shape:
 *a number that looked fine in a summary and was wrong in the raw.* None was a coding bug in the
