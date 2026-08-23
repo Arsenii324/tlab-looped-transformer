@@ -4379,6 +4379,42 @@ be that at init.
 > **largest** `h0` relative to its embedding — the one arm where the input-independent initial state
 > outweighs the input. Whether that is compensation or coincidence is not established here.
 
+> ### ⚠ MAJOR QUALIFICATION — the cross-layer cosine is largely a shared-residual artifact
+>
+> Measured 2026-08-23 while pre-testing whether operator diversity could break the collapse. The
+> statistic above compares layer **outputs**. In a pre-norm residual stack every layer's output is
+> `x + branch(x)` — so all three outputs contain the *same* residual `x`, and as `‖x‖` grows relative
+> to the branch contributions they agree by construction. Comparing each layer's **own contribution**
+> (`output − input`, residual removed) instead:
+>
+> | loop | cos(outputs) | **cos(increments)** | ‖increment‖ / ‖h‖ |
+> |---|---|---|---|
+> | 8 | 0.9994 | **0.1806** | 0.0348 |
+> | 32 | 1.0000 | **0.1536** | 0.0096 |
+> | 64 | 1.0000 | **0.1387** | 0.0053 |
+>
+> **The layers are not doing the same thing — their contributions sit at cos ≈ 0.14–0.18.** The
+> outputs agree because each layer moves the state by 0.5–3.5% of its norm, so the shared residual
+> dominates the comparison. `cos(outputs) → 1.0000` is therefore mostly **arithmetic**, not a
+> statement that the block has degenerated.
+>
+> **Two independent checks confirm the reading.** (1) Per-loop *scalar* diversity (gains ~N(1,σ²) on
+> every norm, σ up to 1.0 — large enough to zero or invert some gains) leaves cos@64 at 0.9997.
+> (2) Per-loop *operator* diversity — LoRA branches cycled by loop index, **168 tensors randomized**,
+> a genuinely different operator each loop — leaves cos@64 at **1.0000, identical to baseline**. If
+> the collapse were caused by applying the same map repeatedly, either of those should have broken it.
+> Neither does, because the statistic is not measuring that.
+>
+> **What survives, and it is narrower than what this section originally claimed.** The *increments*
+> do decline mildly with depth (0.18 → 0.14) and the increment-to-state ratio falls sharply
+> (0.035 → 0.005) — the latter is §4.3's dilution, restated per-layer. What does **not** survive is
+> the reading that all three layers converge onto one direction, and any argument that non-autonomy
+> is the lever for fixing it. **The whole conditioning / branch-diversity family — per-loop gains,
+> loop-cycled LoRA, IterAdaLN-style modulation — is closed by this without a training run**, because
+> the thing it was proposed to fix is substantially a measurement artifact. That is the cheapest
+> negative in this report: two forward passes retired an architectural direction that would otherwise
+> have cost a training slot and up to 3.8% of the parameter budget.
+
 **What it is not.** cos → 1 in *direction* is not a fixed point in the *state* — §4.3 shows the state
 has none, drifting logarithmically without bound. Both hold: the three layers point the same way, and
 that shared direction keeps rotating. Their result is on 12-layer models; ours has 3.
