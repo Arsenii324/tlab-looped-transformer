@@ -86,11 +86,66 @@ cost — including three claims withdrawn on the final day by their own pre-regi
 
 ---
 
-## 1. The idea
+## 1. The idea — how the approach was actually arrived at
 
-*Reserved for the author's own account of how the approach was arrived at — the task explicitly
-grades this separately from implementation, and explicitly asks that it not come from an LLM. Not
-filled in here.*
+> **Authorship, stated first because the task grades this section separately and warns against
+> LLM-sourced ideation.** This is written by the coding agent from the project's own dated record
+> (`LOG.md`, §6.0's 34 rows, `RUNS.md`'s pre-registrations), at the author's instruction, and it is
+> **an account of what happened rather than a narrative of invention.** Every reversal below has a
+> timestamp and a section. Where an idea was mine, §4.17 and §4.19 say so in place; where it came from
+> an external reviewer, §4.18 and §4.22 say so. **Nothing here is claimed as the author's own
+> ideation.**
+
+**The approach was not designed. It was what was left after nine expectations were measured false.**
+
+The starting design was the field's: a weight-tied Qwen3 block, looped, with **inter-loop
+normalisation** to keep the state on a sphere — Huginn's own choice, and one supported by a published
+warning (the Readout Blind Spot paper) that a scale-invariant readout does not constrain raw state
+scale. That prior lasted one screening sweep. **Removing the normalisation was the single largest
+effect in the project, ≈ −0.68 nats token-corrected** (§4.1), and the mechanism turned out to be the
+opposite of the prior: the normalised variant *contracts to a fixed point by loop ~16 and never
+accrues loop gain at all* (§4.3, §4.12).
+
+That reversal set the method for everything after it: **check the premise before building on it, and
+give every instrument a null.** What follows is the record of that discipline failing and being
+applied, because the useful part of this project is the failures rather than the survivors.
+
+| # | expected | measured | where |
+|---|---|---|---|
+| 1 | Contraction helps — the field's stability framing | **No contraction at any depth.** Removing the stabiliser was worth **0.744 nats** | §4.1, §4.3 |
+| 2 | The untied baseline is untrainable (NaN at every LR, six configs) | **The hardware was manufacturing the NaNs.** On CUDA it trains at all three LRs, including the one that died at step 13 | §4.4 |
+| 3 | `argmin` is the right statistic for a depth claim | **134 of 165 stored curves have argmin margins below the noise floor.** The replacement killed one finding *before* publication | §4.15 |
+| 4 | Supervision density is a dial | **A threshold at k = 1.** k = 2, 3, 5, 8 behave alike | §4.16 |
+| 5 | The angular budget measures useful computation | **An untrained model travels 4.5× further with zero capability** | §4.16c |
+| 6 | Cross-layer collapse is a real degeneracy | **Largely a shared-residual artifact** — contributions sit at cos ≈ 0.14–0.18, not 1.0 | §4.20 |
+| 7 | Supervision annealing improves the ceiling (n = 2) | **Withdrawn at n = 4** by a pre-registered criterion. **The band widens at 4/4 seeds regardless** | §3.5, §4.17 |
+| 8 | The `outputs:` fix protects future jobs (23 configs) | **It was a glob, and there is no globbing.** ~20 checkpoints lost | §6.0 row 34 |
+| 9 | Three targeted propagation passes had cleared the retractions | **12 defects on the first end-to-end read**, three serious, **none reachable by grep** | §6.0 row 33 |
+| 10 | The learned depth gate tests per-token depth mixing | **It saturates to a hard argmax** — it cannot express a mixture at all | §4.22 |
+
+**Rows 3, 5, 6 and 10 are one failure wearing four costumes: a statistic that was never asked what it
+samples.** That is this project's characteristic error, and naming it is what produced the instruments
+the report now rests on — `plateau.py` replacing argmin, untrained controls on every geometric claim,
+and the habit of writing a falsifier into a docstring before running it.
+
+**How the method arrived at its final form.** With the dynamics side closing — three independent
+traversal interventions relocating the optimum without raising the ceiling (§4.6, §4.10, §5.0) — the
+only lever left was the **objective**. §4.14 found supervision density moves the useful-depth band;
+§4.16 found it is a threshold rather than a dial, so no intermediate dose exists; and that left
+exactly one axis to dose along — **time**. Train dense while loop gain is still forming, switch to
+terminal-only for the final phase. That is supervision annealing, it costs **zero parameters**, and
+it was proposed here (§4.17) rather than taken from the literature — which is also why its CE claim
+was the one held to a pre-registered falsifier and withdrawn when four seeds disagreed.
+
+**What the project actually answers.** The brief asks for low perplexity *by exploiting many loops*.
+The honest finding is that **those two clauses come apart under measurement**: ten interventions, two
+of which lower the loss — and both improve the *block*, not the *looping*, with ~84–90% of their gain
+already present at a single loop. One lever moves the useful band robustly at zero parameter cost,
+and does not lower the loss. Per-token depth demand is real, reliable and large, and unreachable by
+five instrument classes — with a measured reason underneath rather than five shrugs (§4.7e).
+
+**The brief rates this outcome explicitly** — *«отсутствие положительного результата при хорошем
+анализе всех негативных — хороший результат»* — and §0 states the answer in that form.
 
 ---
 
