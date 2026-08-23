@@ -2992,7 +2992,7 @@ it learns to make them more interchangeable.*
 > **An untied stack at identical scale has essentially full-rank, near-orthogonal depth *keys*. The
 > tied loop has 2.7 of 33.**
 >
-> ### ⚠ CORRECTED 20:01 — most of that 11.7× is PROJECTION randomness, not representation diversity
+> ### ⚠ CORRECTED 20:01 `[RANK-PROJECTION]` — most of that 11.7× is PROJECTION randomness, not representation diversity
 >
 > **The confound, raised against this result within the hour it was written, and it is real.** In an
 > untied stack layer *i* has its **own** `W_K^(i)`, so `K_i = norm(h_i)·W_K^(i)`. If the untied states
@@ -4820,7 +4820,7 @@ mean **−0.0710**, each 4–5× the measured in-job floor (0.0150, §4.15) — 
 *depth* shift exactly (17.0 at both seeds) but its CE advantage **flips sign** (−0.0656, +0.0906;
 mean +0.0125). So the pre-registered claim holds for `sw90` and fails for `sw75` — **at n=2**.
 
-> ### ⚠ WITHDRAWN AT n=4 — 2026-08-23 ~15:37. This section's `sw90` claim does not survive seeds 2/3.
+> ### ⚠ WITHDRAWN AT n=4 `[WITHDRAWN-ANNEAL-CE]` — 2026-08-23 ~15:37. This section's `sw90` claim does not survive seeds 2/3.
 >
 > `RUNS.md` pre-registered, before this result existed: *"if the four paired differences straddle 0,
 > or their mean falls inside the 0.0541 CUDA terminal floor, §3.5's annealing recommendation is
@@ -5383,7 +5383,7 @@ the local −0.0514 sits **inside** the MPS floor (0.031–0.068) and is not ind
 **This is the only CE claim in this report that survives a multi-platform replication** — subject to
 the restriction the block immediately below shows the claim depends on.
 
-> ### ⚠ THE `rank ≥ 4` RESTRICTION IS POST HOC, AND THE CLAIM DEPENDS ON IT
+> ### ⚠ THE `rank ≥ 4` RESTRICTION IS POST HOC, AND THE CLAIM DEPENDS ON IT `[POSTHOC-LORA-RANK]`
 >
 > Stated in the same breath as the interval, because it decides it. **Over all five arms the interval
 > covers zero:** mean −0.0498, sd 0.0843, SE 0.0377, **95% t-interval [−0.1545, +0.0549]**. The
@@ -5486,7 +5486,7 @@ built to do contributes at most 0.012 nats of it, which is inside the floor. The
 training-time effect: routing the final loss through a softmax over all `r` states gives every loop a
 direct gradient path, which is dense supervision by another name (§4.14, §4.16), not depth selection.
 
-> ### And the same argument applies to the LoRA arms — which means the positive is NOT about diversity
+> ### And the same argument applies to the LoRA arms — the positive is NOT about diversity `[CAPACITY-NOT-DIVERSITY]`
 >
 > An earlier version of this paragraph said a loop-cycled adapter *"does act at r = 1 (it applies
 > branch 0), so unlike the gate there is no inertness argument."* **That is exactly backwards on the

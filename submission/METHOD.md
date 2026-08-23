@@ -55,7 +55,7 @@ the third relocates nothing once argmin is replaced by a statistic that can bear
 nulls across three mechanisms are what license the positive claim: *the ceiling belongs to the path,
 and the loss decides where along it you stop.*
 
-> ### ⚠ What annealing does and does not do — the CE half is WITHDRAWN
+> ### ⚠ What annealing does and does not do — the CE half is WITHDRAWN `[WITHDRAWN-ANNEAL-CE]`
 >
 > **Withdrawn at n = 4** by a criterion registered before the data existed. Seeds 0–3 give ΔCE_best
 > −0.0811 / −0.0609 / **+0.0482** / −0.0902; mean −0.0460 sits inside the 0.0541 floor; the paired

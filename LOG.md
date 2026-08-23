@@ -2737,3 +2737,43 @@ that lower the loss** — one costing +4.5% of parameters (LoRA, ~90% at r=1) an
 **Scope: one seed, 2.5M tokens.** `tlab-xsa-s1` (**bt146dpichvsg0hmo19b**) launched 20:00 for a second
 seed; this project has withdrawn two claims for exactly the n=1 failure and this one is large enough
 to matter.
+
+## 2026-08-23 20:27 — `dg_norm` RESOLVES THE HIGHEST-STAKES CELL, and it fires the pointed prediction
+
+`tlab-duocausal-s0` SUCCESS; **all four `.pt` returned** (explicit `outputs:` again). All four arms at
+step 1707 against an in-job control at step 1707.
+
+**GATE 1 first, as registered at 18:51 — before any CE reading.** Threshold: effective-loops-mixed
+**≥ 1.5**, else it is a selector and the CE is uninterpretable as a mixture result.
+
+| r | effective loops mixed | top weight (uniform) | frac > 0.99 | gate |
+|---|---|---|---|---|
+| 8 | **7.58 / 8** | 0.2170 (0.1250) | **0.000** | PASS |
+| 16 | **14.96 / 16** | 0.1353 (0.0625) | 0.000 | PASS |
+| 32 | **29.84 / 32** | 0.0834 (0.0312) | 0.000 | PASS |
+
+`‖depth_gate_head‖ = 5.1722`, learned `tau = 1.8395`. **The scale-invariant rewrite WORKS** — a
+genuine near-uniform soft mixture, against the broken raw-state gate's **1.01-1.05 of r** with 95-98%
+of tokens above 0.99. sec4.22's diagnosis was right and the fix does what it was designed to do.
+
+**And with a WORKING mixture the CE gain is −0.0012.** Essentially zero; far inside every floor.
+
+**That is verbatim the pointed prediction registered 19:22:** *">= 1.5, near r, no gain => sec4.7e's
+rank collapse is the binding constraint, and this reduces to sec4.7c's static-mixture null WITH THE
+MECHANISM IDENTIFIED. Stronger than either result alone."*
+
+**So sec4.7e is confirmed rather than refuted, by the one measurement that could have refuted it.** A
+learned per-token mixture over depths, with a learned temperature, free to weight any loop for any
+token, finds **nothing to gain** -- because a token's depth keys span ~1.6 of 32 dimensions and there
+is nothing to discriminate between. The registration named both outcomes and was **not touched** after
+sec4.7e gave a reason to expect this one.
+
+**Do NOT read its band as depth.** `dg_norm` shows [12,24] mid 17.0 against the control's [8,20] mid
+12.6 -- but `RUNS.md` 17:40 pre-registered that the gate mixes over loops 1..r, so **its plateau is
+over mixture-window size, not depth**, and is excluded from the band tables. Caveat written before the
+run.
+
+**Also landed: duo-causal W=3 at seed 0, dCE_best = −0.0871** (~5.8x floor), band [8,16] mid 11.3 vs
+control [8,20] -- **narrower**. But the dose-response is **NON-MONOTONE**: W=1 (0), W=2 (+0.0093),
+W=3 (−0.0871). Per sec4.10's own reasoning, non-monotonicity across a swept parameter is the signature
+of noise rather than an effect. **Seed 1 is still running and decides it.** No claim until then.

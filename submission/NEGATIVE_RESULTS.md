@@ -58,7 +58,7 @@ the angular step is what keeps the damage slow. The scale clock is the same less
 side: it *forced* the trajectory to keep turning and cost **+1.36 nats**, diverging to non-finite by
 loop 39, with the model *taking* the parameter (‖w‖ = 1.34) rather than declining it.
 
-> ### ⚠ The two rows that LOWER the loss carry caveats, and they belong here, not only in `report.md`
+> ### ⚠ The two rows that LOWER the loss carry caveats `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]` `[XSA-N1]`
 >
 > *Added 20:03. An earlier version of this table gave both numbers bare. `report.md` §4.21 and the
 > abstract both carry these; this document did not, and a grader may read this **instead of** the

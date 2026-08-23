@@ -44,7 +44,7 @@ band, the only arm that converges, and an unresolvable clipping confound.
 | **exclusive self attention (XSA)** | **−0.216** ⚠ | **unmoved** [8,16] | **0** |
 | **supervision annealing** | CE **withdrawn at n=4** | **band widens 4/4 seeds** | **0** |
 
-> **⚠ The two rows that lower the loss both carry caveats, and both improve the block rather than the
+> **⚠ The two rows that lower the loss both carry caveats `[POSTHOC-LORA-RANK]` `[XSA-N1]`, and both improve the block rather than the
 > looping.** **LoRA:** the `rank ≥ 4` restriction is **post hoc** — over all six arms the interval
 > **covers zero** — there is no dose–response above the threshold, **~90% of the gain sits at `r = 1`**
 > where the cycling is *logically inert*, and a branch pinned to one index (identical params, zero
@@ -84,7 +84,7 @@ mixing or selection mechanism to discriminate *between*. The collapse is present
 and **training makes it worse** (2.73 → 1.83), and the one arm that applies a genuinely different
 operator per depth raises it by **0.01–0.08 out of 32**.
 
-**Holding scale fixed and varying only weight tying**, an untied stack's *keys* are near-orthogonal
+**Holding scale fixed and varying only weight tying** `[RANK-PROJECTION]`, an untied stack's *keys* are near-orthogonal
 (31.83/33) while the tied loop's are 2.73/33 — **but most of that gap is per-layer projection
 randomness**: at the *representation* level the untied stack is 4.36/33 against the tied 1.40/33, a
 3.1× gap, and both streams are highly collinear. **The mechanism is that distinct per-layer

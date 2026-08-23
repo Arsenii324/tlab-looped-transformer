@@ -121,7 +121,7 @@ tied-vs-untied:
 **11.7×, with smallness held fixed by construction.** An untied stack *at identical scale* has
 essentially full-rank, near-orthogonal depth keys.
 
-> **CORRECTED 20:01 — and the correction changes the mechanism, not the conclusion.** Most of that
+> **CORRECTED 20:01 `[RANK-PROJECTION]` — and the correction changes the mechanism, not the conclusion.** Most of that
 > 11.7× is **projection randomness**, not representation diversity: each untied layer has its own
 > `W_K`, and 33 independent random projections of even an *identical* state are near-orthogonal by
 > construction. Holding the projection fixed, the untied stack's depth **states** have effective rank
