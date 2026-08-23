@@ -2258,6 +2258,46 @@ trajectory account and its failure there is the stronger direction). The four si
 same ones §4.7 swept; a fifth signal is not ruled out, and §4.7b's `cv 0.068 vs 0.798` diagnostic says
 what a fifth would have to look like.
 
+### 4.7c No static *mixture* over depths reaches the headroom either
+
+§4.7 shows no label-free **rule** reaches the per-token headroom. Every rule tested has to **commit**
+to one depth. The obvious next move — and the one an external reviewer proposed — is not to select at
+all: weight the states `{h_t}` the loop already produced and let the readout see a combination. That
+is the mixture-over-depths family (distinct from mixture-of-experts, which §3.3 excludes on parameter
+arithmetic; this adds no experts and combines states that already exist).
+
+**Tested as a readout with zero training** (`src/depth_mixture.py`), because if no *static* weighting
+beats the best single depth then a learned gate conditioned on the same states is very unlikely to,
+and the proposal dies for free. Convex mixtures swept: every single depth (the baseline family),
+uniform over contiguous windows `[a,b]`, exponential tilts toward deep, and all equal-weight pairs.
+None consults the target. Baseline is the **best single depth on the same batch** — not loop 1, and
+not the oracle, which uses the label.
+
+| checkpoint | best single | best static mixture | **Δ** |
+|---|---|---|---|
+| 90M control | `single@9` 3.6805 | `uniform[1,16]` 3.6790 | **−0.0015** |
+| `local_anneal_sw75_s0` | `single@18` 5.4425 | `uniform[12,24]` 5.4425 | **−0.0000** |
+| `sd_dense_k5_s0` | `single@12` 5.4920 | `pair(4,16)` 5.4917 | **−0.0003** |
+
+**All three null, by a wide margin.** The pre-registered bar was the §4.15 same-config replicate floor
+(0.0527, n=3); the largest effect found is **35× smaller than that**. On the annealed checkpoint the
+best mixture does not beat the best single depth at four decimal places at all.
+
+**This extends §4.7's negative from selection to combination**, which is the materially stronger
+claim: *the per-token depth headroom is reachable neither by choosing a depth nor by blending depths.*
+It is not that the rules were badly chosen — it is that the information distinguishing tokens is not
+present in any fixed linear read of the trajectory. §4.7b says why the rules cannot see it (path
+length has cv 0.068 against oracle depth's cv 0.798); this says that removing the need to decide does
+not help.
+
+**And it retires a proposal before it was made.** A learned per-token gate over depths would cost
+O(T) parameters for a scalar per depth, or ~14k for a state-conditioned gate — cheap, scale-clean,
+and it would have been a reasonable §8 suggestion. The static sweep is its upper bound with the
+gating problem removed entirely, and the upper bound is null. *Caveat, stated because it bounds the
+claim:* a static convex mixture is not the most general thing a learned gate could do — a gate that
+is a function of the state could in principle vary weights per token, which this cannot. What is
+shown is that no **fixed** weighting helps, on three checkpoints.
+
 ### 4.7b Why no label-free rule works: the trajectories are nearly identical, the optima are not
 
 *Instrument:* `src/cumulative_exit.py` on the 524,288-token exit dump. **Zero compute** — a `cumsum`
