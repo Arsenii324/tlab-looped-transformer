@@ -156,6 +156,14 @@ argmins) · `gain_decomp.py` (Δgain = ΔCE@1 − ΔCE_best; 49 in-job pairs) ·
   *A LOCAL annealed run would unblock R45 — `src/train.py` would need `supervise_k_final` added.*
 - Four relayed papers unobtainable → SECOND-HAND in `VERIFICATION.md`, no claim rests on them.
 
+### 7. INTERPRETER — every local number came from anaconda base, NOT the workspace venv
+    /Users/a2mogus/anaconda3/bin/python3    3.11.0, torch 2.8.0, numpy 2.4.6, MPS: yes
+`barannikov-work/.venv` (which the sibling CLAUDE.md names as the workspace default) has torch 2.13.0
+and **no** tokenizers/datasets/huggingface_hub/transformers — it cannot run `src/data.py`,
+`src/train_tokenizer.py`, or `test_model.py` check [2]. Bare `python3` resolves to anaconda on this
+machine, which is why everything worked without anyone choosing it. Check the interpreter first if a
+local number fails to reproduce.
+
 ### 7a. HOW TO RUN A REVIEW (read before trying)
 `./rebuild_review.sh` builds two sized targets; a reviewer's limits are 500 files AND 8,000 lines,
 and this repo is 486 files / 139k lines, so an unscoped review is refused outright.

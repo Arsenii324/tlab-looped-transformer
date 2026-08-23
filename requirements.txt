@@ -6,6 +6,16 @@
 # from. Versions below are the ones this project actually ran on, given as floors rather than exact
 # pins so a fresh environment resolves — except where an exact version is load-bearing (see torch).
 
+# THE INTERPRETER EVERY LOCAL NUMBER IN THIS REPORT CAME FROM, stated because it was never written
+# down and the obvious guess is wrong. All local/MPS runs used the **anaconda base** interpreter:
+#     /Users/a2mogus/anaconda3/bin/python3   Python 3.11.0, torch 2.8.0, numpy 2.4.6, MPS available
+# NOT the sibling workspace's `barannikov-work/.venv`, which its CLAUDE.md names as the default: that
+# venv carries torch 2.13.0 and has no tokenizers / datasets / huggingface_hub / transformers, so it
+# cannot run the data pipeline or test_model.py's Qwen3 comparison. If a local number is being
+# reproduced and it disagrees, check the interpreter before checking the code.
+# Cloud runs are unaffected and pinned separately: Kaggle uses its own image, DataSphere installs
+# torch from the cu121 index inside the job (see DATASPHERE_NOTES.md).
+
 # --- core: needed by src/train.py, src/eval.py, src/model.py ---
 torch>=2.4
 numpy>=1.26
