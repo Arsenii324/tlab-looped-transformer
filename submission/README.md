@@ -13,16 +13,30 @@ looks like a cap violation — see "Counting the parameters" below.*
 
 ## The result
 
-**The trajectory never converges and saturates anyway; the depths a weight-tied loop visits are
-near-indistinguishable by construction; and we built the experiment that could have refuted that
-second claim, registered its criterion before the data existed, and it held at two seeds.**
+**The trajectory never converges and saturates anyway. The depths a weight-tied loop visits are
+near-indistinguishable — and when we gave the architecture the capacity to avoid that, training
+collapsed it again. We built the experiment that could have refuted the mechanism, registered its
+criterion before the data existed, and it held.**
 
-The task asks for low perplexity **by exploiting many loops.** Those come apart here, and this
-submission's contribution is not the dissociation itself but **the measured reason for it**: a token's
-32 depth keys span an effective rank of **~1.6**, present at initialisation and worse after training,
-because a weight-tied loop has **one** key projection where an unshared stack has one per layer and
-gets decorrelation for free. That is structural, it does not improve with width, and it explains the
-published positives in the depth-mixture family rather than contradicting them.
+The task asks for low perplexity **by exploiting many loops.** Those come apart here, and the
+contribution is not the dissociation but **the measured reason for it**: a token's 32 depth keys span
+an effective rank of **~1.6 out of 32**, present at initialisation and worse after training. A
+weight-tied loop has **one** key projection where an unshared stack has one per layer and gets
+decorrelation for free — so there is almost nothing for any depth-mixing or early-exit mechanism to
+discriminate between.
+
+**The last experiment of the project tested whether that is fixable by architecture. It is not.**
+Given four distinct key projections — **+10.0% of the parameter budget** — rank starts at **8.818/32**
+and **trains back down to 1.74**, against a tied control's 1.66. *The collapse is not only what a tied
+architecture is stuck with; it is what this objective drives the representation toward even when the
+architecture can avoid it.* That predicts, falsifiably, that no purely architectural fix in this
+family will hold — and it explains the published positives in the depth-mixture family, which are
+measured on unshared stacks, rather than contradicting them.
+
+*That experiment was built to decide something else — whether the rank collapse **causes** the
+depth-mixing failure — and its registered gate required the trained rank to exceed ~4. It came back at
+1.74, so **the causal question is undecided and is reported that way** (`LIMITATIONS.md`); what is
+measured is the collapse-under-training above. One seed, 3.5M tokens.*
 
 ## The answer to the brief, in five sentences
 
@@ -34,24 +48,18 @@ published positives in the depth-mixture family rather than contradicting them.
 
 2. **What actually binds is that the depths are not distinguishable.** A token's 32 depth keys span an
    **effective rank of ~1.6**, present **at initialisation** and worse after training. The cause is
-   weight tying via **projection asymmetry**: an unshared stack manufactures a near-orthogonal key set
-   from a state stream that is *just as collinear* as the tied one (4.36 vs 1.40 of 33), purely
-   because each layer owns a `W_K`. **One shared projection cannot buy that at any width**
-   `[RANK-PROJECTION]`. Rank scales as ≈ 1.6 × (number of distinct projections) **at initialisation**,
-   so the architectural fix is priced — 4 buckets, +10.0% of the parameter budget (§4.28). **We bought
-   it, and training spent it.** Given four distinct key projections, rank starts at **8.818/32** and
-   *trains down to 1.74* — against the tied control's 1.66 (§4.30). **So the collapse is not only what
-   a tied architecture is stuck with; it is what this objective drives the representation toward even
-   when the architecture can avoid it.** That predicts, falsifiably, that no purely architectural fix
-   in this family will hold.
+   **projection asymmetry**: an unshared stack manufactures a near-orthogonal key set from a state
+   stream that is *just as collinear* as the tied one (4.36 vs 1.40 of 33), purely because each layer
+   owns a `W_K` `[RANK-PROJECTION]`. **Buying that back architecturally does not work** — see *The
+   result* above and §4.30.
 
 3. **We built the experiment that would have refuted that, and registered the criterion before the arm
    existed.** A *scale-invariant* depth gate that **demonstrably mixes** — 7.58/8, 14.96/16, 29.84/32
    effective loops, zero tokens above 0.99 top-weight, where the project's earlier gate saturated to a
    hard argmax — with the falsifier written first: *mixes and gains ⇒ the explanation is wrong.*
    **It mixes. It returns −0.0012 / +0.0023 at two seeds.** A working mixture over a collapsed
-   representation buys nothing. *Mixture-over-depths was tested seven ways in all; every one is null
-   or an instrument failure (`RESULTS.md` §1b).*
+   representation buys nothing. *Mixture-over-depths was tested seven ways in all; every one is null, an
+   instrument failure, or a gain whose own mechanism check failed (`RESULTS.md` §1b).*
 
 4. **Twelve interventions. Five lower the loss. Not one widens the useful band**, at any tolerance
    tested. Four of the five put
