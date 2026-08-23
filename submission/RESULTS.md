@@ -37,7 +37,7 @@ states the convention). Two mechanisms were run at two settings each, so this ta
 | 2 | scale clock | **+1.36** *(non-finite by loop 39)* | onset 8→4 | +448 |
 | 3 | gated (diagonal state-space) injection, α = 0.874 | **+0.247** | unmoved | +896 |
 | 4a | loop-cycled LoRA, **rank 2** | **+0.094** | unmoved | +204k |
-| 4b | **loop-cycled LoRA, rank ≥ 4** | **−0.0936** ⚠ | **unmoved (5 of 5)** | +409k (+4.51%) |
+| 4b | **loop-cycled LoRA, rank ≥ 4** | **−0.0936** ⚠ *(in-job pairs range −0.0261 … −0.1251)* | **unmoved (5 of 5)** | +409k (+4.51%) |
 | 5 | radial clamp | ~0 *(ceiling invariant to 0.006)* | relocates | 0 |
 | 6 | convex gate / fixed-`g` sweep | null | unmoved | +66k |
 | 7 | ε = λ/(N√L) residual scaling | null *(its "shift" was a 0.0001-nat argmin flip)* | unmoved | 0 |
@@ -118,9 +118,13 @@ zero-parameter* operator is worth more than the same pattern restated over arms 
 
 > **⚠ The caveats belong beside the numbers, not in a footnote.**
 > **LoRA `[POSTHOC-LORA-RANK]` `[CAPACITY-NOT-DIVERSITY]`:** the `rank ≥ 4` restriction is **post hoc** — over all six arms the interval
-> **covers zero** — there is no dose–response above the threshold, and a branch pinned to one index
-> (identical params, **zero** diversity) recovers **82%** of the gain in-job. It is a **capacity**
-> result, and it costs **+4.51%** of the parameter budget.
+> **covers zero** — and there is no dose–response above the threshold. **A branch pinned to one index
+> (identical parameters, *zero* diversity) recovers 82% of the gain at seed 0 and delivers 5.6× it at
+> seed 1**, so averaged over the two in-job pairs the zero-diversity arm is **better** than the cycled
+> one. **Operator diversity — the mechanism the intervention is named for — has no measurable benefit
+> here.** The cycled arm's own effect ranges **−0.0261 … −0.1251** across two in-job pairs at one
+> budget, a 4.8× seed spread. It is a **capacity** result and it costs **+4.51%** of the parameter
+> budget.
 > **XSA `[XSA-AT-R1]`:** **replicated at two seeds** (−0.2162 / −0.2633, mean −0.2398, ~16× the floor,
 > **zero parameters**) — the largest positive in the project. But **84–91% of it is at `r = 1`**, and
 > the "band unmoved" half of the 19:15 prediction **held at seed 0 and failed at seed 1**, so it is
@@ -207,10 +211,11 @@ Marked rather than omitted. Each has its falsifier registered in `../RUNS.md` be
 
 | arm | what it decides | state |
 |---|---|---|
-| `tlab-divx-s1` | capacity-vs-diversity, all three arms **in one job**, seed 1 — removes the cross-job confound and pin-0's branch-specialisation confound at once | running |
-| `tlab-xsa-s1` | second seed for the −0.216; **this project has withdrawn two claims for exactly the n=1 failure** | running |
-| `tlab-recmethod-s2` | the recommended configuration's own weights, which no full-budget checkpoint currently is (`METHOD.md` §4) | running |
-| Kaggle `tlab-lora-scaleup` | does the LoRA positive survive ~5× budget (12M/arm) | running |
+| `tlab-divx-s1` | capacity-vs-diversity, all three arms **in one job**, seed 1 | **LANDED.** Pinned arm **beats** cycled, −0.1470 vs −0.0261. §4.23c |
+| `tlab-xsa-s1` | second seed for the −0.216 | **LANDED.** −0.2633; CE replicates, **band claim withdrawn** |
+| `tlab-recmethod-s2` | the recommended configuration's own weights | **LANDED.** Band 5/5 at 4× budget; CE +0.1119. §4.23e |
+| `tlab-duocausal-s0/-s1` | duo-causal W=2/3 and the scale-invariant depth gate | **LANDED.** §4.23, §4.23b |
+| Kaggle `tlab-lora-scaleup` | does the LoRA positive survive ~5× budget (12M/arm) — **the only budget probe of the r=1 pattern (§4.24)** | running, ETA ~21:52 |
 
 ## 6. Verification
 

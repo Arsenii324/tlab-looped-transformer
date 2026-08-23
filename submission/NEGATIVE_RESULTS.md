@@ -77,10 +77,11 @@ loop 39, with the model *taking* the parameter (‖w‖ = 1.34) rather than decl
 > 1. **The `rank ≥ 4` restriction is post hoc.** Over all six arms the 95% interval **covers zero**
 >    ([−0.148, +0.023]); rank 2 is **+0.094**, i.e. worse. There is **no dose–response** above the
 >    threshold — rank 8 sits inside rank 4's spread.
-> 2. **It is a capacity result, not a diversity result.** A branch pinned to a single index — identical
->    parameter count, **zero** diversity — recovers **82%** of the gain in-job (−0.1031 vs −0.1251).
->    Diversity's own contribution is 18–35% across two independent pins, none of it comfortably
->    resolvable against the floor.
+> 2. **It is a capacity result, and at the second seed diversity is negative.** A branch pinned to a
+>    single index — identical parameter count, **zero** diversity — recovers **82%** of the gain in-job
+>    at seed 0 (−0.1031 vs −0.1251) and **5.6× it** at seed 1 (−0.1470 vs −0.0261). Averaged over the
+>    two in-job pairs the zero-diversity arm is **better**. **Operator diversity, the mechanism this
+>    intervention is named for, has no measurable benefit here.**
 > 3. **~90% of the gain is present at `r = 1`**, where the cycling is *logically inert* (verified:
 >    max|diff| = 0.000e+00 at r=1). **It improves the block, not the looping.**
 > 4. It costs **+4.51%** of the parameter budget, so §1's zero-parameter scale argument does not cover

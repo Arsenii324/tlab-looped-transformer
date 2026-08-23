@@ -2916,3 +2916,41 @@ transcription of anything the author said.
 weights sees 38.86 and finds 37.52 in the report, and the card now says in its own text why the worse
 perplexity ships (88% loop-1 damage, band narrows, only converging arm, clipping confound). It is a
 separate surface from `README.md` and it is the one attached to the artifact.
+
+## 21:00–21:08 — `tlab-divx-s1` lands: at seed 1 the ZERO-DIVERSITY arm beats the cycled one, and a retraction of mine was too broad
+
+**First, a near-miss worth recording.** My grep for the divx job id returned
+`bt1ps6o54qhrecg40etf`; I downloaded it and got arms named `dv_*_s0` with **numerically identical**
+results to the job already harvested as `ds_div`. Checking `train_cfg.seed` showed **seed=0 for both**
+— it was the same seed-0 job. The real seed-1 job is **`bt1attom37m9m5ahnhj5`** (recorded correctly in
+`LOG.md:2694`). **Had I not checked the seed field, I would have reported seed 0 as its own
+replication.** Same class as the partial-arm trap: verify the identity of what you downloaded.
+
+**Second, the DS `ERROR` status was cosmetic.** No `Error while processing file` in `log.txt`; stdout
+ends `=== CAPACITY-VS-DIVERSITY SWEEP COMPLETE === ... ALL DONE in 3480.7s`, all three `.pt` returned.
+
+**The result**, in-job, seed 1, pin to branch **2**:
+
+| arm | CE@1 | best | ΔCE_best | band |
+|---|---|---|---|---|
+| `dx_control_s1` | 5.5281 | 5.4231 | — | [8,20] |
+| `dx_cycled_s1` | 5.5122 | 5.3970 | **−0.0261** | [8,20] |
+| `dx_pin2_s1` | 5.3957 | **5.2762** | **−0.1470** | **[8,16]** |
+
+**The zero-diversity arm delivers 5.6× the cycled arm's gain.** With seed 0's 82%, the two-seed
+average makes pinning **better** than cycling (−0.1251 vs −0.0756). **Operator diversity — the
+mechanism the intervention is named for — has no measurable benefit in this project.** And the cycled
+arm's own effect ranges −0.0261…−0.1251 across two in-job pairs at one budget, a **4.8× seed spread**,
+which weakens the LoRA positive further.
+
+**A retraction of mine was too broad, and this arm shows it.** At 20:12 I withdrew the observation
+that *pinning narrows the band while cycling preserves it*, calling it cross-job noise — on the
+grounds that in-job all three arms held [8,20]. **But the in-job seed-0 job pins to branch 0 and the
+original observation was about branch 2.** Pin-2 has now narrowed [8,20] → [8,16] **twice**, including
+in-job at seed 1, in the very design that removes the confound I blamed. **Pin-0 holds the band;
+pin-2 narrows it.** *I retracted a claim about pin-2 using evidence about pin-0* — the same
+space-mismatch shape as `FAILURES.md`'s third pattern, applied to arms rather than to geometry.
+Corrected in §4.23c with the over-broad withdrawal left visible.
+
+Propagated to `report.md` §4.23c, `submission/RESULTS.md` (LoRA row, caveat block, §5.2 now shows
+four LANDED and one running), `submission/NEGATIVE_RESULTS.md`.

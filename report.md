@@ -5744,30 +5744,63 @@ and XSA narrows at one seed of two; duo-causal W = 3 is the only one where the n
 there, the mechanism check **succeeded** and the loss got worse; here, the loss got better and the
 mechanism check **failed**. Neither is evidence for the mechanism.*
 
-### 4.23c Capacity, not diversity — the in-job control
+### 4.23c Capacity, not diversity — and at the second seed, diversity is not merely small but *negative*
 
-§4.21b's r=1 argument said the LoRA positive should be capacity rather than operator diversity.
-`tlab-divx` tests it directly, **all arms in one job** (`dv_lora_fixed0_s0` pins the branch index to
-0: identical parameter count, **zero** diversity):
+§4.21b's r=1 argument predicted the LoRA positive should be **capacity** rather than **operator
+diversity**. Two jobs test it directly, each running **all arms in one job**, with a branch pinned to
+a single index — identical parameter count (9,473,184, verified), **zero** diversity.
+
+**Seed 0** (`tlab-diversity-control`, pin to branch **0**):
 
 | arm | CE@1 | best CE | ΔCE_best | band |
 |---|---|---|---|---|
 | `dv_control_s0` | 5.4693 | 5.3765 | — | [8,20] |
 | `dv_lora_r4_s0` (cycled) | 5.3648 | 5.2514 | **−0.1251** | [8,20] |
-| `dv_lora_fixed0_s0` (**pinned**) | 5.3819 | 5.2734 | **−0.1031** | [8,20] |
+| `dv_lora_fixed0_s0` (**pinned to 0**) | 5.3819 | 5.2734 | **−0.1031** | [8,20] |
 
-**A single fixed branch with zero diversity recovers 82% of the cycled arm's gain, in-job.** Diversity's
-own contribution is 0.0220 — inside the 0.0150–0.0334 band this project measures for drift and floors.
-Agrees with the independent r=1 argument (84% for this arm) and with the **cross-job** pin to branch
-**2** — a branch that never trains at `r = 1`, so it cannot be explained by branch-0 specialisation:
-`pin_control_s0` 5.3052 → `pin_lora_b2_s0` **5.2237**, **ΔCE_best −0.0815**, ~65% of the cycled gain.
-The two pins bracket diversity's own contribution at **18–35%**, none of it comfortably resolvable
-against the floor. **§4.21 is a capacity result** `[CAPACITY-NOT-DIVERSITY]`.
+**Seed 1** (`tlab-divx-s1`, pin to branch **2** — a branch that never trains at `r = 1`, so
+branch-0 specialisation cannot explain it):
 
-*And it retracts an observation flagged in `reviewer_answers/23`:* that the pinned arm **narrowed** the
-band while cycling preserved it. In-job, **all three arms hold [8,20]**. The narrowing was cross-job
-noise, and it had been labelled "an observation, not a result", which is the only reason it cost
-nothing.
+| arm | CE@1 | best CE | ΔCE_best | band |
+|---|---|---|---|---|
+| `dx_control_s1` | 5.5281 | 5.4231 | — | [8,20] |
+| `dx_cycled_s1` (cycled) | 5.5122 | 5.3970 | **−0.0261** | [8,20] |
+| `dx_pin2_s1` (**pinned to 2**) | 5.3957 | **5.2762** | **−0.1470** | **[8,16]** |
+
+**At seed 0 the zero-diversity arm recovers 82% of the cycled gain. At seed 1 it delivers 5.6× the
+cycled gain.** Cycling, the mechanism the whole intervention is named for, is worth **−0.1251** at one
+seed and **−0.0261** — barely 1.7× the floor — at the other, while pinning delivers **−0.1031** and
+**−0.1470**. **Averaged over the two in-job pairs, the arm with zero operator diversity is *better*
+than the arm with it** (−0.1251 vs −0.0756).
+
+**So §4.21 is a capacity result, and the stronger form is now available: operator diversity has no
+measurable benefit here at all, and the two-seed point estimate is negative.** That composes with the
+r=1 decomposition (67–95% of every LoRA arm's gain sits where cycling is *logically inert*, verified
+at max|diff| = 0.000e+00) and with the cross-job pin to branch 2 (−0.0815). **Three independent lines,
+one conclusion** `[CAPACITY-NOT-DIVERSITY]`.
+
+**It also weakens the LoRA positive further, and that should be said rather than buried.** The cycled
+arm's own effect ranges over **−0.0261 to −0.1251 across two in-job pairs at the same budget** — a
+4.8× spread. A claim whose seed-to-seed variation is nearly 5× is not a claim about a reliable 0.09
+nats.
+
+> ### A retraction of my own retraction, which is the honest shape of this
+>
+> At 20:12 (`reviewer_answers/24` §3) I withdrew an observation from `reviewer_answers/23`: that
+> **pinning narrows the band while cycling preserves it.** I withdrew it on the grounds that in-job,
+> all three arms held [8,20], and called the earlier narrowing "cross-job noise."
+>
+> **That withdrawal was too broad, and this arm shows why.** The in-job seed-0 job pins to branch
+> **0**; the original observation came from a pin to branch **2**. Those are different arms. Pin-2 has
+> now been measured twice — cross-job at seed 0 (`pin_lora_b2_s0`, [8,20] → [8,16]) and **in-job at
+> seed 1** (`dx_pin2_s1`, [8,20] → [8,16]) — and it narrows **both times**, including in the design
+> that removes the confound I blamed. **Pin-0 holds the band; pin-2 narrows it.**
+>
+> *What I got wrong was not the measurement but the scope of the correction: I retracted a claim about
+> pin-2 using evidence about pin-0.* The corrected statement is narrower than the original and
+> narrower than the retraction: **a branch pinned to an index that never trains at `r = 1` buys the
+> largest CE gain in this family and costs a band edge.** Still 2 measurements, 1 in-job — an
+> observation, not a result — but it is no longer explicable as cross-job drift.
 
 ### 4.23d Exclusive self attention: the project's largest positive, replicated — and it narrows the band
 
