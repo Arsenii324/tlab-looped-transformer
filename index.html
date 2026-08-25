@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Where Loops Stop Paying</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --ground:      #F5F7FA;
+    --panel:       #FFFFFF;
+    --ink:         #16191F;
+    --ink-2:       #444C59;
+    --ink-3:       #6E7787;
+    --rule:        #D6DBE3;
+    --rule-soft:   #E7EBF1;
+    --series-a:    #2F6FD0;
+    --series-b:    #B4770F;
+    --band:        rgba(47, 111, 208, 0.13);
+    --band-b:      rgba(180, 119, 15, 0.15);
+    --held:        #1B6B5A;
+    --held-bg:     #E4F1EC;
+    --withdrawn:   #9A4A2F;
+    --withdrawn-bg:#F6E7E0;
+    --open:        #4C5570;
+    --open-bg:     #E8EAF2;
+    --grid:        rgba(22, 25, 31, 0.09);
+    --shadow:      0 1px 2px rgba(22,25,31,.05), 0 8px 24px -12px rgba(22,25,31,.14);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0F1218;
+      --panel:       #171B23;
+      --ink:         #E6E9EF;
+      --ink-2:       #AEB6C4;
+      --ink-3:       #838D9E;
+      --rule:        #2C3341;
+      --rule-soft:   #232935;
+      --series-a:    #5590E2;
+      --series-b:    #BC8318;
+      --band:        rgba(85, 144, 226, 0.18);
+      --band-b:      rgba(188, 131, 24, 0.20);
+      --held:        #5FB89F;
+      --held-bg:     #17302A;
+      --withdrawn:   #D89273;
+      --withdrawn-bg:#33201A;
+      --open:        #A3ABC4;
+      --open-bg:     #222733;
+      --grid:        rgba(230, 233, 239, 0.10);
+      --shadow:      0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:      #0F1218;
+    --panel:       #171B23;
+    --ink:         #E6E9EF;
+    --ink-2:       #AEB6C4;
+    --ink-3:       #838D9E;
+    --rule:        #2C3341;
+    --rule-soft:   #232935;
+    --series-a:    #5590E2;
+    --series-b:    #BC8318;
+    --band:        rgba(85, 144, 226, 0.18);
+    --band-b:      rgba(188, 131, 24, 0.20);
+    --held:        #5FB89F;
+    --held-bg:     #17302A;
+    --withdrawn:   #D89273;
+    --withdrawn-bg:#33201A;
+    --open:        #A3ABC4;
+    --open-bg:     #222733;
+    --grid:        rgba(230, 233, 239, 0.10);
+    --shadow:      0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: clamp(2.5rem, 6vw, 4.5rem) clamp(1.1rem, 4vw, 2.5rem) 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2.5rem, 5vw, 3.75rem);
+  }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: .7rem;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0;
+  }
+
+  h1 {
+    font-family: Spectral, ui-serif, Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    font-size: clamp(2.1rem, 5.4vw, 3.1rem);
+    line-height: 1.12;
+    letter-spacing: -.015em;
+    text-wrap: balance;
+    margin: .5rem 0 0;
+  }
+
+  .standfirst {
+    font-family: Spectral, ui-serif, Georgia, serif;
+    font-size: clamp(1.05rem, 2.3vw, 1.24rem);
+    line-height: 1.55;
+    color: var(--ink-2);
+    max-width: 60ch;
+    margin: 1.1rem 0 0;
+  }
+
+  .masthead { border-bottom: 1px solid var(--rule); padding-bottom: 2rem; }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--rule-soft);
+    border: 1px solid var(--rule-soft);
+    margin-top: 2rem;
+  }
+  .fact { background: var(--panel); padding: .85rem 1rem; }
+  .fact dt {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .66rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-3); margin: 0;
+  }
+  .fact dd {
+    margin: .3rem 0 0;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.02rem; font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+  .fact dd small { display:block; font-size:.72rem; font-weight:400; color: var(--ink-3); margin-top:.15rem; letter-spacing:0; }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-head {
+    display: flex; flex-wrap: wrap; gap: .9rem 1.2rem;
+    align-items: baseline; justify-content: space-between;
+    padding: 1.3rem clamp(1rem,3vw,1.6rem) 1rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .panel-head h2 {
+    font-family: Spectral, ui-serif, Georgia, serif;
+    font-weight: 600; font-size: 1.42rem; line-height: 1.25;
+    letter-spacing: -.01em; margin: 0; text-wrap: balance; flex: 1 1 22ch;
+  }
+
+  .chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .chip {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .66rem; letter-spacing: .09em; text-transform: uppercase;
+    padding: .28rem .55rem; border-radius: 2px; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: .35rem;
+  }
+  .chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .chip.held      { color: var(--held);      background: var(--held-bg); }
+  .chip.withdrawn { color: var(--withdrawn); background: var(--withdrawn-bg); }
+  .chip.open      { color: var(--open);      background: var(--open-bg); }
+
+  .figure { padding: 1.15rem clamp(.6rem,2vw,1.2rem) .5rem; }
+  .chart-box { position: relative; width: 100%; }
+  canvas { display: block; width: 100%; touch-action: none; }
+
+  .tip {
+    position: absolute; pointer-events: none; opacity: 0;
+    transition: opacity .1s linear;
+    background: var(--panel); border: 1px solid var(--rule);
+    box-shadow: var(--shadow); padding: .45rem .6rem; border-radius: 3px;
+    font-family: "IBM Plex Mono", monospace; font-size: .74rem;
+    font-variant-numeric: tabular-nums; color: var(--ink);
+    white-space: nowrap; z-index: 5;
+  }
+  .tip b { font-weight: 500; color: var(--ink); }
+  .tip .k { color: var(--ink-3); }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 1rem;
+    padding: .2rem clamp(1rem,3vw,1.6rem) 0;
+    font-size: .82rem; color: var(--ink-2);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: .45rem; }
+  .swatch { width: 22px; height: 0; border-top-width: 2.5px; border-top-style: solid; flex: none; }
+  .swatch.dash { border-top-style: dashed; }
+  .swatch.blk { height: 11px; border: none; border-radius: 2px; }
+
+  .reading {
+    padding: 1rem clamp(1rem,3vw,1.6rem) 1.4rem;
+    border-top: 1px solid var(--rule-soft);
+    font-size: .95rem; color: var(--ink-2); max-width: 72ch;
+  }
+  .reading p { margin: 0 0 .7rem; }
+  .reading p:last-child { margin-bottom: 0; }
+  .reading strong { color: var(--ink); font-weight: 600; }
+  .num { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; font-size: .93em; }
+
+  .caveat {
+    margin-top: .9rem; padding: .7rem .85rem;
+    background: var(--ground); border-left: 2px solid var(--rule);
+    font-size: .86rem; color: var(--ink-3);
+  }
+  .caveat b { color: var(--ink-2); font-weight: 600; }
+
+  table.data { border-collapse: collapse; width: 100%; font-size: .84rem; }
+  table.data caption {
+    text-align: left; font-family: "IBM Plex Mono", monospace;
+    font-size: .66rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-3); padding-bottom: .5rem;
+  }
+  table.data th, table.data td {
+    text-align: right; padding: .34rem .55rem;
+    border-bottom: 1px solid var(--rule-soft);
+    font-variant-numeric: tabular-nums;
+    font-family: "IBM Plex Mono", monospace;
+  }
+  table.data th { color: var(--ink-3); font-weight: 500; font-size: .72rem; letter-spacing: .04em; }
+  table.data td:first-child, table.data th:first-child { text-align: left; font-family: "IBM Plex Sans", sans-serif; }
+  .tbl-wrap { overflow-x: auto; padding: 0 clamp(1rem,3vw,1.6rem) 1.4rem; }
+
+  details.table-toggle > summary {
+    cursor: pointer; list-style: none;
+    font-family: "IBM Plex Mono", monospace; font-size: .7rem;
+    letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3);
+    padding: .55rem clamp(1rem,3vw,1.6rem) .9rem;
+  }
+  details.table-toggle > summary::-webkit-details-marker { display: none; }
+  details.table-toggle > summary::before { content: "▸ "; }
+  details.table-toggle[open] > summary::before { content: "▾ "; }
+  details.table-toggle > summary:hover { color: var(--ink); }
+  summary:focus-visible, a:focus-visible { outline: 2px solid var(--series-a); outline-offset: 2px; }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.5rem;
+    font-size: .86rem; color: var(--ink-3); max-width: 68ch;
+  }
+  footer a { color: var(--series-a); text-decoration: underline; text-underline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Looped transformer · 9,064,608 parameters · FineWeb</p>
+    <h1>Where Loops Stop Paying</h1>
+    <p class="standfirst">A looped transformer reuses one block many times, buying compute without
+    buying parameters. Gains saturate after a handful of loops, and the field attributes that to the
+    loop map converging. Here the map never converges and the gains saturate anyway. Three
+    measurements say what actually binds.</p>
+
+    <dl class="facts">
+      <div class="fact"><dt>Val perplexity</dt><dd>38.86<small>CE 3.6599</small></dd></div>
+      <div class="fact"><dt>Bits / byte</dt><dd>1.5829<small>externally comparable figure</small></dd></div>
+      <div class="fact"><dt>Useful band</dt><dd>6–17<small>loops, within 0.01 nats</small></dd></div>
+      <div class="fact"><dt>Parameters</dt><dd>9,064,608<small>cap 10,000,000</small></dd></div>
+      <div class="fact"><dt>Train tokens</dt><dd>89,999,360<small>cap 100,000,000</small></dd></div>
+    </dl>
+  </header>
+
+  <!-- ─────────────────────────  FIGURE 1  ───────────────────────── -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>The released model earns its last useful loop at 17</h2>
+      <div class="chips"><span class="chip held">Band measured</span></div>
+    </div>
+    <div class="figure">
+      <div class="chart-box"><canvas id="c1" height="330"></canvas><div class="tip" id="t1"></div></div>
+    </div>
+    <div class="legend">
+      <span><i class="swatch blk" style="background:var(--band)"></i> Within 0.01 nats of best — loops 6 to 17</span>
+    </div>
+    <div class="reading">
+      <p>Cross-entropy falls steeply to loop <span class="num">8</span>, reaches
+      <span class="num">3.6599</span> at loop <span class="num">10</span>, and climbs from there. Every
+      integer depth from <span class="num">1</span> to <span class="num">64</span> was evaluated, so
+      the band edges are located to one loop rather than to the nearest point on a coarse grid.</p>
+      <p>The model still beats its own single-loop score at loop <span class="num">64</span>
+      (<span class="num">3.7673</span> against <span class="num">3.9622</span>), so depth past the band
+      stays harmless. It stops being <strong>worth</strong> anything after 17.</p>
+    </div>
+    <details class="table-toggle">
+      <summary>Table</summary>
+      <div class="tbl-wrap">
+        <table class="data">
+          <caption>Selected depths — released 90M control</caption>
+          <thead><tr><th>Loops</th><th>1</th><th>4</th><th>6</th><th>10</th><th>17</th><th>18</th><th>32</th><th>64</th></tr></thead>
+          <tbody><tr><td>CE</td><td>3.9622</td><td>3.6849</td><td>3.6666</td><td>3.6599</td><td>3.6688</td><td>3.6707</td><td>3.7005</td><td>3.7673</td></tr></tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+
+  <!-- ─────────────────────────  FIGURE 2  ───────────────────────── -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>One schedule more than doubles the range of loops that stay useful</h2>
+      <div class="chips">
+        <span class="chip held">Band held 6 / 6</span>
+        <span class="chip withdrawn">Loss claim withdrawn</span>
+      </div>
+    </div>
+    <div class="figure">
+      <div class="chart-box"><canvas id="c2" height="340"></canvas><div class="tip" id="t2"></div></div>
+    </div>
+    <div class="legend">
+      <span><i class="swatch" style="border-top-color:var(--series-a)"></i> Dense supervision (control)</span>
+      <span><i class="swatch dash" style="border-top-color:var(--series-b)"></i> Supervision annealing</span>
+      <span><i class="swatch blk" style="background:var(--band-b)"></i> Within 0.01 nats of that arm's own best</span>
+    </div>
+    <div class="reading">
+      <p>Each curve is drawn against its own optimum, so the shaded spans are comparable while the
+      absolute heights are not. The control holds <strong>9</strong> consecutive integer depths and
+      ends at <span class="num">20</span>. The annealed arm holds <strong>19</strong> and ends at
+      <span class="num">30</span> — <strong>2.1×</strong> the width, for zero added parameters. It is a
+      schedule over which loop indices receive gradient, so nothing is added to the model.</p>
+      <p>The same two edges move the same way at 2.5M and 10M tokens, and the result survives halving
+      the tolerance that defines the band.</p>
+      <div class="caveat"><b>What this does not buy.</b> The loss half of the claim was withdrawn.
+      Across six paired arms the CE difference reads <span class="num">−0.0811</span>,
+      <span class="num">−0.0609</span>, <span class="num">+0.0482</span>, <span class="num">−0.0902</span>,
+      <span class="num">−0.0764</span>, <span class="num">+0.1119</span> — a mean of
+      <span class="num">−0.0247</span>, inside the <span class="num">0.0541</span> replicate floor.
+      Annealing buys depth, and the released checkpoint is the dense control.</div>
+    </div>
+    <details class="table-toggle">
+      <summary>Table</summary>
+      <div class="tbl-wrap">
+        <table class="data">
+          <caption>Seed-2 pair, every integer depth 12–32</caption>
+          <thead><tr><th>Loops</th><th>12</th><th>16</th><th>20</th><th>24</th><th>28</th><th>30</th><th>32</th></tr></thead>
+          <tbody>
+            <tr><td>Control</td><td>5.4212</td><td>5.4253</td><td>5.4309</td><td>5.4370</td><td>5.4434</td><td>5.4466</td><td>5.4498</td></tr>
+            <tr><td>Annealed</td><td>5.4568</td><td>5.4564</td><td>5.4581</td><td>5.4609</td><td>5.4643</td><td>5.4661</td><td>5.4679</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+
+  <!-- ─────────────────────────  FIGURE 3  ───────────────────────── -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Distinct key projections buy depth diversity, and training spends it</h2>
+      <div class="chips">
+        <span class="chip held">Dose–response measured</span>
+        <span class="chip open">Causal test undecided</span>
+      </div>
+    </div>
+    <div class="figure">
+      <div class="chart-box"><canvas id="c3" height="360"></canvas><div class="tip" id="t3"></div></div>
+    </div>
+    <div class="legend">
+      <span><i class="swatch" style="border-top-color:var(--series-a)"></i> At initialisation</span>
+      <span><i class="swatch dash" style="border-top-color:var(--series-b)"></i> After training, 4 projections</span>
+    </div>
+    <div class="reading">
+      <p>A token produces 32 key vectors, one per loop. Anything that attends over depth, or picks a
+      depth to exit at, has to tell them apart. In a weight-tied loop they span an effective rank of
+      <strong><span class="num">1.603</span> out of 32</strong> — one shared projection applied to a
+      collinear stream.</p>
+      <p>Giving the block more key projections raises that almost linearly:
+      <span class="num">3.097</span> at two, <span class="num">5.742</span> at four,
+      <span class="num">10.646</span> at eight, <span class="num">30.863</span> at thirty-two. Rank is
+      purchasable, at roughly <span class="num">1.6</span> per distinct projection.</p>
+      <p>Then it was purchased. A trained arm with four projections — <strong>+10.0%</strong> of the
+      parameter budget — starts at <span class="num">8.818</span> and finishes at
+      <span class="num">1.74</span>, against a tied control's <span class="num">1.66</span>. This
+      objective drives the representation back to a collapsed state even where the architecture can
+      avoid it.</p>
+      <div class="caveat"><b>What stays open.</b> That arm was built to decide whether the rank
+      collapse <i>causes</i> the depth-mixing failure. Its gate, registered before the run, required a
+      trained rank above <span class="num">~4</span>; it returned <span class="num">1.74</span>, so the
+      causal question is <b>undecided</b>. One seed, 3.5M tokens. Separately, the rank at
+      initialisation is flat across hidden sizes <span class="num">224</span> to
+      <span class="num">896</span> — <span class="num">2.749</span>, <span class="num">2.687</span>,
+      <span class="num">2.747</span>, <span class="num">2.731</span>, <span class="num">2.718</span>
+      over a 12× parameter range — so the figure is not an artifact of this model's size.</div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────  FIGURE 4  ───────────────────────── -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Four interventions bank their gain at a single loop</h2>
+      <div class="chips"><span class="chip held">Four independent arms</span></div>
+    </div>
+    <div class="figure">
+      <div class="chart-box"><canvas id="c4" height="300"></canvas><div class="tip" id="t4"></div></div>
+    </div>
+    <div class="reading">
+      <p>Splitting each intervention's improvement into the part already present at one loop and the
+      part that needs depth: the first part dominates. At <span class="num">r = 1</span> a depth gate
+      mixes a single state, a cycled adapter applies one branch, and duo-causal attention has no
+      previous loop to read — each mechanism is inert there, and the gain is already banked.</p>
+      <p>These arms improve the <strong>block</strong>. The looping keeps whatever it was worth
+      before.</p>
+      <div class="caveat"><b>Each row carries a caveat.</b> The depth gate at
+      <span class="num">96%</span> is an instrument failure — it saturates to a hard argmax and mixes
+      <span class="num">1.01–1.05</span> loops of <span class="num">r</span>. Exclusive self attention
+      is two seeds at one budget. Loop-cycled LoRA reverses at scale: <span class="num">−0.0936</span>
+      at 2.5M tokens against <span class="num">+0.0077</span> at 12M in a config-identical pair, which
+      leaves the project with no replicated loss improvement at scale. Duo-causal attention lowers CE
+      while its own registered mechanism check reports no engagement.</div>
+      <p style="margin-top:.9rem">A fifth intervention runs the other way. The norm penalty wins
+      perplexity outright — <span class="num">37.52</span> against <span class="num">38.86</span> —
+      by damaging loop 1 (<span class="num">ΔCE@1 = +0.2263</span>) and narrowing the band. The
+      released checkpoint is the arm without that trade.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Every figure is drawn from the stored evaluation arrays, at the precision the report states.
+    Bands use the tolerance <span class="num">0.01</span> nats; the replicate floors are
+    <span class="num">0.0150</span> (dense) and <span class="num">0.0541</span> (terminal-only),
+    measured at 2.5M tokens. Supplementary to the submission — the written record carries the scope
+    conditions, the withdrawals, and the numbers that will not reproduce.</p>
+  </footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const CTRL90 = {1:3.9622,2:3.7597,3:3.7074,4:3.6849,5:3.6732,6:3.6666,7:3.6629,8:3.6609,9:3.66,10:3.6599,11:3.6603,12:3.6612,13:3.6623,14:3.6637,15:3.6653,16:3.667,17:3.6688,18:3.6707,19:3.6726,20:3.6746,21:3.6767,22:3.6788,23:3.6809,24:3.683,25:3.6852,26:3.6874,27:3.6895,28:3.6917,29:3.6939,30:3.6961,31:3.6983,32:3.7005,33:3.7027,34:3.7049,35:3.7071,36:3.7092,37:3.7114,38:3.7136,39:3.7157,40:3.7179,41:3.72,42:3.7222,43:3.7243,44:3.7265,45:3.7286,46:3.7307,47:3.7328,48:3.7349,49:3.737,50:3.7391,51:3.7411,52:3.7432,53:3.7452,54:3.7473,55:3.7493,56:3.7514,57:3.7534,58:3.7554,59:3.7574,60:3.7594,61:3.7614,62:3.7634,63:3.7654,64:3.7673};
+  const DENSE_S2 = {12:5.4212,13:5.422,14:5.423,15:5.4241,16:5.4253,17:5.4266,18:5.428,19:5.4294,20:5.4309,21:5.4324,22:5.4339,23:5.4354,24:5.437,25:5.4386,26:5.4402,27:5.4418,28:5.4434,29:5.445,30:5.4466,31:5.4482,32:5.4498};
+  const SW90_S2  = {12:5.4568,13:5.4564,14:5.4562,15:5.4562,16:5.4564,17:5.4567,18:5.4571,19:5.4575,20:5.4581,21:5.4587,22:5.4594,23:5.4601,24:5.4609,25:5.4617,26:5.4625,27:5.4634,28:5.4643,29:5.4651,30:5.4661,31:5.467,32:5.4679};
+  const RANK = [[1,1.603],[2,3.097],[4,5.742],[8,10.646],[32,30.863]];
+  const SHARE = [
+    {label:"Depth gate (saturating)", lo:96, hi:96,  note:"instrument failure"},
+    {label:"Exclusive self attention", lo:84, hi:91, note:"2 seeds, 1 budget"},
+    {label:"Duo-causal, W = 3",        lo:78, hi:101,note:"mechanism check: no engagement"},
+    {label:"Loop-cycled LoRA",         lo:67, hi:95, note:"reverses at 12M tokens"}
+  ];
+
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const F_MONO = '"IBM Plex Mono", ui-monospace, monospace';
+  const F_SANS = '"IBM Plex Sans", system-ui, sans-serif';
+
+  function fit(cv) {
+    const dpr = window.devicePixelRatio || 1;
+    const w = cv.parentElement.clientWidth;
+    const h = +cv.getAttribute("height");
+    cv.width = Math.round(w * dpr);
+    cv.height = Math.round(h * dpr);
+    cv.style.height = h + "px";
+    const ctx = cv.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx, w, h };
+  }
+
+  function axes(ctx, P, opts) {
+    const { x0, y0, x1, y1 } = P;
+    ctx.save();
+    ctx.strokeStyle = css("--grid");
+    ctx.lineWidth = 1;
+    ctx.fillStyle = css("--ink-3");
+    ctx.font = `500 11px ${F_MONO}`;
+    opts.yTicks.forEach(v => {
+      const y = Math.round(P.sy(v)) + .5;
+      ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
+      ctx.textAlign = "right"; ctx.textBaseline = "middle";
+      ctx.fillText(opts.yFmt(v), x0 - 9, y);
+    });
+    opts.xTicks.forEach(v => {
+      const x = Math.round(P.sx(v)) + .5;
+      ctx.textAlign = "center"; ctx.textBaseline = "top";
+      ctx.fillText(String(v), x, y0 + 8);
+    });
+    ctx.strokeStyle = css("--rule");
+    ctx.beginPath(); ctx.moveTo(x0, y0 + .5); ctx.lineTo(x1, y0 + .5); ctx.stroke();
+    ctx.font = `500 10px ${F_MONO}`;
+    ctx.fillStyle = css("--ink-3");
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    if (opts.xLabel) ctx.fillText(opts.xLabel, (x0 + x1) / 2, y0 + 26);
+    if (opts.yLabel) {
+      ctx.save(); ctx.translate(14, (y0 + y1) / 2); ctx.rotate(-Math.PI / 2);
+      ctx.textBaseline = "middle"; ctx.fillText(opts.yLabel, 0, 0); ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  function line(ctx, pts, color, dash) {
+    ctx.save();
+    ctx.strokeStyle = color; ctx.lineWidth = 2;
+    ctx.lineJoin = "round"; ctx.lineCap = "round";
+    if (dash) ctx.setLineDash(dash);
+    ctx.beginPath();
+    pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]));
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function dot(ctx, x, y, color, r) {
+    ctx.save();
+    ctx.beginPath(); ctx.arc(x, y, (r || 4.5) + 2, 0, 7); ctx.fillStyle = css("--panel"); ctx.fill();
+    ctx.beginPath(); ctx.arc(x, y, r || 4.5, 0, 7); ctx.fillStyle = color; ctx.fill();
+    ctx.restore();
+  }
+
+  function tag(ctx, x, y, text, color, align) {
+    ctx.save();
+    ctx.font = `500 11.5px ${F_MONO}`;
+    ctx.textAlign = align || "left"; ctx.textBaseline = "middle";
+    const w = ctx.measureText(text).width;
+    const px = align === "right" ? x - w - 5 : x + 1;
+    ctx.fillStyle = css("--panel"); ctx.globalAlpha = .82;
+    ctx.fillRect(px, y - 8, w + 8, 16);
+    ctx.globalAlpha = 1; ctx.fillStyle = color;
+    ctx.fillText(text, align === "right" ? x - 1 : x + 5, y);
+    ctx.restore();
+  }
+
+  // ── hover plumbing ──────────────────────────────────────────────
+  function hover(cv, tipEl, resolve) {
+    let raf = null;
+    const move = ev => {
+      const r = cv.getBoundingClientRect();
+      const mx = ev.clientX - r.left, my = ev.clientY - r.top;
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const hit = resolve(mx, my);
+        if (!hit) { tipEl.style.opacity = 0; return; }
+        tipEl.innerHTML = hit.html;
+        tipEl.style.opacity = 1;
+        const tw = tipEl.offsetWidth, th = tipEl.offsetHeight;
+        let lx = hit.x + 12; if (lx + tw > r.width) lx = hit.x - tw - 12;
+        let ly = hit.y - th - 10; if (ly < 0) ly = hit.y + 14;
+        tipEl.style.left = Math.max(0, lx) + "px";
+        tipEl.style.top = ly + "px";
+      });
+    };
+    cv.addEventListener("pointermove", move);
+    cv.addEventListener("pointerleave", () => { tipEl.style.opacity = 0; });
+  }
+
+  // ── FIG 1 : released 90M control, dense 1..64 ───────────────────
+  const draw1 = () => {
+    const cv = document.getElementById("c1"); const { ctx, w, h } = fit(cv);
+    const x0 = 56, x1 = w - 16, y1t = 18, y0 = h - 40;
+    const xs = Object.keys(CTRL90).map(Number);
+    const vs = xs.map(k => CTRL90[k]);
+    const vmin = 3.64, vmax = 3.98;
+    const sx = v => x0 + (v - 1) / (64 - 1) * (x1 - x0);
+    const sy = v => y0 - (v - vmin) / (vmax - vmin) * (y0 - y1t);
+    const P = { x0, x1, y0, y1: y1t, sx, sy };
+
+    ctx.clearRect(0, 0, w, h);
+    // band 6..17
+    ctx.fillStyle = css("--band");
+    ctx.fillRect(sx(6), y1t, sx(17) - sx(6), y0 - y1t);
+    ctx.save();
+    ctx.strokeStyle = css("--series-a"); ctx.globalAlpha = .35; ctx.setLineDash([3,3]); ctx.lineWidth = 1;
+    [6,17].forEach(k => { ctx.beginPath(); ctx.moveTo(Math.round(sx(k))+.5, y1t); ctx.lineTo(Math.round(sx(k))+.5, y0); ctx.stroke(); });
+    ctx.restore();
+
+    axes(ctx, P, {
+      yTicks: [3.65,3.70,3.75,3.80,3.85,3.90,3.95],
+      yFmt: v => v.toFixed(2),
+      xTicks: [1,8,17,24,32,40,48,56,64],
+      xLabel: "loops (r)", yLabel: "validation CE"
+    });
+
+    const pts = xs.map(k => [sx(k), sy(CTRL90[k])]);
+    line(ctx, pts, css("--series-a"));
+    dot(ctx, sx(10), sy(CTRL90[10]), css("--series-a"));
+    tag(ctx, sx(10) + 6, sy(CTRL90[10]) - 15, "best 3.6599 @ r=10", css("--series-a"));
+    tag(ctx, sx(6) + 2, y1t + 12, "band 6–17", css("--series-a"));
+
+    hover(cv, document.getElementById("t1"), (mx) => {
+      if (mx < x0 - 6 || mx > x1 + 6) return null;
+      let k = Math.round(1 + (mx - x0) / (x1 - x0) * 63);
+      k = Math.min(64, Math.max(1, k));
+      const inBand = k >= 6 && k <= 17;
+      return { x: sx(k), y: sy(CTRL90[k]),
+        html: `<b>r = ${k}</b> &nbsp; <span class="k">CE</span> ${CTRL90[k].toFixed(4)}` +
+              (inBand ? ` &nbsp;<span class="k">· in band</span>` : "") };
+    });
+  };
+
+  // ── FIG 2 : annealing pair, each vs its own optimum ─────────────
+  const draw2 = () => {
+    const cv = document.getElementById("c2"); const { ctx, w, h } = fit(cv);
+    const x0 = 62, x1 = w - 16, y1t = 20, y0 = h - 42;
+    const ks = Object.keys(DENSE_S2).map(Number);
+    const bestC = Math.min(...Object.values(DENSE_S2));
+    const bestA = Math.min(...Object.values(SW90_S2));
+    const dC = k => DENSE_S2[k] - bestC, dA = k => SW90_S2[k] - bestA;
+    const vmax = 0.032;
+    const sx = v => x0 + (v - 12) / (32 - 12) * (x1 - x0);
+    const sy = v => y0 - (v / vmax) * (y0 - y1t);
+    const P = { x0, x1, y0, y1: y1t, sx, sy };
+    ctx.clearRect(0, 0, w, h);
+
+    // tolerance line + shaded spans
+    const lastC = ks.filter(k => dC(k) <= 0.01).slice(-1)[0];
+    const lastA = ks.filter(k => dA(k) <= 0.01).slice(-1)[0];
+    ctx.fillStyle = css("--band");
+    ctx.fillRect(sx(12), y0 - 9, sx(lastC) - sx(12), 9);
+    ctx.fillStyle = css("--band-b");
+    ctx.fillRect(sx(12), y0 - 20, sx(lastA) - sx(12), 9);
+
+    axes(ctx, P, {
+      yTicks: [0, .005, .01, .015, .02, .025, .03],
+      yFmt: v => v.toFixed(3),
+      xTicks: [12,16,20,24,28,32],
+      xLabel: "loops (r)", yLabel: "CE above that arm's own best"
+    });
+
+    ctx.save();
+    ctx.strokeStyle = css("--ink-3"); ctx.setLineDash([4,4]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x0, Math.round(sy(.01))+.5); ctx.lineTo(x1, Math.round(sy(.01))+.5); ctx.stroke();
+    ctx.restore();
+    tag(ctx, x1, sy(.01) - 11, "tolerance 0.01", css("--ink-3"), "right");
+
+    line(ctx, ks.map(k => [sx(k), sy(dC(k))]), css("--series-a"));
+    line(ctx, ks.map(k => [sx(k), sy(dA(k))]), css("--series-b"), [6,4]);
+
+    tag(ctx, sx(lastC), sy(dC(lastC)) - 14, `control · 9 depths, ends ${lastC}`, css("--series-a"), "right");
+    tag(ctx, sx(30) + 4, sy(dA(30)) + 14, `annealed · 19 depths, ends ${lastA}`, css("--series-b"));
+    dot(ctx, sx(lastC), sy(dC(lastC)), css("--series-a"), 4);
+    dot(ctx, sx(lastA), sy(dA(lastA)), css("--series-b"), 4);
+
+    hover(cv, document.getElementById("t2"), (mx) => {
+      if (mx < x0 - 6 || mx > x1 + 6) return null;
+      let k = Math.round(12 + (mx - x0) / (x1 - x0) * 20);
+      k = Math.min(32, Math.max(12, k));
+      return { x: sx(k), y: Math.min(sy(dC(k)), sy(dA(k))),
+        html: `<b>r = ${k}</b><br><span class="k">control</span> ${DENSE_S2[k].toFixed(4)} (+${dC(k).toFixed(4)})<br>` +
+              `<span class="k">annealed</span> ${SW90_S2[k].toFixed(4)} (+${dA(k).toFixed(4)})` };
+    });
+  };
+
+  // ── FIG 3 : rank dose–response + trained collapse ───────────────
+  const draw3 = () => {
+    const cv = document.getElementById("c3"); const { ctx, w, h } = fit(cv);
+    const x0 = 58, x1 = w - 20, y1t = 22, y0 = h - 44;
+    const sx = i => x0 + i / (RANK.length - 1) * (x1 - x0);
+    const sy = v => y0 - (v / 32) * (y0 - y1t);
+    ctx.clearRect(0, 0, w, h);
+
+    ctx.save(); ctx.strokeStyle = css("--grid"); ctx.fillStyle = css("--ink-3");
+    ctx.font = `500 11px ${F_MONO}`; ctx.lineWidth = 1;
+    [0,8,16,24,32].forEach(v => {
+      const y = Math.round(sy(v))+.5;
+      ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke();
+      ctx.textAlign="right"; ctx.textBaseline="middle"; ctx.fillText(String(v), x0-9, y);
+    });
+    RANK.forEach((r,i) => {
+      ctx.textAlign="center"; ctx.textBaseline="top";
+      ctx.fillText(String(r[0]), sx(i), y0+8);
+    });
+    ctx.strokeStyle = css("--rule");
+    ctx.beginPath(); ctx.moveTo(x0,y0+.5); ctx.lineTo(x1,y0+.5); ctx.stroke();
+    ctx.font = `500 10px ${F_MONO}`; ctx.textAlign="center"; ctx.textBaseline="top";
+    ctx.fillText("distinct key projections", (x0+x1)/2, y0+26);
+    ctx.save(); ctx.translate(14,(y0+y1t)/2); ctx.rotate(-Math.PI/2);
+    ctx.textBaseline="middle"; ctx.fillText("effective rank of 32 depth keys", 0, 0); ctx.restore();
+    ctx.restore();
+
+    line(ctx, RANK.map((r,i) => [sx(i), sy(r[1])]), css("--series-a"));
+    RANK.forEach((r,i) => {
+      dot(ctx, sx(i), sy(r[1]), css("--series-a"), 4);
+      tag(ctx, sx(i), sy(r[1]) - 14, r[1].toFixed(3), css("--series-a"), i === RANK.length-1 ? "right" : "left");
+    });
+
+    // trained collapse at 4 projections (index 2)
+    const xi = sx(2);
+    ctx.save();
+    ctx.strokeStyle = css("--series-b"); ctx.lineWidth = 2; ctx.setLineDash([6,4]);
+    ctx.beginPath(); ctx.moveTo(xi, sy(5.742)); ctx.lineTo(xi, sy(1.74)); ctx.stroke();
+    ctx.restore();
+    dot(ctx, xi, sy(1.74), css("--series-b"), 4.5);
+    tag(ctx, xi + 8, sy(1.74) + 2, "1.74 after training", css("--series-b"));
+    // arrowhead
+    ctx.save(); ctx.fillStyle = css("--series-b");
+    ctx.beginPath(); ctx.moveTo(xi, sy(1.74)+1); ctx.lineTo(xi-4.5, sy(1.74)-7); ctx.lineTo(xi+4.5, sy(1.74)-7);
+    ctx.closePath(); ctx.fill(); ctx.restore();
+
+    // tied control baseline
+    ctx.save();
+    ctx.strokeStyle = css("--ink-3"); ctx.setLineDash([2,4]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x0, Math.round(sy(1.66))+.5); ctx.lineTo(x1, Math.round(sy(1.66))+.5); ctx.stroke();
+    ctx.restore();
+    tag(ctx, x1, sy(1.66) + 13, "tied control, trained · 1.66", css("--ink-3"), "right");
+
+    hover(cv, document.getElementById("t3"), (mx) => {
+      let i = Math.round((mx - x0) / (x1 - x0) * (RANK.length - 1));
+      i = Math.min(RANK.length-1, Math.max(0, i));
+      if (Math.abs(sx(i) - mx) > 46) return null;
+      const extra = i === 2 ? `<br><span class="k">trained</span> 1.74` : "";
+      return { x: sx(i), y: sy(RANK[i][1]),
+        html: `<b>${RANK[i][0]} projection${RANK[i][0]>1?"s":""}</b><br><span class="k">rank at init</span> ${RANK[i][1].toFixed(3)} / 32${extra}` };
+    });
+  };
+
+  // ── FIG 4 : share of gain already at r = 1 ──────────────────────
+  const draw4 = () => {
+    const cv = document.getElementById("c4"); const { ctx, w, h } = fit(cv);
+    const labelW = Math.min(210, Math.max(140, w * .30));
+    const x0 = labelW + 10, x1 = w - 54, yTop = 26, rowH = (h - yTop - 34) / SHARE.length;
+    const sx = v => x0 + (v / 110) * (x1 - x0);
+    ctx.clearRect(0, 0, w, h);
+
+    ctx.save(); ctx.strokeStyle = css("--grid"); ctx.fillStyle = css("--ink-3");
+    ctx.font = `500 11px ${F_MONO}`; ctx.lineWidth = 1;
+    [0,25,50,75,100].forEach(v => {
+      const x = Math.round(sx(v))+.5;
+      ctx.beginPath(); ctx.moveTo(x, yTop-8); ctx.lineTo(x, yTop + rowH*SHARE.length - 6); ctx.stroke();
+      ctx.textAlign="center"; ctx.textBaseline="top";
+      ctx.fillText(v + "%", x, yTop + rowH*SHARE.length + 2);
+    });
+    ctx.restore();
+
+    // 100% reference
+    ctx.save();
+    ctx.strokeStyle = css("--ink-3"); ctx.setLineDash([3,3]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(Math.round(sx(100))+.5, yTop-8); ctx.lineTo(Math.round(sx(100))+.5, yTop + rowH*SHARE.length - 6); ctx.stroke();
+    ctx.restore();
+
+    const bh = Math.min(20, rowH * .46);
+    SHARE.forEach((d, i) => {
+      const cy = yTop + rowH * i + rowH / 2 - 4;
+      ctx.save();
+      ctx.fillStyle = css("--ink"); ctx.font = `500 12.5px ${F_SANS}`;
+      ctx.textAlign = "right"; ctx.textBaseline = "middle";
+      ctx.fillText(d.label, labelW, cy - 6);
+      ctx.fillStyle = css("--ink-3"); ctx.font = `400 10.5px ${F_MONO}`;
+      ctx.fillText(d.note, labelW, cy + 9);
+      ctx.restore();
+
+      const xa = sx(d.lo), xb = sx(d.hi);
+      ctx.save();
+      ctx.fillStyle = css("--series-a");
+      const r = 3, ww = Math.max(xb - xa, 3);
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(xa, cy - bh/2, ww, bh, r);
+      else ctx.rect(xa, cy - bh/2, ww, bh);
+      ctx.fill();
+      // range whisker for the lo..hi arms
+      if (d.hi > d.lo) {
+        ctx.strokeStyle = css("--panel"); ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(xa+1.2, cy-bh/2); ctx.lineTo(xa+1.2, cy+bh/2); ctx.stroke();
+      }
+      ctx.restore();
+
+      ctx.save();
+      ctx.fillStyle = css("--ink"); ctx.font = `500 12px ${F_MONO}`;
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.fillText(d.hi === d.lo ? `${d.lo}%` : `${d.lo}–${d.hi}%`, xb + 8, cy);
+      ctx.restore();
+    });
+
+    ctx.save();
+    ctx.fillStyle = css("--ink-3"); ctx.font = `500 10px ${F_MONO}`;
+    ctx.textAlign = "left"; ctx.textBaseline = "top";
+    ctx.fillText("share of the gain already present at r = 1", x0, 6);
+    ctx.restore();
+
+    hover(cv, document.getElementById("t4"), (mx, my) => {
+      const i = Math.floor((my - yTop) / rowH);
+      if (i < 0 || i >= SHARE.length) return null;
+      const d = SHARE[i];
+      const cy = yTop + rowH * i + rowH / 2 - 4;
+      return { x: sx(d.hi), y: cy,
+        html: `<b>${d.label}</b><br><span class="k">at r = 1</span> ${d.hi===d.lo?d.lo+"%":d.lo+"–"+d.hi+"%"}<br><span class="k">${d.note}</span>` };
+    });
+  };
+
+  const all = () => { draw1(); draw2(); draw3(); draw4(); };
+  const ready = () => {
+    all();
+    let t; window.addEventListener("resize", () => { clearTimeout(t); t = setTimeout(all, 120); });
+    if (window.matchMedia) {
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      mq.addEventListener ? mq.addEventListener("change", all) : mq.addListener(all);
+    }
+    new MutationObserver(all).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.querySelectorAll("details.table-toggle").forEach(d => d.addEventListener("toggle", () => setTimeout(all, 30)));
+  };
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(ready); else window.addEventListener("load", ready);
+})();
+</script>
+
+</body>
+</html>
