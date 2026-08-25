@@ -4,6 +4,7 @@
 next-token prediction.
 
 ## ▶ Start here: **[`submission/README.md`](submission/README.md)**
+## ▶ Plots: **[`github-pages`](https://arsenii324.github.io/tlab-looped-transformer/)**
 
 **That one page is the submission.** It carries the headline numbers, the finding and its mechanism,
 what worked, and a link to each of the 8 documents answering a clause of the brief. Everything else
